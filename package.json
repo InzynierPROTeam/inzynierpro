@@ -1,0 +1,64 @@
+{
+  "name": "inzpro",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "type-check": "turbo type-check",
+    "format": "oxfmt",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "check": "oxlint && oxfmt",
+    "test": "turbo test",
+    "prepare": "test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky install"
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "catalog:",
+    "@oxlint/plugins": "catalog:",
+    "@t3-oss/env-core": "catalog:",
+    "@tailwindcss/typography": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/react-router-devtools": "catalog:",
+    "@total-typescript/tsconfig": "catalog:",
+    "@types/js-cookie": "catalog:",
+    "@types/jsdom": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "dotenv": "catalog:",
+    "drizzle-kit": "catalog:",
+    "husky": "catalog:",
+    "jsdom": "catalog:",
+    "oxc-transform-react": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "tailwindcss": "catalog:",
+    "tailwindcss-animate": "catalog:",
+    "tsc-alias": "catalog:",
+    "tsx": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-icons-spritesheet": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  },
+  "lint-staged": {
+    "*": [
+      "oxlint",
+      "oxfmt --no-error-on-unmatched-pattern"
+    ]
+  },
+  "engines": {
+    "node": ">=26"
+  },
+  "packageManager": "pnpm@12.16.1"
+}

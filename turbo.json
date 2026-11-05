@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "daemon": true,
+  "globalDependencies": ["**/.env"],
+  "envMode": "loose",
+  "tasks": {
+    "dev": {
+      "dependsOn": ["^build"],
+      "inputs": [".env*"],
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "!README.md", ".env*"],
+      "outputs": ["dist/**", "*.tsbuildinfo", ".next/**", "build/**", ".output/**", ".vinxi/**"],
+      "cache": true
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "format": {
+      "cache": true
+    },
+    "lint": {
+      "cache": true
+    },
+    "lint:fix": {
+      "cache": true
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": true
+    }
+  }
+}

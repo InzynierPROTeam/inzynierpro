@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "semi": false,
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "singleAttributePerLine": true,
+  "bracketSameLine": false,
+  "importOrderSeparation": false,
+  "ignorePatterns": [".github", "**/routeTree.gen.ts", ".claude", ".agents"],
+  "objectWrap": "preserve",
+  "jsxSingleQuote": false,
+  "experimentalSortPackageJson": true,
+  "experimentalSortImports": {
+    "groups": [
+      "builtin",
+      "external",
+      ["internal", "subpath"],
+      ["parent", "sibling", "index"],
+      "style",
+      "unknown"
+    ]
+  },
+  "experimentalTailwindcss": {
+    "attributes": ["class", "className"],
+    "functions": ["clsx", "cn", "cx"],
+    "preserveDuplicates": false,
+    "preserveWhitespace": false
+  }
+}
