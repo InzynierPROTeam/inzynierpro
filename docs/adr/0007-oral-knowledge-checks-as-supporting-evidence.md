@@ -1,0 +1,25 @@
+# Opcjonalny mini-quiz po sesji ustnej
+
+Mini-quiz jest proponowany po ukończeniu sesji nauki ustnej i sprawdza materiał poznany w tej sesji. Sesję nauki zamykamy i zapisujemy jej postęp przed zaproponowaniem quizu. Użytkownik może go rozwiązać albo kontynuować naukę bez quizu; pominięcie lub przerwanie quizu nie odbiera ukończenia sesji. Podsumowanie zachowuje standardową możliwość dalszej nauki, a „Sprawdź wiedzę” jest opcjonalną akcją. Zastępuje to wcześniejszą koncepcję quizów bezpośrednio po poszczególnych pytaniach ustnych oraz ścieżki ich pomijania przyciskiem „Umiem, następne”. Oddzielenie ćwiczenia od sprawdzianu zachowuje prosty przebieg nauki opracowań.
+
+Sesja ustna domyślnie zawiera 10 pytań lub wszystkie dostępne, jeśli jest ich mniej. Przy większej liczbie dostępnych pytań użytkownik może zmienić limit w podglądzie. Domyślna liczba i dostępne ustawienia pochodzą z backendu zgodnie z ADR-0005. Końcowy mini-quiz zawiera maksymalnie 5 pytań sprawdzających, w miarę dostępności dotyczących różnych pytań ustnych z zakończonej sesji. Limit jest konfigurowalny w backendzie. Przy mniejszej liczbie dostępnych zatwierdzonych pytań sprawdzających proponujemy mniej, bez wymogu pokrycia każdego opracowania.
+
+Samoocena odpowiedzi ustnej ma trzy poziomy: brak umiejętności, częściowa umiejętność i deklarowana pełna umiejętność. Docelowe etykiety przycisków pozostają do uzgodnienia. Zatwierdzenie samooceny przechodzi do następnego pytania, a przy ostatnim do podsumowania, bez dodatkowego potwierdzenia. Mini-quiz nie pojawia się w tym przebiegu między pytaniami.
+
+Opracowanie jest początkowo ukryte, a użytkownik może je odsłonić bez wymuszonego oczekiwania i nagrywania wypowiedzi. Wybór widoczności jest zapamiętywany lokalnie w danym kliencie między pytaniami i sesjami. Preferencja nie jest zapisywana na koncie ani synchronizowana między webem i mobile. Odsłonięcie opracowania jest normalnym krokiem ćwiczenia ustnego i samo nie nadaje oznaczenia odpowiedzi pisemnej z pomocą.
+
+Pytania sprawdzające są wcześniej przygotowaną, zatwierdzoną i wersjonowaną treścią, zgodną z określoną rewizją opracowania ustnego. Quiz korzysta z materiału odnoszącego się do opracowań wykorzystanych w zakończonej sesji. AI może pomagać przygotowywać propozycje w procesie redakcyjnym, a zmiana opracowania wymaga sprawdzenia zgodności powiązanych quizów. Początkowe formaty to pojedynczy wybór z różną liczbą opcji, prawda/fałsz i wielokrotny wybór, każdy z poprawnym rozwiązaniem i wyjaśnieniem.
+
+Quiz powstaje dopiero po wybraniu „Sprawdź wiedzę”. Do zakończonej sesji ustnej przypisany jest jeden quiz: jego rozpoczęcie utrwala zestaw pytań, a odpowiedzi zapisujemy na bieżąco. Powrót po przerwaniu wznawia ten sam zestaw, a po ukończeniu pokazuje wynik, bez ponownego losowania quizu do tej samej sesji.
+
+Backend dobiera wyłącznie formaty obsługiwane przez dany klient. Jeżeli brakuje odpowiednich zatwierdzonych pytań lub klient nie obsługuje ich formatów, nie pokazujemy akcji „Sprawdź wiedzę”. Ukończenie nauki i standardowy dalszy krok pozostają dostępne, bez dodatkowej samooceny po sesji.
+
+W każdym formacie quizu użytkownik najpierw zaznacza odpowiedź, a następnie zatwierdza ją przyciskiem „Sprawdź”. Dotyczy to pojedynczego wyboru, prawda/fałsz i wielokrotnego wyboru. Zaznaczenia zapisujemy roboczo, a sprawdzenie, wynik i wyjaśnienie pojawiają się dopiero po zatwierdzeniu. Po ujawnieniu wyniku nie można zmienić odpowiedzi w tej próbie. Zastępuje to wcześniejszą zasadę sprawdzania pojedynczego wyboru od razu po zaznaczeniu; zachowujemy spójność ze zwykłą nauką pisemną. Samoocena ustnego nadal przechodzi dalej bez dodatkowego potwierdzenia, a egzamin próbny ujawnia wynik dopiero po zakończeniu.
+
+Wielokrotny wybór jest oceniany binarnie: poprawna odpowiedź wymaga zaznaczenia wszystkich poprawnych opcji i żadnej błędnej. Feedback pokazuje pominięte poprawne opcje i błędne zaznaczenia. Zachowujemy pełny zestaw odpowiedzi na potrzeby analityki i przyszłych strategii SRS.
+
+Jeżeli rozpoczęty quiz zawiera format nieobsługiwany przez klient, w którym użytkownik próbuje go wznowić, zachowujemy utrwalony zestaw. Pokazujemy potrzebę aktualizacji aplikacji lub kontynuowania w obsługiwanym kliencie, bez losowania zastępczych pytań. Ograniczenie dotyczy tylko tego quizu; dalsza nauka pozostaje dostępna.
+
+Jednostką powtórek pozostaje całe pytanie ustne, bez osobnych harmonogramów dla pytań sprawdzających. Samoocena i wynik quizu są odrębnymi informacjami; wynik quizu nie nadpisuje deklaracji użytkownika. Wynik pytania sprawdzającego wpływa wyłącznie na stan SRS powiązanego z nim pytania ustnego. Pozostałe opracowania zachowują ocenę wynikającą z samooceny i wcześniejszej historii. Łączny wynik quizu pokazujemy w podsumowaniu, ale nie stosujemy go jako wspólnej oceny wszystkich opracowań sesji. Szczegółowe przeliczenie wpływu na SRS pozostaje do ustalenia.
+
+Nie przenosimy niezależnej ręcznej flagi „umiem / nie umiem” z V1. Zapisujemy samooceny konkretnych prób i wyliczony stan nauki. Ulubione i trudne pozostają niezależnymi oznaczeniami.
