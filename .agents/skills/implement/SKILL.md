@@ -14,4 +14,6 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 Once done, call the Skill tool with "code-review" to review the work.
 
-Commit your work to the current branch.
+Leave the implementation as uncommitted working-tree changes for the user to inspect in the editor. Report what changed and the checks performed, then incorporate the user's feedback.
+
+Create commits, push branches, or open pull requests only when the user explicitly requests that action. Approval to implement or review changes is not approval to publish them.

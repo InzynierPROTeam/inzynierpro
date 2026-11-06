@@ -13,14 +13,16 @@
     "start": "turbo start",
     "type-check": "turbo type-check",
     "format": "oxfmt",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "check": "oxlint && oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "effect-tsgo oxlint --type-aware",
+    "lint:fix": "effect-tsgo oxlint --type-aware --fix",
+    "check": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build",
     "test": "turbo test",
-    "prepare": "test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky install"
+    "prepare": "effect-tsgo patch --oxlint && (test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky)"
   },
   "devDependencies": {
     "@babel/preset-typescript": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@oxlint/plugins": "catalog:",
     "@t3-oss/env-core": "catalog:",
     "@tailwindcss/typography": "catalog:",
@@ -40,6 +42,7 @@
     "oxc-transform-react": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "tailwindcss": "catalog:",
     "tailwindcss-animate": "catalog:",
     "tsc-alias": "catalog:",
@@ -50,12 +53,6 @@
     "vite-plugin-icons-spritesheet": "catalog:",
     "vitest": "catalog:",
     "wrangler": "catalog:"
-  },
-  "lint-staged": {
-    "*": [
-      "oxlint",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": ">=26"

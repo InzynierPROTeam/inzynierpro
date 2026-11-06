@@ -1,0 +1,13 @@
+{
+  "name": "@inzpro/tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "type-check": "effect-tsgo tsc --noEmit",
+    "test": "tsx --test"
+  },
+  "devDependencies": {
+    "effect": "catalog:"
+  }
+}

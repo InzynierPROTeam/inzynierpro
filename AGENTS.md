@@ -1,5 +1,9 @@
 ## Agent skills
 
+### Review workflow
+
+Leave changes uncommitted for the user to review in the editor. Commit, push, or open a PR only when explicitly requested. Run `pnpm check` before handing back completed code changes.
+
 ### Product context
 
 Before product planning or implementation, read `docs/specifications.md` for the system spec, feature specs, and the decision map.
@@ -18,3 +22,7 @@ Read `docs/agents/triage-labels.md` before triaging or applying labels.
 
 Use a single-context layout.
 Read `docs/agents/domain.md` before exploring the codebase.
+
+### Tooling
+
+Before changing lint rules or TypeScript tooling, read `docs/agents/linting.md` for upstream provenance, Effect integration, and verification.

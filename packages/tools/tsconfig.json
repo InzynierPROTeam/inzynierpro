@@ -1,0 +1,29 @@
+{
+  "extends": "@total-typescript/tsconfig/tsc/no-dom/library-monorepo",
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "outDir": "dist",
+    "incremental": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "rootDir": "src",
+    "paths": {
+      "~tools/*": ["./src/*"]
+    },
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": false,
+        "refactors": true,
+        "quickinfo": true,
+        "completions": true,
+        "noExternal": true
+      }
+    ]
+  },
+  "include": ["src/**/*"],
+  "tsc-alias": {
+    "resolveFullPaths": true
+  }
+}
