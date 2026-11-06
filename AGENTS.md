@@ -1,5 +1,9 @@
 ## Agent skills
 
+### Product context
+
+Before product planning or implementation, read `docs/specifications.md` for the system spec, feature specs, and the decision map.
+
 ### Issue tracker
 
 Track issues and specs in GitHub Issues for InzynierPROTeam/inzynierpro.
