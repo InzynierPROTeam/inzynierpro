@@ -30,6 +30,8 @@ Workspace VS Code/Cursor wskazuje natywny TypeScript workspace według konfigura
 
 Workspace rekomenduje oficjalne rozszerzenie `oxc.oxc-vscode`; po jego zainstalowaniu diagnostyka Oxlint korzysta z lokalnego, skonfigurowanego narzędzia i ustawienia type-aware z presetu. Nie wymuszamy automatycznych poprawek przy zapisie pliku.
 
+Rekomendowane jest również `effectful-tech.effect-vscode`, czyli osobne rozszerzenie debuggera Effect. Według przewodnika v4 zapewnia inspekcję kontekstu, fiberów i stosu spanów oraz zatrzymanie przy defect. Nie zastępuje projektowego LSP. Sprawdzenie debuggera z rzeczywistym procesem aplikacji nastąpi po utworzeniu tego procesu; nie dodajemy starszych zależności runtime z przykładów v3.
+
 Natywne buildy Oxlint dostarczane przez tę wersję Effect wymagają na Linuxie glibc; kontener wykonujący lint nie powinien używać obrazu Alpine/musl.
 
 Wyjątki od pięciodniowego opóźnienia instalacji dotyczą wyłącznie konkretnych przypiętych wersji zestawu Effect i jego binariów natywnych. Pozostałe wersje nadal podlegają `minimumReleaseAge`. Po upływie tego okresu wyjątki można usunąć.
