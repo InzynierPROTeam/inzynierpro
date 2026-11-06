@@ -2,8 +2,10 @@
 
 # InżynierPRO V2 — Kompletny kontekst produktu i architektury
 
-**Wersja:** 0.7  
-**Data:** 4 listopada 2026  
+**Wersja:** 0.7
+
+**Data:** 4 listopada 2026
+
 **Status:** Projekt koncepcyjny — przed implementacją
 
 ---
