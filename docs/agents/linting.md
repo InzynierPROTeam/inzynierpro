@@ -1,45 +1,45 @@
-# Lint i narzędzia Effect
+# Linting and Effect tooling
 
-## Uruchomienie
+## Commands
 
-- `pnpm lint` uruchamia Oxlint przez `effect-tsgo` ze sprawdzaniem typów i presetem diagnostyki Effect.
-- `pnpm lint:fix` jawnie stosuje dostępne poprawki. `pnpm format` formatuje, a `pnpm format:check` tylko sprawdza formatowanie.
-- `pnpm type-check` sprawdza pakiety workspace przez TypeScript z integracją Effect.
-- `pnpm test` obejmuje testy reguł oraz próbki uruchamiane przez rzeczywiste CLI lintera.
-- `pnpm check` sprawdza format, lint, typy, testy i dostępne buildy; nie poprawia plików.
+- `pnpm lint` runs type-aware Oxlint through `effect-tsgo` with the recommended Effect diagnostics.
+- `pnpm lint:fix` explicitly applies available fixes. `pnpm format` formats files; `pnpm format:check` only verifies formatting.
+- `pnpm type-check` checks workspace packages using the Effect-integrated TypeScript compiler.
+- `pnpm test` runs workspace test scripts. The tools package uses `tsx --test`, which discovers colocated test files automatically, including the bundled rule tests.
+- `pnpm check` verifies formatting, lint, types, tests, and available builds without fixing source files.
 
-Zależności narzędzi są przypięte w katalogu pnpm. Oxlint i `@oxlint/plugins` aktualizujemy razem. Wersje TypeScript, Oxlint i oxlint-tsgolint muszą być obsługiwane przez wybraną wersję `@effect/tsgo`.
+The Husky `pre-commit` hook runs `pnpm lint:fix` followed by `pnpm format` across the repository. It does not run tests, a separate type-check, or builds. Lint errors block the commit. Automatic fixes remain in the working tree; review and stage them before committing. The hook does not stage changes automatically.
 
-Wspólne konfiguracje lintowania należą do globalnych zależności cache Turbo. Ich zmiana unieważnia także typecheck oraz testy uruchamiające CLI z konfiguracją repo. Konfiguracja TypeScript każdego workspace należy do jego własnych wejść cache.
+Shared development dependencies live in the root package; workspace scripts use that toolchain. Do not repeat shared devDependencies in each private app/package. The explicit exception is `effect` in `packages/tools/devDependencies`, where it supports lint integration tests. Runtime dependencies remain explicit in the workspace that uses them.
 
-## Warstwy reguł
+Versions are pinned in the pnpm catalog. Upgrade Oxlint and `@oxlint/plugins` together. Select TypeScript, Oxlint, and oxlint-tsgolint versions supported by the chosen `@effect/tsgo` release. All packages, including native binaries, must satisfy `minimumReleaseAge`; do not add exclusions to bypass it.
 
-1. **Projektowe:** cztery reguły z V1: pusta linia przed return, odstępy przy control flow, importy na początku i odstęp po importach. Publiczny interfejs reguł ma testy poprawnych/naruszających przykładów, komentarzy, dyrektyw i autofixów. Przy przeniesieniu poprawiono zachowanie komentarzy i zachowanie wcięcia przy dodawaniu pustej linii.
-2. **Anti-slop:** źródło pobrane bezpośrednio z `dmmulroy/anti-slop`, nie z kopii V1. Włączone są wszystkie reguły ogólne, osobny zestaw Effect i komplementarna natywna reguła `oxc/no-accumulating-spread`.
-3. **Effect:** rekomendowany preset `@effect/tsgo` dostarcza diagnostykę świadomą typów, m.in. niewykorzystanych Effects, brakujących wymagań i błędów. Błędy mają wpływ na status lintera; sugestie pozostają zgodne z presetem upstream.
+Root lint configurations are global Turbo cache dependencies, so changes invalidate typechecking and CLI integration tests. Each workspace's TypeScript configuration belongs to its own cache inputs.
 
-Upstream anti-slop zachowuje oryginalne testy i licencję MIT. `UPSTREAM.json` obok pluginu zapisuje commit i bazowe hashe upstream oraz jawne lokalne poprawki z uzasadnieniem i ich hashami. Jedyna poprawka zgodności z presetem V1 uściśla odczyt pierwszego elementu tablicy pod `noUncheckedIndexedAccess`, bez zmiany reguł. Katalog vendora jest wyłączony z własnego lintowania/formatowania, ale jego testy i typecheck są uruchamiane. Nie poprawiaj go automatycznie pod lokalne reguły. Przy aktualizacji porównaj nowy upstream, zachowaj licencję i odśwież pochodzenie; lokalne rozszerzenia trzymaj poza vendorem.
+## Rule layers
 
-Zasoby agentów są wyłączone z lintowania jako zewnętrzne materiały, nie kod produktu.
+1. **Project rules:** `packages/tools/src/oxlint/project-layout.ts` enforces blank lines before returns, spacing around control flow, imports first, and spacing after imports. Tests cover valid/invalid cases, comments, directives, and autofixes. Newline fixes preserve indentation and handle adjacent comments.
+2. **Anti-slop:** bundled in `packages/tools/src/oxlint/anti-slop/`. All generic rules, the separate Effect rule group, and the complementary native `oxc/no-accumulating-spread` rule are enabled.
+3. **Effect:** the recommended `@effect/tsgo` preset supplies type-aware diagnostics, including floating Effects and missing requirements/errors. Error diagnostics fail lint; suggestions retain the preset's severity.
 
-## Konfiguracje TypeScript
+The bundled Anti-slop rules include tests, MIT licenses, and a `UPSTREAM.json` provenance manifest. The manifest records source hashes and local patches with reasons and hashes. One compatibility patch handles an indexed array read under `noUncheckedIndexedAccess` without changing rule behavior. Bundled rule code is excluded from project linting/formatting but remains covered by tests and typechecking. Keep the manifest accurate when updating these files, and place project-specific extensions outside that directory.
 
-Każda aplikacja lub pakiet ma jeden `tsconfig.json`, bez repozytoryjnego `tsconfig.base.json` i bez osobnych konfiguracji dla testów. Tak jak w V1, konfiguracja rozszerza bezpośrednio odpowiedni preset `@total-typescript/tsconfig` i ustawia własne opcje platformowe, katalogi oraz aliasy. Pakiet narzędzi korzysta z `tsc/no-dom/library-monorepo`; aplikacje dobierają preset odpowiedni dla swojego runtime.
+Agent assets are excluded from linting; lint checks target product code and project tooling.
 
-Testy `*.test.ts`/`*.test.tsx` leżą obok testowanego kodu w `src` i należą do tego samego projektu TypeScript. Nie tworzymy osobnego katalogu testów ani `tsconfig.build.json`/`tsconfig.test.json`. Opcje pluginu `@effect/language-service` umieszczamy bezpośrednio w konfiguracji danego workspace, zachowując integrację Effect. Pakiet narzędzi jawnie ustawia ES2024 zgodnie z używanym runtime i przykładami reguł.
+## TypeScript configuration
 
-## Edytor i instalacja
+Each app/package has one `tsconfig.json`, with no repository-level base config or separate test/build configs. Extend the appropriate `@total-typescript/tsconfig` preset directly and define platform options, source directories, and aliases locally. The tools package uses `tsc/no-dom/library-monorepo` and ES2024.
 
-`pnpm install` uruchamia `effect-tsgo patch --oxlint`, które instaluje zgodne komponenty TypeScript/Oxlint wewnątrz node_modules. Działa także w CI; pomijanie hooków Git nie pomija konfiguracji Effect. Skrypty lint/typecheck dodatkowo korzystają z jawnego wrappera `effect-tsgo`.
+Keep `*.test.ts`/`*.test.tsx` beside the corresponding source files under `src`, in the same TypeScript project. Put `@effect/language-service` options directly in each workspace configuration.
 
-Workspace VS Code/Cursor wskazuje natywny TypeScript workspace według konfiguracji generowanej przez `@effect/tsgo setup`. Plugin udostępnia quick info, uzupełnianie i refaktoryzacje. `diagnostics: false` w konfiguracji językowej ogranicza duplikowanie diagnostyki zgłaszanej przez Oxlint. Faktyczne wczytanie ustawień edytora może wymagać przeładowania okna; test CLI nie dowodzi działania konkretnej instalacji edytora.
+## Installation and editors
 
-Workspace rekomenduje oficjalne rozszerzenie `oxc.oxc-vscode`; po jego zainstalowaniu diagnostyka Oxlint korzysta z lokalnego, skonfigurowanego narzędzia i ustawienia type-aware z presetu. Nie wymuszamy automatycznych poprawek przy zapisie pliku.
+`pnpm install` runs `effect-tsgo patch --oxlint` to install compatible TypeScript/Oxlint components inside node_modules. This also runs in CI; skipping Git hooks does not skip the Effect setup. Lint/typecheck scripts additionally invoke the explicit `effect-tsgo` wrapper.
 
-Rekomendowane jest również `effectful-tech.effect-vscode`, czyli osobne rozszerzenie debuggera Effect. Według przewodnika v4 zapewnia inspekcję kontekstu, fiberów i stosu spanów oraz zatrzymanie przy defect. Nie zastępuje projektowego LSP. Sprawdzenie debuggera z rzeczywistym procesem aplikacji nastąpi po utworzeniu tego procesu; nie dodajemy starszych zależności runtime z przykładów v3.
+VS Code/Cursor workspace settings select the native workspace TypeScript through `.vscode/settings.json`. The language service provides quick info, completions, and refactors. `diagnostics: false` avoids duplicating diagnostics reported by Oxlint.
 
-Natywne buildy Oxlint dostarczane przez tę wersję Effect wymagają na Linuxie glibc; kontener wykonujący lint nie powinien używać obrazu Alpine/musl.
+Install the recommended `oxc.oxc-vscode` extension for editor lint diagnostics. It uses the local tool and the preset's type-aware setting. Fix-on-save is not enabled automatically.
 
-Wyjątki od pięciodniowego opóźnienia instalacji dotyczą wyłącznie konkretnych przypiętych wersji zestawu Effect i jego binariów natywnych. Pozostałe wersje nadal podlegają `minimumReleaseAge`. Po upływie tego okresu wyjątki można usunąć.
+The separate `effectful-tech.effect-vscode` debugger extension is also recommended. It supports context/fiber inspection, span stacks, and pause-on-defect, alongside the project language service. Runtime debugger validation requires an actual application process and has not yet been performed in this repository.
 
-Źródła: [anti-slop](https://github.com/dmmulroy/anti-slop), [Effect v4 Devtools](https://effect.website/docs/v4/getting-started/devtools), [macierz wspieranych wersji Effect tsgo](https://github.com/Effect-TS/tsgo#supported-package-versions).
+Editor settings may require a window reload. CLI tests verify the toolchain, not activation in a particular editor installation. On Linux, these native Effect/Oxlint builds require glibc rather than Alpine/musl.

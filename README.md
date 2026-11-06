@@ -1,13 +1,15 @@
 # InżynierPRO V2
 
-Platforma przygotowująca do egzaminów na uprawnienia budowlane. Repozytorium jest na etapie specyfikacji i budowy fundamentu.
+An exam preparation platform for Polish building qualifications. The repository is currently in the specification and foundation stage.
 
-- [Specyfikacja całego systemu](https://github.com/InzynierPROTeam/inzynierpro/issues/1)
-- [Specyfikacja Foundation](https://github.com/InzynierPROTeam/inzynierpro/issues/2)
-- [Mapa kontekstu i decyzji](docs/specifications.md)
-- [Słownik domenowy](GLOSSARY.md)
-- [Decyzje architektoniczne i domenowe](docs/adr/)
+- [System specification](https://github.com/InzynierPROTeam/inzynierpro/issues/1)
+- [Foundation specification](https://github.com/InzynierPROTeam/inzynierpro/issues/2)
+- [Product context and decision map](docs/specifications.md)
+- [Domain glossary](GLOSSARY.md)
+- [Architecture and domain decisions](docs/adr/)
 
-Specyfikacje i zadania utrzymujemy w GitHub Issues. Przed rozpoczęciem prac przeczytaj mapę kontekstu oraz właściwą specyfikację; zawierają również zakres odłożony i nierozstrzygnięte szczegóły.
+Specifications and tasks live in GitHub Issues. Before starting work, read the context map and the relevant specification, including deferred scope and open decisions.
 
-Konfigurację lintowania, pochodzenie reguł i integrację Effect opisuje [przewodnik narzędzi](docs/agents/linting.md). `pnpm check` uruchamia kontrole bez automatycznych poprawek; `pnpm lint:fix` i `pnpm format` wykonują je jawnie.
+The [tooling guide](docs/agents/linting.md) covers lint configuration, rule provenance, and Effect integration. Shared development dependencies live in the root package. Run `pnpm check` for read-only verification; use `pnpm lint:fix` or `pnpm format` to apply changes explicitly.
+
+Leave implementation changes uncommitted for review in the editor. Commit, push, or open a pull request only when explicitly requested.

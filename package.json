@@ -54,12 +54,6 @@
     "vitest": "catalog:",
     "wrangler": "catalog:"
   },
-  "lint-staged": {
-    "*": [
-      "effect-tsgo oxlint --type-aware",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
-  },
   "engines": {
     "node": ">=26"
   },

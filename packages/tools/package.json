@@ -5,15 +5,9 @@
   "type": "module",
   "scripts": {
     "type-check": "effect-tsgo tsc --noEmit",
-    "test": "tsx --test src/oxlint/*.test.ts src/oxlint/anti-slop/rules/*.test.ts src/oxlint/anti-slop/effect/rules/*.test.ts"
+    "test": "tsx --test"
   },
   "devDependencies": {
-    "@oxlint/plugins": "catalog:",
-    "@total-typescript/tsconfig": "catalog:",
-    "@types/node": "catalog:",
-    "effect": "catalog:",
-    "oxlint": "catalog:",
-    "tsx": "catalog:",
-    "typescript": "catalog:"
+    "effect": "catalog:"
   }
 }
