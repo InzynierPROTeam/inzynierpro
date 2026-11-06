@@ -10,7 +10,7 @@
 
 Zależności narzędzi są przypięte w katalogu pnpm. Oxlint i `@oxlint/plugins` aktualizujemy razem. Wersje TypeScript, Oxlint i oxlint-tsgolint muszą być obsługiwane przez wybraną wersję `@effect/tsgo`.
 
-Wspólne konfiguracje lintowania i TypeScript należą do globalnych zależności cache Turbo. Ich zmiana unieważnia także typecheck oraz testy uruchamiające CLI z konfiguracją repo.
+Wspólne konfiguracje lintowania należą do globalnych zależności cache Turbo. Ich zmiana unieważnia także typecheck oraz testy uruchamiające CLI z konfiguracją repo. Konfiguracja TypeScript każdego workspace należy do jego własnych wejść cache.
 
 ## Warstwy reguł
 
@@ -18,9 +18,15 @@ Wspólne konfiguracje lintowania i TypeScript należą do globalnych zależnośc
 2. **Anti-slop:** źródło pobrane bezpośrednio z `dmmulroy/anti-slop`, nie z kopii V1. Włączone są wszystkie reguły ogólne, osobny zestaw Effect i komplementarna natywna reguła `oxc/no-accumulating-spread`.
 3. **Effect:** rekomendowany preset `@effect/tsgo` dostarcza diagnostykę świadomą typów, m.in. niewykorzystanych Effects, brakujących wymagań i błędów. Błędy mają wpływ na status lintera; sugestie pozostają zgodne z presetem upstream.
 
-Upstream anti-slop pozostaje niezmieniony, wraz z testami i licencją MIT. `UPSTREAM.json` obok pluginu zapisuje commit i hashe źródeł. Katalog vendora jest wyłączony z własnego lintowania/formatowania, ale jego testy i typecheck są uruchamiane. Nie poprawiaj go automatycznie pod lokalne reguły. Przy aktualizacji porównaj nowy upstream, zachowaj licencję i odśwież pochodzenie; lokalne rozszerzenia trzymaj poza vendorem.
+Upstream anti-slop zachowuje oryginalne testy i licencję MIT. `UPSTREAM.json` obok pluginu zapisuje commit i bazowe hashe upstream oraz jawne lokalne poprawki z uzasadnieniem i ich hashami. Jedyna poprawka zgodności z presetem V1 uściśla odczyt pierwszego elementu tablicy pod `noUncheckedIndexedAccess`, bez zmiany reguł. Katalog vendora jest wyłączony z własnego lintowania/formatowania, ale jego testy i typecheck są uruchamiane. Nie poprawiaj go automatycznie pod lokalne reguły. Przy aktualizacji porównaj nowy upstream, zachowaj licencję i odśwież pochodzenie; lokalne rozszerzenia trzymaj poza vendorem.
 
-Zasoby agentów są wyłączone z lintowania jako zewnętrzne materiały, nie kod produktu. Wspólna konfiguracja typów zawiera plugin Effect; nowe pakiety powinny ją rozszerzać i dostosować opcje platformowe.
+Zasoby agentów są wyłączone z lintowania jako zewnętrzne materiały, nie kod produktu.
+
+## Konfiguracje TypeScript
+
+Każda aplikacja lub pakiet ma jeden `tsconfig.json`, bez repozytoryjnego `tsconfig.base.json` i bez osobnych konfiguracji dla testów. Tak jak w V1, konfiguracja rozszerza bezpośrednio odpowiedni preset `@total-typescript/tsconfig` i ustawia własne opcje platformowe, katalogi oraz aliasy. Pakiet narzędzi korzysta z `tsc/no-dom/library-monorepo`; aplikacje dobierają preset odpowiedni dla swojego runtime.
+
+Testy `*.test.ts`/`*.test.tsx` leżą obok testowanego kodu w `src` i należą do tego samego projektu TypeScript. Nie tworzymy osobnego katalogu testów ani `tsconfig.build.json`/`tsconfig.test.json`. Opcje pluginu `@effect/language-service` umieszczamy bezpośrednio w konfiguracji danego workspace, zachowując integrację Effect. Pakiet narzędzi jawnie ustawia ES2024 zgodnie z używanym runtime i przykładami reguł.
 
 ## Edytor i instalacja
 

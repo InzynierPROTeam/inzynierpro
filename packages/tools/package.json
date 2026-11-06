@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@oxlint/plugins": "catalog:",
+    "@total-typescript/tsconfig": "catalog:",
     "@types/node": "catalog:",
     "effect": "catalog:",
     "oxlint": "catalog:",

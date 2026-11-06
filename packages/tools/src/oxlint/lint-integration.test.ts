@@ -9,14 +9,10 @@ const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '../../../..')
 
 function lintProbe(source: string) {
-  const directory = mkdtempSync(join(here, '.lint-probe-'))
+  const directory = mkdtempSync(join(here, 'lint-probe-'))
   const file = join(directory, 'probe.ts')
 
   try {
-    writeFileSync(
-      join(directory, 'tsconfig.json'),
-      JSON.stringify({ extends: join(root, 'tsconfig.base.json'), include: ['probe.ts'] }),
-    )
     writeFileSync(file, source)
 
     const result = spawnSync(

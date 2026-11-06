@@ -2,7 +2,13 @@
   "repository": "https://github.com/dmmulroy/anti-slop",
   "commit": "13909c9e07590f5a85d93c62712259fe14a883f7",
   "source": "src/",
-  "localModifications": false,
+  "localModifications": [
+    {
+      "file": "shared/dictionary-types.ts",
+      "reason": "Preserve V1 preset noUncheckedIndexedAccess: return null instead of a statically possible undefined after the nonempty intersection check.",
+      "sha256": "34ddc63e204717604c577ffa5e9c03d630a897a5ebbfdb6dd48df9344bef693e"
+    }
+  ],
   "sha256": {
     "effect/index.ts": "da7851d2c89a66b31ece6a36e88a78065d12dff6f92676d119981574bcd3669f",
     "effect/rules/no-manual-effect-error-tag.test.ts": "a525479b447dd298de6eb9ec8c6ef3cd5dd83fb0085940aca4fd703c97b10e95",
