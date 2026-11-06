@@ -9,3 +9,5 @@ Platforma przygotowująca do egzaminów na uprawnienia budowlane. Repozytorium j
 - [Decyzje architektoniczne i domenowe](docs/adr/)
 
 Specyfikacje i zadania utrzymujemy w GitHub Issues. Przed rozpoczęciem prac przeczytaj mapę kontekstu oraz właściwą specyfikację; zawierają również zakres odłożony i nierozstrzygnięte szczegóły.
+
+Konfigurację lintowania, pochodzenie reguł i integrację Effect opisuje [przewodnik narzędzi](docs/agents/linting.md). `pnpm check` uruchamia kontrole bez automatycznych poprawek; `pnpm lint:fix` i `pnpm format` wykonują je jawnie.

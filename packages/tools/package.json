@@ -1,0 +1,18 @@
+{
+  "name": "@inzpro/tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "type-check": "effect-tsgo tsc --noEmit",
+    "test": "tsx --test src/oxlint/*.test.ts src/oxlint/anti-slop/rules/*.test.ts src/oxlint/anti-slop/effect/rules/*.test.ts"
+  },
+  "devDependencies": {
+    "@oxlint/plugins": "catalog:",
+    "@types/node": "catalog:",
+    "effect": "catalog:",
+    "oxlint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

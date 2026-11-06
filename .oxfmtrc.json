@@ -7,7 +7,13 @@
   "singleAttributePerLine": true,
   "bracketSameLine": false,
   "importOrderSeparation": false,
-  "ignorePatterns": [".github", "**/routeTree.gen.ts", ".claude", ".agents"],
+  "ignorePatterns": [
+    ".github",
+    "**/routeTree.gen.ts",
+    ".claude",
+    ".agents",
+    "packages/tools/src/oxlint/anti-slop/**"
+  ],
   "objectWrap": "preserve",
   "jsxSingleQuote": false,
   "experimentalSortPackageJson": true,

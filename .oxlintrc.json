@@ -1,5 +1,6 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
+  "extends": ["./node_modules/@effect/tsgo/oxlint-presets/recommended.json"],
   "jsPlugins": [
     {
       "name": "project-layout",
@@ -8,6 +9,10 @@
     {
       "name": "anti-slop",
       "specifier": "./packages/tools/src/oxlint/anti-slop/index.ts"
+    },
+    {
+      "name": "anti-slop-effect",
+      "specifier": "./packages/tools/src/oxlint/anti-slop/effect/index.ts"
     }
   ],
   "plugins": ["unicorn", "typescript", "oxc", "react"],
@@ -20,6 +25,10 @@
     "project-layout/blank-line-after-imports": "error",
     // end of project-layout custom rules
     // anti-slop custom rules
+    "oxc/no-accumulating-spread": "error",
+    "anti-slop/no-array-filter-map": "error",
+    "anti-slop/no-reduce-accumulator-copy": "error",
+    "anti-slop/require-readable-spacing": "error",
     "anti-slop/no-chained-type-assertions": "error",
     "anti-slop/no-conditional-empty-object-spread": "error",
     "anti-slop/no-known-value-widening": "error",
@@ -36,6 +45,11 @@
     "anti-slop/no-widen-then-assert": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
     // end of anti-slop custom rules
+    "anti-slop-effect/no-manual-effect-error-tag": "error",
+    "anti-slop-effect/no-manual-tag-comparison": "error",
+    "anti-slop-effect/no-manual-tagged-construction": "error",
+    "anti-slop-effect/no-service-constructor-imports": "error",
+    "anti-slop-effect/prefer-effect-match": "error",
     // React Compiler recommended rules
     "react/error-boundaries": "error",
     "react/globals": "error",
@@ -191,5 +205,18 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": []
+  "ignorePatterns": [
+    ".agent/**",
+    ".agents/**",
+    ".claude/**",
+    ".codex/**",
+    ".continue/**",
+    ".cursor/**",
+    ".gemini/**",
+    ".opencode/**",
+    ".pi/**",
+    ".roo/**",
+    ".windsurf/**",
+    "packages/tools/src/oxlint/anti-slop/**"
+  ]
 }
