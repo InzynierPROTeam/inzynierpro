@@ -22,3 +22,7 @@ Read `docs/agents/triage-labels.md` before triaging or applying labels.
 
 Use a single-context layout.
 Read `docs/agents/domain.md` before exploring the codebase.
+
+### Client queries
+
+Before adding or changing client queries or query keys, read [ADR-0024](docs/adr/0024-shared-http-contracts-and-client.md) for module layout, Effect execution, and hierarchical cache invalidation.

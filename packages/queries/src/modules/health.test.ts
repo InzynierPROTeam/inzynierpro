@@ -1,6 +1,6 @@
 import type { HealthCheckError } from '@inzpro/api-client/modules/health/actions'
 import { withHttpServer } from '@inzpro/testing/http'
-import { isCancelledError } from '@tanstack/react-query'
+import { CancelledError } from '@tanstack/react-query'
 import { Deferred, Effect } from 'effect'
 import { HttpClientError, HttpRouter, HttpServerResponse } from 'effect/http'
 import { expect, expectTypeOf, test } from 'vitest'
@@ -16,7 +16,7 @@ test('query options fetch and cache data with the inferred result and error type
       withQueryClient(async queryClient => {
         const options = checkHealthQueryOptions(httpClient)
 
-        expect(await queryClient.fetchQuery(options)).toEqual({ status: 'ok' })
+        expect(await queryClient.query(options)).toEqual({ status: 'ok' })
         expect(queryClient.getQueryData(options.queryKey)).toEqual({ status: 'ok' })
         expectTypeOf(queryClient.getQueryData(options.queryKey)).toEqualTypeOf<
           { readonly status: 'ok' } | undefined
@@ -34,7 +34,7 @@ test('query options fetch and cache data with the inferred result and error type
 test('query failures preserve the HTTP client error instead of becoming successful data', () =>
   withHttpServer([], ({ httpClient }) =>
     withQueryClient(async queryClient => {
-      await expect(queryClient.fetchQuery(checkHealthQueryOptions(httpClient))).rejects.toSatisfy(
+      await expect(queryClient.query(checkHealthQueryOptions(httpClient))).rejects.toSatisfy(
         HttpClientError.isHttpClientError,
       )
     }),
@@ -52,8 +52,8 @@ test('cancelling a query aborts its underlying HTTP request', async () => {
   await withHttpServer([HttpRouter.route('GET', healthPath, handler)], ({ httpClient }) =>
     withQueryClient(async queryClient => {
       const options = checkHealthQueryOptions(httpClient)
-      const request = queryClient.fetchQuery(options)
-      const rejected = expect(request).rejects.toSatisfy(isCancelledError)
+      const request = queryClient.query(options)
+      const rejected = expect(request).rejects.toBeInstanceOf(CancelledError)
 
       await Effect.runPromise(Deferred.await(requestStarted))
       await queryClient.cancelQueries({ queryKey: healthKeys.all })

@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "catalog:",
+    "@cloudflare/vite-plugin": "catalog:",
     "@effect/tsgo": "catalog:",
     "@oxlint/plugins": "catalog:",
     "@tailwindcss/typography": "catalog:",
