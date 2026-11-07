@@ -1,0 +1,22 @@
+{
+  "name": "@inzpro/db",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "type-check": "effect-tsgo tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@effect/sql-pg": "catalog:",
+    "dotenv": "catalog:",
+    "effect": "catalog:"
+  }
+}
