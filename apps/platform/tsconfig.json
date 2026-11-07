@@ -1,0 +1,25 @@
+{
+  "extends": "@total-typescript/tsconfig/bundler/dom",
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "outDir": "dist",
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": true,
+        "refactors": true,
+        "quickinfo": true,
+        "completions": true,
+        "noExternal": true,
+        "ignoreEffectWarningsInTscExitCode": true
+      }
+    ],
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+    "paths": {
+      "~platform/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*", "vite.config.ts"]
+}
