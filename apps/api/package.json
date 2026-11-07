@@ -22,8 +22,5 @@
     "@inzpro/db": "workspace:*",
     "dotenv": "catalog:",
     "effect": "catalog:"
-  },
-  "devDependencies": {
-    "@inzpro/api-client": "workspace:*"
   }
 }

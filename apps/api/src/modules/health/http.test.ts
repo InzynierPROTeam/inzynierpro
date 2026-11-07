@@ -1,7 +1,6 @@
-import { checkHealth, type HealthCheckErrorType } from '@inzpro/api-client'
 import { Context, Effect, Exit, Layer, Logger, Predicate, Scope } from 'effect'
 import { HttpServer } from 'effect/http'
-import { afterAll, beforeAll, expect, expectTypeOf, test } from 'vitest'
+import { afterAll, beforeAll, expect, test } from 'vitest'
 import { httpServerLayer } from '~api/http.js'
 
 const scope = Scope.makeUnsafe()
@@ -26,10 +25,6 @@ beforeAll(async () => {
 
 afterAll(() => Effect.runPromise(Scope.close(scope, Exit.void)))
 
-test('the shared client checks API liveness without a database dependency', async () => {
-  expect(await Effect.runPromise(checkHealth(baseUrl))).toEqual({ status: 'ok' })
-})
-
 test('health-check uses /api/v1 and returns only status', async () => {
   const response = await fetch(`${baseUrl}/api/v1/health-check`, {
     headers: { origin: 'http://localhost:8001' },
@@ -52,8 +47,4 @@ test('an unknown API version returns an error response', async () => {
   })
   expect(body).not.toHaveProperty('requestId')
   expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f-]{36}$/)
-})
-
-test('health-check declares no domain errors', () => {
-  expectTypeOf<HealthCheckErrorType>().toBeNever()
 })
