@@ -2,7 +2,7 @@
 
 Podstawowy zestaw to pnpm, Turborepo, TypeScript strict, Oxlint, Oxfmt i Vitest. Wspólną konfigurację wydzielamy tam, gdzie korzysta z niej kilka aplikacji lub pakietów. Rozwijamy w ten sposób kierunek szkieletu repozytorium i dokumentu V2.
 
-Docelowe pnpm check sprawdza formatowanie, lint, reguły architektury, typy, testy i build, bez automatycznego poprawiania plików. Formatowanie i naprawy mają osobne komendy. CI egzekwuje wymagane kontrole z wykorzystaniem grafu zależności i cache. Obecny skrypt obejmujący jedynie lint i formatowanie wymaga rozszerzenia przy budowie Software Factory.
+Lokalne pnpm check najpierw stosuje dostępne bezpieczne poprawki linta i formatowanie, a następnie sprawdza typy, testy i build. Reguły bez zaimplementowanego fixera nadal wymagają ręcznej poprawy. Oddzielne pnpm check:ci sprawdza formatowanie, lint, reguły architektury, typy, testy i build bez zmieniania źródeł; zastępuje w CI pierwotne założenie o niemodyfikującym pnpm check. Formatowanie i naprawy zachowują również osobne komendy. CI egzekwuje wymagane kontrole z wykorzystaniem grafu zależności i cache.
 
 Już w Foundation egzekwujemy nazwy, importy przez jawne interfejsy modułów, dozwolone zależności warstw i brak cykli. Najpierw wykorzystujemy gotowe możliwości narzędzi; braki uzupełniamy małym własnym pluginem lub checkiem. Kontrole mają testy dozwolonych przypadków, naruszeń i wyjątków oraz należą do pnpm check i CI.
 

@@ -22,7 +22,3 @@ Read `docs/agents/triage-labels.md` before triaging or applying labels.
 
 Use a single-context layout.
 Read `docs/agents/domain.md` before exploring the codebase.
-
-### Tooling
-
-Before changing lint rules or TypeScript tooling, read `docs/agents/linting.md` for upstream provenance, Effect integration, and verification.

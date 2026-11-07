@@ -1,7 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "daemon": true,
-  "globalDependencies": ["**/.env", ".oxlintrc.json", ".oxfmtrc.json"],
+  "globalDependencies": ["**/.env*", ".oxlintrc.json", ".oxfmtrc.json"],
   "envMode": "loose",
   "tasks": {
     "dev": {
@@ -36,6 +35,14 @@
     "test": {
       "dependsOn": ["^build"],
       "cache": true
+    },
+    "@inzpro/api#test": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "@inzpro/db#test": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   }
 }

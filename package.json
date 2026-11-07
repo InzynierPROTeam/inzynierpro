@@ -16,15 +16,15 @@
     "format:check": "oxfmt --check",
     "lint": "effect-tsgo oxlint --type-aware",
     "lint:fix": "effect-tsgo oxlint --type-aware --fix",
-    "check": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build",
+    "check": "pnpm lint:fix && pnpm format && pnpm type-check && pnpm test && pnpm build",
     "test": "turbo test",
-    "prepare": "effect-tsgo patch --oxlint && (test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky)"
+    "prepare": "effect-tsgo patch --oxlint && (test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky)",
+    "check:ci": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build"
   },
   "devDependencies": {
     "@babel/preset-typescript": "catalog:",
     "@effect/tsgo": "catalog:",
     "@oxlint/plugins": "catalog:",
-    "@t3-oss/env-core": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
@@ -35,6 +35,7 @@
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "husky": "catalog:",

@@ -216,7 +216,6 @@
     ".opencode/**",
     ".pi/**",
     ".roo/**",
-    ".windsurf/**",
-    "packages/tools/src/oxlint/anti-slop/**"
+    ".windsurf/**"
   ]
 }

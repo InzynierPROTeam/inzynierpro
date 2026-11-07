@@ -10,6 +10,6 @@ An exam preparation platform for Polish building qualifications. The repository 
 
 Specifications and tasks live in GitHub Issues. Before starting work, read the context map and the relevant specification, including deferred scope and open decisions.
 
-The [tooling guide](docs/agents/linting.md) covers lint configuration, rule provenance, and Effect integration. Shared development dependencies live in the root package. Run `pnpm check` for read-only verification; use `pnpm lint:fix` or `pnpm format` to apply changes explicitly.
+Shared development dependencies live in the root package. Run `pnpm check` for read-only verification; use `pnpm lint:fix` or `pnpm format` to apply changes explicitly.
 
 Leave implementation changes uncommitted for review in the editor. Commit, push, or open a pull request only when explicitly requested.
