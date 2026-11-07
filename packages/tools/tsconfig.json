@@ -14,11 +14,12 @@
     "plugins": [
       {
         "name": "@effect/language-service",
-        "diagnostics": false,
+        "diagnostics": true,
         "refactors": true,
         "quickinfo": true,
         "completions": true,
-        "noExternal": true
+        "noExternal": true,
+        "ignoreEffectWarningsInTscExitCode": true
       }
     ]
   },

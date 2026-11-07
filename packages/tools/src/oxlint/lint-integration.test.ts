@@ -2,8 +2,9 @@ import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
+
+import { test } from 'vitest'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '../../../..')
@@ -39,7 +40,7 @@ function lintProbe(source: string) {
   }
 }
 
-await test('CLI loads the project rules and current upstream anti-slop rules', () => {
+test('CLI loads the project and Anti-slop rules', () => {
   const result = lintProbe(`import { join } from 'node:path'
 export const value = join('a', 'b')
 import { basename } from 'node:path'
@@ -61,7 +62,7 @@ export const labels = [1, 2].filter(Boolean).map(String)
   assert.match(result.output, /no-array-filter-map/)
 })
 
-await test('CLI enables the separate upstream Effect syntax rules', () => {
+test('CLI enables the separate Effect syntax rules', () => {
   const result = lintProbe(`export const result = { _tag: 'Ready', value: 1 }
 
 export const isReady = result._tag === 'Ready'
@@ -72,7 +73,7 @@ export const isReady = result._tag === 'Ready'
   assert.match(result.output, /no-manual-tag-comparison/)
 })
 
-await test('CLI rejects floating Effects using type-aware Effect diagnostics', () => {
+test('CLI rejects floating Effects using type-aware Effect diagnostics', () => {
   const result = lintProbe(`import { Effect } from 'effect'
 
 Effect.log('not executed')
@@ -82,7 +83,7 @@ Effect.log('not executed')
   assert.match(result.output, /floating-effect/)
 })
 
-await test('CLI accepts a consumed Effect and a lazy iterator pipeline', () => {
+test('CLI accepts a consumed Effect and a lazy iterator pipeline', () => {
   const result = lintProbe(`import { Effect } from 'effect'
 
 export const program = Effect.log('consumed')

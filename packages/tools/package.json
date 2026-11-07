@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "type-check": "effect-tsgo tsc --noEmit",
-    "test": "tsx --test"
+    "test": "vitest run"
   },
   "devDependencies": {
     "effect": "catalog:"
