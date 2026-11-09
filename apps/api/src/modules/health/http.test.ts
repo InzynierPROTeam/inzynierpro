@@ -1,29 +1,15 @@
-import { Context, Effect, Exit, Layer, Logger, Predicate, Scope } from 'effect'
-import { HttpServer } from 'effect/http'
 import { afterAll, beforeAll, expect, test } from 'vitest'
-import { httpServerLayer } from '~api/http.js'
+import { startTestApi, type TestApi } from '~api/test/api-server.js'
 
-const scope = Scope.makeUnsafe()
+let api: TestApi
 let baseUrl: string
 
 beforeAll(async () => {
-  const context = await Effect.runPromise(
-    Layer.buildWithScope(
-      httpServerLayer(0, 'http://localhost:8001').pipe(Layer.provide(Logger.layer([]))),
-      scope,
-    ),
-  )
-
-  const server = Context.get(context, HttpServer.HttpServer)
-
-  if (Predicate.isTagged(server.address, 'UnixPathAddress')) {
-    throw new Error('Expected a TCP server')
-  }
-
-  baseUrl = `http://127.0.0.1:${server.address.port}`
+  api = await startTestApi()
+  baseUrl = api.baseUrl
 })
 
-afterAll(() => Effect.runPromise(Scope.close(scope, Exit.void)))
+afterAll(() => api.close())
 
 test('health-check uses /api/v1 and returns only status', async () => {
   const response = await fetch(`${baseUrl}/api/v1/health-check`, {
