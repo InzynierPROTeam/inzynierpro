@@ -19,8 +19,20 @@
   "dependencies": {
     "@effect/platform-node": "catalog:",
     "@inzpro/api-contracts": "workspace:*",
+    "@inzpro/auth": "workspace:*",
+    "@inzpro/config": "workspace:*",
     "@inzpro/db": "workspace:*",
+    "@inzpro/domain": "workspace:*",
+    "@inzpro/email": "workspace:*",
+    "@inzpro/redis": "workspace:*",
     "dotenv": "catalog:",
     "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@inzpro/auth-client": "workspace:*",
+    "@inzpro/testing": "workspace:*",
+    "@opencoredev/email-sdk": "catalog:",
+    "pg": "catalog:",
+    "redis": "catalog:"
   }
 }
