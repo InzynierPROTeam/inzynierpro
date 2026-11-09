@@ -41,6 +41,7 @@
     "drizzle-kit": "catalog:",
     "husky": "catalog:",
     "jsdom": "catalog:",
+    "lint-staged": "catalog:",
     "oxc-transform-react": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
@@ -55,6 +56,10 @@
     "vite-plugin-icons-spritesheet": "catalog:",
     "vitest": "catalog:",
     "wrangler": "catalog:"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs}": "effect-tsgo oxlint --type-aware --fix --quiet",
+    "*": "oxfmt --no-error-on-unmatched-pattern"
   },
   "engines": {
     "node": ">=26"
