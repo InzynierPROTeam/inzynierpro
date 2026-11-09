@@ -1,6 +1,6 @@
 import { useMobileMenu } from '@inzpro/ui/hooks/use-mobile-menu'
-import { cx } from '@inzpro/ui/utils/styles'
 import { ClientOnly } from '@tanstack/react-router'
+import { cx } from 'class-variance-authority'
 import { createPortal } from 'react-dom'
 import { Hamburger } from '~platform/layout/components/Hamburger'
 

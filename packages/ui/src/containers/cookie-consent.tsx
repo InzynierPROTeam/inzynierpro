@@ -1,3 +1,4 @@
+import { cx } from 'class-variance-authority'
 import * as React from 'react'
 import {
   CookieManager,
@@ -6,7 +7,6 @@ import {
 } from 'react-cookie-manager'
 import { buttonVariants } from '~ui/button.js'
 import { useTheme } from '~ui/providers/theme-provider.js'
-import { cx } from '~ui/utils/styles.js'
 
 export type TrackingConsent = {
   analytics: boolean

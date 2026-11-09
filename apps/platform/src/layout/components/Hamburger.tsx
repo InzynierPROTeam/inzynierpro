@@ -1,4 +1,4 @@
-import { cx } from '@inzpro/ui/utils/styles'
+import { cx } from 'class-variance-authority'
 
 type HamburgerProps = {
   isOpen: boolean
