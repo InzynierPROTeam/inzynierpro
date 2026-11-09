@@ -3,6 +3,10 @@
   "extends": ["./node_modules/@effect/tsgo/oxlint-presets/recommended.json"],
   "jsPlugins": [
     {
+      "name": "architecture",
+      "specifier": "./packages/tools/src/oxlint/architecture.ts"
+    },
+    {
       "name": "project-layout",
       "specifier": "./packages/tools/src/oxlint/project-layout.ts"
     },
@@ -15,9 +19,11 @@
       "specifier": "./packages/tools/src/oxlint/anti-slop/effect/index.ts"
     }
   ],
-  "plugins": ["unicorn", "typescript", "oxc", "react"],
+  "plugins": ["unicorn", "typescript", "oxc", "react", "import"],
   "categories": {},
   "rules": {
+    "architecture/workspace-imports": "error",
+    "import/no-cycle": ["error", { "ignoreTypes": false }],
     // project-layout custom rules
     "project-layout/blank-line-before-return": "error",
     "project-layout/blank-lines-around-control-flow": "error",
@@ -173,6 +179,18 @@
 
     "typescript/no-explicit-any": "error"
   },
+  "overrides": [
+    {
+      "files": ["apps/**/*.ts", "apps/**/*.tsx"],
+      "rules": {
+        "import/no-cycle": ["error", { "ignoreTypes": true }]
+      }
+    },
+    {
+      "files": ["**/*.gen.ts"],
+      "rules": { "import/no-cycle": "off", "architecture/workspace-imports": "off" }
+    }
+  ],
   "settings": {
     "jsx-a11y": {
       "polymorphicPropName": null,

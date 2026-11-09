@@ -11,3 +11,9 @@ Lokalny PostgreSQL i Redis mają wspólną konfigurację Docker Compose oraz rep
 Testujemy przede wszystkim zachowanie przez jawne interfejsy modułów. Czyste reguły mają szybkie testy jednostkowe; transakcje, adaptery SQL, auth i kolejka mają testy integracyjne z rzeczywistym PostgreSQL i Redis. Krytyczne przebiegi użytkownika obejmujemy E2E. Zewnętrznych dostawców zastępujemy kontrolowanymi adapterami tam, gdzie wymaga tego powtarzalność.
 
 Lokalny hook uruchamia szybkie kontrole zmienianych plików, a pełny wymagany zestaw kontroli egzekwuje CI przed połączeniem zmian. Pełne pnpm check pozostaje dostępne lokalnie; każdy commit nie musi uruchamiać całego builda i wszystkich testów integracyjnych. CI jest obowiązkową bramką jakości.
+
+## Kontrola zależności w Oxlint
+
+Kontrole architektury są częścią zwykłego lintowania. Lokalny plugin Oxlint egzekwuje kierunki zależności, izolację aplikacji, importy między workspace’ami oraz ograniczenia środowiskowe i testowe. Wbudowany plugin `import` sprawdza cykle; dla paczek uwzględniamy również importy typów. W aplikacjach pomijamy wymazywane importy typów ze względu na rejestracje typów routera. Regresje sprawdzają reguły i rzeczywiste zachowanie CLI.
+
+Nie utrzymujemy osobnego runnera ani dodatkowego narzędzia do grafu zależności. Te same reguły działają w `lint`, lokalnym `check` i niemodyfikującym `check:ci`. [Mapa architektury](../architecture.md) opisuje zakres i wyjątki.
