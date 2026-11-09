@@ -11,6 +11,10 @@ Existing packages:
 - `api-client`: Effect actions generated from the contracts, the Promise execution adapter, and reusable HTTP transport composition. Applications supply URLs, credentials, and request-specific adapters.
 - `queries`: query keys and TanStack Query options. Receive the HTTP client from the consumer and preserve cancellation. Follow ADR-0024 for key hierarchies.
 - `db`: PostgreSQL connection infrastructure. Module-owned SQL, persistence rules, and migrations live in `apps/api`.
+- `redis`: the Redis connection as a scoped Effect layer. Key layouts stay with the code that owns the data.
+- `email`: React Email templates in the platform theme and the `EmailService` Effect service over email-sdk adapters (Resend in production, memory in tests). Deciding when to send stays with the owning module.
+- `auth`: the Better Auth instance as an Effect service, built from PostgreSQL, Redis and `EmailService`. Endpoint mounting stays in `apps/api`.
+- `auth-client`: the shared Better Auth client and its Polish error messages. The signed-in session is read through `api-client` and the shared contract.
 - `testing`: reusable test adapters. Production application and package code must not import this package.
 - `tools`: development checks and their regression tests. It is development infrastructure, not a runtime dependency of applications.
 
@@ -32,7 +36,7 @@ The authoritative list of permitted workspace dependencies is [policy.ts](../pac
 
 Applications compose packages. Packages never import applications. Client applications cannot import `db` or API source files, and applications do not import each other's sources. Universal packages remain independent of React, native platforms, and Node built-ins. `utils` and `config` are leaves of the workspace graph.
 
-Tests named `*.test.*` or `*.spec.*` may use `testing`. The `testing` package may use its own adapters internally. Tests otherwise follow the same workspace dependency directions as production code. Production code must not import test files.
+Tests named `*.test.*` or `*.spec.*`, and test support code in a workspace's `src/test` directory (test servers, fixtures), may use `testing`. Production code must not import that directory. The `testing` package may use its own adapters internally. Tests otherwise follow the same workspace dependency directions as production code. Production code must not import test files.
 
 Declare runtime workspace dependencies in the consuming `package.json`. Test-only workspace dependencies belong in `devDependencies`. Hoisted development tools may remain in the root manifest.
 

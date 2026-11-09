@@ -6,7 +6,7 @@ Zwykłe wdrożenie backendu zachowuje obsługę wspieranych wersji klientów. Zm
 
 ## Akcje klienta i queries
 
-Akcje w `packages/api-client/src/modules/<module>/actions.ts` pozostają Effectami. `apiAction` udostępnia klienta wygenerowanego z kontraktu; `runApi` dostarcza skonfigurowany `HttpClient` i wykonuje Effect dopiero na granicy z kodem Promise. Timeout i inne zasady transportu należą do konfiguracji klienta HTTP.
+Akcje w `packages/api-client/src/modules/<module>.ts` pozostają Effectami. `apiAction` udostępnia klienta wygenerowanego z kontraktu; `runApi` dostarcza skonfigurowany `HttpClient` i wykonuje Effect dopiero na granicy z kodem Promise. Timeout i inne zasady transportu należą do konfiguracji klienta HTTP.
 
 `packages/queries/src/modules/<module>.ts` zawiera najpierw obiekt kluczy danego modułu, a pod nim fabryki query options. `effectQueryOptions` zachowuje wynik, unię błędów i literalną krotkę klucza oraz przekazuje `AbortSignal` z `queryFn` do runnera. Klient HTTP trafia do fabryki options w aplikacji. Importujemy konkretne pliki przez subpaths; nie tworzymy barrel files.
 
