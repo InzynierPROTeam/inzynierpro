@@ -23,6 +23,8 @@
   "categories": {},
   "rules": {
     "architecture/workspace-imports": "error",
+    "architecture/no-reexports": "error",
+    "typescript/no-deprecated": "error",
     "import/no-cycle": ["error", { "ignoreTypes": false }],
     // project-layout custom rules
     "project-layout/blank-line-before-return": "error",
@@ -55,6 +57,7 @@
     "anti-slop-effect/no-manual-tag-comparison": "error",
     "anti-slop-effect/no-manual-tagged-construction": "error",
     "anti-slop-effect/no-service-constructor-imports": "error",
+    "anti-slop-effect/prefer-effect-datetime": "error",
     "anti-slop-effect/prefer-effect-match": "error",
     // React Compiler recommended rules
     "react/error-boundaries": "error",

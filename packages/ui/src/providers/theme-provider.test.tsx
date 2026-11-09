@@ -14,7 +14,9 @@ window.matchMedia = query => ({
   matches: false,
   media: query,
   onchange: null,
+  // oxlint-disable-next-line typescript/no-deprecated -- Required legacy member of the MediaQueryList test double.
   addListener() {},
+  // oxlint-disable-next-line typescript/no-deprecated -- Required legacy member of the MediaQueryList test double.
   removeListener() {},
   addEventListener() {},
   removeEventListener() {},

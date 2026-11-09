@@ -46,6 +46,8 @@ Keep broad exports such as `"./*": "./dist/*.js"` where the package exposes its 
 
 Architecture checks run as part of Oxlint, without a separate command or dependency-graph service. The local [architecture plugin](../packages/tools/src/oxlint/architecture.ts) enforces the dependency policy, application isolation, package-name imports across workspaces, platform-library restrictions in universal packages, and test-only imports. It checks static import/export declarations, literal dynamic imports, CommonJS require calls and inline type imports. Computed runtime module names are outside static analysis.
 
+The `architecture/no-reexports` rule rejects direct re-exports and exporting imported bindings; modules export their own declarations instead. The type-aware `typescript/no-deprecated` rule rejects deprecated API usage.
+
 The built-in `import/no-cycle` rule checks file cycles. Package cycles include type-only imports; application cycle checks ignore erased type imports because generated router registrations refer back to their router types. Generated `*.gen.ts` files are outside the maintained-source rules and remain type-checked by their application.
 
 Relative paths and workspace aliases are checked against source ownership without requiring a package build. TypeScript and the build remain responsible for resolving imports. A missing package does not become a valid implementation just because its dependency direction is permitted.
@@ -55,6 +57,8 @@ Relative paths and workspace aliases are checked against source ownership withou
 ## Dates and canonical URLs
 
 Use Effect's `DateTime`, `Clock`, `Duration` and related built-in modules for date/time creation, arithmetic, time-zone conversion and formatting. Keep locale and time-zone choices explicit at the consumer. Use Effect clocks for the current time rather than direct `new Date()` or `Date.now()` calls, and keep date formatting behind Effect date/time helpers.
+
+The `anti-slop-effect/prefer-effect-datetime` Oxlint rule rejects native `Date` creation, calls, static API access and constructor aliases, plus `Intl.DateTimeFormat`. It also checks qualified globals and literal computed properties. Native date type annotations and shadowed local bindings remain valid. The rule does not rewrite code automatically because migrating to Effect can change types and execution semantics.
 
 Canonical page URLs have exactly one trailing slash, including the root path. Canonical metadata removes search parameters and fragments. Asset URLs and API endpoint paths retain their own contracts.
 

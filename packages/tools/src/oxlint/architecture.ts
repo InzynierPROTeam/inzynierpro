@@ -10,6 +10,7 @@ import {
   packageDependencies,
   universalPackages,
 } from './architecture-policy.ts'
+import { noReexports } from './no-reexports.ts'
 
 type Workspace = { root: string; group: 'apps' | 'packages'; name: string }
 
@@ -190,5 +191,5 @@ export const workspaceImports = defineRule({
 
 export default definePlugin({
   meta: { name: 'architecture' },
-  rules: { 'workspace-imports': workspaceImports },
+  rules: { 'workspace-imports': workspaceImports, 'no-reexports': noReexports },
 })
