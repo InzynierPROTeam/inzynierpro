@@ -27,7 +27,18 @@ function workspaceOf(filename: string): Workspace | null {
   return { root, group, name }
 }
 
-const isTest = (filename: string) => /\.(test|spec)\.[cm]?[jt]sx?$/.test(filename)
+// Test files, plus test support code kept in a workspace's `src/test` directory.
+const isTest = (path: string) =>
+  /\.(test|spec)\.[cm]?[jt]sx?$/.test(path) || /[\\/]src[\\/]test[\\/]/.test(path)
+
+// Relative and `~workspace/` alias imports are compared by their path inside the workspace.
+const isTestSource = (filename: string, source: string) =>
+  isTest(
+    source.startsWith('.')
+      ? resolve(dirname(filename), source)
+      : source.replace(/^~[^/]+\//, '/src/'),
+  )
+
 const nodeModules = new Set(builtinModules.map(name => name.replace(/^node:/, '')))
 
 function literalValue(node: ESTree.Node): string | null {
@@ -111,7 +122,7 @@ export const workspaceImports = defineRule({
 
       if (
         !isTest(filename) &&
-        (isTest(source) || (target?.name === 'testing' && owner.name !== 'testing'))
+        (isTestSource(filename, source) || (target?.name === 'testing' && owner.name !== 'testing'))
       ) {
         context.report({ node, messageId: 'testOnly' })
 

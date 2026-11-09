@@ -10,6 +10,10 @@ export const packageDependencies = {
   'api-client': ['api-contracts', 'utils'],
   queries: ['api-client', 'api-contracts', 'domain', 'utils'],
   db: ['utils'],
+  redis: ['utils'],
+  email: ['domain', 'config', 'utils'],
+  auth: ['db', 'redis', 'email', 'domain', 'config', 'utils'],
+  'auth-client': ['utils'],
   testing: ['utils'],
   tools: [],
 } as const
@@ -17,6 +21,7 @@ export const packageDependencies = {
 const clientDependencies = [
   'api-contracts',
   'api-client',
+  'auth-client',
   'queries',
   'domain',
   'utils',
@@ -26,13 +31,31 @@ const clientDependencies = [
 ]
 
 export const applicationDependencies = {
-  api: ['api-contracts', 'domain', 'db', 'utils', 'config'],
+  // auth-client is used only by the API tests, which sign in as a client would.
+  api: [
+    'api-contracts',
+    'auth',
+    'auth-client',
+    'email',
+    'domain',
+    'db',
+    'redis',
+    'utils',
+    'config',
+  ],
   platform: [...clientDependencies, 'ui'],
   admin: [...clientDependencies, 'ui'],
   web: [...clientDependencies, 'ui'],
   mobile: [...clientDependencies, 'mobile-ui'],
 } as const
 
-export const universalPackages = ['utils', 'config', 'domain', 'api-contracts', 'api-client']
+export const universalPackages = [
+  'utils',
+  'config',
+  'domain',
+  'api-contracts',
+  'api-client',
+  'auth-client',
+]
 
 export const testFilePattern = '\\.(test|spec)\\.[cm]?[jt]sx?$'

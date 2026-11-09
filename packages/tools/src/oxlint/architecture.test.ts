@@ -16,11 +16,19 @@ tester.run('architecture/workspace-imports', workspaceImports, {
     { filename: file('packages/utils'), code: 'import "~utils/string"' },
     { filename: file('packages/api-client'), code: 'import "@inzpro/api-contracts/api"' },
     { filename: file('apps/platform'), code: 'import "@inzpro/ui/button"' },
+    { filename: file('apps/platform'), code: 'import "@inzpro/auth-client"' },
+    { filename: file('apps/api'), code: 'import "@inzpro/auth"' },
+    { filename: file('packages/auth'), code: 'import "@inzpro/redis"' },
     {
       filename: file('packages/api-client', 'action.test.ts'),
       code: 'import "@inzpro/testing/http"',
     },
     { filename: file('packages/testing'), code: 'import "./fixture"' },
+    {
+      filename: file('apps/api', 'test/api-server.ts'),
+      code: 'import "@inzpro/testing/cookie-jar"',
+    },
+    { filename: file('apps/api', 'modules/x.test.ts'), code: 'import "~api/test/api-server"' },
     { filename: file('packages/utils', 'date.test.ts'), code: 'import "node:assert"' },
     { filename: file('apps/api'), code: 'import "node:http"' },
     { filename: file('packages/utils'), code: 'export type X = import("./types").X' },
@@ -49,6 +57,21 @@ tester.run('architecture/workspace-imports', workspaceImports, {
     {
       filename: file('apps/platform'),
       code: 'import "@inzpro/db"',
+      errors: [{ messageId: 'dependency' }],
+    },
+    {
+      filename: file('apps/platform'),
+      code: 'import "@inzpro/auth"',
+      errors: [{ messageId: 'dependency' }],
+    },
+    {
+      filename: file('apps/platform'),
+      code: 'import "@inzpro/redis"',
+      errors: [{ messageId: 'dependency' }],
+    },
+    {
+      filename: file('packages/auth-client'),
+      code: 'import type { BetterAuth } from "@inzpro/auth"',
       errors: [{ messageId: 'dependency' }],
     },
     {
@@ -104,6 +127,16 @@ tester.run('architecture/workspace-imports', workspaceImports, {
     {
       filename: file('packages/utils'),
       code: 'import "./date.test.ts"',
+      errors: [{ messageId: 'testOnly' }],
+    },
+    {
+      filename: file('apps/api', 'http.ts'),
+      code: 'import "~api/test/api-server"',
+      errors: [{ messageId: 'testOnly' }],
+    },
+    {
+      filename: file('apps/api', 'modules/http.ts'),
+      code: 'import "../test/api-server"',
       errors: [{ messageId: 'testOnly' }],
     },
   ],
