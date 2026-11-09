@@ -11,7 +11,7 @@ import {
 } from 'effect/http'
 import { expect, test } from 'vitest'
 
-import { checkHealth } from '../modules/health/actions.js'
+import { checkHealth } from '../modules/health.js'
 import { makeApiHttpClient } from './http-client.js'
 import { runApi } from './run-api.js'
 

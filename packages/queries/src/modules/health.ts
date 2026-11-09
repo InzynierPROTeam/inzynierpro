@@ -1,4 +1,4 @@
-import { checkHealth } from '@inzpro/api-client/modules/health/actions'
+import { checkHealth } from '@inzpro/api-client/modules/health'
 import type { HttpClient } from 'effect/http'
 import { effectQueryOptions } from '~queries/lib/effect-query-options.js'
 

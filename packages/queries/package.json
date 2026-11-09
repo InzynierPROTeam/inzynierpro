@@ -17,6 +17,7 @@
     "effect": "catalog:"
   },
   "devDependencies": {
+    "@inzpro/api-contracts": "workspace:*",
     "@inzpro/testing": "workspace:*"
   }
 }

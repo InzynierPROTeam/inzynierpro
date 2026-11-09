@@ -1,4 +1,4 @@
-import type { HealthCheckError } from '@inzpro/api-client/modules/health/actions'
+import type { HealthCheckError } from '@inzpro/api-client/modules/health'
 import { withHttpServer } from '@inzpro/testing/http'
 import { CancelledError } from '@tanstack/react-query'
 import { Deferred, Effect } from 'effect'

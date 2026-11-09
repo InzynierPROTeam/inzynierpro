@@ -3,7 +3,7 @@ import { Effect, Schema } from 'effect'
 import { HttpClient, HttpClientError, HttpRouter, HttpServerResponse } from 'effect/http'
 import { expect, expectTypeOf, test } from 'vitest'
 import { runApi } from '~api-client/lib/run-api.js'
-import { checkHealth, type HealthCheckErrorType } from '~api-client/modules/health/actions.js'
+import { checkHealth, type HealthCheckErrorType } from '~api-client/modules/health.js'
 
 const healthPath = '/api/v1/health-check'
 
