@@ -64,6 +64,8 @@
     "conventions/no-try-catch": "error",
     "conventions/queries-wrap-actions": "error",
     // end of conventions custom rules
+    // The workspace deliberately builds on effect/http and effect/http-api.
+    "effecttsgo/unstable-api-usage": "off",
     "anti-slop-effect/no-manual-effect-error-tag": "error",
     "anti-slop-effect/no-manual-tag-comparison": "error",
     "anti-slop-effect/no-manual-tagged-construction": "error",
