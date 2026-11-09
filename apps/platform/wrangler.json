@@ -1,0 +1,45 @@
+{
+  "name": "inzynier-pro-platform",
+  "main": "@tanstack/react-start/server-entry",
+  "compatibility_date": "2025-09-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "dev-platforma.inzynier.pro",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.dev-platforma.inzynier.pro",
+      "custom_domain": true
+    }
+  ],
+  "env": {
+    "develop": {
+      "routes": [
+        {
+          "pattern": "dev-platforma.inzynier.pro",
+          "custom_domain": true
+        },
+        {
+          "pattern": "www.dev-platforma.inzynier.pro",
+          "custom_domain": true
+        }
+      ]
+    },
+    "production": {
+      "routes": [
+        {
+          "pattern": "platforma.inzynier.pro",
+          "custom_domain": true
+        },
+        {
+          "pattern": "www.platforma.inzynier.pro",
+          "custom_domain": true
+        }
+      ]
+    }
+  },
+  "observability": {
+    "enabled": true
+  }
+}

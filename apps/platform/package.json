@@ -1,0 +1,30 @@
+{
+  "name": "@inzpro/platform",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "type-check": "effect-tsgo tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/nunito-sans": "catalog:",
+    "@inzpro/config": "workspace:*",
+    "@inzpro/react-utils": "workspace:*",
+    "@inzpro/ui": "workspace:*",
+    "@inzpro/utils": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-router-ssr-query": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "effect": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "shadcn": "catalog:",
+    "tw-animate-css": "catalog:"
+  }
+}
