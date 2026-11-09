@@ -15,6 +15,10 @@
       "specifier": "./packages/tools/src/oxlint/anti-slop/index.ts"
     },
     {
+      "name": "conventions",
+      "specifier": "./packages/tools/src/oxlint/conventions/index.ts"
+    },
+    {
       "name": "anti-slop-effect",
       "specifier": "./packages/tools/src/oxlint/anti-slop/effect/index.ts"
     }
@@ -53,6 +57,13 @@
     "anti-slop/no-widen-then-assert": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
     // end of anti-slop custom rules
+    // conventions custom rules
+    "conventions/hooks-in-hooks-folder": "error",
+    "conventions/no-feature-prefix": "error",
+    "conventions/no-spread-route-hooks": "error",
+    "conventions/no-try-catch": "error",
+    "conventions/queries-wrap-actions": "error",
+    // end of conventions custom rules
     "anti-slop-effect/no-manual-effect-error-tag": "error",
     "anti-slop-effect/no-manual-tag-comparison": "error",
     "anti-slop-effect/no-manual-tagged-construction": "error",
