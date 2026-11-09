@@ -17,6 +17,7 @@
     "@tanstack/react-router": "catalog:",
     "class-variance-authority": "catalog:",
     "effect": "catalog:",
+    "input-otp": "catalog:",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-cookie-manager": "catalog:",
