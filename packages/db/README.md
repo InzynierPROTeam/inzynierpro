@@ -10,6 +10,7 @@ Provide connection layers. Business SQL, data ownership, transactions, and migra
 
 ```ts
 import { databaseLayer } from '@inzpro/db'
+import { pgPoolLayer } from '@inzpro/db/pool'
 ```
 
 ## Dependencies
