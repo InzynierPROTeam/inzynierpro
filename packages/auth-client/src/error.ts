@@ -16,6 +16,19 @@ const messagesByCode = new Map(
   }),
 )
 
+// Provider descriptions are untrusted; show only our own messages on the return page.
+export const getOAuthErrorMessage = (error: string) => {
+  if (error === 'access_denied') {
+    return 'Logowanie Google zostało anulowane. Spróbuj ponownie lub użyj kodu e-mail.'
+  }
+
+  if (error === 'account_not_linked') {
+    return 'Nie udało się bezpiecznie połączyć kont. Zaloguj się kodem e-mail, aby potwierdzić adres, i spróbuj ponownie.'
+  }
+
+  return 'Nie udało się zalogować przez Google. Spróbuj ponownie lub użyj kodu e-mail.'
+}
+
 export const getAuthErrorMessage = (error: Error) =>
   Option.match(Schema.decodeUnknownOption(FailedResponse)(error), {
     onNone: () => 'Nie udało się połączyć z serwerem. Spróbuj ponownie za chwilę.',

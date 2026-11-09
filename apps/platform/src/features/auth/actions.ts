@@ -1,6 +1,15 @@
 import { authClient } from '~platform/lib/auth-client'
 
-import type { SendVerificationOtpReq, SignInEmailOtpReq } from './types/request'
+import type {
+  SendVerificationOtpReq,
+  SignInEmailOtpReq,
+  SignInWithGoogleReq,
+} from './types/request'
+
+export const signInWithGoogleReq = authClient.signIn.social
+
+export const signInWithGoogle = (req: SignInWithGoogleReq) =>
+  signInWithGoogleReq({ ...req, provider: 'google' })
 
 export const sendVerificationOtpReq = authClient.emailOtp.sendVerificationOtp
 

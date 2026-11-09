@@ -21,6 +21,10 @@ export type AuthConfig = {
   readonly baseUrl: URL
   readonly trustedOrigins: ReadonlyArray<string>
   readonly cookiesDomain: Option.Option<string>
+  readonly google: Option.Option<{
+    readonly clientId: string
+    readonly clientSecret: Redacted.Redacted
+  }>
 }
 
 type PgPoolClient = (typeof PgPool)['Service']
@@ -66,6 +70,16 @@ const makeAuth = (
     baseURL: config.baseUrl.origin,
     basePath: authBasePath,
     trustedOrigins: [...config.trustedOrigins],
+    socialProviders: Option.match(config.google, {
+      onNone: () => ({}),
+      onSome: google => ({
+        google: {
+          prompt: 'select_account',
+          clientId: google.clientId,
+          clientSecret: Redacted.value(google.clientSecret),
+        },
+      }),
+    }),
     database: pool,
     secondaryStorage: {
       get: key => redis.get(key),
@@ -119,6 +133,8 @@ const makeAuth = (
       }),
     ],
     advanced: {
+      // Keep callback/origin validation enabled in tests too (Better Auth skips it by default).
+      disableOriginCheck: false,
       ipAddress: {
         ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for', 'x-real-ip'],
       },
@@ -153,6 +169,12 @@ const makeAuth = (
     },
     account: {
       modelName: 'auth_accounts',
+      accountLinking: {
+        enabled: true,
+        trustedProviders: [],
+        requireLocalEmailVerified: true,
+        allowDifferentEmails: false,
+      },
       fields: {
         userId: 'user_id',
         accountId: 'account_id',

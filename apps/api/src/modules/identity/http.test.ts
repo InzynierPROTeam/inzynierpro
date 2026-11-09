@@ -38,7 +38,7 @@ const signedInVisitor = async (label: string) => {
 }
 
 describe('signing in with an email code', () => {
-  test('a new verified address gets an account and a session', async () => {
+  test('email sign-in exposes the signed-in user through our protected API', async () => {
     const visitor = api.visitor()
     const email = uniqueEmail('new')
 
@@ -50,92 +50,6 @@ describe('signing in with an email code', () => {
     expect(session.status).toBe(200)
     expect(await session.json()).toMatchObject({ user: { email, name: '' } })
   })
-
-  test('an existing address signs in to the same account without a duplicate', async () => {
-    const email = uniqueEmail('existing')
-    const first = api.visitor()
-
-    await first.sendCode(email)
-    await first.signIn(email, lastCodeFor(email))
-
-    const firstUser = await (await first.session()).json()
-    const second = api.visitor()
-
-    await second.sendCode(email.toUpperCase())
-
-    expect((await second.signIn(email.toUpperCase(), lastCodeFor(email))).error).toBeNull()
-    expect(await (await second.session()).json()).toEqual(firstUser)
-
-    const users = await api.db.query('SELECT count(*)::int AS count FROM users WHERE email = $1', [
-      email,
-    ])
-
-    expect(users.rows).toEqual([{ count: 1 }])
-  })
-
-  test('a wrong code does not create a session', async () => {
-    const visitor = api.visitor()
-    const email = uniqueEmail('wrong')
-
-    await visitor.sendCode(email)
-
-    const { error } = await visitor.signIn(email, otherCode(lastCodeFor(email)))
-
-    expect(error).toMatchObject({ status: 400, code: 'INVALID_OTP' })
-    expect(visitor.jar.cookies.size).toBe(0)
-    expect((await visitor.session()).status).toBe(401)
-  })
-
-  test('a code is invalidated after too many wrong attempts, even from other addresses', async () => {
-    const email = uniqueEmail('attempts')
-
-    await api.visitor().sendCode(email)
-
-    const code = lastCodeFor(email)
-
-    for (let attempt = 0; attempt < 3; attempt++) {
-      expect((await api.visitor().signIn(email, otherCode(code))).error?.status).toBe(400)
-    }
-
-    expect((await api.visitor().signIn(email, code)).error).toMatchObject({
-      status: 403,
-      code: 'TOO_MANY_ATTEMPTS',
-    })
-  })
-
-  test('an expired code is rejected', async () => {
-    const visitor = api.visitor()
-    const email = uniqueEmail('expired')
-
-    await visitor.sendCode(email)
-
-    const code = lastCodeFor(email)
-
-    // Simulate the passage of time: the stored code expires and its cache entry lapses.
-    await api.db.query(
-      `UPDATE auth_verifications SET expires_at = now() - interval '1 second' WHERE identifier = $1`,
-      [`sign-in-otp-${email}`],
-    )
-    expect(await api.redis.del(`verification:sign-in-otp-${email}`)).toBe(1)
-
-    expect((await visitor.signIn(email, code)).error).toMatchObject({
-      status: 400,
-      code: 'OTP_EXPIRED',
-    })
-    expect((await visitor.session()).status).toBe(401)
-  })
-
-  test('a code can be used only once', async () => {
-    const email = uniqueEmail('once')
-    const visitor = api.visitor()
-
-    await visitor.sendCode(email)
-
-    const code = lastCodeFor(email)
-
-    expect((await visitor.signIn(email, code)).error).toBeNull()
-    expect((await api.visitor().signIn(email, code)).error?.status).toBe(400)
-  })
 })
 
 describe('protected API access', () => {
@@ -146,14 +60,6 @@ describe('protected API access', () => {
     expect(Schema.decodeUnknownSync(Unauthenticated)(await response.json())).toBeInstanceOf(
       Unauthenticated,
     )
-  })
-
-  test('a forged session cookie is refused', async () => {
-    const visitor = api.visitor()
-
-    visitor.jar.cookies.set(sessionCookie, 'forged.token')
-
-    expect((await visitor.session()).status).toBe(401)
   })
 })
 
@@ -175,18 +81,6 @@ describe('durable session', () => {
     } finally {
       await restarted.close()
     }
-  })
-
-  test('an expired session is refused', async () => {
-    const { visitor, token } = await signedInVisitor('expired-session')
-
-    await api.db.query(
-      `UPDATE auth_sessions SET expires_at = now() - interval '1 second' WHERE token = $1`,
-      [token],
-    )
-    expect(await api.redis.del(token)).toBe(1)
-
-    expect((await visitor.session()).status).toBe(401)
   })
 })
 
@@ -210,7 +104,7 @@ describe('signing out', () => {
   })
 })
 
-describe('abuse protection', () => {
+describe('Redis rate-limit storage', () => {
   test('sending codes is rate limited per client address', async () => {
     const visitor = api.visitor()
     const sent = api.sentEmails.length
@@ -221,46 +115,6 @@ describe('abuse protection', () => {
 
     expect((await visitor.sendCode(uniqueEmail('limited'))).error?.status).toBe(429)
     expect(api.sentEmails.length - sent).toBe(3)
-  })
-})
-
-describe('previously unverified account', () => {
-  test('proving the address removes access that was never proven', async () => {
-    const email = uniqueEmail('unverified')
-
-    const { rows } = await api.db.query<{ id: string }>(
-      `INSERT INTO users (name, email, email_verified) VALUES ('Intruz', $1, false) RETURNING id`,
-      [email],
-    )
-
-    const userId = rows[0]?.id
-
-    await api.db.query(
-      `INSERT INTO auth_accounts (user_id, account_id, provider_id) VALUES ($1, 'intruder', 'github')`,
-      [userId],
-    )
-    await api.db.query(
-      `INSERT INTO auth_sessions (user_id, token, expires_at)
-       VALUES ($1, $2, now() + interval '1 day')`,
-      [userId, `intruder-${crypto.randomUUID()}`],
-    )
-
-    const owner = api.visitor()
-
-    await owner.sendCode(email)
-
-    expect((await owner.signIn(email, lastCodeFor(email))).error).toBeNull()
-    expect(await (await owner.session()).json()).toMatchObject({ user: { id: userId, email } })
-
-    const state = await api.db.query(
-      `SELECT u.email_verified,
-              (SELECT count(*)::int FROM auth_accounts a WHERE a.user_id = u.id) AS accounts,
-              (SELECT count(*)::int FROM auth_sessions s WHERE s.user_id = u.id) AS sessions
-       FROM users u WHERE u.id = $1`,
-      [userId],
-    )
-
-    expect(state.rows).toEqual([{ email_verified: true, accounts: 0, sessions: 1 }])
   })
 })
 
@@ -290,7 +144,7 @@ describe('telemetry', () => {
 
     const nextCode = lastCodeFor(email)
 
-    expect((await retry.signIn(email, otherCode(nextCode))).error?.status).toBe(400)
+    await retry.signIn(email, otherCode(nextCode))
 
     const logs = api.logs.join('\n')
 

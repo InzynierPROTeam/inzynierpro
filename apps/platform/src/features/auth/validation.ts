@@ -3,6 +3,7 @@ import { Schema } from 'effect'
 
 export const SignInSearch = Schema.Struct({
   redirect: Schema.optional(Schema.String),
+  error: Schema.optional(Schema.String),
 })
 
 export const VerifyOTPSearch = Schema.Struct({

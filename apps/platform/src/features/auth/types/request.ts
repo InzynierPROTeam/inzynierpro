@@ -1,4 +1,9 @@
-import type { sendVerificationOtpReq, signInEmailOtpReq } from '../actions'
+import type { sendVerificationOtpReq, signInEmailOtpReq, signInWithGoogleReq } from '../actions'
+
+export type SignInWithGoogleReq = Omit<
+  Parameters<typeof signInWithGoogleReq>[0],
+  'fetchOptions' | 'provider'
+>
 
 export type SendVerificationOtpReq = Omit<
   Parameters<typeof sendVerificationOtpReq>[0],

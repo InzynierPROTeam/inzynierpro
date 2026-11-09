@@ -11,6 +11,10 @@ export const env = Config.all({
   REDIS_URL: Config.Redacted('REDIS_URL'),
   BETTER_AUTH_URL: Config.URL('BETTER_AUTH_URL'),
   BETTER_AUTH_SECRET: Config.Redacted('BETTER_AUTH_SECRET'),
+  GOOGLE: Config.all({
+    clientId: Config.NonEmptyString('GOOGLE_CLIENT_ID'),
+    clientSecret: Config.Redacted('GOOGLE_CLIENT_SECRET'),
+  }).pipe(Config.option),
   COOKIES_DOMAIN: Config.option(Config.NonEmptyString('COOKIES_DOMAIN')),
   RESEND_API_KEY: Config.Redacted('RESEND_API_KEY'),
 })
