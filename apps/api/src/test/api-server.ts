@@ -7,9 +7,19 @@ import { Redis } from '@inzpro/redis'
 import { type CookieJar, makeCookieJar } from '@inzpro/testing/cookie-jar'
 import type { EmailAdapter, EmailMessage } from '@opencoredev/email-sdk'
 import { memoryAdapter } from '@opencoredev/email-sdk/testing'
-import { Context, Effect, Exit, identity, Layer, Logger, Predicate, Redacted, Scope } from 'effect'
+import {
+  Context,
+  Effect,
+  Exit,
+  identity,
+  Layer,
+  Logger,
+  Option,
+  Predicate,
+  Redacted,
+  Scope,
+} from 'effect'
 import { HttpServer } from 'effect/http'
-import { Pool } from 'pg'
 import { createClient, type RedisClientType } from 'redis'
 import { httpServerLayer } from '~api/http.js'
 import { env } from '~api/lib/env.js'
@@ -47,10 +57,22 @@ const isSentTo = (message: EmailMessage, email: string) =>
 export type TestApiOptions = {
   // Delivers email; defaults to an in-memory adapter whose messages the test can read.
   readonly emailAdapter?: EmailAdapter
+  readonly google?: { readonly clientId: string; readonly clientSecret: string }
 }
 
-export const startTestApi = async ({ emailAdapter }: TestApiOptions = {}) => {
-  const config = await Effect.runPromise(Effect.map(env, identity))
+export const startTestApi = async ({ emailAdapter, google }: TestApiOptions = {}) => {
+  const loaded = await Effect.runPromise(Effect.map(env, identity))
+
+  const config = {
+    ...loaded,
+    GOOGLE:
+      google === undefined
+        ? loaded.GOOGLE
+        : Option.some({
+            clientId: google.clientId,
+            clientSecret: Redacted.make(google.clientSecret),
+          }),
+  }
 
   const scope = Scope.makeUnsafe()
   const outbox = memoryAdapter()
@@ -72,9 +94,8 @@ export const startTestApi = async ({ emailAdapter }: TestApiOptions = {}) => {
 
   const baseUrl = `http://127.0.0.1:${server.address.port}`
 
-  // Separate connections for arranging test state.
+  // Separate connection for evicting session cache entries in integration tests.
   const redis: RedisClientType = createClient({ url: Redacted.value(config.REDIS_URL) })
-  const db = new Pool({ connectionString: Redacted.value(config.DATABASE_URL), max: 2 })
 
   await redis.connect()
 
@@ -113,9 +134,8 @@ export const startTestApi = async ({ emailAdapter }: TestApiOptions = {}) => {
     // The Redis connection used by the running API, for simulating outages.
     apiRedis: Context.get(context, Redis),
     redis,
-    db,
     close: async () => {
-      await Promise.all([redis.close(), db.end()])
+      await redis.close()
       await Effect.runPromise(Scope.close(scope, Exit.void))
     },
   }

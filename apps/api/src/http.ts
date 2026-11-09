@@ -42,6 +42,7 @@ export const httpServerLayer = (config: Env) =>
         baseUrl: config.BETTER_AUTH_URL,
         trustedOrigins: [config.PLATFORM_ORIGIN],
         cookiesDomain: config.COOKIES_DOMAIN,
+        google: config.GOOGLE,
       }),
     ),
     // Merged so tests can reach the connections, for example to simulate a Redis outage.

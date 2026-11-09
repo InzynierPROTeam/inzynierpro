@@ -32,7 +32,6 @@
     "@inzpro/auth-client": "workspace:*",
     "@inzpro/testing": "workspace:*",
     "@opencoredev/email-sdk": "catalog:",
-    "pg": "catalog:",
     "redis": "catalog:"
   }
 }

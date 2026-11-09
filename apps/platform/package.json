@@ -36,6 +36,7 @@
     "react-dom": "catalog:",
     "shadcn": "catalog:",
     "sonner": "catalog:",
-    "tw-animate-css": "catalog:"
+    "tw-animate-css": "catalog:",
+    "ua-parser-js": "catalog:"
   }
 }
