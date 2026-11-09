@@ -62,6 +62,8 @@ Relative paths and workspace aliases are checked against source ownership withou
 
 Use Effect's `DateTime`, `Clock`, `Duration` and related built-in modules for date/time creation, arithmetic, time-zone conversion and formatting. Keep locale and time-zone choices explicit at the consumer. Use Effect clocks for the current time rather than direct `new Date()` or `Date.now()` calls, and keep date formatting behind Effect date/time helpers.
 
+The [conventions plugin](../packages/tools/src/oxlint/conventions/index.ts) enforces the mechanical part of [CODING_STANDARDS.md](../CODING_STANDARDS.md): hooks in `hooks/` folders, feature file names without the feature prefix, route state read through route APIs instead of spread into props, Effect instead of `try/catch`, and query modules that only wrap api-client actions.
+
 The `anti-slop-effect/prefer-effect-datetime` Oxlint rule rejects native `Date` creation, calls, static API access and constructor aliases, plus `Intl.DateTimeFormat`. It also checks qualified globals and literal computed properties. Native date type annotations and shadowed local bindings remain valid. The rule does not rewrite code automatically because migrating to Effect can change types and execution semantics.
 
 Canonical page URLs have exactly one trailing slash, including the root path. Canonical metadata removes search parameters and fragments. Asset URLs and API endpoint paths retain their own contracts.
