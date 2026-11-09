@@ -30,9 +30,11 @@ pnpm dev
 
 Open <http://localhost:8001>; the API runs on port 4000. Migrations run explicitly, not on server restarts.
 
+Sign in at <http://localhost:8001/login>. Sign-in codes are sent through Resend: the API does not start without `RESEND_API_KEY` in `apps/api/.env`. Preview email templates with `pnpm --filter @inzpro/email email:dev` (<http://localhost:3030>). There is no test login shortcut: tests sign in through the same code flow with an in-memory email adapter.
+
 ## Tests
 
-Test services use separate databases and ports; the database integration test connects to real PostgreSQL.
+Test services use separate databases and ports. Integration tests connect to real PostgreSQL and Redis; only mail delivery is replaced with an in-memory outbox.
 
 ```sh
 cp apps/api/.env.test.example apps/api/.env.test
