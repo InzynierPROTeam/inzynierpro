@@ -10,18 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as HealthCheckRouteImport } from './routes/health-check'
+import { Route as appAuthenticatedRouteImport } from './routes/(app)/_authenticated'
 import { Route as publicLayoutRouteImport } from './routes/(public)/_layout'
+import { Route as appAuthenticatedStartRouteImport } from './routes/(app)/_authenticated/start'
 import { Route as publicLayoutNotauthenticatedRouteImport } from './routes/(public)/_layout/_notauthenticated'
 import { Route as publicLayoutNotauthenticatedIndexRouteImport } from './routes/(public)/_layout/_notauthenticated/index'
+import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+import { Route as publicLayoutNotauthenticatedLoginIndexRouteImport } from './routes/(public)/_layout/_notauthenticated/login.index'
 
 const HealthCheckRoute = HealthCheckRouteImport.update({
   id: '/health-check',
   path: '/health-check',
   getParentRoute: () => rootRouteImport,
 } as any)
+const appAuthenticatedRoute = appAuthenticatedRouteImport.update({
+  id: '/(app)/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const publicLayoutRoute = publicLayoutRouteImport.update({
   id: '/(public)/_layout',
   getParentRoute: () => rootRouteImport,
+} as any)
+const appAuthenticatedStartRoute = appAuthenticatedStartRouteImport.update({
+  id: '/start',
+  path: '/start',
+  getParentRoute: () => appAuthenticatedRoute,
 } as any)
 const publicLayoutNotauthenticatedRoute =
   publicLayoutNotauthenticatedRouteImport.update({
@@ -34,37 +47,64 @@ const publicLayoutNotauthenticatedIndexRoute =
     path: '/',
     getParentRoute: () => publicLayoutNotauthenticatedRoute,
   } as any)
+const publicLayoutNotauthenticatedZweryfikujOtpRoute =
+  publicLayoutNotauthenticatedZweryfikujOtpRouteImport.update({
+    id: '/zweryfikuj-otp',
+    path: '/zweryfikuj-otp',
+    getParentRoute: () => publicLayoutNotauthenticatedRoute,
+  } as any)
+const publicLayoutNotauthenticatedLoginIndexRoute =
+  publicLayoutNotauthenticatedLoginIndexRouteImport.update({
+    id: '/login/',
+    path: '/login/',
+    getParentRoute: () => publicLayoutNotauthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/health-check': typeof HealthCheckRoute
+  '/start': typeof appAuthenticatedStartRoute
+  '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/login/': typeof publicLayoutNotauthenticatedLoginIndexRoute
 }
 export interface FileRoutesByTo {
   '/health-check': typeof HealthCheckRoute
+  '/start': typeof appAuthenticatedStartRoute
+  '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/login': typeof publicLayoutNotauthenticatedLoginIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/health-check': typeof HealthCheckRoute
+  '/(app)/_authenticated': typeof appAuthenticatedRouteWithChildren
   '/(public)/_layout': typeof publicLayoutRouteWithChildren
+  '/(app)/_authenticated/start': typeof appAuthenticatedStartRoute
   '/(public)/_layout/_notauthenticated': typeof publicLayoutNotauthenticatedRouteWithChildren
+  '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/(public)/_layout/_notauthenticated/login/': typeof publicLayoutNotauthenticatedLoginIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/health-check' | '/'
+  fullPaths: '/health-check' | '/start' | '/zweryfikuj-otp' | '/' | '/login/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/health-check' | '/'
+  to: '/health-check' | '/start' | '/zweryfikuj-otp' | '/' | '/login'
   id:
     | '__root__'
     | '/health-check'
+    | '/(app)/_authenticated'
     | '/(public)/_layout'
+    | '/(app)/_authenticated/start'
     | '/(public)/_layout/_notauthenticated'
+    | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
     | '/(public)/_layout/_notauthenticated/'
+    | '/(public)/_layout/_notauthenticated/login/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   HealthCheckRoute: typeof HealthCheckRoute
+  appAuthenticatedRoute: typeof appAuthenticatedRouteWithChildren
   publicLayoutRoute: typeof publicLayoutRouteWithChildren
 }
 
@@ -77,12 +117,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HealthCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(app)/_authenticated': {
+      id: '/(app)/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof appAuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(public)/_layout': {
       id: '/(public)/_layout'
       path: ''
       fullPath: ''
       preLoaderRoute: typeof publicLayoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/(app)/_authenticated/start': {
+      id: '/(app)/_authenticated/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof appAuthenticatedStartRouteImport
+      parentRoute: typeof appAuthenticatedRoute
     }
     '/(public)/_layout/_notauthenticated': {
       id: '/(public)/_layout/_notauthenticated'
@@ -98,17 +152,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicLayoutNotauthenticatedIndexRouteImport
       parentRoute: typeof publicLayoutNotauthenticatedRoute
     }
+    '/(public)/_layout/_notauthenticated/zweryfikuj-otp': {
+      id: '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+      path: '/zweryfikuj-otp'
+      fullPath: '/zweryfikuj-otp'
+      preLoaderRoute: typeof publicLayoutNotauthenticatedZweryfikujOtpRouteImport
+      parentRoute: typeof publicLayoutNotauthenticatedRoute
+    }
+    '/(public)/_layout/_notauthenticated/login/': {
+      id: '/(public)/_layout/_notauthenticated/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof publicLayoutNotauthenticatedLoginIndexRouteImport
+      parentRoute: typeof publicLayoutNotauthenticatedRoute
+    }
   }
 }
 
+interface appAuthenticatedRouteChildren {
+  appAuthenticatedStartRoute: typeof appAuthenticatedStartRoute
+}
+
+const appAuthenticatedRouteChildren: appAuthenticatedRouteChildren = {
+  appAuthenticatedStartRoute: appAuthenticatedStartRoute,
+}
+
+const appAuthenticatedRouteWithChildren =
+  appAuthenticatedRoute._addFileChildren(appAuthenticatedRouteChildren)
+
 interface publicLayoutNotauthenticatedRouteChildren {
+  publicLayoutNotauthenticatedZweryfikujOtpRoute: typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   publicLayoutNotauthenticatedIndexRoute: typeof publicLayoutNotauthenticatedIndexRoute
+  publicLayoutNotauthenticatedLoginIndexRoute: typeof publicLayoutNotauthenticatedLoginIndexRoute
 }
 
 const publicLayoutNotauthenticatedRouteChildren: publicLayoutNotauthenticatedRouteChildren =
   {
+    publicLayoutNotauthenticatedZweryfikujOtpRoute:
+      publicLayoutNotauthenticatedZweryfikujOtpRoute,
     publicLayoutNotauthenticatedIndexRoute:
       publicLayoutNotauthenticatedIndexRoute,
+    publicLayoutNotauthenticatedLoginIndexRoute:
+      publicLayoutNotauthenticatedLoginIndexRoute,
   }
 
 const publicLayoutNotauthenticatedRouteWithChildren =
@@ -131,6 +216,7 @@ const publicLayoutRouteWithChildren = publicLayoutRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   HealthCheckRoute: HealthCheckRoute,
+  appAuthenticatedRoute: appAuthenticatedRouteWithChildren,
   publicLayoutRoute: publicLayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport
