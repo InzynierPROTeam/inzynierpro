@@ -1,4 +1,4 @@
-import { buttonVariants } from '@inzpro/ui/button'
+import { buttonVariants } from '@inzpro/ui/components/button'
 import { Link } from '@tanstack/react-router'
 
 // TODO(auth): Point this link to the sign-in route when authentication is implemented.

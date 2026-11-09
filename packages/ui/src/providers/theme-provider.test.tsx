@@ -4,8 +4,8 @@ import { act } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 import { afterEach, expect, test } from 'vitest'
+import { ThemeSwitchButton } from '~ui/components/theme-switch.js'
 
-import { ThemeSwitchButton } from '../theme-switch.js'
 import { ThemeProvider } from './theme-provider.js'
 
 Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', { value: true, configurable: true })

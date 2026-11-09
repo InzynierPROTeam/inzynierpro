@@ -5,7 +5,7 @@ import {
   type CookieCategories,
   type DetailedCookieConsent,
 } from 'react-cookie-manager'
-import { buttonVariants } from '~ui/button.js'
+import { buttonVariants } from '~ui/components/button.js'
 import { useTheme } from '~ui/providers/theme-provider.js'
 
 export type TrackingConsent = {

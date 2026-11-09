@@ -1,5 +1,5 @@
 import { POLAND_TIME_ZONE } from '@inzpro/config/localization'
-import { Separator } from '@inzpro/ui/separator'
+import { Separator } from '@inzpro/ui/components/separator'
 import { getCurrentFullYear } from '@inzpro/utils/date'
 import { Link } from '@tanstack/react-router'
 import { appName, ExternalLinks } from '~platform/config/app'

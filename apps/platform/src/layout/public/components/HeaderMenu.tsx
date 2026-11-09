@@ -1,4 +1,4 @@
-import { ThemeSwitchButton } from '@inzpro/ui/theme-switch'
+import { ThemeSwitchButton } from '@inzpro/ui/components/theme-switch'
 
 import { MobileMenu } from './MobileMenu'
 import { NavLinks } from './NavLinks'

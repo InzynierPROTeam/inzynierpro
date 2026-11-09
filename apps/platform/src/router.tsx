@@ -1,6 +1,6 @@
 import { QUERY_CACHE_TIME, QUERY_STALE_TIME } from '@inzpro/react-utils/react-query/shared'
-import { DefaultCatchBoundary } from '@inzpro/ui/default-catch-boundary'
-import { NotFound } from '@inzpro/ui/not-found'
+import { DefaultCatchBoundary } from '@inzpro/ui/components/default-catch-boundary'
+import { NotFound } from '@inzpro/ui/components/not-found'
 import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { getQueryClient } from '~platform/lib/reactQuery'
