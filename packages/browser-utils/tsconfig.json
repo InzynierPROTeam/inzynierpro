@@ -1,0 +1,29 @@
+{
+  "extends": "@total-typescript/tsconfig/tsc/dom/library-monorepo",
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": true,
+        "refactors": true,
+        "quickinfo": true,
+        "completions": true,
+        "noExternal": true,
+        "ignoreEffectWarningsInTscExitCode": true
+      }
+    ],
+    "paths": {
+      "~browser-utils/*": ["./src/*"]
+    },
+    "types": ["node"],
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"],
+  "tsc-alias": {
+    "resolveFullPaths": true
+  }
+}

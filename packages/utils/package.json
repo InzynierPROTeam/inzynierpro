@@ -1,0 +1,17 @@
+{
+  "name": "@inzpro/utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./dist/*.js"
+  },
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "type-check": "effect-tsgo tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  }
+}
