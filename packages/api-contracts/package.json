@@ -11,6 +11,7 @@
     "type-check": "effect-tsgo tsc --noEmit"
   },
   "dependencies": {
+    "@inzpro/domain": "workspace:*",
     "effect": "catalog:"
   }
 }
