@@ -313,3 +313,22 @@ describe('database schema', () => {
     expect(schemaReports).toEqual([])
   })
 })
+
+describe('cross-origin session reads from the platform', () => {
+  test('the preflight allows the trace headers the Effect HTTP client sends', async () => {
+    const response = await fetch(new URL('/api/v1/identity/session', api.baseUrl), {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'http://localhost:8001',
+        'access-control-request-method': 'GET',
+        'access-control-request-headers': 'b3,traceparent',
+      },
+    })
+
+    expect(response.headers.get('access-control-allow-origin')).toBe('http://localhost:8001')
+    expect(response.headers.get('access-control-allow-credentials')).toBe('true')
+    expect(response.headers.get('access-control-allow-headers')?.split(',')).toEqual(
+      expect.arrayContaining(['traceparent', 'b3']),
+    )
+  })
+})
