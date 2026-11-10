@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./globals.css": "./src/styles/globals.css",
+    "./theme.css": "./src/styles/theme.css",
     "./*": "./dist/*.js"
   },
   "scripts": {
@@ -13,6 +15,7 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
+    "@fontsource-variable/nunito-sans": "catalog:",
     "@inzpro/react-utils": "workspace:*",
     "@tanstack/react-router": "catalog:",
     "class-variance-authority": "catalog:",
@@ -21,10 +24,13 @@
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-cookie-manager": "catalog:",
+    "shadcn": "catalog:",
     "sonner": "catalog:",
-    "tailwind-merge": "catalog:"
+    "tailwind-merge": "catalog:",
+    "tw-animate-css": "catalog:"
   },
   "devDependencies": {
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "tailwindcss": "catalog:"
   }
 }
