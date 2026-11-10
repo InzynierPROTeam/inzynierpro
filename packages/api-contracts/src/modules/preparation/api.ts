@@ -1,0 +1,136 @@
+import { HttpApiEndpoint, HttpApiGroup } from 'effect/http-api'
+import { Authentication } from '~api-contracts/middleware/authentication/api.js'
+import {
+  PathAccessDenied,
+  InvalidPathConfiguration,
+  GoalConflict,
+} from '~api-contracts/modules/preparation/errors.js'
+import { InternalServerError, InvalidRequest } from '~api-contracts/utils/api-error.js'
+
+import {
+  ChangeGoalPayload,
+  CompleteOnboardingPayload,
+  GoalHistoryQuery,
+  GoalOptionsQuery,
+  PathParams,
+  PathsQuery,
+  SelectPathPayload,
+} from './requests.js'
+import {
+  GoalHistoryResponse,
+  GoalOptionsResponse,
+  PathMutationResponse,
+  PathResponse,
+  QualificationPathsResponse,
+} from './responses.js'
+
+export const GetPathsEndpoint = HttpApiEndpoint.get('GetPaths', '/paths', {
+  query: PathsQuery,
+  success: QualificationPathsResponse,
+  error: [InternalServerError, InvalidRequest],
+})
+
+export const GetSelectedPathEndpoint = HttpApiEndpoint.get('GetSelectedPath', '/selection', {
+  success: PathResponse,
+  error: [InternalServerError],
+})
+
+export const GetPathEndpoint = HttpApiEndpoint.get('GetPath', '/paths/:qualificationPathId', {
+  params: PathParams,
+  success: PathResponse,
+  error: [InternalServerError],
+})
+
+export const SelectPathEndpoint = HttpApiEndpoint.post('SelectPath', '/selection', {
+  payload: SelectPathPayload,
+  success: PathMutationResponse,
+  error: [InternalServerError, PathAccessDenied],
+})
+
+export const CompleteOnboardingEndpoint = HttpApiEndpoint.post(
+  'CompleteOnboarding',
+  '/onboarding',
+  {
+    payload: CompleteOnboardingPayload,
+    success: PathMutationResponse,
+    error: [InternalServerError, InvalidPathConfiguration],
+  },
+)
+
+export const ArchivePathEndpoint = HttpApiEndpoint.post(
+  'ArchivePath',
+  '/paths/:qualificationPathId/archive',
+  {
+    params: PathParams,
+    success: PathMutationResponse,
+    error: [InternalServerError, PathAccessDenied],
+  },
+)
+
+export const RestorePathEndpoint = HttpApiEndpoint.post(
+  'RestorePath',
+  '/paths/:qualificationPathId/restore',
+  {
+    params: PathParams,
+    success: PathMutationResponse,
+    error: [InternalServerError, PathAccessDenied],
+  },
+)
+
+export const ExtendPathEndpoint = HttpApiEndpoint.post(
+  'ExtendPath',
+  '/paths/:qualificationPathId/extend',
+  {
+    params: PathParams,
+    success: PathMutationResponse,
+    error: [InternalServerError, PathAccessDenied],
+  },
+)
+
+export const ChangeGoalEndpoint = HttpApiEndpoint.post(
+  'ChangeGoal',
+  '/paths/:qualificationPathId/goal',
+  {
+    params: PathParams,
+    payload: ChangeGoalPayload,
+    success: PathMutationResponse,
+    error: [InternalServerError, PathAccessDenied, InvalidPathConfiguration, GoalConflict],
+  },
+)
+
+export const GetGoalHistoryEndpoint = HttpApiEndpoint.get(
+  'GetGoalHistory',
+  '/paths/:qualificationPathId/goals',
+  {
+    params: PathParams,
+    query: GoalHistoryQuery,
+    success: GoalHistoryResponse,
+    error: [InternalServerError, InvalidRequest, PathAccessDenied],
+  },
+)
+
+export const GetGoalOptionsEndpoint = HttpApiEndpoint.get(
+  'GetGoalOptions',
+  '/paths/:qualificationPathId/goal-options',
+  {
+    params: PathParams,
+    query: GoalOptionsQuery,
+    success: GoalOptionsResponse,
+    error: [InternalServerError, InvalidRequest, PathAccessDenied],
+  },
+)
+
+export const PreparationApi = HttpApiGroup.make('Preparation')
+  .add(GetPathsEndpoint)
+  .add(GetSelectedPathEndpoint)
+  .add(GetPathEndpoint)
+  .add(SelectPathEndpoint)
+  .add(CompleteOnboardingEndpoint)
+  .add(ArchivePathEndpoint)
+  .add(RestorePathEndpoint)
+  .add(ExtendPathEndpoint)
+  .add(ChangeGoalEndpoint)
+  .add(GetGoalHistoryEndpoint)
+  .add(GetGoalOptionsEndpoint)
+  .middleware(Authentication)
+  .prefix('/preparation')
