@@ -8,7 +8,7 @@ export const AppLayout = () => (
     <header className="layout-container sticky top-0 isolate z-30">
       <div className="-mb-6 h-12 w-full backdrop-blur-xs" />
       <nav
-        aria-label="Główna nawigacja"
+        aria-label="Nawigacja główna"
         className="layout-section px-8! py-0! max-md:px-6! max-sm:px-4!"
       >
         <div className="border-border bg-background/50 flex h-20 items-center justify-between gap-4 rounded-3xl border px-10 backdrop-blur-lg max-md:h-18 max-md:px-8">
@@ -18,7 +18,11 @@ export const AppLayout = () => (
           >
             <LogoHorizontal />
           </Link>
-          <ThemeSwitchButton />
+          <div className="flex items-center gap-4">
+            <Link to="/profil">Profil</Link>
+            <Link to="/zacznij">Dodaj ścieżkę</Link>
+            <ThemeSwitchButton />
+          </div>
         </div>
       </nav>
     </header>

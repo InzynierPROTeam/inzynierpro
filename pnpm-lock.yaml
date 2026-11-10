@@ -591,10 +591,6 @@ importers:
       ua-parser-js:
         specifier: 'catalog:'
         version: 2.0.10
-    devDependencies:
-      '@inzpro/testing':
-        specifier: workspace:*
-        version: link:../../packages/testing
 
   packages/api-client:
     dependencies:

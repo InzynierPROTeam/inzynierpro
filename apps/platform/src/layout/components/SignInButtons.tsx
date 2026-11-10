@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 export const SignInButtons = () => (
   <div className="flex items-center gap-4">
     <Link
-      to="/login"
+      to="/logowanie"
       className={buttonVariants({ className: 'rounded-full!' })}
     >
       Zaloguj się

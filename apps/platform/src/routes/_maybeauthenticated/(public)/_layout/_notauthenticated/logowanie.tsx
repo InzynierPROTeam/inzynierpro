@@ -4,7 +4,9 @@ import { seo } from '~platform/config/app'
 import { SignInPage } from '~platform/features/auth/SignInPage'
 import { SignInSearch } from '~platform/features/auth/validation'
 
-export const Route = createFileRoute('/(public)/_layout/_notauthenticated/login/')({
+export const Route = createFileRoute(
+  '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie',
+)({
   validateSearch: Schema.toStandardSchemaV1(SignInSearch),
   component: SignInPage,
   head: () => ({
