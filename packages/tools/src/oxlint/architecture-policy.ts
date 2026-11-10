@@ -11,7 +11,7 @@ export const packageDependencies = {
   queries: ['api-client', 'api-contracts', 'domain', 'utils'],
   db: ['utils'],
   redis: ['utils'],
-  email: ['domain', 'config', 'utils'],
+  email: ['domain', 'config', 'utils', 'ui'],
   auth: ['db', 'redis', 'email', 'domain', 'config', 'utils'],
   'auth-client': ['utils'],
   testing: ['utils'],

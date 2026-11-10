@@ -12,7 +12,7 @@ Existing packages:
 - `queries`: query keys and TanStack Query options. Receive the HTTP client from the consumer and preserve cancellation. Follow ADR-0024 for key hierarchies.
 - `db`: PostgreSQL connection infrastructure. Module-owned SQL, persistence rules, and migrations live in `apps/api`.
 - `redis`: the Redis connection as a scoped Effect layer. Key layouts stay with the code that owns the data.
-- `email`: React Email templates in the platform theme and the `EmailService` Effect service over email-sdk adapters (Resend in production, memory in tests). Deciding when to send stays with the owning module.
+- `email`: React Email templates in the shared theme and the `EmailService` Effect service over email-sdk adapters (Resend in production, memory in tests). Deciding when to send stays with the owning module.
 - `auth`: the Better Auth instance as an Effect service, built from PostgreSQL, Redis and `EmailService`. Endpoint mounting stays in `apps/api`.
 - `auth-client`: the shared Better Auth client and its Polish error messages. The signed-in session is read through `api-client` and the shared contract.
 - `testing`: reusable test adapters. Production application and package code must not import this package.
@@ -25,7 +25,7 @@ Shared foundations used by the platform setup:
 - `react-utils`: shared hooks, QueryClient factories, and React integrations. A browser QueryClient can be reused; server-side QueryClients must remain request-scoped. Separate web and native integrations through subpaths.
 - `config`: public organization configuration such as branding, contact details, and supported locales. Environment variables, deployment settings, credentials, and environment loading stay with the application.
 - `domain`: public business vocabulary, branded identifiers, and genuinely shared pure rules. Internal entities, authorization, use cases, repositories, and authoritative business decisions remain inside the owning API module.
-- `ui`: shared web UI primitives based on shadcn and reusable custom UI. Receive data and callbacks; keep session fetching, endpoint calls, and application routes in the consumer.
+- `ui`: shared web UI primitives based on shadcn and reusable custom UI. Receive data and callbacks; keep session fetching, endpoint calls, and application routes in the consumer. Its `theme.css` holds the design tokens; `email` reads that file and overrides only email-specific values, such as pixel sizes.
   Reserved for later: `mobile-ui` owns native controls when the mobile application needs them. Share suitable rules and data, while keeping platform controls separate.
 
 The `mobile-ui` name has dependency rules but no empty scaffold. Application layers and integrations remain inside the API modules; environment loading remains inside each application.

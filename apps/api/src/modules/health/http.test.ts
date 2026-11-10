@@ -20,6 +20,8 @@ test('health-check uses /api/v1 and returns only status', async () => {
   expect(await response.json()).toEqual({ status: 'ok' })
   expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f-]{36}$/)
   expect(response.headers.get('access-control-allow-origin')).toBe('http://localhost:8001')
+  expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+  expect(response.headers.get('x-frame-options')).toBe('DENY')
 })
 
 test('an unknown API version returns an error response', async () => {
@@ -33,4 +35,5 @@ test('an unknown API version returns an error response', async () => {
   })
   expect(body).not.toHaveProperty('requestId')
   expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f-]{36}$/)
+  expect(response.headers.get('x-content-type-options')).toBe('nosniff')
 })

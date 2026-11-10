@@ -321,9 +321,6 @@ catalogs:
     tailwindcss:
       specifier: 4.3.4
       version: 4.3.4
-    tailwindcss-animate:
-      specifier: 1.0.7
-      version: 1.0.7
     tsc-alias:
       specifier: 1.9.10
       version: 1.9.10
@@ -437,9 +434,6 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.4
-      tailwindcss-animate:
-        specifier: 'catalog:'
-        version: 1.0.7(tailwindcss@4.3.4)
       tsc-alias:
         specifier: 'catalog:'
         version: 1.9.10
@@ -513,9 +507,6 @@ importers:
 
   apps/platform:
     dependencies:
-      '@fontsource-variable/nunito-sans':
-        specifier: 'catalog:'
-        version: 5.3.0
       '@inzpro/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
@@ -579,15 +570,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.3.1(react@19.3.1)
-      shadcn:
-        specifier: 'catalog:'
-        version: 4.23.0(supports-color@10.2.2)
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
-      tw-animate-css:
-        specifier: 'catalog:'
-        version: 1.4.0
       ua-parser-js:
         specifier: 'catalog:'
         version: 2.0.10
@@ -690,6 +675,9 @@ importers:
       '@inzpro/domain':
         specifier: workspace:*
         version: link:../domain
+      '@inzpro/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@inzpro/utils':
         specifier: workspace:*
         version: link:../utils
@@ -788,6 +776,9 @@ importers:
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.9.0(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
+      '@fontsource-variable/nunito-sans':
+        specifier: 'catalog:'
+        version: 5.3.0
       '@inzpro/react-utils':
         specifier: workspace:*
         version: link:../react-utils
@@ -812,16 +803,25 @@ importers:
       react-cookie-manager:
         specifier: 'catalog:'
         version: 5.4.1(react-dom@19.3.1)(react@19.3.1)
+      shadcn:
+        specifier: 'catalog:'
+        version: 4.23.0(supports-color@10.2.2)
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
       tailwind-merge:
         specifier: 'catalog:'
         version: 3.7.0
+      tw-animate-css:
+        specifier: 'catalog:'
+        version: 1.4.0
     devDependencies:
       react-dom:
         specifier: 'catalog:'
         version: 19.3.1(react@19.3.1)
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 4.3.4
 
   packages/utils:
     dependencies:
@@ -4871,11 +4871,6 @@ packages:
   tailwind-merge@3.7.0:
     resolution: {integrity: sha512-XPPUyAc+cvspz3lHTcR/QgPfW2A0lv/xQNIjX3HGhLR+Nq2lHaLq5MtTesHn8GUr3W3DguT2KT5x3NVgRtYwmA==}
 
-  tailwindcss-animate@1.0.7:
-    resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
-    peerDependencies:
-      tailwindcss: '>=3.0.0 || insiders'
-
   tailwindcss@4.3.4:
     resolution: {integrity: sha512-PCJZTFFdG+sL3gvnP1Do9o6GbkvH2q0p04xSs3f7cSvmAeK+sttG+/7ncK1fdRwKFfC7n+wDDJaOMBSefkI9ow==}
 
@@ -8810,10 +8805,6 @@ snapshots:
   tagged-tag@1.0.0: {}
 
   tailwind-merge@3.7.0: {}
-
-  tailwindcss-animate@1.0.7(tailwindcss@4.3.4):
-    dependencies:
-      tailwindcss: 4.3.4
 
   tailwindcss@4.3.4: {}
 

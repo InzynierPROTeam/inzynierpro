@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./theme.css": "./src/lib/theme.css",
     "./*": "./dist/*.js"
   },
   "scripts": {
@@ -15,6 +16,7 @@
   "dependencies": {
     "@inzpro/config": "workspace:*",
     "@inzpro/domain": "workspace:*",
+    "@inzpro/ui": "workspace:*",
     "@inzpro/utils": "workspace:*",
     "@opencoredev/email-sdk": "catalog:",
     "effect": "catalog:",

@@ -1,0 +1,62 @@
+/*
+ * Email overrides applied after the shared theme of @inzpro/ui (src/styles/theme.css). Email
+ * clients handle rem inconsistently, so every size is in pixels: with --spacing: 4px a class such
+ * as mt-4 renders as 16px. The font name matches the web font loaded by Layout.
+ */
+
+@theme inline {
+  --font-sans: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --spacing: 4px;
+
+  --text-2xs: 10px;
+  --text-2xs--line-height: 16px;
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 28px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 36px;
+  --text-4xl: 36px;
+  --text-4xl--line-height: 40px;
+  --text-5xl: 48px;
+  --text-5xl--line-height: 1;
+  --text-6xl: 60px;
+  --text-6xl--line-height: 1;
+  --text-7xl: 72px;
+  --text-7xl--line-height: 1;
+  --text-8xl: 96px;
+  --text-8xl--line-height: 1;
+  --text-9xl: 144px;
+  --text-9xl--line-height: 1;
+
+  --container-4xs: 224px;
+  --container-5xs: 192px;
+  --container-6xs: 160px;
+  --container-7xs: 128px;
+  --container-8xs: 96px;
+  --container-9xs: 64px;
+  --container-4xl: 896px;
+
+  --breakpoint-xs: 480px;
+  --breakpoint-2xs: 384px;
+  --breakpoint-3xs: 320px;
+
+  /* The shared scale multiplies --radius (0.875rem). Overriding --radius in :root has no effect:
+     react-email resolves var() with the first :root definition, which is the shared one. */
+  --radius-sm: 8.4px;
+  --radius-md: 11.2px;
+  --radius-lg: 14px;
+  --radius-xl: 19.6px;
+  --radius-2xl: 25.2px;
+  --radius-3xl: 30.8px;
+  --radius-4xl: 36.4px;
+}

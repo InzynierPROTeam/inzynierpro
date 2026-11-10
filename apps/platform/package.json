@@ -12,7 +12,6 @@
     "type-check": "effect-tsgo tsc --noEmit"
   },
   "dependencies": {
-    "@fontsource-variable/nunito-sans": "catalog:",
     "@inzpro/api-client": "workspace:*",
     "@inzpro/api-contracts": "workspace:*",
     "@inzpro/auth-client": "workspace:*",
@@ -34,9 +33,7 @@
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "shadcn": "catalog:",
     "sonner": "catalog:",
-    "tw-animate-css": "catalog:",
     "ua-parser-js": "catalog:"
   }
 }

@@ -6,13 +6,14 @@ import { databaseLayer } from '@inzpro/db'
 import { pgPoolLayer } from '@inzpro/db/pool'
 import { layerResend as EmailResendLayer } from '@inzpro/email/email-service'
 import { layer as RedisLayer } from '@inzpro/redis'
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Logger, References } from 'effect'
 import { SecureRandom } from 'effect/crypto'
-import { HttpMiddleware, HttpRouter } from 'effect/http'
+import { HttpMiddleware, HttpRouter, HttpServer } from 'effect/http'
 import { ApiLive } from '~api/api.js'
 import { env, type Env } from '~api/lib/env.js'
 import { ApiErrorMiddleware } from '~api/middleware/api-error.js'
 import { RequestIdMiddleware } from '~api/middleware/request-id.js'
+import { SecureHeadersMiddleware } from '~api/middleware/secure-headers.js'
 import { AuthHttp } from '~api/modules/identity/http.js'
 
 export const httpServerLayer = (config: Env) =>
@@ -21,7 +22,7 @@ export const httpServerLayer = (config: Env) =>
       ApiLive,
       AuthHttp,
       HttpRouter.cors({
-        allowedOrigins: [config.PLATFORM_ORIGIN],
+        allowedOrigins: config.TRUSTED_ORIGINS,
         allowedMethods: ['GET', 'POST'],
         // Effect's HTTP client adds trace headers to every request; the server continues the trace.
         allowedHeaders: ['content-type', 'traceparent', 'b3'],
@@ -29,19 +30,24 @@ export const httpServerLayer = (config: Env) =>
         credentials: true,
       }),
       HttpRouter.middleware(
-        app => app.pipe(ApiErrorMiddleware, HttpMiddleware.logger, RequestIdMiddleware),
-        {
-          global: true,
-        },
+        app =>
+          app.pipe(
+            ApiErrorMiddleware,
+            HttpMiddleware.logger,
+            RequestIdMiddleware,
+            SecureHeadersMiddleware,
+          ),
+        { global: true },
       ),
     ),
     { disableLogger: true },
   ).pipe(
+    HttpServer.withLogAddress,
     Layer.provide(
       AuthLayer({
         secret: config.BETTER_AUTH_SECRET,
         baseUrl: config.BETTER_AUTH_URL,
-        trustedOrigins: [config.PLATFORM_ORIGIN],
+        trustedOrigins: config.TRUSTED_ORIGINS,
         cookiesDomain: config.COOKIES_DOMAIN,
         google: config.GOOGLE,
       }),
@@ -64,6 +70,9 @@ export const HttpLive = Layer.unwrap(
         Layer.mergeAll(
           EmailResendLayer({ apiKey: config.RESEND_API_KEY }),
           NodeHttpServer.layer(createServer, { port: config.PORT }),
+          // Production logs are JSON lines for the log collector; development keeps the readable default.
+          config.NODE_ENV === 'production' ? Logger.layer([Logger.consoleJson]) : Layer.empty,
+          Layer.succeed(References.MinimumLogLevel, config.LOG_LEVEL),
         ),
       ),
     ),
