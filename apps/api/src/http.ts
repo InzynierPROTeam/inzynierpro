@@ -2,6 +2,7 @@ import { createServer } from 'node:http'
 
 import { NodeHttpServer } from '@effect/platform-node'
 import { layer as AuthLayer } from '@inzpro/auth'
+import { databaseLayer } from '@inzpro/db'
 import { pgPoolLayer } from '@inzpro/db/pool'
 import { layerResend as EmailResendLayer } from '@inzpro/email/email-service'
 import { layer as RedisLayer } from '@inzpro/redis'
@@ -49,6 +50,7 @@ export const httpServerLayer = (config: Env) =>
     Layer.provideMerge(
       Layer.mergeAll(
         pgPoolLayer({ url: config.DATABASE_URL }),
+        databaseLayer({ url: config.DATABASE_URL }),
         RedisLayer({ url: config.REDIS_URL }),
       ),
     ),

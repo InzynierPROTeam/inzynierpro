@@ -1,8 +1,13 @@
+import type { GetCurrentSessionEndpoint } from '@inzpro/api-contracts/modules/identity/api'
 import type { Effect } from 'effect'
 import { apiAction } from '~api-client/lib/api-action.js'
+import type { InferEndpointRequest } from '~api-client/lib/types.js'
 
-export const getCurrentSession = apiAction(api => api.Identity.GetCurrentSession())
+export const getCurrentSession = (req: GetCurrentSessionRequest = {}) =>
+  apiAction(api => api.Identity.GetCurrentSession(req))
 
-export type GetCurrentSessionRes = Effect.Success<typeof getCurrentSession>
+export type GetCurrentSessionRequest = InferEndpointRequest<typeof GetCurrentSessionEndpoint>
 
-export type GetCurrentSessionError = Effect.Error<typeof getCurrentSession>
+export type GetCurrentSessionRes = Effect.Success<ReturnType<typeof getCurrentSession>>
+
+export type GetCurrentSessionError = Effect.Error<ReturnType<typeof getCurrentSession>>

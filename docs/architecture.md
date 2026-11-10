@@ -75,3 +75,13 @@ Canonical page URLs have exactly one trailing slash, including the root path. Ca
 3. Give each README the package's purpose, runtime, exclusions, and an import example. Link to the policy for permitted dependencies rather than copying the dependency list.
 4. Update dependency manifests and add a regression case for every new restriction or exception.
 5. Run the architecture tests and the repository checks. Changes to a significant architectural decision also update the relevant ADR.
+
+## Preparation modules
+
+The API and public domain vocabulary use five business modules: qualification-paths (shared path catalogue), exam-calendar (official targets), preparation (assignments, access and goals), learning-content (shared material) and study (personal learning read models). Public qualification-paths/exam-calendar catalogue groups and private preparation/study groups each have one http.ts. Learning-content exposes its internal repository. Collection contracts share cursor pagination for clients and offset pagination for administration. Module migration files create the final initial tables directly; the first migration owns the shared timestamp trigger. ADR-0024 owns date and collection contracts; ADR-0041 owns onboarding behavior. Identifier syntax is enforced by the conventions plugin.
+
+## Backend and contract convention checks
+
+The conventions plugin also enforces SQL placement in API PostgreSQL readers/repositories, migrations and explicit seeds, including rejection of direct fixture SQL. It checks backend role filenames, one module http.ts naming, concept filenames without -id, semantic UUID schemas built from the shared Uuid, request schemas imported from requests.ts, and api-client action/request/response/error groups with an inferred req forwarded to the generated client. These checks run through the existing lint, pre-commit and CI commands.
+
+Checks cover static syntax and imports. They do not prove authorization order, bounded SQL cardinality, module ownership or whether a query wrapper adds useful behavior; those remain review responsibilities under ADR-0021 and CODING_STANDARDS.md.

@@ -34,7 +34,7 @@ export const SignInPage = () => {
 
   const sendSignInVerificationOtpMutation = useSendOTPMutation({
     onSuccess: email => {
-      navigate({
+      void navigate({
         to: '/zweryfikuj-otp',
         search: {
           email,
@@ -74,7 +74,7 @@ export const SignInPage = () => {
             variant="outline"
             disabled={disabled || isInAppBrowser}
             onClick={() => {
-              const errorCallbackURL = new URL(getAppUrl('/login'))
+              const errorCallbackURL = new URL(getAppUrl('/logowanie'))
               errorCallbackURL.searchParams.set('redirect', safeRedirectPath(redirect))
               signInWithGoogleMutation.mutate({
                 callbackURL: getAppUrl(safeRedirectPath(redirect)),

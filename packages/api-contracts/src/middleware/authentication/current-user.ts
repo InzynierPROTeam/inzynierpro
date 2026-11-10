@@ -1,5 +1,5 @@
 import { Email } from '@inzpro/domain/common/email'
-import { UserId } from '@inzpro/domain/modules/identity/user-id'
+import { UserId } from '@inzpro/domain/modules/identity/user'
 import { Context, Schema } from 'effect'
 
 export const SessionUser = Schema.Struct({

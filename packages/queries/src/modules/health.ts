@@ -1,12 +1,14 @@
-import { checkHealth } from '@inzpro/api-client/modules/health'
+import { checkHealth, type CheckHealthRequest } from '@inzpro/api-client/modules/health'
 import type { HttpClient } from 'effect/http'
 import { effectQueryOptions } from '~queries/lib/effect-query-options.js'
 
 export const healthKeys = {
   all: ['health'] as const,
-  general: () => [...healthKeys.all, 'general'] as const,
-  check: () => [...healthKeys.general(), 'check'] as const,
+  status: () => [...healthKeys.all, 'status'] as const,
+  checkHealth: (req: CheckHealthRequest) => [...healthKeys.status(), 'checkHealth', req] as const,
 }
 
-export const checkHealthQueryOptions = (httpClient: HttpClient.HttpClient) =>
-  effectQueryOptions(healthKeys.check(), checkHealth, httpClient)
+export const checkHealthQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  req: CheckHealthRequest = {},
+) => effectQueryOptions(healthKeys.checkHealth(req), checkHealth(req), httpClient)

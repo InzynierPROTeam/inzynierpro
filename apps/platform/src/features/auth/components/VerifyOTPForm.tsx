@@ -74,7 +74,7 @@ export const VerifyOTPForm = () => {
         e.preventDefault()
         e.stopPropagation()
 
-        form.handleSubmit()
+        void form.handleSubmit()
       }}
       noValidate
     >

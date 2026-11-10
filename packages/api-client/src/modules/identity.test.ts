@@ -13,7 +13,7 @@ test('the current session is decoded from the shared contract', () =>
   withHttpServer(
     [HttpRouter.route('GET', sessionPath, HttpServerResponse.jsonUnsafe({ user }))],
     async ({ httpClient }) => {
-      expect(await runApi(getCurrentSession, httpClient)).toEqual({ user })
+      expect(await runApi(getCurrentSession(), httpClient)).toEqual({ user })
     },
   ))
 
@@ -35,6 +35,6 @@ test('a missing session is a typed Unauthenticated error', () =>
       ),
     ],
     async ({ httpClient }) => {
-      await expect(runApi(getCurrentSession, httpClient)).rejects.toBeInstanceOf(Unauthenticated)
+      await expect(runApi(getCurrentSession(), httpClient)).rejects.toBeInstanceOf(Unauthenticated)
     },
   ))

@@ -9,3 +9,7 @@ Uprawniona osoba może jawnie wycofać błędną rewizję i zablokować dalsze o
 W zwykłej sesji pomijamy wycofane pytanie, bez zastępowania go innym. Nie jest to błędna ani zatwierdzona odpowiedź użytkownika. Podsumowanie wyjaśnia różnicę liczby ocenionych pytań. Jeżeli wycofano wszystkie pozostałe pytania, kończymy sesję z informacją i standardową propozycją dalszej nauki.
 
 Podczas egzaminu próbnego pozwalamy dokończyć pozostałe pytania, ale oznaczamy podejście jako niepełne i nie nadajemy wyniku „zdany/niezdany” według pierwotnego blueprintu. Zachowujemy odpowiedzi i wyniki ważnych pytań; wycofanego pytania nie liczymy jako błędu. Podsumowanie wyjaśnia brak pełnej, ocenionej symulacji.
+
+## Znormalizowane warianty odpowiedzi pisemnych
+
+Wariant odpowiedzi jest osobną encją QuestionAnswer przypisaną do konkretnej QuestionRevision. Ma własny identyfikator, treść i informację o poprawności, bez globalnej pozycji prezentacji. Publikacja wymaga trzech różnych wariantów i dokładnie jednego poprawnego. Dane wariantów po publikacji pozostają niezmienne, także po wycofaniu rewizji. Nowa rewizja otrzymuje własne warianty i identyfikatory; historii nie wiążemy z mutowalnymi odpowiedziami wspólnymi dla kolejnych rewizji.

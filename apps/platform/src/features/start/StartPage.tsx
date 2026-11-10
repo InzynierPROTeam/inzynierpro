@@ -9,6 +9,7 @@ import {
 import { LoaderCircle } from 'lucide-react'
 import { appName } from '~platform/config/app'
 import { useSignOutMutation } from '~platform/features/auth/hooks/useSignOutMutation'
+import { Catalogue } from '~platform/features/learning/components/Catalogue'
 
 import { startPageRouteApi } from './utils'
 
@@ -18,18 +19,26 @@ export const StartPage = () => {
 
   return (
     <section className="layout-section flex-1 items-center justify-center">
-      <Card className="w-full max-w-xl">
+      <Card className="w-full max-w-3xl">
         <CardHeader className="items-center text-center text-balance">
           <CardTitle>
             <h1>Witaj w {appName}</h1>
           </CardTitle>
           <CardDescription>
             <p>
-              Jesteś zalogowany jako <span className="text-primary break-all">{user.email}</span>.
+              Zalogowano jako <span className="text-primary break-all">{user.email}</span>.
             </p>
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex justify-center">
+        <CardContent className="space-y-6">
+          <p className="text-muted-foreground text-sm">
+            Przykładowe dane techniczne — nie są materiałem egzaminacyjnym i nie zostały
+            zweryfikowane merytorycznie.
+          </p>
+          <Catalogue
+            key={user.id}
+            userId={user.id}
+          />
           <Button
             variant="outline"
             size="lg"

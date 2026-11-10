@@ -16,7 +16,7 @@ test('the current session is cached under the identity module key', () =>
       withQueryClient(async queryClient => {
         const options = currentSessionQueryOptions(httpClient)
 
-        expect(options.queryKey).toEqual(['identity', 'general', 'session'])
+        expect(options.queryKey).toEqual(['identity', 'session', 'getCurrentSession', {}])
         expect(await queryClient.query(options)).toEqual({ user })
 
         await queryClient.invalidateQueries({ queryKey: identityKeys.all })

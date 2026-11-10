@@ -9,119 +9,199 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MaybeauthenticatedRouteImport } from './routes/_maybeauthenticated'
 import { Route as HealthCheckRouteImport } from './routes/health-check'
-import { Route as appAuthenticatedRouteImport } from './routes/(app)/_authenticated'
 import { Route as publicLayoutRouteImport } from './routes/(public)/_layout'
-import { Route as appAuthenticatedStartRouteImport } from './routes/(app)/_authenticated/start'
-import { Route as publicLayoutNotauthenticatedRouteImport } from './routes/(public)/_layout/_notauthenticated'
-import { Route as publicLayoutNotauthenticatedIndexRouteImport } from './routes/(public)/_layout/_notauthenticated/index'
-import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
-import { Route as publicLayoutNotauthenticatedLoginIndexRouteImport } from './routes/(public)/_layout/_notauthenticated/login.index'
+import { Route as publicLayoutIndexRouteImport } from './routes/(public)/_layout/index'
+import { Route as MaybeauthenticatedappAuthenticatedRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated'
+import { Route as MaybeauthenticatedpublicLayoutRouteImport } from './routes/_maybeauthenticated/(public)/_layout'
+import { Route as MaybeauthenticatedappAuthenticatedNaukaRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/nauka'
+import { Route as MaybeauthenticatedappAuthenticatedProfilRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/profil'
+import { Route as MaybeauthenticatedappAuthenticatedStartRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/start'
+import { Route as MaybeauthenticatedappAuthenticatedUstnyRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/ustny'
+import { Route as MaybeauthenticatedpublicLayoutNotauthenticatedRouteImport } from './routes/_maybeauthenticated/(public)/_layout/_notauthenticated'
+import { Route as MaybeauthenticatedpublicLayoutZacznijRouteImport } from './routes/_maybeauthenticated/(public)/_layout/zacznij'
+import { Route as MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRouteImport } from './routes/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie'
+import { Route as MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp'
 
+const MaybeauthenticatedRoute = MaybeauthenticatedRouteImport.update({
+  id: '/_maybeauthenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HealthCheckRoute = HealthCheckRouteImport.update({
   id: '/health-check',
   path: '/health-check',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const appAuthenticatedRoute = appAuthenticatedRouteImport.update({
-  id: '/(app)/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const publicLayoutRoute = publicLayoutRouteImport.update({
   id: '/(public)/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const appAuthenticatedStartRoute = appAuthenticatedStartRouteImport.update({
-  id: '/start',
-  path: '/start',
-  getParentRoute: () => appAuthenticatedRoute,
+const publicLayoutIndexRoute = publicLayoutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => publicLayoutRoute,
 } as any)
-const publicLayoutNotauthenticatedRoute =
-  publicLayoutNotauthenticatedRouteImport.update({
+const MaybeauthenticatedappAuthenticatedRoute =
+  MaybeauthenticatedappAuthenticatedRouteImport.update({
+    id: '/(app)/_authenticated',
+    getParentRoute: () => MaybeauthenticatedRoute,
+  } as any)
+const MaybeauthenticatedpublicLayoutRoute =
+  MaybeauthenticatedpublicLayoutRouteImport.update({
+    id: '/(public)/_layout',
+    getParentRoute: () => MaybeauthenticatedRoute,
+  } as any)
+const MaybeauthenticatedappAuthenticatedNaukaRoute =
+  MaybeauthenticatedappAuthenticatedNaukaRouteImport.update({
+    id: '/nauka',
+    path: '/nauka',
+    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
+  } as any)
+const MaybeauthenticatedappAuthenticatedProfilRoute =
+  MaybeauthenticatedappAuthenticatedProfilRouteImport.update({
+    id: '/profil',
+    path: '/profil',
+    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
+  } as any)
+const MaybeauthenticatedappAuthenticatedStartRoute =
+  MaybeauthenticatedappAuthenticatedStartRouteImport.update({
+    id: '/start',
+    path: '/start',
+    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
+  } as any)
+const MaybeauthenticatedappAuthenticatedUstnyRoute =
+  MaybeauthenticatedappAuthenticatedUstnyRouteImport.update({
+    id: '/ustny',
+    path: '/ustny',
+    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
+  } as any)
+const MaybeauthenticatedpublicLayoutNotauthenticatedRoute =
+  MaybeauthenticatedpublicLayoutNotauthenticatedRouteImport.update({
     id: '/_notauthenticated',
-    getParentRoute: () => publicLayoutRoute,
+    getParentRoute: () => MaybeauthenticatedpublicLayoutRoute,
   } as any)
-const publicLayoutNotauthenticatedIndexRoute =
-  publicLayoutNotauthenticatedIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => publicLayoutNotauthenticatedRoute,
+const MaybeauthenticatedpublicLayoutZacznijRoute =
+  MaybeauthenticatedpublicLayoutZacznijRouteImport.update({
+    id: '/zacznij',
+    path: '/zacznij',
+    getParentRoute: () => MaybeauthenticatedpublicLayoutRoute,
   } as any)
-const publicLayoutNotauthenticatedZweryfikujOtpRoute =
-  publicLayoutNotauthenticatedZweryfikujOtpRouteImport.update({
-    id: '/zweryfikuj-otp',
-    path: '/zweryfikuj-otp',
-    getParentRoute: () => publicLayoutNotauthenticatedRoute,
+const MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute =
+  MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRouteImport.update({
+    id: '/logowanie',
+    path: '/logowanie',
+    getParentRoute: () => MaybeauthenticatedpublicLayoutNotauthenticatedRoute,
   } as any)
-const publicLayoutNotauthenticatedLoginIndexRoute =
-  publicLayoutNotauthenticatedLoginIndexRouteImport.update({
-    id: '/login/',
-    path: '/login/',
-    getParentRoute: () => publicLayoutNotauthenticatedRoute,
-  } as any)
+const MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute =
+  MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRouteImport.update(
+    {
+      id: '/zweryfikuj-otp',
+      path: '/zweryfikuj-otp',
+      getParentRoute: () => MaybeauthenticatedpublicLayoutNotauthenticatedRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
+  '/': typeof publicLayoutIndexRoute
   '/health-check': typeof HealthCheckRoute
-  '/start': typeof appAuthenticatedStartRoute
-  '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
-  '/': typeof publicLayoutNotauthenticatedIndexRoute
-  '/login/': typeof publicLayoutNotauthenticatedLoginIndexRoute
+  '/nauka': typeof MaybeauthenticatedappAuthenticatedNaukaRoute
+  '/profil': typeof MaybeauthenticatedappAuthenticatedProfilRoute
+  '/start': typeof MaybeauthenticatedappAuthenticatedStartRoute
+  '/ustny': typeof MaybeauthenticatedappAuthenticatedUstnyRoute
+  '/zacznij': typeof MaybeauthenticatedpublicLayoutZacznijRoute
+  '/logowanie': typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
+  '/zweryfikuj-otp': typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof publicLayoutIndexRoute
   '/health-check': typeof HealthCheckRoute
-  '/start': typeof appAuthenticatedStartRoute
-  '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
-  '/': typeof publicLayoutNotauthenticatedIndexRoute
-  '/login': typeof publicLayoutNotauthenticatedLoginIndexRoute
+  '/nauka': typeof MaybeauthenticatedappAuthenticatedNaukaRoute
+  '/profil': typeof MaybeauthenticatedappAuthenticatedProfilRoute
+  '/start': typeof MaybeauthenticatedappAuthenticatedStartRoute
+  '/ustny': typeof MaybeauthenticatedappAuthenticatedUstnyRoute
+  '/zacznij': typeof MaybeauthenticatedpublicLayoutZacznijRoute
+  '/logowanie': typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
+  '/zweryfikuj-otp': typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_maybeauthenticated': typeof MaybeauthenticatedRouteWithChildren
   '/health-check': typeof HealthCheckRoute
-  '/(app)/_authenticated': typeof appAuthenticatedRouteWithChildren
   '/(public)/_layout': typeof publicLayoutRouteWithChildren
-  '/(app)/_authenticated/start': typeof appAuthenticatedStartRoute
-  '/(public)/_layout/_notauthenticated': typeof publicLayoutNotauthenticatedRouteWithChildren
-  '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
-  '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
-  '/(public)/_layout/_notauthenticated/login/': typeof publicLayoutNotauthenticatedLoginIndexRoute
+  '/_maybeauthenticated/(app)/_authenticated': typeof MaybeauthenticatedappAuthenticatedRouteWithChildren
+  '/_maybeauthenticated/(public)/_layout': typeof MaybeauthenticatedpublicLayoutRouteWithChildren
+  '/(public)/_layout/': typeof publicLayoutIndexRoute
+  '/_maybeauthenticated/(app)/_authenticated/nauka': typeof MaybeauthenticatedappAuthenticatedNaukaRoute
+  '/_maybeauthenticated/(app)/_authenticated/profil': typeof MaybeauthenticatedappAuthenticatedProfilRoute
+  '/_maybeauthenticated/(app)/_authenticated/start': typeof MaybeauthenticatedappAuthenticatedStartRoute
+  '/_maybeauthenticated/(app)/_authenticated/ustny': typeof MaybeauthenticatedappAuthenticatedUstnyRoute
+  '/_maybeauthenticated/(public)/_layout/_notauthenticated': typeof MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren
+  '/_maybeauthenticated/(public)/_layout/zacznij': typeof MaybeauthenticatedpublicLayoutZacznijRoute
+  '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie': typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
+  '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/health-check' | '/start' | '/zweryfikuj-otp' | '/' | '/login/'
+  fullPaths:
+    | '/'
+    | '/health-check'
+    | '/nauka'
+    | '/profil'
+    | '/start'
+    | '/ustny'
+    | '/zacznij'
+    | '/logowanie'
+    | '/zweryfikuj-otp'
   fileRoutesByTo: FileRoutesByTo
-  to: '/health-check' | '/start' | '/zweryfikuj-otp' | '/' | '/login'
+  to:
+    | '/'
+    | '/health-check'
+    | '/nauka'
+    | '/profil'
+    | '/start'
+    | '/ustny'
+    | '/zacznij'
+    | '/logowanie'
+    | '/zweryfikuj-otp'
   id:
     | '__root__'
+    | '/_maybeauthenticated'
     | '/health-check'
-    | '/(app)/_authenticated'
     | '/(public)/_layout'
-    | '/(app)/_authenticated/start'
-    | '/(public)/_layout/_notauthenticated'
-    | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
-    | '/(public)/_layout/_notauthenticated/'
-    | '/(public)/_layout/_notauthenticated/login/'
+    | '/_maybeauthenticated/(app)/_authenticated'
+    | '/_maybeauthenticated/(public)/_layout'
+    | '/(public)/_layout/'
+    | '/_maybeauthenticated/(app)/_authenticated/nauka'
+    | '/_maybeauthenticated/(app)/_authenticated/profil'
+    | '/_maybeauthenticated/(app)/_authenticated/start'
+    | '/_maybeauthenticated/(app)/_authenticated/ustny'
+    | '/_maybeauthenticated/(public)/_layout/_notauthenticated'
+    | '/_maybeauthenticated/(public)/_layout/zacznij'
+    | '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie'
+    | '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  MaybeauthenticatedRoute: typeof MaybeauthenticatedRouteWithChildren
   HealthCheckRoute: typeof HealthCheckRoute
-  appAuthenticatedRoute: typeof appAuthenticatedRouteWithChildren
   publicLayoutRoute: typeof publicLayoutRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_maybeauthenticated': {
+      id: '/_maybeauthenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof MaybeauthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/health-check': {
       id: '/health-check'
       path: '/health-check'
       fullPath: '/health-check'
       preLoaderRoute: typeof HealthCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(app)/_authenticated': {
-      id: '/(app)/_authenticated'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof appAuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(public)/_layout': {
@@ -131,83 +211,167 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(app)/_authenticated/start': {
-      id: '/(app)/_authenticated/start'
-      path: '/start'
-      fullPath: '/start'
-      preLoaderRoute: typeof appAuthenticatedStartRouteImport
-      parentRoute: typeof appAuthenticatedRoute
-    }
-    '/(public)/_layout/_notauthenticated': {
-      id: '/(public)/_layout/_notauthenticated'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof publicLayoutNotauthenticatedRouteImport
-      parentRoute: typeof publicLayoutRoute
-    }
-    '/(public)/_layout/_notauthenticated/': {
-      id: '/(public)/_layout/_notauthenticated/'
+    '/(public)/_layout/': {
+      id: '/(public)/_layout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof publicLayoutNotauthenticatedIndexRouteImport
-      parentRoute: typeof publicLayoutNotauthenticatedRoute
+      preLoaderRoute: typeof publicLayoutIndexRouteImport
+      parentRoute: typeof publicLayoutRoute
     }
-    '/(public)/_layout/_notauthenticated/zweryfikuj-otp': {
-      id: '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+    '/_maybeauthenticated/(app)/_authenticated': {
+      id: '/_maybeauthenticated/(app)/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedRouteImport
+      parentRoute: typeof MaybeauthenticatedRoute
+    }
+    '/_maybeauthenticated/(public)/_layout': {
+      id: '/_maybeauthenticated/(public)/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutRouteImport
+      parentRoute: typeof MaybeauthenticatedRoute
+    }
+    '/_maybeauthenticated/(app)/_authenticated/nauka': {
+      id: '/_maybeauthenticated/(app)/_authenticated/nauka'
+      path: '/nauka'
+      fullPath: '/nauka'
+      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedNaukaRouteImport
+      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
+    }
+    '/_maybeauthenticated/(app)/_authenticated/profil': {
+      id: '/_maybeauthenticated/(app)/_authenticated/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedProfilRouteImport
+      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
+    }
+    '/_maybeauthenticated/(app)/_authenticated/start': {
+      id: '/_maybeauthenticated/(app)/_authenticated/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedStartRouteImport
+      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
+    }
+    '/_maybeauthenticated/(app)/_authenticated/ustny': {
+      id: '/_maybeauthenticated/(app)/_authenticated/ustny'
+      path: '/ustny'
+      fullPath: '/ustny'
+      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedUstnyRouteImport
+      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
+    }
+    '/_maybeauthenticated/(public)/_layout/_notauthenticated': {
+      id: '/_maybeauthenticated/(public)/_layout/_notauthenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRouteImport
+      parentRoute: typeof MaybeauthenticatedpublicLayoutRoute
+    }
+    '/_maybeauthenticated/(public)/_layout/zacznij': {
+      id: '/_maybeauthenticated/(public)/_layout/zacznij'
+      path: '/zacznij'
+      fullPath: '/zacznij'
+      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutZacznijRouteImport
+      parentRoute: typeof MaybeauthenticatedpublicLayoutRoute
+    }
+    '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie': {
+      id: '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie'
+      path: '/logowanie'
+      fullPath: '/logowanie'
+      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRouteImport
+      parentRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRoute
+    }
+    '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp': {
+      id: '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp'
       path: '/zweryfikuj-otp'
       fullPath: '/zweryfikuj-otp'
-      preLoaderRoute: typeof publicLayoutNotauthenticatedZweryfikujOtpRouteImport
-      parentRoute: typeof publicLayoutNotauthenticatedRoute
-    }
-    '/(public)/_layout/_notauthenticated/login/': {
-      id: '/(public)/_layout/_notauthenticated/login/'
-      path: '/login'
-      fullPath: '/login/'
-      preLoaderRoute: typeof publicLayoutNotauthenticatedLoginIndexRouteImport
-      parentRoute: typeof publicLayoutNotauthenticatedRoute
+      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRouteImport
+      parentRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRoute
     }
   }
 }
 
-interface appAuthenticatedRouteChildren {
-  appAuthenticatedStartRoute: typeof appAuthenticatedStartRoute
+interface MaybeauthenticatedappAuthenticatedRouteChildren {
+  MaybeauthenticatedappAuthenticatedNaukaRoute: typeof MaybeauthenticatedappAuthenticatedNaukaRoute
+  MaybeauthenticatedappAuthenticatedProfilRoute: typeof MaybeauthenticatedappAuthenticatedProfilRoute
+  MaybeauthenticatedappAuthenticatedStartRoute: typeof MaybeauthenticatedappAuthenticatedStartRoute
+  MaybeauthenticatedappAuthenticatedUstnyRoute: typeof MaybeauthenticatedappAuthenticatedUstnyRoute
 }
 
-const appAuthenticatedRouteChildren: appAuthenticatedRouteChildren = {
-  appAuthenticatedStartRoute: appAuthenticatedStartRoute,
-}
-
-const appAuthenticatedRouteWithChildren =
-  appAuthenticatedRoute._addFileChildren(appAuthenticatedRouteChildren)
-
-interface publicLayoutNotauthenticatedRouteChildren {
-  publicLayoutNotauthenticatedZweryfikujOtpRoute: typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
-  publicLayoutNotauthenticatedIndexRoute: typeof publicLayoutNotauthenticatedIndexRoute
-  publicLayoutNotauthenticatedLoginIndexRoute: typeof publicLayoutNotauthenticatedLoginIndexRoute
-}
-
-const publicLayoutNotauthenticatedRouteChildren: publicLayoutNotauthenticatedRouteChildren =
+const MaybeauthenticatedappAuthenticatedRouteChildren: MaybeauthenticatedappAuthenticatedRouteChildren =
   {
-    publicLayoutNotauthenticatedZweryfikujOtpRoute:
-      publicLayoutNotauthenticatedZweryfikujOtpRoute,
-    publicLayoutNotauthenticatedIndexRoute:
-      publicLayoutNotauthenticatedIndexRoute,
-    publicLayoutNotauthenticatedLoginIndexRoute:
-      publicLayoutNotauthenticatedLoginIndexRoute,
+    MaybeauthenticatedappAuthenticatedNaukaRoute:
+      MaybeauthenticatedappAuthenticatedNaukaRoute,
+    MaybeauthenticatedappAuthenticatedProfilRoute:
+      MaybeauthenticatedappAuthenticatedProfilRoute,
+    MaybeauthenticatedappAuthenticatedStartRoute:
+      MaybeauthenticatedappAuthenticatedStartRoute,
+    MaybeauthenticatedappAuthenticatedUstnyRoute:
+      MaybeauthenticatedappAuthenticatedUstnyRoute,
   }
 
-const publicLayoutNotauthenticatedRouteWithChildren =
-  publicLayoutNotauthenticatedRoute._addFileChildren(
-    publicLayoutNotauthenticatedRouteChildren,
+const MaybeauthenticatedappAuthenticatedRouteWithChildren =
+  MaybeauthenticatedappAuthenticatedRoute._addFileChildren(
+    MaybeauthenticatedappAuthenticatedRouteChildren,
   )
 
+interface MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren {
+  MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
+  MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
+}
+
+const MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren: MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren =
+  {
+    MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute:
+      MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute,
+    MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute:
+      MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute,
+  }
+
+const MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren =
+  MaybeauthenticatedpublicLayoutNotauthenticatedRoute._addFileChildren(
+    MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren,
+  )
+
+interface MaybeauthenticatedpublicLayoutRouteChildren {
+  MaybeauthenticatedpublicLayoutNotauthenticatedRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren
+  MaybeauthenticatedpublicLayoutZacznijRoute: typeof MaybeauthenticatedpublicLayoutZacznijRoute
+}
+
+const MaybeauthenticatedpublicLayoutRouteChildren: MaybeauthenticatedpublicLayoutRouteChildren =
+  {
+    MaybeauthenticatedpublicLayoutNotauthenticatedRoute:
+      MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren,
+    MaybeauthenticatedpublicLayoutZacznijRoute:
+      MaybeauthenticatedpublicLayoutZacznijRoute,
+  }
+
+const MaybeauthenticatedpublicLayoutRouteWithChildren =
+  MaybeauthenticatedpublicLayoutRoute._addFileChildren(
+    MaybeauthenticatedpublicLayoutRouteChildren,
+  )
+
+interface MaybeauthenticatedRouteChildren {
+  MaybeauthenticatedappAuthenticatedRoute: typeof MaybeauthenticatedappAuthenticatedRouteWithChildren
+  MaybeauthenticatedpublicLayoutRoute: typeof MaybeauthenticatedpublicLayoutRouteWithChildren
+}
+
+const MaybeauthenticatedRouteChildren: MaybeauthenticatedRouteChildren = {
+  MaybeauthenticatedappAuthenticatedRoute:
+    MaybeauthenticatedappAuthenticatedRouteWithChildren,
+  MaybeauthenticatedpublicLayoutRoute:
+    MaybeauthenticatedpublicLayoutRouteWithChildren,
+}
+
+const MaybeauthenticatedRouteWithChildren =
+  MaybeauthenticatedRoute._addFileChildren(MaybeauthenticatedRouteChildren)
+
 interface publicLayoutRouteChildren {
-  publicLayoutNotauthenticatedRoute: typeof publicLayoutNotauthenticatedRouteWithChildren
+  publicLayoutIndexRoute: typeof publicLayoutIndexRoute
 }
 
 const publicLayoutRouteChildren: publicLayoutRouteChildren = {
-  publicLayoutNotauthenticatedRoute:
-    publicLayoutNotauthenticatedRouteWithChildren,
+  publicLayoutIndexRoute: publicLayoutIndexRoute,
 }
 
 const publicLayoutRouteWithChildren = publicLayoutRoute._addFileChildren(
@@ -215,8 +379,8 @@ const publicLayoutRouteWithChildren = publicLayoutRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  MaybeauthenticatedRoute: MaybeauthenticatedRouteWithChildren,
   HealthCheckRoute: HealthCheckRoute,
-  appAuthenticatedRoute: appAuthenticatedRouteWithChildren,
   publicLayoutRoute: publicLayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport

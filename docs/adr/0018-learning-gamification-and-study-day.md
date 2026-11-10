@@ -25,3 +25,9 @@ Streak podtrzymuje niewielkie stałe minimum kwalifikowanej aktywności niezale�
 Początkowo dzienny cel, streak i okresy rankingowe liczymy według Europe/Warsaw, na podstawie czasu backendu. Web i mobile pokazują ten sam dzień nauki. SRS korzysta z rzeczywistego czasu między próbami, a północ nie resetuje stanu powtórek. Indywidualna strefa użytkownika może być późniejszym rozszerzeniem.
 
 Użytkownik może świadomie wygenerować i udostępnić grafikę ze streakiem lub wynikiem egzaminu próbnego. Nie publikuje to automatycznie tych danych na profilu; prywatność panelu i historii pozostaje zgodna z wcześniejszymi zasadami.
+
+## Reset i rozróżnienie planu
+
+Rozróżniamy pozostały materiał, przyjęty stały plan dnia i pozostałą pracę dzisiaj. Ukończona pula nie oznacza opanowania; należne powtórki są osobne. Nie dodajemy ręcznego aktualnego trybu: potrzeby pisemnego i ustnego wyliczamy osobno w granicach dostępu.
+
+Reset prywatnej historii jednej ścieżki nie usuwa zdobytych lifetime/miesięcznych XP ani ich wkładu do rankingów. Pozostaje minimalny rejestr nagród, aby reset nie odtwarzał bonusów pierwszego osiągnięcia lub limitów. Nie zachowujemy w nim usuwanych odpowiedzi ani postępu. Przypisanie, cel, inne ścieżki oraz wspólne notatki i ulubione pozostają. Szczegóły naliczania, streaka, analityki po resecie i kolejnych rund planowania wymagają osobnych specyfikacji przed implementacją.

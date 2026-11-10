@@ -55,7 +55,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({
         e.preventDefault()
         e.stopPropagation()
 
-        form.handleSubmit()
+        void form.handleSubmit()
       }}
       noValidate
     >

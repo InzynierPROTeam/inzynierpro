@@ -21,7 +21,7 @@ export function getRouter() {
         title="Coś poszło nie tak"
         description="Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę."
         goBackText="Wstecz"
-        homeText="Home"
+        homeText="Strona główna"
         tryAgainText="Spróbuj ponownie"
         {...props}
       />
