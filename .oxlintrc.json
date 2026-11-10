@@ -58,11 +58,15 @@
     "anti-slop/require-safety-comment-for-type-assertion": "error",
     // end of anti-slop custom rules
     // conventions custom rules
+    "conventions/api-client-contracts": "error",
+    "conventions/backend-boundaries": "error",
+    "conventions/domain-identifiers": "error",
     "conventions/hooks-in-hooks-folder": "error",
     "conventions/no-feature-prefix": "error",
     "conventions/no-spread-route-hooks": "error",
     "conventions/no-try-catch": "error",
     "conventions/queries-wrap-actions": "error",
+    "conventions/request-schemas": "error",
     // end of conventions custom rules
     // The workspace deliberately builds on effect/http and effect/http-api.
     "effecttsgo/unstable-api-usage": "off",
