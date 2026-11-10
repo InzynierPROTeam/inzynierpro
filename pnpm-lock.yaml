@@ -675,6 +675,9 @@ importers:
       '@inzpro/domain':
         specifier: workspace:*
         version: link:../domain
+      '@inzpro/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@inzpro/utils':
         specifier: workspace:*
         version: link:../utils

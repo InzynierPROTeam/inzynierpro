@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Body, Container, Font, Head, Html, Preview, Tailwind } from 'react-email'
 import { Footer } from '~email/components/Footer.js'
 import { Header } from '~email/components/Header.js'
-import { tailwindConfig } from '~email/lib/theme.js'
+import { themeCss } from '~email/lib/theme.js'
 
 // Nunito Sans, the platform font (variable, latin and latin-ext for Polish characters).
 // Clients that block web fonts use the fallbacks.
@@ -34,10 +34,10 @@ export const Layout = ({ preview, children }: LayoutProps) => (
       ))}
     </Head>
     <Preview>{preview}</Preview>
-    <Tailwind config={tailwindConfig}>
+    <Tailwind theme={themeCss}>
       <Body
         lang={POLISH_LANGUAGE}
-        className="bg-muted text-foreground py-[40px] font-sans"
+        className="bg-muted text-foreground py-10 font-sans"
       >
         <Container className="bg-background border-border mx-auto max-w-[600px] rounded-lg border border-solid">
           <Header />
