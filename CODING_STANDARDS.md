@@ -45,6 +45,7 @@ Issues define delivery scope and acceptance criteria; ADRs own lasting product a
 - [ADR-0010](docs/adr/0010-published-revisions-and-emergency-withdrawal.md): normalized answers and revision publication/immutability.
 - [ADR-0003](docs/adr/0003-session-references-to-shared-revisions.md): session references and answer presentation order.
 - [ADR-0035](docs/adr/0035-diagnostics-from-first-vertical-slice.md): error diagnostics and logging ownership.
+- [ADR-0042](docs/adr/0042-otlp-telemetry-and-grafana-cloud.md): telemetry export, span naming and data kept out of telemetry.
 - [ADR-0025](docs/adr/0025-monorepo-toolchain-and-verification.md): schema timestamps and verification tooling.
 
 Mechanical conventions are enforced by the [Oxlint conventions plugin](packages/tools/src/oxlint/conventions/index.ts); its rules and regression cases define the checked syntax. Keep additional review guidance focused on decisions static checks cannot make.
@@ -65,6 +66,8 @@ Use concrete branded schemas for concurrency versions and meaningful quantities.
 - A repository exposes persistence operations used by commands. Commands can also use readers when they need current data to decide a write.
 - PostgreSQL adapters own SQL, row decoding and persistence conversion. Prepare input variables before interpolating SQL. Select flat columns and assemble nested objects in TypeScript. Use SQL joins, predicates, counts and limits for the requested read; keep JSON object/array construction out of SELECTs.
 - Retrieve Effect services into local variables named after the concrete service: `preparationReader`, `preparationRepository`, `examCalendarReader`, `examCalendarRepository`. Keep those names across use cases, adapters and fixtures.
+- Map an unexpected infrastructure failure in a handler with `internalServerError(message)` from `~api/lib/internal-server-error.js`; do not log it by hand. Business failures keep their own responses.
+- Log levels: `error` for failures someone must fix, `warn` for degraded operation (a fallback, a lost connection), `info` for lifecycle events, `debug` for diagnosis only. Requests themselves are not logged; their spans carry method, route, status and duration. Never put e-mail addresses, IP addresses, tokens, codes or note content into a log message or annotation.
 - API integration tests exercise the real HTTP handlers and real adapters. Prepare fixtures through actual module repositories; assert behavior through the agreed public API/UI. Seed scripts may own fixture SQL. Test bodies do not implement independent persistence queries.
 
 ## Contract and persistence review

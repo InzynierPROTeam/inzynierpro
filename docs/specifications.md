@@ -53,6 +53,7 @@ Before implementation read the applicable issue, glossary and ADRs. Treat V1 at 
 | [0039-background-question-quality-analysis](adr/0039-background-question-quality-analysis.md)                                                 | D16; Out of Scope               |
 | [0040-chamber-directory-and-qualification-process-guide](adr/0040-chamber-directory-and-qualification-process-guide.md)                       | D10                             |
 | [0041-configured-paths-goals-and-access](adr/0041-configured-paths-goals-and-access.md)                                                       | D1, D2, D13, D15; Foundation F4 |
+| [0042-otlp-telemetry-and-grafana-cloud](adr/0042-otlp-telemetry-and-grafana-cloud.md)                                                         | D16, D17                        |
 
 ## Confirmed scope changes
 

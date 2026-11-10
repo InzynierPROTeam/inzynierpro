@@ -10,30 +10,30 @@ export const ExamCalendarRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return ExamCalendarRepository.of({
-      create: session => {
+      create: Effect.fn('ExamCalendarRepository.create')(function* (session) {
         const writtenAt = DateTime.formatIso(session.writtenAt)
         const oralPlanningAt = DateTime.formatIso(session.oralPlanningAt)
         const selectionClosesAt = DateTime.formatIso(session.selectionClosesAt)
 
-        return sql`INSERT INTO exam_sessions (id,general_chamber_id,name,written_at,oral_planning_at,selection_closes_at,published) VALUES (${session.id},${session.generalChamberId},${session.name},${writtenAt},${oralPlanningAt},${selectionClosesAt},true)`.pipe(
+        return yield* sql`INSERT INTO exam_sessions (id,general_chamber_id,name,written_at,oral_planning_at,selection_closes_at,published) VALUES (${session.id},${session.generalChamberId},${session.name},${writtenAt},${oralPlanningAt},${selectionClosesAt},true)`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new ExamCalendarWriteError({ cause })),
         )
-      },
-      closeSelection: (id, at) => {
+      }),
+      closeSelection: Effect.fn('ExamCalendarRepository.closeSelection')(function* (id, at) {
         const selectionClosesAt = DateTime.formatIso(at)
 
-        return sql`UPDATE exam_sessions SET selection_closes_at=${selectionClosesAt} WHERE id=${id}`.pipe(
+        return yield* sql`UPDATE exam_sessions SET selection_closes_at=${selectionClosesAt} WHERE id=${id}`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new ExamCalendarWriteError({ cause })),
         )
-      },
-
-      lock: id =>
-        sql`SELECT id FROM exam_sessions WHERE id=${id} LIMIT 1 FOR SHARE`.pipe(
+      }),
+      lock: Effect.fn('ExamCalendarRepository.lock')(function* (id) {
+        return yield* sql`SELECT id FROM exam_sessions WHERE id=${id} LIMIT 1 FOR SHARE`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new ExamCalendarWriteError({ cause })),
-        ),
+        )
+      }),
     })
   }),
 )

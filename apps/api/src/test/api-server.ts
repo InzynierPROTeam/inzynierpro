@@ -18,11 +18,13 @@ import {
   Predicate,
   Redacted,
   Scope,
+  Tracer,
 } from 'effect'
 import { HttpServer } from 'effect/http'
 import { createClient, type RedisClientType } from 'redis'
 import { httpServerLayer } from '~api/http.js'
 import { env } from '~api/lib/env.js'
+import { redactingTracer } from '~api/lib/observability.js'
 
 export const platformOrigin = 'http://localhost:8001'
 
@@ -78,11 +80,26 @@ export const startTestApi = async ({ emailAdapter, google }: TestApiOptions = {}
   const outbox = memoryAdapter()
   const sentEmails = outbox.raw?.sent ?? []
   const logs: Array<string> = []
+  const spans: Array<Tracer.Span> = []
+
+  // Records spans in memory the way the OTLP tracer would export them, sensitive attributes removed.
+  const tracer = redactingTracer(
+    Tracer.make({
+      span: options => {
+        const span = new Tracer.NativeSpan(options)
+
+        spans.push(span)
+
+        return span
+      },
+    }),
+  )
 
   const layer = httpServerLayer(config).pipe(
     Layer.provideMerge(NodeHttpServer.layer(createServer, { host: '127.0.0.1', port: 0 })),
     Layer.provide(EmailLayer(emailAdapter ?? outbox)),
     Layer.provide(Logger.layer([Logger.map(Logger.formatJson, line => logs.push(line))])),
+    Layer.provide(Layer.succeed(Tracer.Tracer, tracer)),
   )
 
   const context = await Effect.runPromise(Layer.buildWithScope(layer, scope))
@@ -130,6 +147,7 @@ export const startTestApi = async ({ emailAdapter, google }: TestApiOptions = {}
     sentEmails,
     lastCodeFor,
     logs,
+    spans,
     visitor,
     // The Redis connection used by the running API, for simulating outages.
     apiRedis: Context.get(context, Redis),

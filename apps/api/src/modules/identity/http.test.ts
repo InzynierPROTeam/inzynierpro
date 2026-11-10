@@ -48,7 +48,18 @@ describe('signing in with an email code', () => {
     const session = await visitor.session()
 
     expect(session.status).toBe(200)
-    expect(await session.json()).toMatchObject({ user: { email, name: '' } })
+
+    const body = await session.json()
+
+    expect(body).toMatchObject({ user: { email, name: '' } })
+
+    // The request's span names the account by id only.
+    const traceId = session.headers.get('x-request-id')
+    const serverSpan = api.spans.find(span => span.traceId === traceId && span.kind === 'server')
+    const attributes = JSON.stringify([...(serverSpan?.attributes ?? [])])
+
+    expect(body).toMatchObject({ user: { id: serverSpan?.attributes.get('user.id') } })
+    expect(attributes).not.toContain(email)
   })
 })
 

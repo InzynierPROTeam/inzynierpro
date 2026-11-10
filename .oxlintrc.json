@@ -67,6 +67,7 @@
     "conventions/no-try-catch": "error",
     "conventions/queries-wrap-actions": "error",
     "conventions/request-schemas": "error",
+    "conventions/traced-backend-operations": "error",
     // end of conventions custom rules
     // The workspace deliberately builds on effect/http and effect/http-api.
     "effecttsgo/unstable-api-usage": "off",

@@ -9,27 +9,26 @@ import { StudyDocumentNotFound } from './errors.js'
 import { StudyReader } from './study.reader.js'
 
 // A read operation: no StudySession is created and the selected path is unchanged.
-export const getSessionPreview = (
+export const getSessionPreview = Effect.fn('Study.getSessionPreview')(function* (
   userId: UserId,
   pathId: QualificationPathId,
   documentId: ReferenceDocumentId,
-) =>
-  Effect.gen(function* () {
-    yield* requirePathAccess(userId, pathId, 'written')
-    const studyReader = yield* StudyReader
-    const found = yield* studyReader.document(userId, pathId, documentId)
+) {
+  yield* requirePathAccess(userId, pathId, 'written')
+  const studyReader = yield* StudyReader
+  const found = yield* studyReader.document(userId, pathId, documentId)
 
-    if (Option.isNone(found)) {
-      return yield* new StudyDocumentNotFound()
-    }
+  if (Option.isNone(found)) {
+    return yield* new StudyDocumentNotFound()
+  }
 
-    const document = found.value
+  const document = found.value
 
-    return {
-      qualificationPathId: pathId,
-      document,
-      mode: 'written-study' as const,
-      availableQuestionCount: document.availableQuestionCount,
-      settings: writtenStudySettings(document.availableQuestionCount),
-    }
-  })
+  return {
+    qualificationPathId: pathId,
+    document,
+    mode: 'written-study' as const,
+    availableQuestionCount: document.availableQuestionCount,
+    settings: writtenStudySettings(document.availableQuestionCount),
+  }
+})

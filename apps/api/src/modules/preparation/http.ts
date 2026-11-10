@@ -5,9 +5,10 @@ import {
   InvalidPathConfiguration,
   GoalConflict,
 } from '@inzpro/api-contracts/modules/preparation/errors'
-import { InternalServerError, InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
+import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
 import { Effect, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
+import { internalServerError } from '~api/lib/internal-server-error.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/exam-calendar.reader.js'
 import { ExamCalendarReaderLive } from '~api/modules/exam-calendar/exam-calendar.reader.postgres.js'
@@ -54,17 +55,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         Effect.flatMap(CurrentUser, user => preparationReader.paths(user.id, query)).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
             InvalidCursor: () =>
               Effect.fail(
                 new InvalidRequest({
@@ -81,17 +72,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           .pipe(
             Effect.provide(dependencies),
             Effect.catchTags({
-              PreparationReadError: error =>
-                Effect.logError('preparation_read_failed', error).pipe(
-                  Effect.andThen(
-                    Effect.fail(
-                      new InternalServerError({
-                        type: 'internal_server_error',
-                        message: 'Could not read preparation data.',
-                      }),
-                    ),
-                  ),
-                ),
+              PreparationReadError: internalServerError('Could not read preparation data.'),
             }),
           ),
       )
@@ -103,17 +84,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           .pipe(
             Effect.provide(dependencies),
             Effect.catchTags({
-              PreparationReadError: error =>
-                Effect.logError('preparation_read_failed', error).pipe(
-                  Effect.andThen(
-                    Effect.fail(
-                      new InternalServerError({
-                        type: 'internal_server_error',
-                        message: 'Could not read preparation data.',
-                      }),
-                    ),
-                  ),
-                ),
+              PreparationReadError: internalServerError('Could not read preparation data.'),
             }),
           ),
       )
@@ -121,28 +92,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         Effect.flatMap(CurrentUser, user => selectPath(user.id, payload.qualificationPathId)).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
-            PreparationWriteError: error =>
-              Effect.logError('preparation_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not save preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
+            PreparationWriteError: internalServerError('Could not save preparation data.'),
             PathPermissionDenied: () =>
               Effect.fail(
                 new PathAccessDenied({
@@ -157,72 +108,14 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         Effect.flatMap(CurrentUser, user => completeOnboarding(user.id, payload)).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
-            PreparationWriteError: error =>
-              Effect.logError('preparation_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not save preparation data.',
-                    }),
-                  ),
-                ),
-              ),
-            QualificationPathsReadError: error =>
-              Effect.logError('qualification_paths_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read qualification paths.',
-                    }),
-                  ),
-                ),
-              ),
-            QualificationPathsWriteError: error =>
-              Effect.logError('qualification_paths_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not validate qualification paths.',
-                    }),
-                  ),
-                ),
-              ),
-            ExamCalendarReadError: error =>
-              Effect.logError('exam_calendar_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read exam sessions.',
-                    }),
-                  ),
-                ),
-              ),
-            ExamCalendarWriteError: error =>
-              Effect.logError('exam_calendar_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not validate exam sessions.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
+            PreparationWriteError: internalServerError('Could not save preparation data.'),
+            QualificationPathsReadError: internalServerError('Could not read qualification paths.'),
+            QualificationPathsWriteError: internalServerError(
+              'Could not validate qualification paths.',
+            ),
+            ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
+            ExamCalendarWriteError: internalServerError('Could not validate exam sessions.'),
             StalePathConfiguration: () =>
               Effect.fail(
                 new InvalidPathConfiguration({
@@ -237,28 +130,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         Effect.flatMap(CurrentUser, user => archivePath(user.id, params.qualificationPathId)).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
-            PreparationWriteError: error =>
-              Effect.logError('preparation_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not save preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
+            PreparationWriteError: internalServerError('Could not save preparation data.'),
             PathPermissionDenied: () =>
               Effect.fail(
                 new PathAccessDenied({
@@ -273,28 +146,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         Effect.flatMap(CurrentUser, user => restorePath(user.id, params.qualificationPathId)).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
-            PreparationWriteError: error =>
-              Effect.logError('preparation_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not save preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
+            PreparationWriteError: internalServerError('Could not save preparation data.'),
             PathPermissionDenied: () =>
               Effect.fail(
                 new PathAccessDenied({
@@ -309,28 +162,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         Effect.flatMap(CurrentUser, user => extendPath(user.id, params.qualificationPathId)).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
-            PreparationWriteError: error =>
-              Effect.logError('preparation_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not save preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
+            PreparationWriteError: internalServerError('Could not save preparation data.'),
             PathPermissionDenied: () =>
               Effect.fail(
                 new PathAccessDenied({
@@ -347,28 +180,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         ).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
-            PreparationWriteError: error =>
-              Effect.logError('preparation_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not save preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
+            PreparationWriteError: internalServerError('Could not save preparation data.'),
             PathPermissionDenied: () =>
               Effect.fail(
                 new PathAccessDenied({
@@ -376,39 +189,11 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
                   message: 'Your active path does not include this material.',
                 }),
               ),
-            ExamCalendarReadError: error =>
-              Effect.logError('exam_calendar_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read exam sessions.',
-                    }),
-                  ),
-                ),
-              ),
-            ExamCalendarWriteError: error =>
-              Effect.logError('exam_calendar_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not validate exam sessions.',
-                    }),
-                  ),
-                ),
-              ),
-            QualificationPathsWriteError: error =>
-              Effect.logError('qualification_paths_write_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not validate qualification paths.',
-                    }),
-                  ),
-                ),
-              ),
+            ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
+            ExamCalendarWriteError: internalServerError('Could not validate exam sessions.'),
+            QualificationPathsWriteError: internalServerError(
+              'Could not validate qualification paths.',
+            ),
             StaleExamGoal: () =>
               Effect.fail(
                 new GoalConflict({
@@ -432,17 +217,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         ).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
             PathPermissionDenied: () =>
               Effect.fail(
                 new PathAccessDenied({
@@ -466,17 +241,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         ).pipe(
           Effect.provide(dependencies),
           Effect.catchTags({
-            PreparationReadError: error =>
-              Effect.logError('preparation_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read preparation data.',
-                    }),
-                  ),
-                ),
-              ),
+            PreparationReadError: internalServerError('Could not read preparation data.'),
             PathPermissionDenied: () =>
               Effect.fail(
                 new PathAccessDenied({
@@ -484,17 +249,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
                   message: 'Your active path does not include this material.',
                 }),
               ),
-            ExamCalendarReadError: error =>
-              Effect.logError('exam_calendar_read_failed', error).pipe(
-                Effect.andThen(
-                  Effect.fail(
-                    new InternalServerError({
-                      type: 'internal_server_error',
-                      message: 'Could not read exam sessions.',
-                    }),
-                  ),
-                ),
-              ),
+            ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
             InvalidCursor: () =>
               Effect.fail(
                 new InvalidRequest({

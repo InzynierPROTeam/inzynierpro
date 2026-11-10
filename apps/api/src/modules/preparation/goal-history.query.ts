@@ -5,15 +5,14 @@ import { Effect } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/path-access.policy.js'
 import { PreparationReader } from '~api/modules/preparation/preparation.reader.js'
 
-export const getGoalHistory = (
+export const getGoalHistory = Effect.fn('Preparation.getGoalHistory')(function* (
   userId: UserId,
   pathId: QualificationPathId,
   page: CursorPagination,
-) =>
-  Effect.gen(function* () {
-    yield* requirePathAccess(userId, pathId)
+) {
+  yield* requirePathAccess(userId, pathId)
 
-    const preparationReader = yield* PreparationReader
+  const preparationReader = yield* PreparationReader
 
-    return yield* preparationReader.goals(userId, pathId, page)
-  })
+  return yield* preparationReader.goals(userId, pathId, page)
+})

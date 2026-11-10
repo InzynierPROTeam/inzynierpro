@@ -20,8 +20,8 @@ export const QualificationPathsReaderLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return QualificationPathsReader.of({
-      specializations: req =>
-        Effect.gen(function* () {
+      specializations: Effect.fn('QualificationPathsReader.specializations')(
+        function* (req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
           const cursor = yield* decodeCursor(Uuid, req.cursor)
@@ -34,14 +34,14 @@ export const QualificationPathsReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(Specialization))(rows)
 
           return makeCursorPage(data, limit, row => row.id)
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
-            SchemaError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
-          }),
-        ),
-      kinds: (specializationId, req) =>
-        Effect.gen(function* () {
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
+          SchemaError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
+        }),
+      ),
+      kinds: Effect.fn('QualificationPathsReader.kinds')(
+        function* (specializationId, req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
           const cursor = yield* decodeCursor(Uuid, req.cursor)
@@ -54,14 +54,14 @@ export const QualificationPathsReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(QualificationKind))(rows)
 
           return makeCursorPage(data, limit, row => row.id)
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
-            SchemaError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
-          }),
-        ),
-      scopes: (specializationId, kindId, req) =>
-        Effect.gen(function* () {
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
+          SchemaError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
+        }),
+      ),
+      scopes: Effect.fn('QualificationPathsReader.scopes')(
+        function* (specializationId, kindId, req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
           const cursor = yield* decodeCursor(Uuid, req.cursor)
@@ -74,21 +74,23 @@ export const QualificationPathsReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(QualificationScope))(rows)
 
           return makeCursorPage(data, limit, row => row.id)
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
-            SchemaError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
-          }),
-        ),
-      resolve: filters =>
-        Effect.gen(function* () {
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
+          SchemaError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
+        }),
+      ),
+      resolve: Effect.fn('QualificationPathsReader.resolve')(
+        function* (filters) {
           const rows =
             yield* sql`SELECT id,name FROM qualification_paths WHERE published AND specialization_id=${filters.specializationId} AND qualification_kind_id=${filters.qualificationKindId} AND qualification_scope_id=${filters.qualificationScopeId} LIMIT 1`
 
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(QualificationPath))(rows)
 
           return Option.fromNullishOr(data[0])
-        }).pipe(Effect.mapError(cause => new QualificationPathsReadError({ cause }))),
+        },
+        Effect.mapError(cause => new QualificationPathsReadError({ cause })),
+      ),
     })
   }),
 )

@@ -7,14 +7,13 @@ import { Effect } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/path-access.policy.js'
 
 // TODO(#6): query published oral categories once the oral dataset is imported.
-export const getOralMaterials = (
+export const getOralMaterials = Effect.fn('Study.getOralMaterials')(function* (
   userId: UserId,
   pathId: QualificationPathId,
   page: CursorPagination,
-) =>
-  Effect.gen(function* () {
-    yield* requirePathAccess(userId, pathId, 'oral')
-    yield* decodeCursor(OralQuestionCategoryId, page.cursor)
+) {
+  yield* requirePathAccess(userId, pathId, 'oral')
+  yield* decodeCursor(OralQuestionCategoryId, page.cursor)
 
-    return { data: [], meta: { hasMore: false } }
-  })
+  return { data: [], meta: { hasMore: false } }
+})

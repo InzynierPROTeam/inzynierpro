@@ -1,24 +1,28 @@
-import { Context, Effect } from 'effect'
+import { Effect } from 'effect'
 import { SecureRandom } from 'effect/crypto'
 import { HttpServerResponse } from 'effect/http'
 
-export const RequestId = Context.Reference<string>('api/RequestId', {
-  defaultValue: SecureRandom.uuidV4Unsafe,
-})
+// Requests without a span (health probes, or no tracing backend) get a fresh ID in the same format.
+const requestId = Effect.currentParentSpan.pipe(
+  Effect.map(span => span.traceId),
+  Effect.catchTag('NoSuchElementError', () =>
+    Effect.flatMap(SecureRandom.SecureRandom, secureRandom => secureRandom.uuidV4()).pipe(
+      Effect.map(uuid => uuid.replaceAll('-', '')),
+    ),
+  ),
+)
 
+/**
+ * Returns the request's trace ID as `x-request-id`, so a reported failure leads straight to its
+ * trace and logs. The ID also annotates stdout logs, which carry no span context of their own.
+ */
 export const RequestIdMiddleware = <E, R>(
   httpEffect: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>,
 ) =>
   Effect.gen(function* () {
-    const secureRandom = yield* SecureRandom.SecureRandom
-    const requestId = yield* secureRandom.uuidV4()
+    const traceId = yield* requestId
 
-    const response = yield* httpEffect.pipe(
-      Effect.provideService(RequestId, requestId),
-      Effect.annotateLogs({ requestId }),
-    )
+    const response = yield* httpEffect.pipe(Effect.annotateLogs({ traceId }))
 
-    return HttpServerResponse.setHeaders(response, {
-      'x-request-id': requestId,
-    })
+    return HttpServerResponse.setHeaders(response, { 'x-request-id': traceId })
   })

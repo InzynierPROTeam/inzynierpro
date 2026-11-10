@@ -18,8 +18,8 @@ export const StudyReaderLive = Layer.effect(
     const columns = sql`d.id,d.title,count(r.id)::integer AS available_question_count,count(c.question_id)::integer AS completed_question_count`
 
     return StudyReader.of({
-      documents: (userId, pathId, req) =>
-        Effect.gen(function* () {
+      documents: Effect.fn('StudyReader.documents')(
+        function* (userId, pathId, req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
           const cursor = yield* decodeCursor(Uuid, req.cursor)
@@ -37,14 +37,14 @@ export const StudyReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))(rows)
 
           return makeCursorPage(data, limit, row => row.id)
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new StudyReadError({ cause })),
-            SchemaError: cause => Effect.fail(new StudyReadError({ cause })),
-          }),
-        ),
-      document: (userId, pathId, documentId) =>
-        Effect.gen(function* () {
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new StudyReadError({ cause })),
+          SchemaError: cause => Effect.fail(new StudyReadError({ cause })),
+        }),
+      ),
+      document: Effect.fn('StudyReader.document')(
+        function* (userId, pathId, documentId) {
           const rows =
             yield* sql`SELECT ${columns} FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
  LEFT JOIN path_questions pq ON pq.qualification_path_id=pd.qualification_path_id AND pq.document_id=d.id
@@ -56,7 +56,9 @@ export const StudyReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))(rows)
 
           return Option.fromNullishOr(data[0])
-        }).pipe(Effect.mapError(cause => new StudyReadError({ cause }))),
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
     })
   }),
 )
