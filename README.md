@@ -57,3 +57,37 @@ pnpm check
 ```
 
 Stop applications with Ctrl+C. Stop services with `pnpm --filter @inzpro/api services:down` or `pnpm --filter @inzpro/api services:test:down`; both preserve volumes.
+
+## Onboarding, paths and session preview
+
+After applying migrations, seed the small synthetic dataset explicitly:
+
+```sh
+pnpm --filter @inzpro/api migrate:latest
+pnpm --filter @inzpro/api seed:technical
+```
+
+Sign in and open `/onboarding`. Choose specialization, qualification kind, scope, exam access and a mandatory target session. The URL restores the draft; no assignment exists until confirmation. The backend validates the entire configuration and commits the assignment, initial goal and selection in one transaction. Repeated confirmation returns the existing assignment without overwriting it.
+
+`/profile` contains the paths section: select, add, edit the exam goal, extend written/oral access to both, archive and restore. Target changes append goal versions; archive preserves history and switches to the most recently used active alternative. A past exam date does not expire access. Personal oral dates override the labelled approximate oral-planning date on the target session.
+
+`/start` restores the selected assignment. `/study/written` shows documents with personal coverage and read-only preview; `/study/oral` currently has a truthful empty catalogue. A missing exam-part permission offers explicit free extension to both and stays on the originally requested page after access refresh. API policies enforce the same permissions independently of the UI.
+
+The technical dataset has two chambers, two specialization/kind/scope combinations, future/ongoing-oral/closed sessions, two documents and three synthetic questions. Each question has a stable identity, an immutable published revision, exactly three options and one explanation. Path B shares one question/revision with A. Repeated seeding does not rewrite published content; the English sample uses new revision IDs when upgrading the earlier technical fixture. No V1 production data or subject-matter verification is imported.
+
+The backend uses CQRS in one PostgreSQL database. Query/command operations depend on reader/repository ports; application policies check active membership and exam part using PostgreSQL on each material request. Each module has one `http.ts`. Personal category/document data is combined in one response and cached only by TanStack Query under account/path/request keys. Authenticated HTTP responses are private and not stored by browser/shared HTTP caches. No server-side learning-data Redis cache is introduced.
+
+`written_question_coverage` is the persisted private read projection for the combined catalogue/progress response. This slice verifies it with isolated SQL fixtures; the subsequent answer ticket must update it atomically with real learning evidence. Creating or answering StudySessions, full daily plans, XP/rankings and reset execution remain separate tasks. No UI suggests those functions are already available.
+
+Run this slice in the separate test environment:
+
+```sh
+pnpm --filter @inzpro/api migrate:test
+pnpm --filter @inzpro/api exec vitest run src/modules/study/http.test.ts src/modules/preparation/onboarding.http.test.ts
+pnpm --filter @inzpro/platform exec vitest run src/features/learning src/features/onboarding
+pnpm check
+```
+
+API tests use real PostgreSQL, Redis and authenticated sessions. React tests use the actual router, client and query stack against a controlled HTTP boundary, covering URL restoration, dependent choices, explicit confirmation and denied access/extension. They do not replace the complete browser answering E2E planned for the subsequent Foundation slice.
+
+Exam preparation is divided into `qualification-paths`, `exam-calendar`, `preparation`, `learning-content` and `study`. Public catalogue groups live at `/api/v1/qualification-paths` and `/api/v1/exam-calendar`; private groups live at `/api/v1/preparation` and `/api/v1/study`. See ADR-0021 for ownership and ADR-0041 for date/version conventions. Local PostgreSQL and Redis ports can be configured with `POSTGRES_PORT` and `REDIS_PORT` when V1 is running alongside V2.

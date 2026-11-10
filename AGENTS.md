@@ -1,5 +1,9 @@
 ## Agent skills
 
+### Code conventions
+
+Before changing code, read [CODING_STANDARDS.md](CODING_STANDARDS.md), including backend responsibilities, collection contracts, dates and public onboarding.
+
 ### Review workflow
 
 Leave changes uncommitted for the user to review in the editor. Commit, push, or open a PR only when explicitly requested. Run `pnpm check` before handing back completed code changes.

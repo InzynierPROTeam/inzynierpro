@@ -4,8 +4,8 @@ Pojęcia domenowe platformy przygotowującej do egzaminów na uprawnienia budowl
 
 ## Language
 
-**QualificationPath — ścieżka uprawnień**:
-Konkretny wariant uprawnień, do którego przygotowuje się użytkownik. Stanowi odrębny kontekst jego historii nauki.
+**QualificationPath — qualification path**:
+A shared qualification variant defined by specialization, qualification kind and scope. It is an independent context of learning history, separate from a user's target exam session or exam access scope.
 
 **ExamSession — sesja egzaminacyjna**:
 Oficjalna tura egzaminacyjna organizowana przez izbę. Jest odrębna od indywidualnego terminu egzaminu użytkownika, sesji nauki i podejścia do egzaminu próbnego.
@@ -79,14 +79,17 @@ Deklaracja użytkownika dotycząca jego umiejętności samodzielnego udzielenia 
 **QuestionRevision — rewizja pytania**:
 Konkretna wersja treści pytania i danych potrzebnych do oceny odpowiedzi, niezmienna po publikacji. Historyczny wynik odnosi się do rewizji wykorzystanej podczas udzielania odpowiedzi.
 
+**QuestionAnswer — question answer option**:
+An identifiable answer option belonging to one question revision, with its text and correctness. Its presentation order is chosen for the view or session. It is part of the published question content, distinct from a learner's submitted answer.
+
 **QuestionVerification — weryfikacja pytania**:
 Decyzja o poprawności określonej rewizji pytania względem odpowiednich wersji źródeł i zakresu sprawdzenia, wraz z autorem i uzasadnieniem. Jest odrębna od zamknięcia pracy redakcyjnej i publikacji materiału.
 
 **ContentWithdrawal — wycofanie treści**:
 Jawna decyzja uprawnionej osoby o zaprzestaniu używania błędnej rewizji materiału do dalszego odpowiadania, również w rozpoczętych sesjach. Zachowuje historyczną treść, odpowiedzi i przyczynę wycofania.
 
-**UserExamGoal — cel przygotowania**:
-Cel użytkownika określający ścieżkę i docelowy egzamin, do którego się przygotowuje. Na każdej ścieżce użytkownik ma najwyżej jeden aktywny cel; zmiana celu nie usuwa historii nauki tej ścieżki.
+**UserExamGoal — exam preparation goal**:
+A user's preparation target on one assigned qualification path, including the target exam session and personal preparation dates. One version is current; later changes preserve earlier goal versions and learning history.
 
 **StudySession — sesja nauki**:
 Możliwa do przerwania i wznowienia sesja zwykłej nauki jednego dokumentu lub kategorii, ze stałym zestawem rewizji pytań wybranym na początku. Użytkownik może zatwierdzić odpowiedź na dane pytanie najwyżej raz w tej sesji i od razu otrzymuje ocenę; sesja jest odrębna od powtórek dobieranych przez SRS.
@@ -158,3 +161,12 @@ Liczba pytań zaplanowanych na dany dzień, osobno dla nauki pisemnej i ustnej w
 
 **Streak — seria dni nauki**:
 Liczba kolejnych dni spełniających warunek aktywności edukacyjnej, wspólna dla konta. Jest mechanizmem motywacyjnym, a nie miarą znajomości materiału.
+
+**UserQualificationPath — user path assignment**:
+A user's persistent association with a shared qualification path. It has an exam access scope and can be active or archived; it is distinct from both the shared path and the user's exam goal.
+
+**ExamAccessScope — exam access scope**:
+The written, oral or combined learning access granted on a user's assigned path. It restricts both interfaces and data access.
+
+**UserExamGoalVersion — exam goal version**:
+A historical version of a user's target exam session and personal preparation dates on one assigned path. Later changes do not change the goal associated with earlier activity.

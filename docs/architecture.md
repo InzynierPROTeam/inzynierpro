@@ -75,3 +75,7 @@ Canonical page URLs have exactly one trailing slash, including the root path. Ca
 3. Give each README the package's purpose, runtime, exclusions, and an import example. Link to the policy for permitted dependencies rather than copying the dependency list.
 4. Update dependency manifests and add a regression case for every new restriction or exception.
 5. Run the architecture tests and the repository checks. Changes to a significant architectural decision also update the relevant ADR.
+
+## Preparation modules
+
+The API and public domain vocabulary use five business modules: qualification-paths (shared path catalogue), exam-calendar (official targets), preparation (assignments, access and goals), learning-content (shared material) and study (personal learning read models). Public qualification-paths/exam-calendar catalogue groups and private preparation/study groups each have one http.ts. Learning-content exposes its internal repository. Collection contracts share cursor pagination for clients and offset pagination for administration. Module migration files create the final initial tables directly; the first migration owns the shared timestamp trigger. Date and brand conventions are defined in CODING_STANDARDS.md and ADR-0041.
