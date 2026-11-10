@@ -17,3 +17,7 @@ Lokalny hook uruchamia szybkie kontrole zmienianych plików, a pełny wymagany z
 Kontrole architektury są częścią zwykłego lintowania. Lokalny plugin Oxlint egzekwuje kierunki zależności, izolację aplikacji, importy między workspace’ami oraz ograniczenia środowiskowe i testowe. Wbudowany plugin `import` sprawdza cykle; dla paczek uwzględniamy również importy typów. W aplikacjach pomijamy wymazywane importy typów ze względu na rejestracje typów routera. Regresje sprawdzają reguły i rzeczywiste zachowanie CLI.
 
 Nie utrzymujemy osobnego runnera ani dodatkowego narzędzia do grafu zależności. Te same reguły działają w `lint`, lokalnym `check` i niemodyfikującym `check:ci`. [Mapa architektury](../architecture.md) opisuje zakres i wyjątki.
+
+## Znaczniki czasu w schemacie
+
+Tabele modyfikowalne mają zwykle created_at i updated_at; historia dopisywana bez aktualizacji ma created_at. Pierwsza migracja definiuje wspólną funkcję set_updated_at, a każda tabela modyfikowalna dołącza trigger BEFORE UPDATE. Znaczniki czasu aplikacji mają timestamptz(3). Wybór pól konkretnej tabeli uwzględnia jej rzeczywisty cykl życia.

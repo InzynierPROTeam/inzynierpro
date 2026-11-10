@@ -4,7 +4,7 @@ Publiczna witryna apps/web korzysta z Astro. Platforma do nauki i admin korzysta
 
 Witryna, platforma, mobile i treści edukacyjne są polskojęzyczne. i18n przewidujemy wyłącznie w adminie i dodajemy przy jego rozwoju, bez rozszerzania zakresu na wielojęzyczną naukę.
 
-Na obecnym etapie implementacji kod, komentarze, komunikaty, testy, techniczne próbki oraz dokumentacja poza ADR są po angielsku. Prozę ADR zapisujemy po polsku. Istniejące obszary porządkujemy przy ich zmianach. Ta bieżąca konwencja implementacji jest odrębna od docelowego polskojęzycznego zakresu produktu opisanego powyżej.
+Identyfikatory kodu, komentarze, testy, techniczne próbki oraz dokumentacja poza ADR są po angielsku. Interfejs platformy, komunikaty użytkownika, SEO i publiczne adresy stron są po polsku. Techniczne nazwy grup routingu i pola kontraktów HTTP zachowują swoje identyfikatory. Prozę ADR zapisujemy po polsku.
 
 Pierwsze wydanie webu i późniejszego mobile wymaga połączenia z backendem do nauki, bez pełnego trybu offline i synchronizacji odpowiedzi. Obsługujemy utratę połączenia, stan zapisu i ponowienie operacji. Potwierdzona odpowiedź pochodzi z backendu; niezapisany wynik nie jest przedstawiany jako zapisany.
 

@@ -24,4 +24,6 @@ Stan sesji klienci odczytują przez kontrakt `GET /api/v1/identity/session`, kt�
 
 Zakres testów auth obejmuje naszą konfigurację i integrację. Nie utrzymujemy własnej symulacji Google ani ponownych testów mechanizmów OTP i linkingu należących do Better Auth. Pozostają testy URL autoryzacji i dozwolonych callbacków Google, logowania kodem do chronionego API oraz integracji PostgreSQL/Redis, maili, logów i CORS. Rzeczywisty smoke Google wymaga skonfigurowanego klienta i osobnej weryfikacji.
 
-Wybór konfiguracji ścieżki przed rozpoczęciem nauki jest publiczny: użytkownik wybiera specjalność, rodzaj, zakres i sesję, a loguje się przed zapisaniem przypisania. Katalogowe GET-y są publiczne, dane osobiste i mutacje wymagają sesji.
+Granica logowania w onboardingu jest określona w [ADR-0041](0041-configured-paths-goals-and-access.md#publiczny-onboarding).
+
+Na webie sesję odczytuje wspólny rodzic _maybeauthenticated. Rozróżnia odmowę uwierzytelnienia od awarii sieci lub serwera; tylko pierwsza oznacza brak użytkownika. Dzieci _authenticated i _notauthenticated sprawdzają otrzymany kontekst i przekierowują bez kolejnego query sesji. Publiczny onboarding należy do tego rodzica, a strona główna pozostaje poza nim i nie wymaga odczytu sesji.

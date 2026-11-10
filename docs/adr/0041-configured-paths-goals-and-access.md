@@ -10,14 +10,12 @@ UserExamGoal jest wersjonowany. Zmiana sesji lub daty dopisuje nową wersję, be
 
 To rozszerza wcześniejszy uproszczony zakres Foundation: obowiązkowy cel sesji i powyższe przepływy należą do zadania #6. Pełne cele dzienne, XP, rankingi i wykonanie resetu są odrębnymi zadaniami.
 
-## Typy, daty i paginacja
-
-Identyfikatory powstają ze wspólnego Uuid i zachowują konkretny brand także w opcjach katalogu. Wersja celu i expectedVersion używają UserExamGoalVersion; liczby pytań używają QuestionCount.
-
-Wszystkie daty systemu używają jednego kodeka i typu ApiDateTime: HTTP przyjmuje i zwraca kanoniczny UTC ISO 8601 z milisekundami, a dekodowanie natychmiast daje zwalidowany Effect DateTime.Utc. Nie tworzymy odrębnych typów dla roli daty ani reguły wymuszającej północ. Użytkownik może wybrać lokalną datę i godzinę; klient konwertuje ją na UTC i odpowiada za prezentację we własnej strefie. Brak osobistej daty to Option wewnątrz oraz null w JSON.
+## Publiczny onboarding
 
 Onboarding jest publiczny do etapu zapisania konfiguracji. Osobne endpointy zwracają specjalności, zależne rodzaje i zakresy oraz sesje egzaminacyjne. Mają publiczne grupy kontraktu bez Authentication. Indywidualne przypisania i mutacje pozostają chronione; ich dane pokazujemy tylko po zalogowaniu. Przekierowanie do logowania zachowuje pełny szkic w URL.
 
-Każda lista zasobów ma wspólny format data/meta i paginację: cursor dla klientów, offset dla administracji. Wybór bieżącej ścieżki jest osobnym zasobem, a nie dodatkiem do strony przypisań. Odczyty pojedynczego przypisania, dokumentu i dostępności sesji są punktowe.
+## Powiązane decyzje
 
-Początkowe migracje V2 tworzą docelowe tabele bez addytywnych poprawek prototypu. Pierwsza definiuje wspólny trigger updated_at. Tabele modyfikowalne mają created_at i updated_at; dopisywana historia celów ma created_at. Znaczniki czasu aplikacji mają timestamptz(3). Ochrona opublikowanej treści pozwala na wycofanie rewizji i aktualizację metadanych czasu.
+[ADR-0021](0021-module-interfaces-data-ownership-and-client-responsibilities.md) definiuje odpowiedzialność modułów i polityk autoryzacji. [ADR-0024](0024-shared-http-contracts-and-client.md) definiuje wspólny format dat, typowane kontrakty, paginację i cache klientów. Wersja celu i expectedVersion korzystają z UserExamGoalVersion.
+
+Początkowe migracje tego przekroju V2 tworzą docelowe tabele bez addytywnych poprawek prototypu. Wspólne zasady znaczników czasu i triggera opisuje [ADR-0025](0025-monorepo-toolchain-and-verification.md). Ochronę opublikowanej treści i możliwość jej wycofania opisuje [ADR-0010](0010-published-revisions-and-emergency-withdrawal.md).

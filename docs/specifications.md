@@ -1,6 +1,6 @@
 # Product context and specification map
 
-The authoritative specifications and tasks live in GitHub Issues for InzynierPROTeam/inzynierpro.
+GitHub Issues for InzynierPROTeam/inzynierpro own delivery scope and acceptance criteria. ADRs linked below own lasting product and architecture decisions. Issues refer to those decisions rather than maintaining independent architecture specifications. CODING_STANDARDS.md holds review judgement; mechanical rules live in Oxlint. When an agreed decision changes, update its owning ADR and adjust the issue scope if needed.
 
 - [System specification](https://github.com/InzynierPROTeam/inzynierpro/issues/1)
 - [Foundation specification](https://github.com/InzynierPROTeam/inzynierpro/issues/2)

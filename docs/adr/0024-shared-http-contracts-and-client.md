@@ -43,7 +43,7 @@ await queryClient.invalidateQueries({ queryKey: preparationKeys.paths(userId) })
 await queryClient.invalidateQueries({ queryKey: studyKeys.path(userId, pathId) })
 ```
 
-`path(pathId)` obejmuje wszystkie query tej ścieżki, bez list i innych ścieżek. Zmiana wpływająca na kilka grup unieważnia każdą z nich jawnie. Zapis wyboru ścieżki zmienia odpowiedź `getPaths`, więc unieważnia grupę `paths()`.
+`path(userId, pathId)` obejmuje wszystkie query tej ścieżki, bez list i innych ścieżek. Zmiana wpływająca na kilka grup unieważnia każdą z nich jawnie. Zapis wyboru ścieżki unieważnia lookup wyboru oraz grupę przypisań `paths(userId)`, jeżeli operacja zmienia również dane listy.
 
 ## Schematy requestów i akcje klienta
 
@@ -90,4 +90,8 @@ Po podziale modułów `preparationKeys` grupuje onboarding, przypisania i cele, 
 
 Każda lista zasobów korzysta ze wspólnych schematów common/pagination i odpowiedzi data/meta. Klienci używają cursor; administracja offset. Fabryki list zwracają effectInfiniteQueryOptions, przekazują kursor w tym samym req.query i odczytują nextCursor/hasMore z meta. UI udostępnia pobranie kolejnej strony. Typowany req pozostaje wymagany dla żądania z query, nawet gdy jego pola paginacji są opcjonalne. Wybór bieżącej ścieżki jest osobnym query i nie zależy od aktualnie pobranej strony listy przypisań.
 
-Publiczne katalogi mają grupy qualification-paths i exam-calendar bez Authentication. preparation i study pozostają chronione. Schemat requestu jest bezpośrednim aliasem istniejącego schematu, gdy nie dodaje pól; nazwa kontraktu nie wymaga ponownego Schema.Struct.
+Podział publicznych katalogów i chronionych operacji wynika z [ADR-0041](0041-configured-paths-goals-and-access.md). Schemat requestu jest bezpośrednim aliasem istniejącego schematu, gdy nie dodaje pól; nazwa kontraktu nie wymaga ponownego Schema.Struct.
+
+## Wspólny format dat
+
+Wszystkie daty systemu używają jednego kodeka i typu ApiDateTime: HTTP przyjmuje i zwraca kanoniczny UTC ISO 8601 z milisekundami, a dekodowanie natychmiast daje zwalidowany Effect DateTime.Utc. Nie tworzymy odrębnych typów dla roli daty ani reguły wymuszającej północ. Użytkownik może wybrać lokalną datę i godzinę; klient konwertuje ją na UTC i odpowiada za prezentację we własnej strefie. Brak opcjonalnej daty to Option wewnątrz oraz null w JSON.
