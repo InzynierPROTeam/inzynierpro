@@ -10,8 +10,8 @@ export const RequestIdMiddleware = <E, R>(
   httpEffect: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>,
 ) =>
   Effect.gen(function* () {
-    const random = yield* SecureRandom.SecureRandom
-    const requestId = yield* random.uuidV4()
+    const secureRandom = yield* SecureRandom.SecureRandom
+    const requestId = yield* secureRandom.uuidV4()
 
     const response = yield* httpEffect.pipe(
       Effect.provideService(RequestId, requestId),

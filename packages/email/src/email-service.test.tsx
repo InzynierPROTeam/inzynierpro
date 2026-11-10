@@ -20,9 +20,9 @@ const request: SendEmailRequest = {
 }
 
 const send = Effect.gen(function* () {
-  const email = yield* EmailService
+  const emailService = yield* EmailService
 
-  yield* email.send(request)
+  yield* emailService.send(request)
 })
 
 describe('EmailService', () => {

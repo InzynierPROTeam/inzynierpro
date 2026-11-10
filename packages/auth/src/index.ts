@@ -229,16 +229,16 @@ export const layer = (config: AuthConfig) =>
   Layer.effect(
     Auth,
     Effect.gen(function* () {
-      const pool = yield* PgPool
+      const pgPool = yield* PgPool
       const redis = yield* Redis
-      const emails = yield* EmailService
+      const emailService = yield* EmailService
       const context = yield* Effect.context()
 
       return makeAuth(
         config,
-        pool,
+        pgPool,
         redis,
-        emails,
+        emailService,
         Effect.runPromiseWith(context),
         Effect.runPromiseExitWith(context),
       )

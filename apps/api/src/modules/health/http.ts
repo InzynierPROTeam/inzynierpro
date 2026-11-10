@@ -7,8 +7,8 @@ export const HealthLive = HttpApiBuilder.group(
   Api,
   'HealthCheck',
   Effect.fn(function* (handlers) {
-    const service = yield* HealthCheckService
+    const healthCheckService = yield* HealthCheckService
 
-    return handlers.handle('CheckHealth', () => service.check)
+    return handlers.handle('CheckHealth', () => healthCheckService.check)
   }),
 ).pipe(Layer.provide(HealthCheckService.layer))

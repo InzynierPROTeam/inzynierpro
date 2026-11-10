@@ -39,7 +39,7 @@ export const AuthenticationLive = Layer.effect(
 
         // Better Auth refreshes the cookie when it extends the session.
         return HttpServerResponse.mergeCookies(
-          response,
+          HttpServerResponse.setHeader(response, 'cache-control', 'private, no-store'),
           Cookies.fromSetCookie(headers.getSetCookie()),
         )
       }),

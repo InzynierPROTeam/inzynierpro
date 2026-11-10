@@ -14,15 +14,15 @@ export const pgPoolLayer = (config: PgPoolConfig) =>
     Effect.acquireRelease(
       Effect.gen(function* () {
         const runFork = Effect.runForkWith(yield* Effect.context())
-        const pool = new Pool({ connectionString: Redacted.value(config.url), max: 10 })
+        const pgPool = new Pool({ connectionString: Redacted.value(config.url), max: 10 })
 
         // An idle client failing must not crash the process; the next query reports the problem.
-        pool.on('error', (error: Error) => {
-          runFork(Effect.logError('[PgPool]: Idle client error.', error.name))
+        pgPool.on('error', (error: Error) => {
+          runFork(Effect.logError('[PgPool]: Idle client error.', error))
         })
 
-        return pool
+        return pgPool
       }),
-      pool => Effect.promise(() => pool.end()),
+      pgPool => Effect.promise(() => pgPool.end()),
     ),
   )

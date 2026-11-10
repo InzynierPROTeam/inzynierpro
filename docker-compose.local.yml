@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-monorepo}
     ports:
-      - '5432:5432'
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data_dev:/var/lib/postgresql
     logging:
@@ -27,7 +27,7 @@ services:
     environment:
       REDISCLI_AUTH: ${REDIS_PASSWORD:-password}
     ports:
-      - '6379:6379'
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data_dev:/data
     logging:
