@@ -727,6 +727,9 @@ importers:
       '@inzpro/api-client':
         specifier: workspace:*
         version: link:../api-client
+      '@inzpro/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.106.0(@types/react@19.3.0)(react@19.3.1)

@@ -1,4 +1,4 @@
-import type { HealthCheckError } from '@inzpro/api-client/modules/health'
+import type { CheckHealthError } from '@inzpro/api-client/modules/health'
 import { withHttpServer } from '@inzpro/testing/http'
 import { CancelledError } from '@tanstack/react-query'
 import { Deferred, Effect } from 'effect'
@@ -22,10 +22,10 @@ test('query options fetch and cache data with the inferred result and error type
           { readonly status: 'ok' } | undefined
         >()
         expectTypeOf(queryClient.getQueryState(options.queryKey)?.error).toEqualTypeOf<
-          HealthCheckError | null | undefined
+          CheckHealthError | null | undefined
         >()
 
-        await queryClient.invalidateQueries({ queryKey: healthKeys.general() })
+        await queryClient.invalidateQueries({ queryKey: healthKeys.status() })
 
         expect(queryClient.getQueryState(options.queryKey)?.isInvalidated).toBe(true)
       }),

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@inzpro/api-client": "workspace:*",
+    "@inzpro/domain": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "effect": "catalog:"
   },

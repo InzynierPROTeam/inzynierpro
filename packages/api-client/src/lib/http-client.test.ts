@@ -36,7 +36,7 @@ test('the shared transport composes a base path with consumer request policies',
         ),
       )
 
-      expect(await runApi(checkHealth, client)).toEqual({ status: 'ok' })
+      expect(await runApi(checkHealth(), client)).toEqual({ status: 'ok' })
     },
   ))
 
@@ -50,7 +50,7 @@ test('consumer-supplied transport timeouts remain typed HTTP failures', () =>
         ),
       )
 
-      const request = runApi(checkHealth, client)
+      const request = runApi(checkHealth(), client)
 
       await expect(request).rejects.toSatisfy(HttpClientError.isHttpClientError)
       await expect(request).rejects.toHaveProperty('reason.cause._tag', 'TimeoutError')
