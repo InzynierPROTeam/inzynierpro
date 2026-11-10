@@ -5,7 +5,11 @@ import {
   InvalidPathConfiguration,
   GoalConflict,
 } from '~api-contracts/modules/preparation/errors.js'
-import { InternalServerError, InvalidRequest } from '~api-contracts/utils/api-error.js'
+import {
+  InternalServerError,
+  InvalidRequest,
+  RateLimitExceeded,
+} from '~api-contracts/utils/api-error.js'
 
 import {
   ChangeGoalPayload,
@@ -27,24 +31,24 @@ import {
 export const GetPathsEndpoint = HttpApiEndpoint.get('GetPaths', '/paths', {
   query: PathsQuery,
   success: QualificationPathsResponse,
-  error: [InternalServerError, InvalidRequest],
+  error: [InternalServerError, RateLimitExceeded, InvalidRequest],
 })
 
 export const GetSelectedPathEndpoint = HttpApiEndpoint.get('GetSelectedPath', '/selection', {
   success: PathResponse,
-  error: [InternalServerError],
+  error: [InternalServerError, RateLimitExceeded],
 })
 
 export const GetPathEndpoint = HttpApiEndpoint.get('GetPath', '/paths/:qualificationPathId', {
   params: PathParams,
   success: PathResponse,
-  error: [InternalServerError],
+  error: [InternalServerError, RateLimitExceeded],
 })
 
 export const SelectPathEndpoint = HttpApiEndpoint.post('SelectPath', '/selection', {
   payload: SelectPathPayload,
   success: PathMutationResponse,
-  error: [InternalServerError, PathAccessDenied],
+  error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
 })
 
 export const CompleteOnboardingEndpoint = HttpApiEndpoint.post(
@@ -53,7 +57,7 @@ export const CompleteOnboardingEndpoint = HttpApiEndpoint.post(
   {
     payload: CompleteOnboardingPayload,
     success: PathMutationResponse,
-    error: [InternalServerError, InvalidPathConfiguration],
+    error: [InternalServerError, RateLimitExceeded, InvalidPathConfiguration],
   },
 )
 
@@ -63,7 +67,7 @@ export const ArchivePathEndpoint = HttpApiEndpoint.post(
   {
     params: PathParams,
     success: PathMutationResponse,
-    error: [InternalServerError, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
   },
 )
 
@@ -73,7 +77,7 @@ export const RestorePathEndpoint = HttpApiEndpoint.post(
   {
     params: PathParams,
     success: PathMutationResponse,
-    error: [InternalServerError, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
   },
 )
 
@@ -83,7 +87,7 @@ export const ExtendPathEndpoint = HttpApiEndpoint.post(
   {
     params: PathParams,
     success: PathMutationResponse,
-    error: [InternalServerError, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
   },
 )
 
@@ -94,7 +98,13 @@ export const ChangeGoalEndpoint = HttpApiEndpoint.post(
     params: PathParams,
     payload: ChangeGoalPayload,
     success: PathMutationResponse,
-    error: [InternalServerError, PathAccessDenied, InvalidPathConfiguration, GoalConflict],
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      InvalidPathConfiguration,
+      GoalConflict,
+    ],
   },
 )
 
@@ -105,7 +115,7 @@ export const GetGoalHistoryEndpoint = HttpApiEndpoint.get(
     params: PathParams,
     query: GoalHistoryQuery,
     success: GoalHistoryResponse,
-    error: [InternalServerError, InvalidRequest, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest, PathAccessDenied],
   },
 )
 
@@ -116,7 +126,7 @@ export const GetGoalOptionsEndpoint = HttpApiEndpoint.get(
     params: PathParams,
     query: GoalOptionsQuery,
     success: GoalOptionsResponse,
-    error: [InternalServerError, InvalidRequest, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest, PathAccessDenied],
   },
 )
 

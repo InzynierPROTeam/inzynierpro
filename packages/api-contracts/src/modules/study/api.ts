@@ -1,7 +1,11 @@
 import { HttpApiEndpoint, HttpApiGroup } from 'effect/http-api'
 import { Authentication } from '~api-contracts/middleware/authentication/api.js'
 import { PathAccessDenied } from '~api-contracts/modules/preparation/errors.js'
-import { InternalServerError, InvalidRequest } from '~api-contracts/utils/api-error.js'
+import {
+  InternalServerError,
+  InvalidRequest,
+  RateLimitExceeded,
+} from '~api-contracts/utils/api-error.js'
 
 import { DocumentNotFound } from './errors.js'
 import {
@@ -19,7 +23,13 @@ export const GetDocumentsEndpoint = HttpApiEndpoint.get(
     params: GetDocumentsParams,
     query: DocumentsQuery,
     success: DocumentsResponse,
-    error: [InternalServerError, InvalidRequest, PathAccessDenied, DocumentNotFound],
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      InvalidRequest,
+      PathAccessDenied,
+      DocumentNotFound,
+    ],
   },
 )
 
@@ -29,7 +39,7 @@ export const GetSessionPreviewEndpoint = HttpApiEndpoint.get(
   {
     params: GetSessionPreviewParams,
     success: SessionPreview,
-    error: [InternalServerError, PathAccessDenied, DocumentNotFound],
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, DocumentNotFound],
   },
 )
 
@@ -40,7 +50,13 @@ export const GetOralMaterialsEndpoint = HttpApiEndpoint.get(
     params: GetDocumentsParams,
     query: OralMaterialsQuery,
     success: OralMaterialsResponse,
-    error: [InternalServerError, InvalidRequest, PathAccessDenied, DocumentNotFound],
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      InvalidRequest,
+      PathAccessDenied,
+      DocumentNotFound,
+    ],
   },
 )
 

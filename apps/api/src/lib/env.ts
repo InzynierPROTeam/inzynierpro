@@ -21,6 +21,9 @@ export const env = Config.all({
     clientSecret: Config.Redacted('GOOGLE_CLIENT_SECRET'),
   }).pipe(Config.option),
   COOKIES_DOMAIN: Config.option(Config.NonEmptyString('COOKIES_DOMAIN')),
+  // Header with the client address set by the proxy, e.g. `cf-connecting-ip`. Only safe when the
+  // origin accepts traffic from that proxy alone; without it the socket peer is the client.
+  TRUSTED_CLIENT_IP_HEADER: Config.option(Config.NonEmptyString('TRUSTED_CLIENT_IP_HEADER')),
   RESEND_API_KEY: Config.Redacted('RESEND_API_KEY'),
 })
 

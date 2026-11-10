@@ -9,6 +9,7 @@ import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
 import { Effect, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { internalServerError } from '~api/lib/internal-server-error.js'
+import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/exam-calendar.reader.js'
 import { ExamCalendarReaderLive } from '~api/modules/exam-calendar/exam-calendar.reader.postgres.js'
@@ -52,212 +53,266 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
 
     return handlers
       .handle('GetPaths', ({ query }) =>
-        Effect.flatMap(CurrentUser, user => preparationReader.paths(user.id, query)).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            InvalidCursor: () =>
-              Effect.fail(
-                new InvalidRequest({
-                  type: 'invalid_request',
-                  message: 'Invalid pagination cursor.',
-                }),
-              ),
-          }),
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user => preparationReader.paths(user.id, query)).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                InvalidCursor: () =>
+                  Effect.fail(
+                    new InvalidRequest({
+                      type: 'invalid_request',
+                      message: 'Invalid pagination cursor.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('GetSelectedPath', () =>
-        Effect.flatMap(CurrentUser, user => preparationReader.selectedPath(user.id))
-          .pipe(Effect.map(path => ({ path })))
-          .pipe(
-            Effect.provide(dependencies),
-            Effect.catchTags({
-              PreparationReadError: internalServerError('Could not read preparation data.'),
-            }),
-          ),
-      )
-      .handle('GetPath', ({ params }) =>
-        Effect.flatMap(CurrentUser, user =>
-          preparationReader.path(user.id, params.qualificationPathId),
-        )
-          .pipe(Effect.map(path => ({ path })))
-          .pipe(
-            Effect.provide(dependencies),
-            Effect.catchTags({
-              PreparationReadError: internalServerError('Could not read preparation data.'),
-            }),
-          ),
-      )
-      .handle('SelectPath', ({ payload }) =>
-        Effect.flatMap(CurrentUser, user => selectPath(user.id, payload.qualificationPathId)).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PreparationWriteError: internalServerError('Could not save preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user => preparationReader.selectedPath(user.id))
+              .pipe(Effect.map(path => ({ path })))
+              .pipe(
+                Effect.provide(dependencies),
+                Effect.catchTags({
+                  PreparationReadError: internalServerError('Could not read preparation data.'),
                 }),
               ),
-          }),
+          ),
+        ),
+      )
+      .handle('GetPath', ({ params }) =>
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              preparationReader.path(user.id, params.qualificationPathId),
+            )
+              .pipe(Effect.map(path => ({ path })))
+              .pipe(
+                Effect.provide(dependencies),
+                Effect.catchTags({
+                  PreparationReadError: internalServerError('Could not read preparation data.'),
+                }),
+              ),
+          ),
+        ),
+      )
+      .handle('SelectPath', ({ payload }) =>
+        limitByUser(accountWriteLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              selectPath(user.id, payload.qualificationPathId),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationWriteError: internalServerError('Could not save preparation data.'),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('CompleteOnboarding', ({ payload }) =>
-        Effect.flatMap(CurrentUser, user => completeOnboarding(user.id, payload)).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PreparationWriteError: internalServerError('Could not save preparation data.'),
-            QualificationPathsReadError: internalServerError('Could not read qualification paths.'),
-            QualificationPathsWriteError: internalServerError(
-              'Could not validate qualification paths.',
+        limitByUser(accountWriteLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user => completeOnboarding(user.id, payload)).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationWriteError: internalServerError('Could not save preparation data.'),
+                QualificationPathsReadError: internalServerError(
+                  'Could not read qualification paths.',
+                ),
+                QualificationPathsWriteError: internalServerError(
+                  'Could not validate qualification paths.',
+                ),
+                ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
+                ExamCalendarWriteError: internalServerError('Could not validate exam sessions.'),
+                StalePathConfiguration: () =>
+                  Effect.fail(
+                    new InvalidPathConfiguration({
+                      type: 'invalid_path_configuration',
+                      message: 'This configuration is unavailable. Review your choices.',
+                    }),
+                  ),
+              }),
             ),
-            ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
-            ExamCalendarWriteError: internalServerError('Could not validate exam sessions.'),
-            StalePathConfiguration: () =>
-              Effect.fail(
-                new InvalidPathConfiguration({
-                  type: 'invalid_path_configuration',
-                  message: 'This configuration is unavailable. Review your choices.',
-                }),
-              ),
-          }),
+          ),
         ),
       )
       .handle('ArchivePath', ({ params }) =>
-        Effect.flatMap(CurrentUser, user => archivePath(user.id, params.qualificationPathId)).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PreparationWriteError: internalServerError('Could not save preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-          }),
+        limitByUser(accountWriteLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              archivePath(user.id, params.qualificationPathId),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationWriteError: internalServerError('Could not save preparation data.'),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('RestorePath', ({ params }) =>
-        Effect.flatMap(CurrentUser, user => restorePath(user.id, params.qualificationPathId)).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PreparationWriteError: internalServerError('Could not save preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-          }),
+        limitByUser(accountWriteLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              restorePath(user.id, params.qualificationPathId),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationWriteError: internalServerError('Could not save preparation data.'),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('ExtendPath', ({ params }) =>
-        Effect.flatMap(CurrentUser, user => extendPath(user.id, params.qualificationPathId)).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PreparationWriteError: internalServerError('Could not save preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-          }),
+        limitByUser(accountWriteLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              extendPath(user.id, params.qualificationPathId),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationWriteError: internalServerError('Could not save preparation data.'),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('ChangeGoal', ({ payload, params }) =>
-        Effect.flatMap(CurrentUser, user =>
-          changeGoal(user.id, params.qualificationPathId, payload),
-        ).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PreparationWriteError: internalServerError('Could not save preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-            ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
-            ExamCalendarWriteError: internalServerError('Could not validate exam sessions.'),
-            QualificationPathsWriteError: internalServerError(
-              'Could not validate qualification paths.',
+        limitByUser(accountWriteLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              changeGoal(user.id, params.qualificationPathId, payload),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationWriteError: internalServerError('Could not save preparation data.'),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+                ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
+                ExamCalendarWriteError: internalServerError('Could not validate exam sessions.'),
+                QualificationPathsWriteError: internalServerError(
+                  'Could not validate qualification paths.',
+                ),
+                StaleExamGoal: () =>
+                  Effect.fail(
+                    new GoalConflict({
+                      type: 'goal_conflict',
+                      message: 'Your goal changed elsewhere. Reload before saving.',
+                    }),
+                  ),
+                StalePathConfiguration: () =>
+                  Effect.fail(
+                    new InvalidPathConfiguration({
+                      type: 'invalid_path_configuration',
+                      message: 'This configuration is unavailable. Review your choices.',
+                    }),
+                  ),
+              }),
             ),
-            StaleExamGoal: () =>
-              Effect.fail(
-                new GoalConflict({
-                  type: 'goal_conflict',
-                  message: 'Your goal changed elsewhere. Reload before saving.',
-                }),
-              ),
-            StalePathConfiguration: () =>
-              Effect.fail(
-                new InvalidPathConfiguration({
-                  type: 'invalid_path_configuration',
-                  message: 'This configuration is unavailable. Review your choices.',
-                }),
-              ),
-          }),
+          ),
         ),
       )
       .handle('GetGoalHistory', ({ query, params }) =>
-        Effect.flatMap(CurrentUser, user =>
-          getGoalHistory(user.id, params.qualificationPathId, query),
-        ).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-            InvalidCursor: () =>
-              Effect.fail(
-                new InvalidRequest({
-                  type: 'invalid_request',
-                  message: 'Invalid pagination cursor.',
-                }),
-              ),
-          }),
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              getGoalHistory(user.id, params.qualificationPathId, query),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+                InvalidCursor: () =>
+                  Effect.fail(
+                    new InvalidRequest({
+                      type: 'invalid_request',
+                      message: 'Invalid pagination cursor.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('GetGoalOptions', ({ query, params }) =>
-        Effect.flatMap(CurrentUser, user =>
-          getGoalOptions(user.id, params.qualificationPathId, query),
-        ).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: internalServerError('Could not read preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-            ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
-            InvalidCursor: () =>
-              Effect.fail(
-                new InvalidRequest({
-                  type: 'invalid_request',
-                  message: 'Invalid pagination cursor.',
-                }),
-              ),
-          }),
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              getGoalOptions(user.id, params.qualificationPathId, query),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+                ExamCalendarReadError: internalServerError('Could not read exam sessions.'),
+                InvalidCursor: () =>
+                  Effect.fail(
+                    new InvalidRequest({
+                      type: 'invalid_request',
+                      message: 'Invalid pagination cursor.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
   }),
