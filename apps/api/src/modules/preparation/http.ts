@@ -76,16 +76,15 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
       .handle('GetSelectedPath', () =>
         limitByUser(accountReadLimit).pipe(
           Effect.andThen(
-            Effect.flatMap(CurrentUser, user => preparationReader.selectedPath(user.id))
-              .pipe(Effect.map(path => ({ path })))
-              .pipe(
-                Effect.provide(dependencies),
-                Effect.catchTags({
-                  PreparationReadError: logAndFailInternalServerError(
-                    'Could not read preparation data.',
-                  ),
-                }),
-              ),
+            Effect.flatMap(CurrentUser, user => preparationReader.selectedPath(user.id)).pipe(
+              Effect.map(path => ({ path })),
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
+              }),
+            ),
           ),
         ),
       )
@@ -94,16 +93,15 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           Effect.andThen(
             Effect.flatMap(CurrentUser, user =>
               preparationReader.path(user.id, params.qualificationPathId),
-            )
-              .pipe(Effect.map(path => ({ path })))
-              .pipe(
-                Effect.provide(dependencies),
-                Effect.catchTags({
-                  PreparationReadError: logAndFailInternalServerError(
-                    'Could not read preparation data.',
-                  ),
-                }),
-              ),
+            ).pipe(
+              Effect.map(path => ({ path })),
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
+              }),
+            ),
           ),
         ),
       )

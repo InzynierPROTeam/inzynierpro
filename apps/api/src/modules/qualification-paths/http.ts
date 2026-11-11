@@ -77,16 +77,14 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
       .handle('ResolveQualificationPath', ({ query }) =>
         limitByClient(publicReadLimit).pipe(
           Effect.andThen(
-            qualificationPathsReader
-              .resolve(query)
-              .pipe(Effect.map(path => ({ path })))
-              .pipe(
-                Effect.catchTags({
-                  QualificationPathsReadError: logAndFailInternalServerError(
-                    'Could not read qualification paths.',
-                  ),
-                }),
-              ),
+            qualificationPathsReader.resolve(query).pipe(
+              Effect.map(path => ({ path })),
+              Effect.catchTags({
+                QualificationPathsReadError: logAndFailInternalServerError(
+                  'Could not read qualification paths.',
+                ),
+              }),
+            ),
           ),
         ),
       )

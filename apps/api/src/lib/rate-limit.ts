@@ -97,42 +97,44 @@ const consume = Effect.fn('RateLimit.consume')(function* (
       window: policy.window,
     })
     .pipe(
-      Effect.map(Option.some),
-      Effect.catchTag('RateLimiterStoreError', error =>
-        policy.whenStoreUnavailable === 'allow'
-          ? Effect.logWarning('Rate limiter unavailable; request allowed', error).pipe(
-              Effect.annotateLogs('app.rate_limit.policy', policy.name),
-              Effect.andThen(Effect.annotateCurrentSpan('app.rate_limit.store_unavailable', true)),
-              Effect.as(Option.none<RateLimitResult>()),
-            )
-          : Effect.die(error),
-      ),
-      Effect.catchTag('RateLimitExceeded', exceeded =>
-        Effect.logInfo('Rate limit exceeded').pipe(
-          Effect.annotateLogs({
-            'app.rate_limit.policy': policy.name,
-            'app.rate_limit.dimension': dimension,
-          }),
-          Effect.andThen(Effect.annotateCurrentSpan('app.rate_limit.exceeded', true)),
-          Effect.andThen(
-            recordOutcome(
-              RateLimitOutcome.Exceeded({
-                limit: exceeded.limit,
-                resetAt: exceeded.resetAt,
-                retryAfterSeconds: exceeded.retryAfterSeconds,
-              }),
+      Effect.asSome,
+      Effect.catchTags({
+        RateLimiterStoreError: error =>
+          policy.whenStoreUnavailable === 'allow'
+            ? Effect.logWarning('Rate limiter unavailable; request allowed', error).pipe(
+                Effect.annotateLogs('app.rate_limit.policy', policy.name),
+                Effect.andThen(
+                  Effect.annotateCurrentSpan('app.rate_limit.store_unavailable', true),
+                ),
+                Effect.as(Option.none<RateLimitResult>()),
+              )
+            : Effect.die(error),
+        RateLimitExceeded: exceeded =>
+          Effect.logInfo('Rate limit exceeded').pipe(
+            Effect.annotateLogs({
+              'app.rate_limit.policy': policy.name,
+              'app.rate_limit.dimension': dimension,
+            }),
+            Effect.andThen(Effect.annotateCurrentSpan('app.rate_limit.exceeded', true)),
+            Effect.andThen(
+              recordOutcome(
+                RateLimitOutcome.Exceeded({
+                  limit: exceeded.limit,
+                  resetAt: exceeded.resetAt,
+                  retryAfterSeconds: exceeded.retryAfterSeconds,
+                }),
+              ),
+            ),
+            Effect.andThen(
+              Effect.fail(
+                new RateLimitExceeded({
+                  type: 'rate_limit_exceeded',
+                  message: 'Too many requests. Please try again later.',
+                }),
+              ),
             ),
           ),
-          Effect.andThen(
-            Effect.fail(
-              new RateLimitExceeded({
-                type: 'rate_limit_exceeded',
-                message: 'Too many requests. Please try again later.',
-              }),
-            ),
-          ),
-        ),
-      ),
+      }),
     )
 
   if (Option.isSome(result)) {

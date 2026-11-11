@@ -52,13 +52,11 @@ export const ApiErrorMiddleware = <E, R>(
   httpEffect: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>,
 ) =>
   httpEffect.pipe(
-    Effect.catchCause(cause => {
-      if (Cause.hasInterruptsOnly(cause)) {
-        return Effect.failCause(cause)
-      }
-
-      return HttpServerError.causeResponse(cause).pipe(
-        Effect.flatMap(([response]) => normalizeError(response.status, cause)),
-      )
-    }),
+    Effect.catchCauseIf(
+      cause => !Cause.hasInterruptsOnly(cause),
+      cause =>
+        HttpServerError.causeResponse(cause).pipe(
+          Effect.flatMap(([response]) => normalizeError(response.status, cause)),
+        ),
+    ),
   )

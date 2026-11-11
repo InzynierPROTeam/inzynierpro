@@ -18,6 +18,7 @@ export const ApiDateTime = UtcIsoDateTime.pipe(
       encode: value => Schema.decodeSync(UtcIsoDateTime)(DateTime.formatIso(value)),
     }),
   ),
-).pipe(Schema.brand('ApiDateTime'))
+  Schema.brand('ApiDateTime'),
+)
 
 export type ApiDateTime = typeof ApiDateTime.Type
