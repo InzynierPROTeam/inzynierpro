@@ -35,6 +35,7 @@
     "@inzpro/auth-client": "workspace:*",
     "@inzpro/testing": "workspace:*",
     "@opencoredev/email-sdk": "catalog:",
+    "@vercel/nft": "catalog:",
     "redis": "catalog:"
   }
 }

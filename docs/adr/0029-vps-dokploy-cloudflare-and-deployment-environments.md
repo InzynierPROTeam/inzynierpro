@@ -1,6 +1,6 @@
 # VPS z Dokploy, klienci Cloudflare i środowiska wdrożeń
 
-Wybieramy model podobny do V1: backend, PostgreSQL i Redis działają na VPS zarządzanym przy pomocy Dokploy, a klienci webowi na Cloudflare. Odrzucamy początkową propozycję preferowania zarządzanego PostgreSQL; korzystamy ze znanego modelu utrzymania. HTTP i worker uruchamiamy na Node 26 z przypiętym obrazem i zgodną konfiguracją lokalną oraz CI. Worker jest osobnym procesem tego samego backendu zgodnie z ADR-0020. Runtime klientów Cloudflare jest osobną konfiguracją.
+Wybieramy model podobny do V1: backend, PostgreSQL i Redis działają na VPS zarządzanym przy pomocy Dokploy, a klienci webowi na Cloudflare. Odrzucamy początkową propozycję preferowania zarządzanego PostgreSQL; korzystamy ze znanego modelu utrzymania. HTTP i worker uruchamiamy na Node 26 z obrazem `node:26-alpine` w najnowszej wersji poprawkowej i zgodną konfiguracją lokalną oraz CI. Worker jest osobnym procesem tego samego backendu zgodnie z ADR-0020. Runtime klientów Cloudflare jest osobną konfiguracją.
 
 Poza lokalnym środowiskiem planujemy jeden wspólny staging i produkcję. Automatyczne środowiska dla każdego PR odkładamy. Staging służy sprawdzeniu wdrożeń, migracji i integracji; produkcja ma osobne dane i konfigurację.
 

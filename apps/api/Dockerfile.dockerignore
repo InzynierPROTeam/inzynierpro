@@ -1,0 +1,25 @@
+# Build context of apps/api/Dockerfile. Everything is excluded except what the API build reads.
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!turbo.json
+!apps/api
+!packages
+
+# Installed and generated files are rebuilt inside the image.
+**/node_modules
+**/dist
+**/.turbo
+**/*.tsbuildinfo
+
+# Secrets and local configuration.
+**/.env*
+
+# Tests, test helpers and docs are not part of the runtime build.
+**/*.test.ts
+**/*.test.tsx
+**/src/test
+**/vitest.config.*
+**/*.md
+

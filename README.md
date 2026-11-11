@@ -62,6 +62,16 @@ scripts/with-test-services.sh pnpm --filter @inzpro/api exec vitest run src/modu
 
 Stop applications with Ctrl+C. Stop development services with `pnpm --filter @inzpro/api services:down`; it preserves volumes.
 
+## API image
+
+`apps/api/Dockerfile` builds the production API image from the repository root:
+
+```sh
+docker build -f apps/api/Dockerfile -t inzpro-api .
+```
+
+`turbo prune` keeps only the API and its workspace packages, and `apps/api/Dockerfile.dockerignore` limits the build context. After the build, `apps/api/scripts/trace-runtime.ts` traces the files node can load from `dist/main.js` and the migrations, so the image ships those files instead of every production dependency. Files read at runtime through package exports, such as the email theme CSS, are listed in that script; add new ones there. The image runs as the `node` user without npm, applies migrations before the server starts and reports health from `/api/v1/health-check`. Configure it with the variables from `apps/api/.env.example`.
+
 ## Onboarding, paths and session preview
 
 After applying migrations, seed the small synthetic dataset explicitly:
