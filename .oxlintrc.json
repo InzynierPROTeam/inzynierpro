@@ -7,10 +7,6 @@
       "specifier": "./packages/tools/src/oxlint/architecture.ts"
     },
     {
-      "name": "project-layout",
-      "specifier": "./packages/tools/src/oxlint/project-layout.ts"
-    },
-    {
       "name": "anti-slop",
       "specifier": "./packages/tools/src/oxlint/anti-slop/index.ts"
     },
@@ -30,12 +26,7 @@
     "architecture/no-reexports": "error",
     "typescript/no-deprecated": "error",
     "import/no-cycle": ["error", { "ignoreTypes": false }],
-    // project-layout custom rules
-    "project-layout/blank-line-before-return": "error",
-    "project-layout/blank-lines-around-control-flow": "error",
-    "project-layout/imports-first": "error",
-    "project-layout/blank-line-after-imports": "error",
-    // end of project-layout custom rules
+    "import/first": "error",
     // anti-slop custom rules
     "oxc/no-accumulating-spread": "error",
     "anti-slop/no-array-filter-map": "error",
@@ -198,7 +189,22 @@
     "unicorn/prefer-set-size": "warn",
     "unicorn/prefer-string-starts-ends-with": "warn",
 
-    "typescript/no-explicit-any": "error"
+    "typescript/no-explicit-any": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "node:crypto",
+            "message": "Use effect modules: SecureRandom, Digest from 'effect/crypto', or Random from 'effect'."
+          },
+          {
+            "name": "crypto",
+            "message": "Use effect modules: SecureRandom, Digest from 'effect/crypto', or Random from 'effect'."
+          }
+        ]
+      }
+    ]
   },
   "overrides": [
     {
@@ -206,6 +212,11 @@
       "rules": {
         "import/no-cycle": ["error", { "ignoreTypes": true }]
       }
+    },
+    {
+      // Lint tooling runs outside Effect programs.
+      "files": ["packages/tools/**/*.ts"],
+      "rules": { "no-restricted-imports": "off" }
     },
     {
       "files": ["**/*.gen.ts"],
