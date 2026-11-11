@@ -5,15 +5,14 @@ import { Effect } from 'effect'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/exam-calendar.reader.js'
 import { requirePathAccess } from '~api/modules/preparation/path-access.policy.js'
 
-export const getGoalOptions = (
+export const getGoalOptions = Effect.fn('Preparation.getGoalOptions')(function* (
   userId: UserId,
   pathId: QualificationPathId,
   page: CursorPagination,
-) =>
-  Effect.gen(function* () {
-    yield* requirePathAccess(userId, pathId)
+) {
+  yield* requirePathAccess(userId, pathId)
 
-    const examCalendarReader = yield* ExamCalendarReader
+  const examCalendarReader = yield* ExamCalendarReader
 
-    return yield* examCalendarReader.sessionsForPath(pathId, page)
-  })
+  return yield* examCalendarReader.sessionsForPath(pathId, page)
+})

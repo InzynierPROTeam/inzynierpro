@@ -17,8 +17,8 @@ export const ExamCalendarReaderLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return ExamCalendarReader.of({
-      sessions: (specializationId, req) =>
-        Effect.gen(function* () {
+      sessions: Effect.fn('ExamCalendarReader.sessions')(
+        function* (specializationId, req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
           const cursor = yield* decodeCursor(Uuid, req.cursor)
@@ -31,14 +31,14 @@ export const ExamCalendarReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(ExamSessionOption))(rows)
 
           return makeCursorPage(data, limit, row => row.id)
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
-            SchemaError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
-          }),
-        ),
-      sessionsForPath: (pathId, req) =>
-        Effect.gen(function* () {
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
+          SchemaError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
+        }),
+      ),
+      sessionsForPath: Effect.fn('ExamCalendarReader.sessionsForPath')(
+        function* (pathId, req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
           const cursor = yield* decodeCursor(Uuid, req.cursor)
@@ -51,17 +51,18 @@ export const ExamCalendarReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(ExamSessionOption))(rows)
 
           return makeCursorPage(data, limit, row => row.id)
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
-            SchemaError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
-          }),
-        ),
-      isEligible: (pathId, sessionId) =>
-        sql`SELECT e.id FROM exam_sessions e JOIN specializations s ON s.general_chamber_id=e.general_chamber_id JOIN qualification_paths p ON p.specialization_id=s.id WHERE p.id=${pathId} AND e.id=${sessionId} AND e.published AND e.selection_closes_at>clock_timestamp() LIMIT 1`.pipe(
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
+          SchemaError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
+        }),
+      ),
+      isEligible: Effect.fn('ExamCalendarReader.isEligible')(function* (pathId, sessionId) {
+        return yield* sql`SELECT e.id FROM exam_sessions e JOIN specializations s ON s.general_chamber_id=e.general_chamber_id JOIN qualification_paths p ON p.specialization_id=s.id WHERE p.id=${pathId} AND e.id=${sessionId} AND e.published AND e.selection_closes_at>clock_timestamp() LIMIT 1`.pipe(
           Effect.map(rows => rows.length > 0),
           Effect.mapError(cause => new ExamCalendarReadError({ cause })),
-        ),
+        )
+      }),
     })
   }),
 )

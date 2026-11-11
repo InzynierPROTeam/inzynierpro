@@ -5,11 +5,14 @@ import { Effect } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/path-access.policy.js'
 import { StudyReader } from '~api/modules/study/study.reader.js'
 
-export const getDocuments = (userId: UserId, pathId: QualificationPathId, page: CursorPagination) =>
-  Effect.gen(function* () {
-    yield* requirePathAccess(userId, pathId, 'written')
+export const getDocuments = Effect.fn('Study.getDocuments')(function* (
+  userId: UserId,
+  pathId: QualificationPathId,
+  page: CursorPagination,
+) {
+  yield* requirePathAccess(userId, pathId, 'written')
 
-    const studyReader = yield* StudyReader
+  const studyReader = yield* StudyReader
 
-    return yield* studyReader.documents(userId, pathId, page)
-  })
+  return yield* studyReader.documents(userId, pathId, page)
+})

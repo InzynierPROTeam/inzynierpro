@@ -8,29 +8,31 @@ import { Schema } from 'effect'
 import { requirePathAccess } from './path-access.policy.js'
 import { PreparationRepository } from './preparation.repository.js'
 
-export const extendPath = (userId: UserId, pathId: QualificationPathId) =>
-  Effect.gen(function* () {
-    const preparationRepository = yield* PreparationRepository
+export const extendPath = Effect.fn('Preparation.extendPath')(function* (
+  userId: UserId,
+  pathId: QualificationPathId,
+) {
+  const preparationRepository = yield* PreparationRepository
 
-    return yield* preparationRepository.transaction(
-      Effect.gen(function* () {
-        yield* preparationRepository.lockUser(userId)
-        const path = yield* requirePathAccess(userId, pathId)
+  return yield* preparationRepository.transaction(
+    Effect.gen(function* () {
+      yield* preparationRepository.lockUser(userId)
+      const path = yield* requirePathAccess(userId, pathId)
 
-        if (path.accessScope !== bothExamAccess) {
-          const version = Schema.decodeSync(UserExamGoalVersion)(path.goal.version + 1)
-          yield* preparationRepository.extend(userId, pathId)
-          yield* preparationRepository.appendGoal(
-            userId,
-            pathId,
-            version,
-            path.goal.examSessionId,
-            bothExamAccess,
-            path.goal.oralExamDate,
-          )
-        }
+      if (path.accessScope !== bothExamAccess) {
+        const version = Schema.decodeSync(UserExamGoalVersion)(path.goal.version + 1)
+        yield* preparationRepository.extend(userId, pathId)
+        yield* preparationRepository.appendGoal(
+          userId,
+          pathId,
+          version,
+          path.goal.examSessionId,
+          bothExamAccess,
+          path.goal.oralExamDate,
+        )
+      }
 
-        return { qualificationPathId: pathId, existing: true, archived: false }
-      }),
-    )
-  })
+      return { qualificationPathId: pathId, existing: true, archived: false }
+    }),
+  )
+})

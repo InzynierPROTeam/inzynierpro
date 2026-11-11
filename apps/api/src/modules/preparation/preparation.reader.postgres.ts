@@ -61,8 +61,8 @@ export const PreparationReaderLive = Layer.effect(
     const latestGoal = sql`g.version=(SELECT max(h.version) FROM user_exam_goals h WHERE h.user_id=up.user_id AND h.qualification_path_id=p.id)`
 
     return PreparationReader.of({
-      paths: (userId, req) =>
-        Effect.gen(function* () {
+      paths: Effect.fn('PreparationReader.paths')(
+        function* (userId, req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
           const cursor = yield* decodeCursor(Uuid, req.cursor)
@@ -75,32 +75,36 @@ export const PreparationReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(AssignmentRow))(rows)
 
           return makeCursorPage(data.map(assignmentFromRow), limit, row => row.id)
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new PreparationReadError({ cause })),
-            SchemaError: cause => Effect.fail(new PreparationReadError({ cause })),
-          }),
-        ),
-      path: (userId, pathId) =>
-        Effect.gen(function* () {
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new PreparationReadError({ cause })),
+          SchemaError: cause => Effect.fail(new PreparationReadError({ cause })),
+        }),
+      ),
+      path: Effect.fn('PreparationReader.path')(
+        function* (userId, pathId) {
           const rows =
             yield* sql`SELECT ${assignmentColumns} ${assignmentTables} WHERE up.user_id=${userId} AND p.id=${pathId} AND ${latestGoal} LIMIT 1`
 
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(AssignmentRow))(rows)
 
           return Option.map(Option.fromNullishOr(data[0]), assignmentFromRow)
-        }).pipe(Effect.mapError(cause => new PreparationReadError({ cause }))),
-      selectedPath: userId =>
-        Effect.gen(function* () {
+        },
+        Effect.mapError(cause => new PreparationReadError({ cause })),
+      ),
+      selectedPath: Effect.fn('PreparationReader.selectedPath')(
+        function* (userId) {
           const rows =
             yield* sql`SELECT ${assignmentColumns} ${assignmentTables} JOIN user_path_selections s ON s.user_id=up.user_id AND s.qualification_path_id=p.id WHERE up.user_id=${userId} AND up.archived_at IS NULL AND ${latestGoal} LIMIT 1`
 
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(AssignmentRow))(rows)
 
           return Option.map(Option.fromNullishOr(data[0]), assignmentFromRow)
-        }).pipe(Effect.mapError(cause => new PreparationReadError({ cause }))),
-      goals: (userId, pathId, req) =>
-        Effect.gen(function* () {
+        },
+        Effect.mapError(cause => new PreparationReadError({ cause })),
+      ),
+      goals: Effect.fn('PreparationReader.goals')(
+        function* (userId, pathId, req) {
           const { limit } = resolveCursorPagination(req)
           const fetchLimit = limit + 1
 
@@ -117,12 +121,12 @@ export const PreparationReaderLive = Layer.effect(
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(GoalRow))(rows)
 
           return makeCursorPage(data.map(goalFromRow), limit, row => String(row.version))
-        }).pipe(
-          Effect.catchTags({
-            SqlError: cause => Effect.fail(new PreparationReadError({ cause })),
-            SchemaError: cause => Effect.fail(new PreparationReadError({ cause })),
-          }),
-        ),
+        },
+        Effect.catchTags({
+          SqlError: cause => Effect.fail(new PreparationReadError({ cause })),
+          SchemaError: cause => Effect.fail(new PreparationReadError({ cause })),
+        }),
+      ),
     })
   }),
 )

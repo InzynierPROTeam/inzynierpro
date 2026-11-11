@@ -35,6 +35,9 @@ export const AuthenticationLive = Layer.effect(
           Effect.mapError(() => unauthenticated),
         )
 
+        // The pseudonymous id lets a trace be tied to an account; e-mail stays out (ADR-0042).
+        yield* Effect.annotateCurrentSpan('user.id', user.id)
+
         const response = yield* Effect.provideService(httpEffect, CurrentUser, user)
 
         // Better Auth refreshes the cookie when it extends the session.

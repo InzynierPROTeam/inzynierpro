@@ -10,18 +10,22 @@ export const LearningContentRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return LearningContentRepository.of({
-      createDocument: document =>
-        sql`INSERT INTO reference_documents (id,title) VALUES (${document.id},${document.title})`.pipe(
+      createDocument: Effect.fn('LearningContentRepository.createDocument')(function* (document) {
+        return yield* sql`INSERT INTO reference_documents (id,title) VALUES (${document.id},${document.title})`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new LearningContentWriteError({ cause })),
-        ),
-      attachDocument: (pathId, documentId) =>
-        sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId})`.pipe(
-          Effect.asVoid,
-          Effect.mapError(cause => new LearningContentWriteError({ cause })),
-        ),
-      createQuestion: question =>
-        sql
+        )
+      }),
+      attachDocument: Effect.fn('LearningContentRepository.attachDocument')(
+        function* (pathId, documentId) {
+          return yield* sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId})`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
+      createQuestion: Effect.fn('LearningContentRepository.createQuestion')(function* (question) {
+        return yield* sql
           .withTransaction(
             Effect.gen(function* () {
               yield* sql`INSERT INTO written_questions (id,document_id) VALUES (${question.id},${question.documentId})`
@@ -39,12 +43,14 @@ export const LearningContentRepositoryLive = Layer.effect(
               yield* sql`INSERT INTO path_questions (qualification_path_id,document_id,question_id) VALUES (${question.qualificationPathId},${question.documentId},${question.id})`
             }),
           )
-          .pipe(Effect.mapError(cause => new LearningContentWriteError({ cause }))),
-      withdrawRevision: id =>
-        sql`UPDATE question_revisions SET withdrawn_at=clock_timestamp() WHERE id=${id}`.pipe(
+          .pipe(Effect.mapError(cause => new LearningContentWriteError({ cause })))
+      }),
+      withdrawRevision: Effect.fn('LearningContentRepository.withdrawRevision')(function* (id) {
+        return yield* sql`UPDATE question_revisions SET withdrawn_at=clock_timestamp() WHERE id=${id}`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new LearningContentWriteError({ cause })),
-        ),
+        )
+      }),
     })
   }),
 )

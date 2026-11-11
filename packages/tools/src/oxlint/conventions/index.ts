@@ -9,8 +9,9 @@ import { noSpreadRouteHooksRule } from './rules/no-spread-route-hooks.ts'
 import { noTryCatchRule } from './rules/no-try-catch.ts'
 import { queriesWrapActionsRule } from './rules/queries-wrap-actions.ts'
 import { requestSchemasRule } from './rules/request-schemas.ts'
+import { tracedBackendOperationsRule } from './rules/traced-backend-operations.ts'
 
-/** Workspace conventions for file placement, route state, failure handling and query modules. */
+/** Workspace conventions for file placement, route state, failure handling, query modules and backend tracing. */
 const conventionsPlugin = eslintCompatPlugin({
   meta: { name: 'conventions' },
   rules: {
@@ -23,6 +24,7 @@ const conventionsPlugin = eslintCompatPlugin({
     'no-try-catch': noTryCatchRule,
     'queries-wrap-actions': queriesWrapActionsRule,
     'request-schemas': requestSchemasRule,
+    'traced-backend-operations': tracedBackendOperationsRule,
   },
 })
 
