@@ -53,7 +53,7 @@ Mechanical conventions are enforced by the [Oxlint conventions plugin](packages/
 
 ## Language
 
-Write source identifiers, comments, tests, technical sample data and documentation in English. Platform user-facing content, validation messages, SEO and public route paths are Polish; authentication route-group identifiers and HTTP contract field names remain technical identifiers. ADR prose is written in Polish. Keep proper names and existing public identifiers intact.
+Polish is for what users see: UI text, user-facing and validation messages, e-mails, SEO, public route paths and educational content. Everything else is English: identifiers, comments, tests, technical sample data, documentation, ADRs, the glossary and issues. Route-group identifiers and HTTP contract field names are technical identifiers. Keep proper names (PIIB, IARP, InżynierPRO) and existing public identifiers intact. Glossary entries carry the Polish UI term beside the English one.
 
 ## Semantic primitives
 

@@ -1,172 +1,172 @@
 # InżynierPRO
 
-Pojęcia domenowe platformy przygotowującej do egzaminów na uprawnienia budowlane.
+Domain vocabulary of the platform that prepares candidates for Polish construction licence exams (uprawnienia budowlane). Each term gives the Polish wording to use in UI copy.
 
 ## Language
 
-**QualificationPath — qualification path**:
+**QualificationPath** (UI: _ścieżka nauki_):
 A shared qualification variant defined by specialization, qualification kind and scope. It is an independent context of learning history, separate from a user's target exam session or exam access scope.
 
-**ExamSession — sesja egzaminacyjna**:
-Oficjalna tura egzaminacyjna organizowana przez izbę. Jest odrębna od indywidualnego terminu egzaminu użytkownika, sesji nauki i podejścia do egzaminu próbnego.
+**ExamSession** (UI: _sesja egzaminacyjna_):
+An official exam round organized by a chamber. It is distinct from the user's own exam date, a study session and a mock exam attempt.
 
-**QualificationProcess — proces kwalifikacyjny**:
-Ciąg formalności i etapów prowadzących do zdobycia uprawnień, obejmujący przygotowanie dokumentów, złożenie wniosku i egzaminy. Jest szerszy od samej sesji egzaminacyjnej i od postępu nauki materiału.
+**QualificationProcess** (UI: _proces kwalifikacyjny_):
+The sequence of formalities and stages leading to a licence: preparing documents, submitting the application and the exams. It is broader than the exam session and than learning progress.
 
-**QualificationProcessSchedule — harmonogram procesu kwalifikacyjnego**:
-Etapy i terminy procesu kwalifikacyjnego właściwe dla danego zakresu izby i sesji, z uwzględnieniem części wspólnych. Określa przebieg w kalendarzu, a nie wykonanie formalności przez konkretną osobę.
+**QualificationProcessSchedule** (UI: _harmonogram procesu kwalifikacyjnego_):
+The stages and dates of the qualification process for a given chamber scope and session, including shared parts. It describes the calendar, not a specific person's completion of formalities.
 
-**UserQualificationChecklist — osobista checklista formalności**:
-Lista czynności procesu kwalifikacyjnego, których wykonanie deklaruje użytkownik. Jest odrębna od upływu terminów harmonogramu i postępu nauki.
+**UserQualificationChecklist** (UI: _osobista checklista formalności_):
+The qualification-process actions a user declares as done. It is distinct from passing schedule deadlines and from learning progress.
 
-**Syllabus — wykaz egzaminacyjny**:
-Oficjalne zestawienie dokumentów i wymaganego zakresu ich znajomości dla określonej izby i sesji egzaminacyjnej.
+**Syllabus** (UI: _wykaz egzaminacyjny_):
+The official list of documents and the required depth of knowledge for a given chamber and exam session.
 
-**SyllabusEdition — wersja wykazu**:
-Konkretna oficjalna wersja wykazu zachowana wraz z oryginalnymi plikami źródłowymi. Jest odrębna od naszego odczytu jej zawartości.
+**SyllabusEdition** (UI: _wersja wykazu_):
+A specific official version of a syllabus, kept with its original source files. It is distinct from our interpretation of its content.
 
-**SyllabusInterpretation — odczyt wykazu**:
-Ustrukturyzowane odwzorowanie oficjalnej wersji wykazu przygotowane przez system lub redakcję. Poprawienie błędu tego odwzorowania nie zmienia oficjalnej wersji wykazu.
+**SyllabusInterpretation** (UI: _odczyt wykazu_):
+The structured mapping of an official syllabus edition prepared by the system or editors. Fixing an error in it never changes the official edition.
 
-**ApplicableSyllabus — wykaz odniesienia**:
-Wykaz, względem którego potwierdzono udostępniany zakres materiałów danej ścieżki. Może różnić się od wykazu docelowej sesji egzaminacyjnej użytkownika, jeżeli aktualizacja materiałów nie została jeszcze potwierdzona.
+**ApplicableSyllabus** (UI: _wykaz odniesienia_):
+The syllabus against which a path's published material scope was confirmed. It may differ from the syllabus of the user's target exam session while a material update is not yet confirmed.
 
-**ReferenceDocument — dokument referencyjny**:
-Dokument stanowiący źródło wiedzy, np. akt prawny, norma, kodeks, instrukcja lub wytyczne. Zachowuje swoją tożsamość między wydaniami.
+**ReferenceDocument** (UI: _dokument referencyjny_):
+A knowledge source such as a statute, standard, code, manual or guideline. It keeps its identity across editions.
 
-**DocumentEdition — wydanie dokumentu**:
-Konkretne wydanie dokumentu referencyjnego, do którego można odnieść treść materiału i decyzję weryfikacyjną.
+**DocumentEdition** (UI: _wydanie dokumentu_):
+A specific edition of a reference document that material content and verification decisions can refer to.
 
-**DocumentSectionAddress — adres fragmentu dokumentu**:
-Strukturalne oznaczenie jednostki w konkretnym dokumencie, np. artykułu, ustępu, punktu lub tabeli. Wraz z tożsamością dokumentu identyfikuje fragment niezależnie od zmian jego treści.
+**DocumentSectionAddress** (UI: _adres fragmentu dokumentu_):
+The structural designation of a unit in a specific document, such as an article, paragraph, point or table. With the document identity it identifies a fragment regardless of content changes.
 
-**DocumentSectionContent — treść fragmentu dokumentu**:
-Konkretna wersja treści jednostki dokumentu pod określonym adresem strukturalnym.
+**DocumentSectionContent** (UI: _treść fragmentu dokumentu_):
+A specific version of the content of a document unit at a given structural address.
 
-**SectionRelocation — przeniesienie fragmentu**:
-Jawne powiązanie jednostek dokumentu wskazujące przeniesienie lub zmianę numeracji. Nie powoduje automatycznego przepięcia powiązań pytań.
+**SectionRelocation** (UI: _przeniesienie fragmentu_):
+An explicit link between document units recording a move or renumbering. It never repoints question references automatically.
 
-**QuestionReference — powiązanie pytania ze źródłem**:
-Relacja pytania do dokumentu lub jego fragmentu określająca bezpośrednią podstawę odpowiedzi, źródło pomocnicze albo związek tematyczny. Istotność dla poprawności pytania jest określana przez redakcję, niezależnie od wykorzystania relacji do nawigacji.
+**QuestionReference** (UI: _powiązanie pytania ze źródłem_):
+A question's link to a document or fragment, marked as the direct basis of the answer, a supporting source or a topical relation. Editors decide whether it matters for correctness, independently of its use for navigation.
 
-**WrittenCategory — kategoria nauki pisemnej**:
-Dokument referencyjny, pod którym użytkownik znajduje grupę pytań pisemnych. Jest tym samym dokumentem, który stanowi główne miejsce tych pytań w katalogu.
+**WrittenCategory** (UI: _kategoria nauki pisemnej_):
+The reference document under which a user finds a group of written questions. It is the same document that is those questions' primary place in the catalog.
 
-**OralQuestionCategory — kategoria pytań ustnych**:
-Grupa pytań ustnych służąca organizacji nauki, np. temat praktyczny lub grupa nazwana od dokumentu. Jest odrębna od dokumentów źródłowych, z których korzystają jej pytania.
+**OralQuestionCategory** (UI: _kategoria pytań ustnych_):
+A group of oral questions that organizes study, such as a practical topic or a group named after a document. It is distinct from the source documents its questions use.
 
-**WrittenQuestion — pytanie pisemne**:
-Pytanie służące przygotowaniu do egzaminu pisemnego, z trzema wariantami odpowiedzi i dokładnie jednym poprawnym.
+**Question** (UI: _pytanie_):
+The stable identity of an educational question whose content appears in successive revisions. One question may belong to the material of many paths, with separate learning history on each.
 
-**Question — pytanie**:
-Trwała tożsamość pytania edukacyjnego, którego treść występuje w kolejnych rewizjach. To samo pytanie może należeć do materiału wielu ścieżek, z zachowaniem oddzielnej historii nauki na każdej z nich.
+**WrittenQuestion** (UI: _pytanie pisemne_):
+A question for the written exam, with three answer options and exactly one correct.
 
-**OralQuestion — pytanie ustne**:
-Pytanie służące przygotowaniu do egzaminu ustnego, posiadające opracowaną odpowiedź. Stanowi całą jednostkę materiału planowaną do powtórek ustnych.
+**OralQuestion** (UI: _pytanie ustne_):
+A question for the oral exam with a prepared oral answer. It is the whole unit of material scheduled for oral reviews.
 
-**OralAnswerRevision — rewizja opracowania ustnego**:
-Konkretna wersja opracowanej odpowiedzi na pytanie ustne. Jest punktem odniesienia dla zgodności powiązanych pytań sprawdzających.
+**OralAnswerRevision** (UI: _rewizja opracowania ustnego_):
+A specific version of the prepared answer to an oral question. Linked knowledge checks must be compatible with it.
 
-**OralKnowledgeCheck — pytanie sprawdzające opracowanie ustne**:
-Zatwierdzone, wersjonowane pytanie sprawdzające rozumienie określonego opracowania ustnego, wykorzystywane w opcjonalnym mini-quizie po sesji ustnej. Jego wynik wspiera ocenę znajomości całego pytania ustnego; nie jest pytaniem egzaminu pisemnego ani osobną jednostką powtórek.
+**OralKnowledgeCheck** (UI: _pytanie sprawdzające opracowanie ustne_):
+An approved, versioned question that checks understanding of a specific oral answer, used in the optional post-session mini-quiz. It supports the rating of the whole oral question; it is neither a written exam question nor a separate review unit.
 
-**OralSessionQuiz — mini-quiz po sesji ustnej**:
-Opcjonalny sprawdzian złożony z pytań sprawdzających materiał poznany podczas konkretnej sesji nauki ustnej. Jest odrębny od samej nauki opracowań i samoocen poszczególnych odpowiedzi ustnych.
+**OralSessionQuiz** (UI: _mini-quiz po sesji ustnej_):
+An optional test of knowledge checks covering the material of one oral study session. It is distinct from studying oral answers and from self-assessments.
 
-**OralSelfAssessment — samoocena odpowiedzi ustnej**:
-Deklaracja użytkownika dotycząca jego umiejętności samodzielnego udzielenia odpowiedzi na pytanie ustne, obejmująca brak umiejętności, częściową umiejętność lub deklarowaną pełną umiejętność. Jest odrębna od wyniku mini-quizu sprawdzającego rozumienie opracowania.
+**OralSelfAssessment** (UI: _samoocena odpowiedzi ustnej_):
+The user's declaration of whether they can answer an oral question on their own: cannot, partially or fully. It is distinct from the mini-quiz result.
 
-**QuestionRevision — rewizja pytania**:
-Konkretna wersja treści pytania i danych potrzebnych do oceny odpowiedzi, niezmienna po publikacji. Historyczny wynik odnosi się do rewizji wykorzystanej podczas udzielania odpowiedzi.
+**QuestionRevision** (UI: _rewizja pytania_):
+A specific version of a question's content and scoring data, immutable once published. A historical result refers to the revision used when answering.
 
-**QuestionAnswer — question answer option**:
+**QuestionAnswer** (UI: _wariant odpowiedzi_):
 An identifiable answer option belonging to one question revision, with its text and correctness. Its presentation order is chosen for the view or session. It is part of the published question content, distinct from a learner's submitted answer.
 
-**QuestionVerification — weryfikacja pytania**:
-Decyzja o poprawności określonej rewizji pytania względem odpowiednich wersji źródeł i zakresu sprawdzenia, wraz z autorem i uzasadnieniem. Jest odrębna od zamknięcia pracy redakcyjnej i publikacji materiału.
+**QuestionVerification** (UI: _weryfikacja pytania_):
+A decision on the correctness of a specific question revision against the relevant source versions and checked scope, with author and reasoning. It is distinct from closing editorial work and from publication.
 
-**ContentWithdrawal — wycofanie treści**:
-Jawna decyzja uprawnionej osoby o zaprzestaniu używania błędnej rewizji materiału do dalszego odpowiadania, również w rozpoczętych sesjach. Zachowuje historyczną treść, odpowiedzi i przyczynę wycofania.
+**ContentWithdrawal** (UI: _wycofanie treści_):
+An authorized person's explicit decision to stop using a faulty material revision for further answers, including in started sessions. It keeps historical content, answers and the reason.
 
-**UserExamGoal — exam preparation goal**:
-A user's preparation target on one assigned qualification path, including the target exam session and personal preparation dates. One version is current; later changes preserve earlier goal versions and learning history.
-
-**StudySession — sesja nauki**:
-Możliwa do przerwania i wznowienia sesja zwykłej nauki jednego dokumentu lub kategorii, ze stałym zestawem rewizji pytań wybranym na początku. Użytkownik może zatwierdzić odpowiedź na dane pytanie najwyżej raz w tej sesji i od razu otrzymuje ocenę; sesja jest odrębna od powtórek dobieranych przez SRS.
-_Avoid_: sesja egzaminacyjna
-
-**ReviewSession — sesja powtórek**:
-Odrębna sesja, której pytania dobiera system powtórek na podstawie stanu SRS użytkownika w danej ścieżce. Domyślnie może obejmować materiał z wszystkich dokumentów lub kategorii tej ścieżki.
-
-**LearningRound — runda nauki**:
-Kolejne przejście całego materiału danej ścieżki w trybie zwykłej nauki, prowadzone kategoriami. Jest pojęciem wewnętrznym: użytkownik korzysta ze standardowego rozpoczęcia i kontynuacji sesji bez zarządzania rundami.
-
-**SessionPreview — podgląd sesji**:
-Propozycja zakresu materiału i dostępnych ustawień, którą użytkownik widzi przed utworzeniem sesji. Pozwala wybrać ustawienia w granicach aktualnie dostępnego materiału i reguł danego trybu.
-
-**StudyAnswerAttempt — próba odpowiedzi w nauce**:
-Zatwierdzona odpowiedź użytkownika na pytanie w konkretnej sesji nauki i ścieżce. Kolejna sesja pozwala na nową próbę odpowiedzi na to samo pytanie.
-
-**NewQuestion — nowe pytanie**:
-Pytanie, na które użytkownik nie udzielił jeszcze zatwierdzonej odpowiedzi w zwykłym trybie nauki na danej ścieżce. Nowość dotyczy historii tego trybu, a nie daty publikacji pytania ani aktywności w egzaminach, ulubionych i powtórkach.
-
-**FirstPassCompletion — ukończenie pierwszego przejścia**:
-Udzielenie przynajmniej jednej zatwierdzonej odpowiedzi w zwykłym trybie nauki na każde pytanie danego zakresu w określonej ścieżce. Oznacza przejście całego zakresu w tym trybie, a nie jego opanowanie.
-
-**UserReviewState — stan powtórek użytkownika**:
-Bieżący stan nauki danej jednostki materiału przez użytkownika na określonej ścieżce, wykorzystywany do wyznaczania kolejnych powtórek. Uwzględnia aktywność z różnych trybów i pozostaje odrębny od postępu rundy zwykłej nauki.
-
-**LearningEvent — zdarzenie nauki**:
-Niezmienny zapis rzeczywistej aktywności użytkownika wobec określonej rewizji materiału w kontekście ścieżki i rodzaju nauki, wraz z jej wynikiem, czasem i okolicznościami. Stanowi informację do oceny postępów i planowania powtórek; jego znaczenie zależy m.in. od użycia pomocy i trybu ćwiczenia.
-
-**AssistedAnswer — odpowiedź udzielona z pomocą**:
-Próba odpowiedzi pisemnej w nauce poprzedzona otwarciem wyjaśnienia lub własnych notatek dotyczących pytania. Ma wynik poprawna/błędna, ale nie jest automatycznie dowodem samodzielnego opanowania materiału.
-
-**MockExamAttempt — podejście do egzaminu próbnego**:
-Odrębne podejście użytkownika do egzaminu próbnego, podczas którego nie otrzymuje bieżącej oceny poprawności odpowiedzi. Do zakończenia podejścia może wracać do pytań, zmieniać odpowiedzi oraz jawnie wstrzymywać i wznawiać egzamin.
-_Avoid_: sesja egzaminacyjna
-
-**FavoriteQuestion — ulubione pytanie**:
-Pytanie oznaczone przez użytkownika jako ulubione, wspólnie dla wszystkich jego ścieżek.
-
-**DifficultQuestion — pytanie oznaczone jako trudne**:
-Osobiste oznaczenie pytania przez użytkownika, wspólne dla wszystkich jego ścieżek. Jest odrębne od wyliczonego poziomu opanowania pytania w danej ścieżce.
-
-**PersonalQuestionNote — własna notatka do pytania**:
-Prywatna notatka użytkownika przypisana do pytania, wspólna dla jego ścieżek. Pozostaje dostępna po zmianie treści pytania, z informacją o możliwym odniesieniu do wcześniejszego brzmienia.
-
-**WorkItem — zadanie redakcyjne**:
-Praca do wykonania w związku ze zgłoszeniem lub potrzebą utrzymania materiałów, z własnym statusem, priorytetem, przypisaniem i historią. Jest odrębna od treści zgłoszenia, decyzji o poprawności i publikacji materiału.
-
-**QuestionIssueReport — zgłoszenie błędu pytania**:
-Informacja użytkownika o problemie z konkretną rewizją pytania, z rodzajem problemu, kontekstem nauki i ewentualnym komentarzem. Stanowi materiał wejściowy do obsługi redakcyjnej.
-
-**RecalledExamQuestion — pytanie zapamiętane po egzaminie**:
-Treść odtworzona przez użytkownika z pamięci po rzeczywistym egzaminie, wraz z kontekstem ścieżki, izby okręgowej i sesji egzaminacyjnej, o ile są znane, oraz ewentualną niepewnością brzmienia. Jest zgłoszeniem do opracowania, a nie zatwierdzonym pytaniem edukacyjnym ani oficjalnym potwierdzeniem puli pytań izby.
-
-**ExamFeedback — feedback po egzaminie**:
-Dobrowolna informacja użytkownika o rzeczywistym egzaminie i ocenie przydatności platformy, odrębna dla części pisemnej i ustnej. Zawiera deklaracje i opinie, a nie niezależnie zweryfikowane wyniki egzaminacyjne.
-
-**LearningXP — punkty za naukę**:
-Punkty motywacyjne konta przyznawane za aktywność edukacyjną w różnych rodzajach nauki i ścieżkach. Są odrębne od postępu materiału, stanu SRS i uprawnień redakcyjnych.
-
-**ContributionPoints — punkty za wkład**:
-Punkty za zatwierdzony wkład w rozwój i utrzymanie materiałów lub platformy. Są odrębne od punktów za naukę i reputacji.
-
-**TrustReputation — reputacja**:
-Miara wiarygodności kontrybutora lub recenzenta oparta na jakości jego wkładu. Jest odrębna od aktywności edukacyjnej i liczby punktów za naukę.
-
-**DailyGoal — dzienny cel nauki**:
-Liczba pytań zaplanowanych na dany dzień, osobno dla nauki pisemnej i ustnej w określonej ścieżce. Pomaga zaplanować przejście materiału do wybranego terminu i jest odrębna od wspólnych punktów XP oraz streaka konta.
-
-**Streak — seria dni nauki**:
-Liczba kolejnych dni spełniających warunek aktywności edukacyjnej, wspólna dla konta. Jest mechanizmem motywacyjnym, a nie miarą znajomości materiału.
-
-**UserQualificationPath — user path assignment**:
+**UserQualificationPath** (UI: _ścieżka nauki_):
 A user's persistent association with a shared qualification path. It has an exam access scope and can be active or archived; it is distinct from both the shared path and the user's exam goal.
 
-**ExamAccessScope — exam access scope**:
+**ExamAccessScope** (UI: _dostęp do egzaminu_):
 The written, oral or combined learning access granted on a user's assigned path. It restricts both interfaces and data access.
 
-**UserExamGoalVersion — exam goal version**:
+**UserExamGoal** (UI: _cel przygotowań_):
+A user's preparation target on one assigned qualification path, including the target exam session and personal preparation dates. One version is current; later changes preserve earlier goal versions and learning history.
+
+**UserExamGoalVersion**:
 A historical version of a user's target exam session and personal preparation dates on one assigned path. Later changes do not change the goal associated with earlier activity.
+
+**StudySession** (UI: _sesja nauki_):
+An interruptible, resumable regular-study session over one document or category, with a fixed set of question revisions chosen at the start. The user submits an answer to a question at most once per session and gets the result immediately; it is distinct from SRS-selected reviews.
+_Avoid_: exam session (_sesja egzaminacyjna_)
+
+**ReviewSession** (UI: _sesja powtórek_):
+A separate session whose questions are selected by the review system from the user's SRS state on a path. By default it may span every document or category of that path.
+
+**LearningRound** (UI: _runda nauki_):
+One pass through the whole material of a path in regular study, category by category. It is internal: users start and continue sessions without managing rounds.
+
+**SessionPreview** (UI: _podgląd sesji_):
+The proposed material scope and available settings shown before a session is created. The user picks settings within the currently available material and the mode's rules.
+
+**StudyAnswerAttempt** (UI: _próba odpowiedzi w nauce_):
+A user's submitted answer to a question in a specific study session and path. A later session allows a new attempt at the same question.
+
+**NewQuestion** (UI: _nowe pytanie_):
+A question the user has not yet answered in regular study on a path. Newness concerns that mode's history, not the publication date or activity in exams, favourites and reviews.
+
+**FirstPassCompletion** (UI: _ukończenie pierwszego przejścia_):
+At least one submitted regular-study answer to every question of a scope on a path. It means the scope was covered, not mastered.
+
+**UserReviewState** (UI: _stan powtórek użytkownika_):
+The current learning state of one unit of material for a user on a path, used to schedule reviews. It includes activity from every mode and is separate from regular-study round progress.
+
+**LearningEvent** (UI: _zdarzenie nauki_):
+An immutable record of a user's actual activity on a specific material revision in the context of a path and study kind, with its result, time and circumstances. It feeds progress and review scheduling; its meaning depends on assistance and mode, among others.
+
+**AssistedAnswer** (UI: _odpowiedź udzielona z pomocą_):
+A written study attempt preceded by opening the explanation or personal notes for the question. It is correct or wrong but is not evidence of independent mastery.
+
+**MockExamAttempt** (UI: _podejście do egzaminu próbnego_):
+A separate attempt at a mock exam without ongoing feedback. Until it ends the user may return to questions, change answers, and explicitly pause and resume.
+_Avoid_: exam session (_sesja egzaminacyjna_)
+
+**FavoriteQuestion** (UI: _ulubione pytanie_):
+A question the user marked as a favourite, shared across all their paths.
+
+**DifficultQuestion** (UI: _pytanie oznaczone jako trudne_):
+A personal mark on a question, shared across all the user's paths. It is distinct from the computed mastery of the question on a path.
+
+**PersonalQuestionNote** (UI: _własna notatka do pytania_):
+A user's private note on a question, shared across their paths. It stays available after the question changes, with a notice that it may refer to earlier wording.
+
+**WorkItem** (UI: _zadanie redakcyjne_):
+Work to be done for a report or for material maintenance, with its own status, priority, assignee and history. It is distinct from the report content, the correctness decision and publication.
+
+**QuestionIssueReport** (UI: _zgłoszenie błędu pytania_):
+A user's report of a problem with a specific question revision, with problem type, study context and optional comment. It is input to editorial work.
+
+**RecalledExamQuestion** (UI: _pytanie zapamiętane po egzaminie_):
+Content a user recalled after a real exam, with path, district chamber and exam session context when known, and any uncertainty about the wording. It is a submission to develop, not an approved question or an official confirmation of a chamber's question pool.
+
+**ExamFeedback** (UI: _feedback po egzaminie_):
+Voluntary information about a real exam and the platform's usefulness, separate for the written and oral parts. It holds declarations and opinions, not verified exam results.
+
+**LearningXP** (UI: _punkty za naukę_):
+Motivational account points for learning activity across study kinds and paths. They are distinct from material progress, SRS state and editorial permissions.
+
+**ContributionPoints** (UI: _punkty za wkład_):
+Points for approved contributions to the material or the platform. They are distinct from learning points and reputation.
+
+**TrustReputation** (UI: _reputacja_):
+A measure of a contributor's or reviewer's trustworthiness based on the quality of their contributions. It is distinct from learning activity and learning points.
+
+**DailyGoal** (UI: _dzienny cel nauki_):
+The number of questions planned for a day, separately for written and oral study on a path. It plans the pass through the material up to the chosen date and is distinct from account XP and streak.
+
+**Streak** (UI: _seria dni nauki_):
+The number of consecutive days meeting the learning-activity condition, shared by the account. It motivates; it does not measure knowledge.
