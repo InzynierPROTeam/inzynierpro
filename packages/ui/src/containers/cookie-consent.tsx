@@ -1,9 +1,5 @@
 import * as React from 'react'
-import {
-  CookieManager,
-  type CookieCategories,
-  type DetailedCookieConsent,
-} from 'react-cookie-manager'
+import { CookieManager } from 'react-cookie-manager'
 import { cx } from 'tailwind-variants'
 import { buttonVariants } from '~ui/components/button.js'
 import { useTheme } from '~ui/providers/theme-provider.js'
@@ -12,6 +8,13 @@ export type TrackingConsent = {
   analytics: boolean
   advertising: boolean
 }
+
+type TrackedCategory = 'Analytics' | 'Advertising'
+
+// react-cookie-manager 5.4.1 re-exports its types without file extensions, so they resolve to `any`.
+type LoadedConsent = Record<TrackedCategory, { consented: boolean }>
+
+type ManagedPreferences = Partial<Record<TrackedCategory, boolean>>
 
 type CookieConsentProps = {
   children: React.ReactNode
@@ -31,7 +34,7 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
       googleConsentMode
       // Tracker callbacks own loading; the host blocker also blocks analytics-only GTM.
       disableAutomaticBlocking
-      onConsentLoaded={(consent: DetailedCookieConsent | null) =>
+      onConsentLoaded={(consent: LoadedConsent | null) =>
         onConsentChange?.({
           analytics: consent?.Analytics.consented === true,
           advertising: consent?.Advertising.consented === true,
@@ -39,7 +42,7 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
       }
       onAccept={() => onConsentChange?.({ analytics: true, advertising: true })}
       onDecline={() => onConsentChange?.({ analytics: false, advertising: false })}
-      onManage={(preferences?: CookieCategories) =>
+      onManage={(preferences?: ManagedPreferences) =>
         onConsentChange?.({
           analytics: preferences?.Analytics === true,
           advertising: preferences?.Advertising === true,
