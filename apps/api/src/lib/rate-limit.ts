@@ -1,9 +1,8 @@
-import { createHash } from 'node:crypto'
-
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
 import { RateLimitExceeded } from '@inzpro/api-contracts/utils/api-error'
 import { RateLimiter, type RateLimitResult } from '@inzpro/redis/rate-limiter'
 import { Context, Data, type Duration, Effect, Option, Ref } from 'effect'
+import { Digest } from 'effect/crypto'
 import { Headers, HttpEffect, HttpServerRequest, HttpServerResponse } from 'effect/http'
 
 export type RateLimitPolicy = {
@@ -72,7 +71,10 @@ const recordOutcome = (outcome: RateLimitOutcome) =>
   )
 
 // Keys and telemetry carry a hash, so Redis never stores a raw IP address or account id.
-const hashed = (value: string) => createHash('sha256').update(value).digest('hex').slice(0, 32)
+const hashed = (value: string) =>
+  Effect.flatMap(Digest.Digest, digest =>
+    digest.digestHex(Digest.sha256, new TextEncoder().encode(value)),
+  ).pipe(Effect.map(hex => hex.slice(0, 32)))
 
 const consume = Effect.fn('RateLimit.consume')(function* (
   policy: RateLimitPolicy,
@@ -86,9 +88,11 @@ const consume = Effect.fn('RateLimit.consume')(function* (
     'app.rate_limit.dimension': dimension,
   })
 
+  const subjectHash = yield* hashed(subject)
+
   const result = yield* limiter
     .consume({
-      key: `ratelimit:${policy.name}:${dimension}:${hashed(subject)}`,
+      key: `ratelimit:${policy.name}:${dimension}:${subjectHash}`,
       limit: policy.limit,
       window: policy.window,
     })

@@ -8,7 +8,7 @@ import { layerResend as EmailResendLayer } from '@inzpro/email/email-service'
 import { layer as RedisLayer } from '@inzpro/redis'
 import { layer as RateLimiterLayer } from '@inzpro/redis/rate-limiter'
 import { Effect, Layer, Logger, References } from 'effect'
-import { SecureRandom } from 'effect/crypto'
+import { Digest, SecureRandom } from 'effect/crypto'
 import { HttpRouter, HttpServer } from 'effect/http'
 import { ApiLive } from '~api/api.js'
 import { env, type Env } from '~api/lib/env.js'
@@ -73,6 +73,7 @@ export const httpServerLayer = (config: Env) =>
     ),
     Layer.provide([
       SecureRandom.layerWebCrypto,
+      Digest.layerWebCrypto,
       untracedRequestsLayer,
       Layer.succeed(TrustedClientIpHeader, config.TRUSTED_CLIENT_IP_HEADER),
     ]),
