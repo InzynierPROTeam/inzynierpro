@@ -115,7 +115,7 @@ export const OnboardingForm = () => {
       }
     }
 
-    void navigate({ search: Schema.decodeUnknownSync(OnboardingSearch)(next), replace: true })
+    void navigate({ search: Schema.decodeSync(OnboardingSearch)(next), replace: true })
   }
 
   const renderChoices = (state: ChoiceState) => {

@@ -40,7 +40,7 @@ export const GoalSettings = ({ path, userId }: { path: UserQualificationPath; us
     onSubmit: async ({ value }) => {
       toast.promise(
         async () => {
-          const payload = Schema.decodeUnknownSync(ChangeGoalPayload)({
+          const payload = Schema.decodeSync(ChangeGoalPayload)({
             ...value,
             oralExamDate: dateTimeInputToUtc(value.oralExamDate),
             expectedVersion: path.goal.version,
@@ -83,9 +83,7 @@ export const GoalSettings = ({ path, userId }: { path: UserQualificationPath; us
                 onBlur={field.handleBlur}
                 onChange={event =>
                   field.handleChange(
-                    Schema.decodeUnknownSync(ChangeGoalPayload.fields.examSessionId)(
-                      event.target.value,
-                    ),
+                    Schema.decodeSync(ChangeGoalPayload.fields.examSessionId)(event.target.value),
                   )
                 }
               >
