@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './typeset.css';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/nunito-sans';
@@ -11,6 +12,17 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant system (&:where([data-theme='system'], [data-theme='system'] *));
 @custom-variant not-system (&:where([data-theme='light'], [data-theme='light'] *, [data-theme='dark'], [data-theme='dark'] *));
+
+@layer components {
+  .typeset-docs {
+    --typeset-font-body: var(--font-sans);
+    --typeset-font-heading: var(--font-heading);
+    --typeset-font-mono: var(--font-mono);
+    --typeset-size: 15px;
+    --typeset-leading: 1.75;
+    --typeset-flow: 1.25em;
+  }
+}
 
 @layer base {
   * {
