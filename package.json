@@ -17,7 +17,7 @@
     "lint": "effect-tsgo oxlint --type-aware",
     "lint:fix": "effect-tsgo oxlint --type-aware --fix",
     "check": "pnpm lint:fix && pnpm format && pnpm type-check && pnpm test && pnpm build",
-    "test": "turbo test",
+    "test": "scripts/with-test-services.sh turbo test",
     "prepare": "effect-tsgo patch --oxlint && (test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky)",
     "check:ci": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build"
   },

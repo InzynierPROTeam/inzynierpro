@@ -51,12 +51,16 @@ Test services use separate databases and ports. Integration tests connect to rea
 ```sh
 cp apps/api/.env.test.example apps/api/.env.test
 cp packages/db/.env.test.example packages/db/.env.test
-pnpm --filter @inzpro/api services:test:up
-pnpm --filter @inzpro/api migrate:test
 pnpm check
 ```
 
-Stop applications with Ctrl+C. Stop services with `pnpm --filter @inzpro/api services:down` or `pnpm --filter @inzpro/api services:test:down`; both preserve volumes.
+`pnpm test` (and so `pnpm check`) starts fresh test PostgreSQL and Redis, applies migrations, runs the tests and removes the services, even when a test fails. Test data lives only in memory, so every run starts from an empty database. To run a single file, wrap the command the same way:
+
+```sh
+scripts/with-test-services.sh pnpm --filter @inzpro/api exec vitest run src/modules/study/http.test.ts
+```
+
+Stop applications with Ctrl+C. Stop development services with `pnpm --filter @inzpro/api services:down`; it preserves volumes.
 
 ## Onboarding, paths and session preview
 
@@ -82,8 +86,7 @@ The backend uses CQRS in one PostgreSQL database. Query/command operations depen
 Run this slice in the separate test environment:
 
 ```sh
-pnpm --filter @inzpro/api migrate:test
-pnpm --filter @inzpro/api exec vitest run src/modules/study/http.test.ts src/modules/preparation/onboarding.http.test.ts
+scripts/with-test-services.sh pnpm --filter @inzpro/api exec vitest run src/modules/study/http.test.ts src/modules/preparation/onboarding.http.test.ts
 pnpm --filter @inzpro/platform exec vitest run src/features/learning src/features/onboarding
 pnpm check
 ```
