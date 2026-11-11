@@ -1,9 +1,8 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { GoalChange } from '@inzpro/domain/modules/preparation/onboarding'
-import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
+import { nextUserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Effect } from 'effect'
-import { Equal, Schema } from 'effect'
+import { Effect, Equal } from 'effect'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/exam-calendar.reader.js'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/exam-calendar.repository.js'
 import { QualificationPathsRepository } from '~api/modules/qualification-paths/qualification-paths.repository.js'
@@ -49,11 +48,10 @@ export const changeGoal = Effect.fn('Preparation.changeGoal')(function* (
         return yield* new StalePathConfiguration()
       }
 
-      const version = Schema.decodeSync(UserExamGoalVersion)(path.goal.version + 1)
       yield* preparationRepository.appendGoal(
         userId,
         pathId,
-        version,
+        nextUserExamGoalVersion(path.goal.version),
         change.examSessionId,
         path.accessScope,
         change.oralExamDate,

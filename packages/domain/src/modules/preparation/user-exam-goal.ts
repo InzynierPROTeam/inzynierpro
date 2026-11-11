@@ -9,6 +9,11 @@ export const UserExamGoalVersion = Schema.Int.check(Schema.isGreaterThan(0)).pip
 
 export type UserExamGoalVersion = typeof UserExamGoalVersion.Type
 
+export const initialUserExamGoalVersion = UserExamGoalVersion.make(1)
+
+export const nextUserExamGoalVersion = (version: UserExamGoalVersion) =>
+  UserExamGoalVersion.make(version + 1)
+
 export const UserExamGoal = Schema.Struct({
   version: UserExamGoalVersion,
   examSessionId: ExamSessionId,

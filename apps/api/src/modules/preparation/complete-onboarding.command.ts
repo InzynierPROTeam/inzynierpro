@@ -1,7 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { PathConfiguration } from '@inzpro/domain/modules/preparation/onboarding'
-import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
-import { Effect, Option, Schema } from 'effect'
+import { initialUserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
+import { Effect, Option } from 'effect'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/exam-calendar.reader.js'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/exam-calendar.repository.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/qualification-paths.reader.js'
@@ -51,11 +51,10 @@ export const completeOnboarding = Effect.fn('Preparation.completeOnboarding')(fu
       }
 
       yield* preparationRepository.insert(userId, path.id, config.accessScope)
-      const version = Schema.decodeSync(UserExamGoalVersion)(1)
       yield* preparationRepository.appendGoal(
         userId,
         path.id,
-        version,
+        initialUserExamGoalVersion,
         config.examSessionId,
         config.accessScope,
         config.oralExamDate,
