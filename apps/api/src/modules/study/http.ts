@@ -5,7 +5,7 @@ import { DocumentNotFound } from '@inzpro/api-contracts/modules/study/errors'
 import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
 import { Effect, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
-import { internalServerError } from '~api/lib/internal-server-error.js'
+import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
 import { accountReadLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { PreparationReader } from '~api/modules/preparation/preparation.reader.js'
@@ -36,7 +36,9 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
             ).pipe(
               Effect.provide(dependencies),
               Effect.catchTags({
-                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
                 PathPermissionDenied: () =>
                   Effect.fail(
                     new PathAccessDenied({
@@ -44,7 +46,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
                       message: 'Your active path does not include this material.',
                     }),
                   ),
-                StudyReadError: internalServerError('Could not read study material.'),
+                StudyReadError: logAndFailInternalServerError('Could not read study material.'),
                 InvalidCursor: () =>
                   Effect.fail(
                     new InvalidRequest({
@@ -65,7 +67,9 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
             ).pipe(
               Effect.provide(dependencies),
               Effect.catchTags({
-                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
                 PathPermissionDenied: () =>
                   Effect.fail(
                     new PathAccessDenied({
@@ -73,7 +77,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
                       message: 'Your active path does not include this material.',
                     }),
                   ),
-                StudyReadError: internalServerError('Could not read study material.'),
+                StudyReadError: logAndFailInternalServerError('Could not read study material.'),
                 StudyDocumentNotFound: () =>
                   Effect.fail(
                     new DocumentNotFound({
@@ -101,7 +105,9 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
                       message: 'Invalid pagination cursor.',
                     }),
                   ),
-                PreparationReadError: internalServerError('Could not read preparation data.'),
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
                 PathPermissionDenied: () =>
                   Effect.fail(
                     new PathAccessDenied({
