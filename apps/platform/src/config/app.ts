@@ -40,6 +40,4 @@ export type ExternalLinks = typeof ExternalLinks
 
 export type ExternalLink = keyof ExternalLinks
 
-export type ExternalLinkUrl = StringWithAutoCompleteOptions<
-  ExternalLinks[ExternalLink] | SocialsLinkUrl | EmailAddress
->
+export type ExternalLinkUrl = StringWithAutoCompleteOptions<SocialsLinkUrl | EmailAddress>
