@@ -25,10 +25,9 @@ export const LogoHorizontal = () => (
   <div className="flex items-center gap-2">
     <Logo className="size-8" />
     <div className="flex flex-col items-center max-sm:hidden">
-      <span className="gradient-text-brand self-start text-[10px] leading-none font-bold">
+      <span className="gradient-text-brand self-start text-sm leading-none font-bold">
         Platforma
       </span>
-      <span className="leading-none font-bold">{appName}</span>
     </div>
   </div>
 )
