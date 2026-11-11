@@ -172,8 +172,8 @@ catalogs:
       specifier: 1.9.0
       version: 1.9.0
     '@better-auth/core':
-      specifier: 1.7.17
-      version: 1.7.17
+      specifier: 1.7.18
+      version: 1.7.18
     '@cloudflare/vite-plugin':
       specifier: 1.67.0
       version: 1.67.0
@@ -184,8 +184,8 @@ catalogs:
       specifier: 4.1.2
       version: 4.1.2
     '@effect/tsgo':
-      specifier: 0.67.3
-      version: 0.67.3
+      specifier: 0.67.4
+      version: 0.67.4
     '@fontsource-variable/nunito-sans':
       specifier: 5.3.0
       version: 5.3.0
@@ -196,8 +196,8 @@ catalogs:
       specifier: 1.91.0
       version: 1.91.0
     '@react-email/ui':
-      specifier: 6.11.6
-      version: 6.11.6
+      specifier: 6.11.7
+      version: 6.11.7
     '@tailwindcss/typography':
       specifier: 0.5.20
       version: 0.5.20
@@ -208,8 +208,8 @@ catalogs:
       specifier: 1.33.5
       version: 1.33.5
     '@tanstack/react-query':
-      specifier: 5.106.0
-      version: 5.106.0
+      specifier: 5.106.1
+      version: 5.106.1
     '@tanstack/react-router':
       specifier: 1.170.46
       version: 1.170.46
@@ -244,14 +244,14 @@ catalogs:
       specifier: 19.3.0
       version: 19.3.0
     '@vercel/nft':
-      specifier: 1.11.0
-      version: 1.11.0
+      specifier: 1.11.1
+      version: 1.11.1
     '@vitejs/plugin-react':
       specifier: 6.2.1
       version: 6.2.1
     better-auth:
-      specifier: 1.7.17
-      version: 1.7.17
+      specifier: 1.7.18
+      version: 1.7.18
     class-variance-authority:
       specifier: 0.7.1
       version: 0.7.1
@@ -280,8 +280,8 @@ catalogs:
       specifier: 17.6.0
       version: 17.6.0
     lucide-react:
-      specifier: 1.68.0
-      version: 1.68.0
+      specifier: 1.70.0
+      version: 1.70.0
     oxc-transform-react:
       specifier: 0.157.0
       version: 0.157.0
@@ -292,8 +292,8 @@ catalogs:
       specifier: 1.91.0
       version: 1.91.0
     oxlint-tsgolint:
-      specifier: 7.0.2005
-      version: 7.0.2005
+      specifier: 7.0.2006
+      version: 7.0.2006
     pg:
       specifier: 8.23.1
       version: 8.23.1
@@ -307,8 +307,8 @@ catalogs:
       specifier: 19.3.1
       version: 19.3.1
     react-email:
-      specifier: 6.11.6
-      version: 6.11.6
+      specifier: 6.11.7
+      version: 6.11.7
     redis:
       specifier: 6.3.1
       version: 6.3.1
@@ -370,7 +370,7 @@ importers:
         version: 1.67.0(@types/node@26.6.6)(vite@8.3.6)(workerd@1.20261104.1)(wrangler@4.158.0)
       '@effect/tsgo':
         specifier: 'catalog:'
-        version: 0.67.3
+        version: 0.67.4
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.91.0
@@ -430,10 +430,10 @@ importers:
         version: 0.76.0
       oxlint:
         specifier: 'catalog:'
-        version: 1.91.0(oxlint-tsgolint@7.0.2005)
+        version: 1.91.0(oxlint-tsgolint@7.0.2006)
       oxlint-tsgolint:
         specifier: 'catalog:'
-        version: 7.0.2005
+        version: 7.0.2006
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.4
@@ -506,7 +506,7 @@ importers:
         version: 3.0.1(@react-email/render@2.2.0)(react-dom@19.3.1)(react@19.3.1)
       '@vercel/nft':
         specifier: 'catalog:'
-        version: 1.11.0(supports-color@10.2.2)
+        version: 1.11.1(supports-color@10.2.2)
       redis:
         specifier: 'catalog:'
         version: 6.3.1
@@ -548,13 +548,13 @@ importers:
         version: 1.33.5(@tanstack/react-start@1.169.4)(react-dom@19.3.1)(react@19.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.106.0(@types/react@19.3.0)(react@19.3.1)
+        version: 5.106.1(@types/react@19.3.0)(react@19.3.1)
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.46(react-dom@19.3.1)(react@19.3.1)
       '@tanstack/react-router-ssr-query':
         specifier: 'catalog:'
-        version: 1.167.3(@tanstack/query-core@5.106.0)(@tanstack/react-query@5.106.0)(@tanstack/react-router@1.170.46)(@tanstack/router-core@1.171.39)(react-dom@19.3.1)(react@19.3.1)
+        version: 1.167.3(@tanstack/query-core@5.106.1)(@tanstack/react-query@5.106.1)(@tanstack/react-router@1.170.46)(@tanstack/router-core@1.171.39)(react-dom@19.3.1)(react@19.3.1)
       '@tanstack/react-start':
         specifier: 'catalog:'
         version: 1.169.4(esbuild@0.28.2)(react-dom@19.3.1)(react@19.3.1)(rolldown@1.2.16)(supports-color@10.2.2)(vite@8.3.6)
@@ -569,7 +569,7 @@ importers:
         version: 1.5.0(react-dom@19.3.1)(react@19.3.1)
       lucide-react:
         specifier: 'catalog:'
-        version: 1.68.0(@types/react@19.3.0)(react@19.3.1)
+        version: 1.70.0(@types/react@19.3.0)(react@19.3.1)
       react:
         specifier: 'catalog:'
         version: 19.3.1
@@ -609,7 +609,7 @@ importers:
     dependencies:
       '@better-auth/core':
         specifier: 'catalog:'
-        version: 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+        version: 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
       '@inzpro/config':
         specifier: workspace:*
         version: link:../config
@@ -627,7 +627,7 @@ importers:
         version: link:../redis
       better-auth:
         specifier: 'catalog:'
-        version: 1.7.17(@tanstack/react-start@1.169.4)(drizzle-kit@0.31.11)(next@16.4.3)(pg@8.23.1)(react-dom@19.3.1)(react@19.3.1)(vitest@5.1.0)
+        version: 1.7.18(@tanstack/react-start@1.169.4)(drizzle-kit@0.31.11)(next@16.4.3)(pg@8.23.1)(react-dom@19.3.1)(react@19.3.1)(vitest@5.1.0)
       effect:
         specifier: 'catalog:'
         version: 4.1.2
@@ -639,7 +639,7 @@ importers:
     dependencies:
       better-auth:
         specifier: 'catalog:'
-        version: 1.7.17(@tanstack/react-start@1.169.4)(drizzle-kit@0.31.11)(next@16.4.3)(pg@8.23.1)(react-dom@19.3.1)(react@19.3.1)(vitest@5.1.0)
+        version: 1.7.18(@tanstack/react-start@1.169.4)(drizzle-kit@0.31.11)(next@16.4.3)(pg@8.23.1)(react-dom@19.3.1)(react@19.3.1)(vitest@5.1.0)
       effect:
         specifier: 'catalog:'
         version: 4.1.2
@@ -701,14 +701,14 @@ importers:
         version: 19.3.1(react@19.3.1)
       react-email:
         specifier: 'catalog:'
-        version: 6.11.6(react-dom@19.3.1)(react@19.3.1)(supports-color@10.2.2)
+        version: 6.11.7(react-dom@19.3.1)(react@19.3.1)(supports-color@10.2.2)
     devDependencies:
       '@inzpro/testing':
         specifier: workspace:*
         version: link:../testing
       '@react-email/ui':
         specifier: 'catalog:'
-        version: 6.11.6(@babel/core@8.1.0)(@types/node@26.6.6)(react-dom@19.3.1)(react@19.3.1)
+        version: 6.11.7(@babel/core@8.1.0)(@types/node@26.6.6)(react-dom@19.3.1)(react@19.3.1)
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
@@ -726,7 +726,7 @@ importers:
         version: link:../domain
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.106.0(@types/react@19.3.0)(react@19.3.1)
+        version: 5.106.1(@types/react@19.3.0)(react@19.3.1)
       effect:
         specifier: 'catalog:'
         version: 4.1.2
@@ -745,7 +745,7 @@ importers:
         version: link:../browser-utils
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.106.0(@types/react@19.3.0)(react@19.3.1)
+        version: 5.106.1(@types/react@19.3.0)(react@19.3.1)
       effect:
         specifier: 'catalog:'
         version: 4.1.2
@@ -802,7 +802,7 @@ importers:
         version: 1.5.0(react-dom@19.3.1)(react@19.3.1)
       lucide-react:
         specifier: 'catalog:'
-        version: 1.68.0(@types/react@19.3.0)(react@19.3.1)
+        version: 1.70.0(@types/react@19.3.0)(react@19.3.1)
       react:
         specifier: 'catalog:'
         version: 19.3.1
@@ -863,6 +863,10 @@ packages:
 
   '@babel/generator@7.29.12':
     resolution: {integrity: sha512-2W76mhjrpQFO1lK5e8IvGYB2D0YZ7S2R1Z2BjO2ZUYuW+amcpK/z60U6ZZmzskwoa7sJ6XohP/Wg8H5KxXI/IA==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/generator@7.29.13':
+    resolution: {integrity: sha512-T5FRo+RzVHvGjWOuF1Ljc44b+NXAOazodHkGUHp4I3zCkQ4/sNVJm56h1S278LMR0bY5xBhztGziSbli8zObIw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/generator@8.1.0':
@@ -1008,6 +1012,11 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  '@babel/parser@7.29.13':
+    resolution: {integrity: sha512-fJM50YYjlTiBhgdkGmC1tBpv+FMAyo4annf2X6Aks+0yRlaiVkYW/3f07xAfVVkYIoZ9fFZp+mEThUFnuybhkQ==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
   '@babel/parser@7.29.2':
     resolution: {integrity: sha512-4GgRzy/+fsBa72/RZVJmGKPmZu9Byn8o4MoLpmNe1m8ZfYnz5emHLQz3U4gLud6Zwl0RZIcgiLD7Uq7ySFuDLA==}
     engines: {node: '>=6.0.0'}
@@ -1130,8 +1139,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@better-auth/core@1.7.17':
-    resolution: {integrity: sha512-GB3OtOjNfeOKxKOQByXLdj3CNNDbZ65HdbfHSZhoLI6VzlURlb2VXMFnf05NE8fhDoytXY+zlbqTcwaWKTS7/g==}
+  '@better-auth/core@1.7.18':
+    resolution: {integrity: sha512-GPue1yR24fd+RkCiOpVtdBwtCqkgGHRMGxUL6A11LzUv0JsHA2hnIFEdoxorr9TWO2kJLvYOuUu0vjV9Wxd4AA==}
     peerDependencies:
       '@better-auth/utils': ^0.4.2 || ^0.5.0
       '@better-fetch/fetch': 1.3.3
@@ -1144,46 +1153,46 @@ packages:
       '@opentelemetry/api':
         optional: true
 
-  '@better-auth/drizzle-adapter@1.7.17':
-    resolution: {integrity: sha512-A63iAB9tZLw/HU2bwf+FNwd3Hm5dzoNULOJckzPVMnddf0hO/gnjM94D/yVuu7w9cg8QTVAV7Zu3ehz1lKnX9A==}
+  '@better-auth/drizzle-adapter@1.7.18':
+    resolution: {integrity: sha512-l+J+WG11dQ9kzcAyAxgo5qh7bqGzsvN4uApR45limXe9gR02kijQi42xHJlWN8+TL6mmA69EC7W4MWbaHvmHGg==}
     peerDependencies:
-      '@better-auth/core': ^1.7.17
+      '@better-auth/core': ^1.7.18
       '@better-auth/utils': ^0.4.2 || ^0.5.0
       drizzle-orm: ^0.45.2 || >=1.0.0-rc.1 <2.0.0
     peerDependenciesMeta:
       drizzle-orm:
         optional: true
 
-  '@better-auth/kysely-adapter@1.7.17':
-    resolution: {integrity: sha512-YPBdzMtwky0p3Jwbp6FmO7CnREOkxXJklwJsm2Hl6MN4qF+AY7T61Wq3IZ784BP7fmW7AaSPjkTe4+OGrFz1mQ==}
+  '@better-auth/kysely-adapter@1.7.18':
+    resolution: {integrity: sha512-hFpFu1DRsis6pNB1riUzwXsbKi/3RilhUeGw+bY3iHduf7zcT4UmBG7tyltWgmE16MF8X7sgMbS9bL7G4pC6dQ==}
     peerDependencies:
-      '@better-auth/core': ^1.7.17
+      '@better-auth/core': ^1.7.18
       '@better-auth/utils': ^0.4.2 || ^0.5.0
       kysely: ^0.28.17 || ^0.29.0
     peerDependenciesMeta:
       kysely:
         optional: true
 
-  '@better-auth/memory-adapter@1.7.17':
-    resolution: {integrity: sha512-nEFRisxbSy1i3nmP0mqR5kwtNpYWSOqcdT+0axcPHeGK7DIeN6lpc5bEoPIkxPcSTyDzv0K67jlt1A60wGUY4g==}
+  '@better-auth/memory-adapter@1.7.18':
+    resolution: {integrity: sha512-nEjQsThcsPOInoAq24vqjm/Rk6NrAkvl/K3Cpokp1mw0KM4IFNeT+EZV/IYX1MGK/QXNPA1q6N7f8pIxQHq1og==}
     peerDependencies:
-      '@better-auth/core': ^1.7.17
+      '@better-auth/core': ^1.7.18
       '@better-auth/utils': ^0.4.2 || ^0.5.0
 
-  '@better-auth/mongo-adapter@1.7.17':
-    resolution: {integrity: sha512-Pu6rutW9h3K+pUiiDCtedjdPgD/62cYScKCM04az8g7SGVDJVAWF73ly3cN2EflYnLs96yp68e4zAnr0XJDgsQ==}
+  '@better-auth/mongo-adapter@1.7.18':
+    resolution: {integrity: sha512-0Fdw+0KkPhaxN3B4+PMlQWNoxSYiyBmU+puF+oujV3l5/41TOJyogzE+BHeH2pZ6WymAd3d4mfpl3iCodS/XlQ==}
     peerDependencies:
-      '@better-auth/core': ^1.7.17
+      '@better-auth/core': ^1.7.18
       '@better-auth/utils': ^0.4.2 || ^0.5.0
       mongodb: ^6.0.0 || ^7.0.0
     peerDependenciesMeta:
       mongodb:
         optional: true
 
-  '@better-auth/prisma-adapter@1.7.17':
-    resolution: {integrity: sha512-gxowKIc8X8fUDPikuN+kWtfcGjXcy6CY/dpxJecSBDCn61g+T0AJdQpUzu7KhkjfYyw/ADxk7xtAc00tR7BoFA==}
+  '@better-auth/prisma-adapter@1.7.18':
+    resolution: {integrity: sha512-NbGtY+WU5vV5M1wYTypNQRSJS45QafK5JkFkcWggshoSIAypI8/5sj5ilrO4T+vqfubNISi2Z6LPNIscVBg3Pg==}
     peerDependencies:
-      '@better-auth/core': ^1.7.17
+      '@better-auth/core': ^1.7.18
       '@better-auth/utils': ^0.4.2 || ^0.5.0
       '@prisma/client': ^5.0.0 || ^6.0.0 || ^7.0.0
       prisma: ^5.0.0 || ^6.0.0 || ^7.0.0
@@ -1193,10 +1202,10 @@ packages:
       prisma:
         optional: true
 
-  '@better-auth/telemetry@1.7.17':
-    resolution: {integrity: sha512-VhBBYBBtSK6tZlEdc5MwV6L/8HHjuGIns9QmlhqxiCk2xA4ILAVXo7O9S1iltxqe+H8gUKh5jbpY9hriW88MeQ==}
+  '@better-auth/telemetry@1.7.18':
+    resolution: {integrity: sha512-mhZxFhzG28dQLdSBVXZp0v5P3gTCylu5q5U/XmV8UVucN449+9JLzktO41Z89pAV/mt4Q1mooNC7w0Vax9B4vA==}
     peerDependencies:
-      '@better-auth/core': ^1.7.17
+      '@better-auth/core': ^1.7.18
       '@better-auth/utils': ^0.4.2 || ^0.5.0
       '@better-fetch/fetch': 1.3.3
 
@@ -1317,43 +1326,43 @@ packages:
     peerDependencies:
       effect: ^4.1.2
 
-  '@effect/tsgo-darwin-arm64@0.67.3':
-    resolution: {integrity: sha512-9GnBnz1vuqRQ8fvxwNEYlnLqYXzASbABGzk1H9YXMnC34TlRmVTKquQ1muPOiIGskb2XhmoqBQBN7GiQWNqxEg==}
+  '@effect/tsgo-darwin-arm64@0.67.4':
+    resolution: {integrity: sha512-DI1/t3HQ2utqAWVH9KviuZc85t3yBiuNK4oKE2kMDBfjSlYLz67pcACUjKODH0nhD0I268PPyFphsKrNvyd0zg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@effect/tsgo-darwin-x64@0.67.3':
-    resolution: {integrity: sha512-i02pQfv41x3MPqjh+2V6lPTkXZxWzG0NKuftpv/Mfq+VMbVqASZqOqS+CR4kHhE7aZcEpgHyb3ytSSSa94J0Hw==}
+  '@effect/tsgo-darwin-x64@0.67.4':
+    resolution: {integrity: sha512-WT/PnPdqOX/BqKGmmDrw9yOt7fBtsisS73URJmudaoeYdgVgpV4KoRjy0P6V2QiKoBQLS3UM3v7kuzc+yHvhvA==}
     cpu: [x64]
     os: [darwin]
 
-  '@effect/tsgo-linux-arm64@0.67.3':
-    resolution: {integrity: sha512-aydOt1en+fo8zrXR6VccbmZZo070osDz7sJHrWYqD7LwLL0YuYNKlxT+ahGDB9goFFxE19F/K7mxah4zL0TRgA==}
+  '@effect/tsgo-linux-arm64@0.67.4':
+    resolution: {integrity: sha512-OUvjVbjzu29fTfaf1bn3d3+HAw++Fg6eDpqz5LUGMwfzcguar4TK+g0cEXCSGz0R39BvWpu3+RLuDrjdXIOZxg==}
     cpu: [arm64]
     os: [linux]
 
-  '@effect/tsgo-linux-arm@0.67.3':
-    resolution: {integrity: sha512-nwuNsWuEYC6a83MeiEV82+ErRTTX/7g9UNYkIp8zK4ldgIukeij5lFsnx2eCJJhHojiqZlmmnq+35vW+DRVYkw==}
+  '@effect/tsgo-linux-arm@0.67.4':
+    resolution: {integrity: sha512-YK19SF0aMCv4qjJ8s//xzqIxeo5/0OHUEKF27ykaw3rglj6dYgVZO0YdUnxgiNK3gQSuaR9trm10bSU2czKV0w==}
     cpu: [arm]
     os: [linux]
 
-  '@effect/tsgo-linux-x64@0.67.3':
-    resolution: {integrity: sha512-csK8tTycGZpaneCPUk+QcA8CBcDqaNeZmKtjloJi7jdlSScFDrZp3JPgy5KFWjt4vFsn9bGGDNR6dXUpWpM9Mg==}
+  '@effect/tsgo-linux-x64@0.67.4':
+    resolution: {integrity: sha512-672VKtYcr1Nzsd4G3gh4FIK45RatXkuOS2K/H26cGxSXuibVk0h8PgRcJWpZ3YUyO+8mm1FB/W/4IoPeiXHwog==}
     cpu: [x64]
     os: [linux]
 
-  '@effect/tsgo-win32-arm64@0.67.3':
-    resolution: {integrity: sha512-vX/ZviuQKqJIs54xwBNt10mm1xZ1CdVdyhIC/k2S//+psQUd7glpiI0lXEjyq7w7srLjL3AXv10E03I8sr3DXA==}
+  '@effect/tsgo-win32-arm64@0.67.4':
+    resolution: {integrity: sha512-HIDIJjAWZBNFxvf2Sk6fcZReW2/y/IRxEFP3NH93lzWKYqbFFNStze87/Ez1glh8K4hizbiqhhkohBLZVccKWQ==}
     cpu: [arm64]
     os: [win32]
 
-  '@effect/tsgo-win32-x64@0.67.3':
-    resolution: {integrity: sha512-5Yop4EohYfmDzpg15kBz0ja1J4fmmrCN1ft91CiBGzp7kKiuY9im4g17ECXG2E8RfEGjo2Wyk3DBgrFWn9U85A==}
+  '@effect/tsgo-win32-x64@0.67.4':
+    resolution: {integrity: sha512-kRuQnXwZNDvOMpFSfd0+lMNVk7+61jRXkhcJ4b1sfdaJXmkRQeinLZlJAIl/CQPm/g3mdPId5f0PrbZZfzGIyg==}
     cpu: [x64]
     os: [win32]
 
-  '@effect/tsgo@0.67.3':
-    resolution: {integrity: sha512-ZGJNKmkk2ieOwsf2J14xiDrZgA+qegm3QkfO+2Q4cL1w+oA1mjlrDL2YSDznCiswpmifNXpL9ayvD1Pby2FdCQ==}
+  '@effect/tsgo@0.67.4':
+    resolution: {integrity: sha512-p3TjL/46B8eLq2h5KpX0JgL8iREyb5CU9D+bMk+Y+YKAxlQDn2ebqDqMrB3Q6aHSm91QTQIdbrd5q+mf5p2vwQ==}
     hasBin: true
 
   '@emnapi/runtime@1.11.3':
@@ -2400,33 +2409,33 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@oxlint-tsgolint/darwin-arm64@7.0.2005':
-    resolution: {integrity: sha512-VqDZxcZVjlonNLuuvraVNgDQt+1ndwa4yJo8OqsK4HYh/61ba9IlMStCVfi/aaIqRoDhNbAKC8gdcTrXqnb+Ug==}
+  '@oxlint-tsgolint/darwin-arm64@7.0.2006':
+    resolution: {integrity: sha512-uc0MEHXZUDW23Zmo5X28eSNeSnP17jKnh9GiehpVZqhfy99ks8spyXT5Llar3tjDN7ppnQN0Qd9FK6WNkdD+fQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxlint-tsgolint/darwin-x64@7.0.2005':
-    resolution: {integrity: sha512-4kUfLRNYoVpv0Tm3jPYrvxyfOc/LmdvFC3pKZ4tL6K7lA7K/VS81SAtmxRzbYXYSyb3SBWhwsuX+df4neqzxxA==}
+  '@oxlint-tsgolint/darwin-x64@7.0.2006':
+    resolution: {integrity: sha512-+x1/pa3S3VMC9cif8XKTOCQUuqRT+wu1Ix+FK5svXa2xbXCuE7+4S0SfmuSnK/mk9AI5+xBxZFhILxmCPUZ1hA==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxlint-tsgolint/linux-arm64@7.0.2005':
-    resolution: {integrity: sha512-rhUNcPsBlKvhXtrbhbBUidtRBRdJ8fbEHN9H5Q5N59gby18ruGuDA7KUxl7oRnUzp797uykYQhkBDm+0KpfK/Q==}
+  '@oxlint-tsgolint/linux-arm64@7.0.2006':
+    resolution: {integrity: sha512-90v7HX8m54kHXn5DpjNEN18Fb7xwJMREe/wji3USyAf9pTMv7a3qZ3cPoLViIcIzxPLmkcYZIs1j1H3Z2gbVLA==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxlint-tsgolint/linux-x64@7.0.2005':
-    resolution: {integrity: sha512-tKs9yinDQZOHygM0e8EJnjTU3mzJtdfkOZP6Udu82iLMePUSHOhTJ9zzU/mSd1hQxURI4LTRRiFhfzC+PzwdNA==}
+  '@oxlint-tsgolint/linux-x64@7.0.2006':
+    resolution: {integrity: sha512-/k0wsEqHiA5dWBJYuld3Vecv6bIhKCasxpho/aFkvh870Qox33MuTkKUGWIVm/njAxw7W4pu1a/Xfa3jwuKuPQ==}
     cpu: [x64]
     os: [linux]
 
-  '@oxlint-tsgolint/win32-arm64@7.0.2005':
-    resolution: {integrity: sha512-VYPnu1gjfbSv+ROhuyNfMs382D4zQU2ZRc8Uc3nuEZo1k2kf+1KfTrg4hrlWh73h9GI+dUWyo+DYCQzUBlPwcQ==}
+  '@oxlint-tsgolint/win32-arm64@7.0.2006':
+    resolution: {integrity: sha512-CQT5sqcLZLNZSWLzUUEjQmp74UX8h1agp3ZJ8pfRktHbx6gfBa8a7CjrnRrZ9VXlwnXVkpw7m5KBO6y+S5MQRA==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxlint-tsgolint/win32-x64@7.0.2005':
-    resolution: {integrity: sha512-ekU89cTGy9fpQzuvxIsFHrnoP8XoFjGIRgPEW6eqgY2NYjGy9pwpjF79o04WXRMJFKRrcaVqkZXUUBdLsqpQDw==}
+  '@oxlint-tsgolint/win32-x64@7.0.2006':
+    resolution: {integrity: sha512-VZsGowXcp3vQNkjoGeVCOTf4aGrRpRk6bBJWhefnJVPr6z+dX+LKqqHfwaqnFvg66Q2iJpXqklRW38YO21ee+Q==}
     cpu: [x64]
     os: [win32]
 
@@ -2572,8 +2581,8 @@ packages:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^18.0 || ^19.0 || ^19.0.0-rc
 
-  '@react-email/ui@6.11.6':
-    resolution: {integrity: sha512-Eumv10uOW0l9sWoSpSKYF8J2eNsBUF/l4GlNermcCSUR50uke7d0230YBj52bsxNPIhYQH9bHsNQbFlUFFCdGA==}
+  '@react-email/ui@6.11.7':
+    resolution: {integrity: sha512-zjOMn9Vt7SP6NO1GphjKIm4M1vDVQh6XYY+NKqNH1pQpAvyHGmdLIYz0RuXm73krZOFmQ+vtd/m4jOjPSxMj8A==}
 
   '@redis/bloom@6.3.1':
     resolution: {integrity: sha512-dpF9j2yJDoPzSCaZn0MSB3xzmnXQVJeTSAWJcQVcgbmluwhpFeemmII0cF1t+WYfoVS+shEFq79+MmUItgzJLg==}
@@ -2865,8 +2874,8 @@ packages:
     resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
     engines: {node: '>=18'}
 
-  '@tanstack/query-core@5.106.0':
-    resolution: {integrity: sha512-3GuqVrhCG0bBfmLt4AU0SIm8UuZ1rzeRjDiQBnYuzW3lkri1RdawWN73jZYvB4kC8WyDUoDgBx3kyO3TbNH/6Q==}
+  '@tanstack/query-core@5.106.1':
+    resolution: {integrity: sha512-erYv/UACddcdgjOL2ixmFdK6tO/AVBeUcTCOtX2N51yZpDQ2U7KJ+xgB/bCNfsF3uoCDTqGHEEbDiFsIO9YUmQ==}
 
   '@tanstack/react-form@1.33.5':
     resolution: {integrity: sha512-LlRB28qJwO/QCGaHvWnbdh4haBgTFiZVmzA2uzxSBS3YA7/IqrQ6HOBK70CkFQ+DbflZ7NawsmSln13h5iIdTA==}
@@ -2877,8 +2886,8 @@ packages:
       '@tanstack/react-start':
         optional: true
 
-  '@tanstack/react-query@5.106.0':
-    resolution: {integrity: sha512-OuP/ST9dEMBwHhisE5A/bBSWMhMmB/xKPfeZ2U0Wy8W/txb9QiGd7iXhxJPQ7jGbfcKlV13sJUHip9Nki54yyg==}
+  '@tanstack/react-query@5.106.1':
+    resolution: {integrity: sha512-ORDvJG/DSfmlFL9lQ8GDkE0VjtQbLeRDY7BL8xjKkQFGLfjFGfNWNuteWgPqA2gPJgLLuWfQ7IX0FlsHCJriyg==}
     peerDependencies:
       '@types/react': ^18 || ^19
       react: ^18 || ^19
@@ -3257,8 +3266,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@vercel/nft@1.11.0':
-    resolution: {integrity: sha512-m1QFg+U+3yPOnP1xSYJ73UIRxLOXdts1JOhiOiyPYqEsALgrXFFINvgUaD6R6iNvaBFAjHllBCbkfx4FuOdpaA==}
+  '@vercel/nft@1.11.1':
+    resolution: {integrity: sha512-RXQA08MdBy9WdKKXf1JCAM6HlZUOUDPDBjwHSz0ZaPcQDVisPR5hPJs2iLHVdfjHq36YIlS9AkzDceegukpqGA==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -3396,8 +3405,8 @@ packages:
   bcp-47@2.1.2:
     resolution: {integrity: sha512-wsv86UuNFuPnVieKLyECTT+CP1WSAHeoIg5P3xu2kA9Z+7fVPoKt7dxzSeEhtJel0AI+NW3fIW3KtTKQKUCngg==}
 
-  better-auth@1.7.17:
-    resolution: {integrity: sha512-jLPt758k4R3kzCE2ie5BV2FXiLtpbINyC6e/OkcZK0aQOAnZdE2oLZofK1cZg3oXVd2GCFo47gnMy7sgykfUhQ==}
+  better-auth@1.7.18:
+    resolution: {integrity: sha512-VmPc441MZhOKYaRHLgJTXl3T4H7tWZiiYJoMSTl0ZhsEKyAjGm1UdJfghZmFMpzNe+1NLCTUoTAARhi58vcd0g==}
     peerDependencies:
       '@lynx-js/react': '*'
       '@prisma/client': ^5.0.0 || ^6.0.0 || ^7.0.0
@@ -3498,6 +3507,9 @@ packages:
 
   caniuse-lite@1.0.30001820:
     resolution: {integrity: sha512-gfWD6MxqVCqAOwmODfZf7DchWvlrA+SRdNX7ceLfg3xRqe5ssjjpF7EgslC/0tiLiNTajdaNN/q8c/5u/7Gz8w==}
+
+  caniuse-lite@1.0.30001823:
+    resolution: {integrity: sha512-TQ5s/djDjNk1axreUW+4rULH+BmdCMLiJkhaXnO5wqivG7tITkSUj4ItIdzqdZHKaXcHAV8dhH3JxOM7/7bwqw==}
 
   chai@6.3.0:
     resolution: {integrity: sha512-XWAtwJ6OHO+tj0EKCs0Y2UamnyOxseZWltU4x2U2wh8g4AigdjwvtUjvLP2tqkA/avxHEtzxNaqGq/YGNwckKg==}
@@ -3926,8 +3938,8 @@ packages:
     deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
-  glob@13.0.6:
-    resolution: {integrity: sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==}
+  glob@13.0.7:
+    resolution: {integrity: sha512-wfsFgXQ8A3SEI9XGf7Nl3Y9l7ffSrGh7SUCT7vU/2CzYPep9kjxAn1S40F9OPKxAMGCVl7HtNlJhrCJUeUq83g==}
     engines: {node: 18 || 20 || >=22}
 
   globby@11.1.0:
@@ -4271,8 +4283,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.68.0:
-    resolution: {integrity: sha512-9i7NKWm2QlOprMhcwkhBOlIt9zB7cp2GIyFY+oMue0EsprolUFxva5rkdBbyfs4k1eejpa0JRnRgVOGiart+Xg==}
+  lucide-react@1.70.0:
+    resolution: {integrity: sha512-gCTPPN1MlQUBtUgdsUv+0CAUj+X8hifRUiRBw4E5v7lvDIOIpx0EZezdGQMSimS8pKA6esvullJub4GYr0mCHA==}
     peerDependencies:
       '@types/react': '*'
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -4498,8 +4510,8 @@ packages:
       vite-plus:
         optional: true
 
-  oxlint-tsgolint@7.0.2005:
-    resolution: {integrity: sha512-6ccPGu4u4J9bwYPHXBFPee3RZrX3BboRdU7k14zRDDB1lvN3O7J/vPRFdaEfa1+CWx4xnQQOp4ctoaF66oO0uw==}
+  oxlint-tsgolint@7.0.2006:
+    resolution: {integrity: sha512-5B3UtH71kycPHUC1kFEIffivEAs49SUmkJuHZOZnTY0NPj4legp0bcsCQucuLVNCoJzDucS68P2C4WIhP+LypQ==}
     hasBin: true
 
   oxlint@1.91.0:
@@ -4707,8 +4719,8 @@ packages:
     peerDependencies:
       react: ^19.3.1
 
-  react-email@6.11.6:
-    resolution: {integrity: sha512-CW9kP/+HRr3+LRyXa2t3vddXpvg21s5ccnmBSkwKrR6mNXKO+RQvJf60f2vw/xyxfUeqSFlJurlhqu16lraNRw==}
+  react-email@6.11.7:
+    resolution: {integrity: sha512-IPNgzvEBk0oARk21U5RHqEm7tIixuWbJQ2TlJnq2q3J0vUzZIwNQqn79vYgQHqHvYidEHSUTBvrB+GvajjVOkg==}
     engines: {node: '>=20.19.0'}
     hasBin: true
     peerDependencies:
@@ -5340,6 +5352,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.21.3:
+    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   ws@8.22.0:
     resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
     engines: {node: '>=10.0.0'}
@@ -5471,6 +5495,14 @@ snapshots:
   '@babel/generator@7.29.12':
     dependencies:
       '@babel/parser': 7.29.12
+      '@babel/types': 7.29.11
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
+      jsesc: 3.1.0
+
+  '@babel/generator@7.29.13':
+    dependencies:
+      '@babel/parser': 7.29.13
       '@babel/types': 7.29.11
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
@@ -5645,6 +5677,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.11
 
+  '@babel/parser@7.29.13':
+    dependencies:
+      '@babel/types': 7.29.11
+
   '@babel/parser@7.29.2':
     dependencies:
       '@babel/types': 7.29.11
@@ -5726,7 +5762,7 @@ snapshots:
   '@babel/template@7.29.7':
     dependencies:
       '@babel/code-frame': 7.29.7
-      '@babel/parser': 7.29.12
+      '@babel/parser': 7.29.13
       '@babel/types': 7.29.11
 
   '@babel/template@8.0.0':
@@ -5738,7 +5774,7 @@ snapshots:
   '@babel/traverse@7.29.0(supports-color@10.2.2)':
     dependencies:
       '@babel/code-frame': 7.29.7
-      '@babel/generator': 7.29.12
+      '@babel/generator': 7.29.13
       '@babel/helper-globals': 7.29.7
       '@babel/parser': 7.29.2
       '@babel/template': 7.29.7
@@ -5802,7 +5838,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.3.0
 
-  '@better-auth/core@1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)':
+  '@better-auth/core@1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)':
     dependencies:
       '@better-auth/utils': 0.5.1
       '@better-fetch/fetch': 1.3.3
@@ -5813,36 +5849,36 @@ snapshots:
       nanostores: 1.5.5
       zod: 4.6.7
 
-  '@better-auth/drizzle-adapter@1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)':
+  '@better-auth/drizzle-adapter@1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)':
     dependencies:
-      '@better-auth/core': 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+      '@better-auth/core': 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.1
 
-  '@better-auth/kysely-adapter@1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)(kysely@0.29.8)':
+  '@better-auth/kysely-adapter@1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)(kysely@0.29.8)':
     dependencies:
-      '@better-auth/core': 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+      '@better-auth/core': 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.1
     optionalDependencies:
       kysely: 0.29.8
 
-  '@better-auth/memory-adapter@1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)':
+  '@better-auth/memory-adapter@1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)':
     dependencies:
-      '@better-auth/core': 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+      '@better-auth/core': 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.1
 
-  '@better-auth/mongo-adapter@1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)':
+  '@better-auth/mongo-adapter@1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)':
     dependencies:
-      '@better-auth/core': 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+      '@better-auth/core': 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.1
 
-  '@better-auth/prisma-adapter@1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)':
+  '@better-auth/prisma-adapter@1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)':
     dependencies:
-      '@better-auth/core': 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+      '@better-auth/core': 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.1
 
-  '@better-auth/telemetry@1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)':
+  '@better-auth/telemetry@1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)':
     dependencies:
-      '@better-auth/core': 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+      '@better-auth/core': 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
       '@better-auth/utils': 0.5.1
       '@better-fetch/fetch': 1.3.3
 
@@ -5954,36 +5990,36 @@ snapshots:
     dependencies:
       effect: 4.1.2
 
-  '@effect/tsgo-darwin-arm64@0.67.3':
+  '@effect/tsgo-darwin-arm64@0.67.4':
     optional: true
 
-  '@effect/tsgo-darwin-x64@0.67.3':
+  '@effect/tsgo-darwin-x64@0.67.4':
     optional: true
 
-  '@effect/tsgo-linux-arm64@0.67.3':
+  '@effect/tsgo-linux-arm64@0.67.4':
     optional: true
 
-  '@effect/tsgo-linux-arm@0.67.3':
+  '@effect/tsgo-linux-arm@0.67.4':
     optional: true
 
-  '@effect/tsgo-linux-x64@0.67.3':
+  '@effect/tsgo-linux-x64@0.67.4':
     optional: true
 
-  '@effect/tsgo-win32-arm64@0.67.3':
+  '@effect/tsgo-win32-arm64@0.67.4':
     optional: true
 
-  '@effect/tsgo-win32-x64@0.67.3':
+  '@effect/tsgo-win32-x64@0.67.4':
     optional: true
 
-  '@effect/tsgo@0.67.3':
+  '@effect/tsgo@0.67.4':
     optionalDependencies:
-      '@effect/tsgo-darwin-arm64': 0.67.3
-      '@effect/tsgo-darwin-x64': 0.67.3
-      '@effect/tsgo-linux-arm': 0.67.3
-      '@effect/tsgo-linux-arm64': 0.67.3
-      '@effect/tsgo-linux-x64': 0.67.3
-      '@effect/tsgo-win32-arm64': 0.67.3
-      '@effect/tsgo-win32-x64': 0.67.3
+      '@effect/tsgo-darwin-arm64': 0.67.4
+      '@effect/tsgo-darwin-x64': 0.67.4
+      '@effect/tsgo-linux-arm': 0.67.4
+      '@effect/tsgo-linux-arm64': 0.67.4
+      '@effect/tsgo-linux-x64': 0.67.4
+      '@effect/tsgo-win32-arm64': 0.67.4
+      '@effect/tsgo-win32-x64': 0.67.4
 
   '@emnapi/runtime@1.11.3':
     dependencies:
@@ -6591,22 +6627,22 @@ snapshots:
   '@oxfmt/binding-win32-x64-msvc@0.76.0':
     optional: true
 
-  '@oxlint-tsgolint/darwin-arm64@7.0.2005':
+  '@oxlint-tsgolint/darwin-arm64@7.0.2006':
     optional: true
 
-  '@oxlint-tsgolint/darwin-x64@7.0.2005':
+  '@oxlint-tsgolint/darwin-x64@7.0.2006':
     optional: true
 
-  '@oxlint-tsgolint/linux-arm64@7.0.2005':
+  '@oxlint-tsgolint/linux-arm64@7.0.2006':
     optional: true
 
-  '@oxlint-tsgolint/linux-x64@7.0.2005':
+  '@oxlint-tsgolint/linux-x64@7.0.2006':
     optional: true
 
-  '@oxlint-tsgolint/win32-arm64@7.0.2005':
+  '@oxlint-tsgolint/win32-arm64@7.0.2006':
     optional: true
 
-  '@oxlint-tsgolint/win32-x64@7.0.2005':
+  '@oxlint-tsgolint/win32-x64@7.0.2006':
     optional: true
 
   '@oxlint/binding-android-arm-eabi@1.91.0':
@@ -6689,7 +6725,7 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
-  '@react-email/ui@6.11.6(@babel/core@8.1.0)(@types/node@26.6.6)(react-dom@19.3.1)(react@19.3.1)':
+  '@react-email/ui@6.11.7(@babel/core@8.1.0)(@types/node@26.6.6)(react-dom@19.3.1)(react@19.3.1)':
     dependencies:
       esbuild: 0.28.2
       jiti: 2.6.1
@@ -6911,7 +6947,7 @@ snapshots:
 
   '@tanstack/pacer-lite@0.1.1': {}
 
-  '@tanstack/query-core@5.106.0': {}
+  '@tanstack/query-core@5.106.1': {}
 
   '@tanstack/react-form@1.33.5(@tanstack/react-start@1.169.4)(react-dom@19.3.1)(react@19.3.1)':
     dependencies:
@@ -6923,9 +6959,9 @@ snapshots:
     transitivePeerDependencies:
       - react-dom
 
-  '@tanstack/react-query@5.106.0(@types/react@19.3.0)(react@19.3.1)':
+  '@tanstack/react-query@5.106.1(@types/react@19.3.0)(react@19.3.1)':
     dependencies:
-      '@tanstack/query-core': 5.106.0
+      '@tanstack/query-core': 5.106.1
       react: 19.3.1
     optionalDependencies:
       '@types/react': 19.3.0
@@ -6941,12 +6977,12 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-  '@tanstack/react-router-ssr-query@1.167.3(@tanstack/query-core@5.106.0)(@tanstack/react-query@5.106.0)(@tanstack/react-router@1.170.46)(@tanstack/router-core@1.171.39)(react-dom@19.3.1)(react@19.3.1)':
+  '@tanstack/react-router-ssr-query@1.167.3(@tanstack/query-core@5.106.1)(@tanstack/react-query@5.106.1)(@tanstack/react-router@1.170.46)(@tanstack/router-core@1.171.39)(react-dom@19.3.1)(react@19.3.1)':
     dependencies:
-      '@tanstack/query-core': 5.106.0
-      '@tanstack/react-query': 5.106.0(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/query-core': 5.106.1
+      '@tanstack/react-query': 5.106.1(@types/react@19.3.0)(react@19.3.1)
       '@tanstack/react-router': 1.170.46(react-dom@19.3.1)(react@19.3.1)
-      '@tanstack/router-ssr-query-core': 1.169.3(@tanstack/query-core@5.106.0)(@tanstack/router-core@1.171.39)
+      '@tanstack/router-ssr-query-core': 1.169.3(@tanstack/query-core@5.106.1)(@tanstack/router-core@1.171.39)
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
     transitivePeerDependencies:
@@ -7089,9 +7125,9 @@ snapshots:
       - supports-color
       - unloader
 
-  '@tanstack/router-ssr-query-core@1.169.3(@tanstack/query-core@5.106.0)(@tanstack/router-core@1.171.39)':
+  '@tanstack/router-ssr-query-core@1.169.3(@tanstack/query-core@5.106.1)(@tanstack/router-core@1.171.39)':
     dependencies:
-      '@tanstack/query-core': 5.106.0
+      '@tanstack/query-core': 5.106.1
       '@tanstack/router-core': 1.171.39
 
   '@tanstack/router-utils@1.162.4(supports-color@10.2.2)':
@@ -7310,7 +7346,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@vercel/nft@1.11.0(supports-color@10.2.2)':
+  '@vercel/nft@1.11.1(supports-color@10.2.2)':
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3(supports-color@10.2.2)
       '@rollup/pluginutils': 5.5.1
@@ -7319,7 +7355,7 @@ snapshots:
       async-sema: 3.1.1
       bindings: 1.5.0
       estree-walker: 2.0.2
-      glob: 13.0.6
+      glob: 13.0.7
       graceful-fs: 4.2.11
       node-gyp-build: 4.8.4
       picomatch: 4.0.7
@@ -7430,15 +7466,15 @@ snapshots:
       is-alphanumerical: 2.0.1
       is-decimal: 2.0.1
 
-  better-auth@1.7.17(@tanstack/react-start@1.169.4)(drizzle-kit@0.31.11)(next@16.4.3)(pg@8.23.1)(react-dom@19.3.1)(react@19.3.1)(vitest@5.1.0):
+  better-auth@1.7.18(@tanstack/react-start@1.169.4)(drizzle-kit@0.31.11)(next@16.4.3)(pg@8.23.1)(react-dom@19.3.1)(react@19.3.1)(vitest@5.1.0):
     dependencies:
-      '@better-auth/core': 1.7.17(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
-      '@better-auth/drizzle-adapter': 1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)
-      '@better-auth/kysely-adapter': 1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)(kysely@0.29.8)
-      '@better-auth/memory-adapter': 1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)
-      '@better-auth/mongo-adapter': 1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)
-      '@better-auth/prisma-adapter': 1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)
-      '@better-auth/telemetry': 1.7.17(@better-auth/core@1.7.17)(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)
+      '@better-auth/core': 1.7.18(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.5)(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5)
+      '@better-auth/drizzle-adapter': 1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)
+      '@better-auth/kysely-adapter': 1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)(kysely@0.29.8)
+      '@better-auth/memory-adapter': 1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)
+      '@better-auth/mongo-adapter': 1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)
+      '@better-auth/prisma-adapter': 1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)
+      '@better-auth/telemetry': 1.7.18(@better-auth/core@1.7.18)(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)
       '@better-auth/utils': 0.5.1
       '@better-fetch/fetch': 1.3.3
       '@noble/ciphers': 2.4.0
@@ -7502,6 +7538,8 @@ snapshots:
       run-applescript: 7.1.0
 
   caniuse-lite@1.0.30001820: {}
+
+  caniuse-lite@1.0.30001823: {}
 
   chai@6.3.0: {}
 
@@ -7731,7 +7769,7 @@ snapshots:
       cors: 2.8.6
       debug: 4.4.3(supports-color@10.2.2)
       engine.io-parser: 5.2.3
-      ws: 8.21.0
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -7969,7 +8007,7 @@ snapshots:
       package-json-from-dist: 1.0.1
       path-scurry: 2.0.2
 
-  glob@13.0.6:
+  glob@13.0.7:
     dependencies:
       minimatch: 10.2.6
       minipass: 7.1.3
@@ -8251,7 +8289,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.68.0(@types/react@19.3.0)(react@19.3.1):
+  lucide-react@1.70.0(@types/react@19.3.0)(react@19.3.1):
     dependencies:
       react: 19.3.1
     optionalDependencies:
@@ -8349,7 +8387,7 @@ snapshots:
       '@next/env': 16.4.3
       '@swc/helpers': 0.5.23
       baseline-browser-mapping: 2.11.35
-      caniuse-lite: 1.0.30001820
+      caniuse-lite: 1.0.30001823
       postcss: 8.5.23
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
@@ -8496,16 +8534,16 @@ snapshots:
       '@oxfmt/binding-win32-ia32-msvc': 0.76.0
       '@oxfmt/binding-win32-x64-msvc': 0.76.0
 
-  oxlint-tsgolint@7.0.2005:
+  oxlint-tsgolint@7.0.2006:
     optionalDependencies:
-      '@oxlint-tsgolint/darwin-arm64': 7.0.2005
-      '@oxlint-tsgolint/darwin-x64': 7.0.2005
-      '@oxlint-tsgolint/linux-arm64': 7.0.2005
-      '@oxlint-tsgolint/linux-x64': 7.0.2005
-      '@oxlint-tsgolint/win32-arm64': 7.0.2005
-      '@oxlint-tsgolint/win32-x64': 7.0.2005
+      '@oxlint-tsgolint/darwin-arm64': 7.0.2006
+      '@oxlint-tsgolint/darwin-x64': 7.0.2006
+      '@oxlint-tsgolint/linux-arm64': 7.0.2006
+      '@oxlint-tsgolint/linux-x64': 7.0.2006
+      '@oxlint-tsgolint/win32-arm64': 7.0.2006
+      '@oxlint-tsgolint/win32-x64': 7.0.2006
 
-  oxlint@1.91.0(oxlint-tsgolint@7.0.2005):
+  oxlint@1.91.0(oxlint-tsgolint@7.0.2006):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.91.0
       '@oxlint/binding-android-arm64': 1.91.0
@@ -8526,7 +8564,7 @@ snapshots:
       '@oxlint/binding-win32-arm64-msvc': 1.91.0
       '@oxlint/binding-win32-ia32-msvc': 1.91.0
       '@oxlint/binding-win32-x64-msvc': 1.91.0
-      oxlint-tsgolint: 7.0.2005
+      oxlint-tsgolint: 7.0.2006
 
   p-limit@2.3.0:
     dependencies:
@@ -8690,7 +8728,7 @@ snapshots:
       react: 19.3.1
       scheduler: 0.28.0
 
-  react-email@6.11.6(react-dom@19.3.1)(react@19.3.1)(supports-color@10.2.2):
+  react-email@6.11.7(react-dom@19.3.1)(react@19.3.1)(supports-color@10.2.2):
     dependencies:
       '@babel/parser': 7.29.2
       '@babel/traverse': 7.29.0(supports-color@10.2.2)
@@ -8701,7 +8739,7 @@ snapshots:
       css-tree: 3.2.1
       debounce: 2.2.0
       esbuild: 0.28.2
-      glob: 13.0.6
+      glob: 13.0.7
       jiti: 2.6.1
       log-symbols: 7.0.1
       marked: 15.0.12
@@ -8903,7 +8941,7 @@ snapshots:
   socket.io-adapter@2.5.8(supports-color@10.2.2):
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
-      ws: 8.21.0
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -9305,6 +9343,8 @@ snapshots:
       - utf-8-validate
 
   ws@8.21.0: {}
+
+  ws@8.21.3: {}
 
   ws@8.22.0: {}
 
