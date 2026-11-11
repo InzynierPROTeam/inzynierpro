@@ -26,7 +26,6 @@
     "@cloudflare/vite-plugin": "catalog:",
     "@effect/tsgo": "catalog:",
     "@oxlint/plugins": "catalog:",
-    "@tailwindcss/typography": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",
     "@total-typescript/tsconfig": "catalog:",

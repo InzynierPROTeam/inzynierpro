@@ -1,5 +1,4 @@
 @import '@inzpro/ui/globals.css';
-@plugin '@tailwindcss/typography';
 
 @layer utilities {
   .layout-container {
