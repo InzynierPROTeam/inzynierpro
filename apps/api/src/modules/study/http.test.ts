@@ -59,9 +59,9 @@ test('documents return one cursor page of private coverage and archive preserves
       const studyRepository = yield* StudyRepository
       yield* studyRepository.recordCoverage(
         visitor.userId,
-        Schema.decodeSync(QualificationPathId)(technicalPathA),
-        Schema.decodeSync(WrittenQuestionId)('30000000-0000-4000-8000-000000000001'),
-        Schema.decodeSync(QuestionRevisionId)('41000000-0000-4000-8000-000000000001'),
+        yield* Schema.decodeEffect(QualificationPathId)(technicalPathA),
+        yield* Schema.decodeEffect(WrittenQuestionId)('30000000-0000-4000-8000-000000000001'),
+        yield* Schema.decodeEffect(QuestionRevisionId)('41000000-0000-4000-8000-000000000001'),
       )
     }),
   )

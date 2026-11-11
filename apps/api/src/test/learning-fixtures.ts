@@ -39,11 +39,11 @@ export const createStudyFixture = () =>
     Effect.gen(function* () {
       const qualificationPathsRepository = yield* QualificationPathsRepository
       const learningContentRepository = yield* LearningContentRepository
-      const pathId = Schema.decodeSync(QualificationPathId)(crypto.randomUUID())
-      const scopeId = Schema.decodeSync(QualificationScopeId)(crypto.randomUUID())
-      const documentId = Schema.decodeSync(ReferenceDocumentId)(crypto.randomUUID())
+      const pathId = yield* Schema.decodeEffect(QualificationPathId)(crypto.randomUUID())
+      const scopeId = yield* Schema.decodeEffect(QualificationScopeId)(crypto.randomUUID())
+      const documentId = yield* Schema.decodeEffect(ReferenceDocumentId)(crypto.randomUUID())
 
-      const config = Schema.decodeUnknownSync(PathConfiguration)({
+      const config = yield* Schema.decodeUnknownEffect(PathConfiguration)({
         ...technicalConfiguration,
         qualificationScopeId: scopeId,
       })
@@ -78,7 +78,7 @@ export const addFixtureQuestion = (
 
       const revisionId = crypto.randomUUID()
 
-      const question = Schema.decodeUnknownSync(NewQuestion)({
+      const question = yield* Schema.decodeEffect(NewQuestion)({
         id: crypto.randomUUID(),
         revisionId,
         documentId,

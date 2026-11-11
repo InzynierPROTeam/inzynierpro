@@ -208,7 +208,7 @@ test('archive falls back to another active assignment and restore preserves its 
 test('closing the selection window does not revoke access or break idempotent confirmation', async () => {
   const visitor = await loginForPreparation(api)
 
-  const session = Schema.decodeUnknownSync(CalendarSession)({
+  const session = Schema.decodeSync(CalendarSession)({
     id: crypto.randomUUID(),
     generalChamberId: '50000000-0000-4000-8000-000000000001',
     name: 'Test session window',
@@ -230,7 +230,7 @@ test('closing the selection window does not revoke access or break idempotent co
       const examCalendarRepository = yield* ExamCalendarRepository
       yield* examCalendarRepository.closeSelection(
         session.id,
-        Schema.decodeSync(ApiDateTime)('2001-01-01T00:00:00.000Z'),
+        yield* Schema.decodeEffect(ApiDateTime)('2001-01-01T00:00:00.000Z'),
       )
     }),
   )
