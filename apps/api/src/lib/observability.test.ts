@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net'
 
 import { ConfigProvider, Effect, Layer } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
-import { internalServerError } from '~api/lib/internal-server-error.js'
+import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
 import { isSensitiveAttribute, observabilityLayer } from '~api/lib/observability.js'
 
 class TestReadError {
@@ -50,7 +50,7 @@ test('an infrastructure failure exports a failed span and an error log without s
     Effect.withSpan('Test.read', {
       attributes: { 'user.id': 'user-1', 'user.email': 'person@example.com' },
     }),
-    Effect.catchTag('TestReadError', internalServerError('Could not read test data.')),
+    Effect.catchTag('TestReadError', logAndFailInternalServerError('Could not read test data.')),
     Effect.withSpan('Test.handler', { attributes: { 'client.address': '203.0.113.7' } }),
     Effect.exit,
   )

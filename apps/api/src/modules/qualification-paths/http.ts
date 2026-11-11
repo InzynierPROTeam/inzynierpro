@@ -2,7 +2,7 @@ import { Api } from '@inzpro/api-contracts/api'
 import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
 import { Effect, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
-import { internalServerError } from '~api/lib/internal-server-error.js'
+import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/qualification-paths.reader.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/qualification-paths.reader.postgres.js'
 
@@ -14,7 +14,9 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
       .handle('ListSpecializations', ({ query }) =>
         qualificationPathsReader.specializations(query).pipe(
           Effect.catchTags({
-            QualificationPathsReadError: internalServerError('Could not read qualification paths.'),
+            QualificationPathsReadError: logAndFailInternalServerError(
+              'Could not read qualification paths.',
+            ),
             InvalidCursor: () =>
               Effect.fail(
                 new InvalidRequest({
@@ -28,7 +30,9 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
       .handle('ListQualificationKinds', ({ query }) =>
         qualificationPathsReader.kinds(query.specializationId, query).pipe(
           Effect.catchTags({
-            QualificationPathsReadError: internalServerError('Could not read qualification paths.'),
+            QualificationPathsReadError: logAndFailInternalServerError(
+              'Could not read qualification paths.',
+            ),
             InvalidCursor: () =>
               Effect.fail(
                 new InvalidRequest({
@@ -44,7 +48,7 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
           .scopes(query.specializationId, query.qualificationKindId, query)
           .pipe(
             Effect.catchTags({
-              QualificationPathsReadError: internalServerError(
+              QualificationPathsReadError: logAndFailInternalServerError(
                 'Could not read qualification paths.',
               ),
               InvalidCursor: () =>
@@ -63,7 +67,7 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
           .pipe(Effect.map(path => ({ path })))
           .pipe(
             Effect.catchTags({
-              QualificationPathsReadError: internalServerError(
+              QualificationPathsReadError: logAndFailInternalServerError(
                 'Could not read qualification paths.',
               ),
             }),
