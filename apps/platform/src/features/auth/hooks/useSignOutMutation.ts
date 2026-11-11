@@ -1,7 +1,7 @@
 import { getAuthErrorMessage } from '@inzpro/auth-client/error'
+import { toast } from '@inzpro/ui/components/toast'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { toast } from 'sonner'
 
 import { signOut } from '../actions'
 
@@ -17,6 +17,6 @@ export const useSignOutMutation = () => {
       await router.navigate({ to: '/logowanie', replace: true })
       await router.invalidate()
     },
-    onError: error => toast.error(getAuthErrorMessage(error)),
+    onError: error => toast.add({ type: 'error', title: getAuthErrorMessage(error) }),
   })
 }

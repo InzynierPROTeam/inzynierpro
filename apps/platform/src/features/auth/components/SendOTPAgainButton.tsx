@@ -1,7 +1,7 @@
 import { getAuthErrorMessage } from '@inzpro/auth-client/error'
 import { Button } from '@inzpro/ui/components/button'
+import { toast } from '@inzpro/ui/components/toast'
 import { LoaderCircle } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { useSendOTPMutation } from '../hooks/useSendOTPMutation'
 import { verifyOTPPageRouteApi } from '../utils'
@@ -14,11 +14,11 @@ export const SendOTPAgainButton = () => {
     <span className="inline-flex items-center gap-1">
       <Button
         onClick={() =>
-          toast.promise(() => mutation.mutateAsync({ email }), {
-            loading: 'Wysyłanie kodu weryfikacyjnego...',
-            success: 'Kod został wysłany. Sprawdź swoją skrzynkę pocztową.',
+          toast.promise(mutation.mutateAsync({ email }), {
+            loading: { title: 'Wysyłanie kodu weryfikacyjnego...' },
+            success: { title: 'Kod został wysłany. Sprawdź swoją skrzynkę pocztową.' },
             error: error => ({
-              message: 'Ups! Coś poszło nie tak.',
+              title: 'Ups! Coś poszło nie tak.',
               description: getAuthErrorMessage(error),
             }),
           })

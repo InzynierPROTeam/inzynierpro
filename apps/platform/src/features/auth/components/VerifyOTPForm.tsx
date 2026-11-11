@@ -3,13 +3,13 @@ import { identityKeys } from '@inzpro/queries/modules/identity'
 import { Button } from '@inzpro/ui/components/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@inzpro/ui/components/field'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@inzpro/ui/components/input-otp'
+import { toast } from '@inzpro/ui/components/toast'
 import { revalidateLogic, useForm } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { LoaderCircle } from 'lucide-react'
-import { toast } from 'sonner'
 import { safeRedirectPath } from '~platform/utils/redirect'
 
 import { signInEmailOtp } from '../actions'
@@ -43,17 +43,16 @@ export const VerifyOTPForm = () => {
 
   const form = useForm({
     onSubmit: ({ value }) => {
-      toast.promise(
-        () =>
-          signInEmailOtpMutation.mutateAsync({
-            otp: value.code,
-            email,
-          }),
+      void toast.promise(
+        signInEmailOtpMutation.mutateAsync({
+          otp: value.code,
+          email,
+        }),
         {
-          loading: 'Weryfikacja kodu...',
-          success: 'Zalogowano pomyślnie.',
+          loading: { title: 'Weryfikacja kodu...' },
+          success: { title: 'Zalogowano pomyślnie.' },
           error: error => ({
-            message: 'Ups! Coś poszło nie tak.',
+            title: 'Ups! Coś poszło nie tak.',
             description: getAuthErrorMessage(error),
           }),
         },

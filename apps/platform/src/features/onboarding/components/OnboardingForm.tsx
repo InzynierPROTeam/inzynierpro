@@ -7,12 +7,12 @@ import { PathConfiguration } from '@inzpro/domain/modules/preparation/onboarding
 import { preparationKeys } from '@inzpro/queries/modules/preparation'
 import { studyKeys } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
+import { toast } from '@inzpro/ui/components/toast'
 import { useForm, revalidateLogic } from '@tanstack/react-form'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import type { ReactNode } from 'react'
-import { toast } from 'sonner'
 import { dateTimeInputToUtc } from '~platform/utils/date-time-input'
 
 import { submitOnboarding } from '../actions'
@@ -69,8 +69,8 @@ export const OnboardingForm = () => {
         return
       }
 
-      toast.promise(
-        async () => {
+      void toast.promise(
+        (async () => {
           const payload = Schema.decodeUnknownSync(PathConfiguration)({
             specializationId: value.specjalnosc,
             qualificationKindId: value.rodzaj,
@@ -92,11 +92,11 @@ export const OnboardingForm = () => {
             }),
           ])
           await router.navigate({ to: receipt.existing ? '/profil' : '/start' })
-        },
+        })(),
         {
-          loading: 'Zapisywanie ścieżki…',
-          success: 'Ścieżka nauki została zapisana.',
-          error: 'Nie udało się zapisać ścieżki. Sprawdź wybrane opcje.',
+          loading: { title: 'Zapisywanie ścieżki…' },
+          success: { title: 'Ścieżka nauki została zapisana.' },
+          error: { title: 'Nie udało się zapisać ścieżki. Sprawdź wybrane opcje.' },
         },
       )
     },

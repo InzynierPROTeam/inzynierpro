@@ -3,10 +3,10 @@ import { Email } from '@inzpro/domain/common/email'
 import { Button } from '@inzpro/ui/components/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@inzpro/ui/components/field'
 import { Input } from '@inzpro/ui/components/input'
+import { toast } from '@inzpro/ui/components/toast'
 import { revalidateLogic, useForm } from '@tanstack/react-form'
 import { Schema } from 'effect'
 import { LoaderCircle } from 'lucide-react'
-import { toast } from 'sonner'
 
 const signInSchema = Schema.Struct({
   email: Email.annotate({
@@ -31,11 +31,11 @@ export const SignInForm: React.FC<SignInFormProps> = ({
 }) => {
   const form = useForm({
     onSubmit: ({ value }) => {
-      toast.promise(() => onSubmit(value), {
-        loading: 'Wysyłanie kodu weryfikacyjnego...',
-        success: 'Kod został wysłany. Sprawdź swoją skrzynkę pocztową.',
+      void toast.promise(onSubmit(value), {
+        loading: { title: 'Wysyłanie kodu weryfikacyjnego...' },
+        success: { title: 'Kod został wysłany. Sprawdź swoją skrzynkę pocztową.' },
         error: error => ({
-          message: 'Ups! Coś poszło nie tak.',
+          title: 'Ups! Coś poszło nie tak.',
           description: getAuthErrorMessage(error),
         }),
       })

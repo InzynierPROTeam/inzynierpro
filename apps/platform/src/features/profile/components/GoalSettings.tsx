@@ -4,10 +4,10 @@ import type { UserQualificationPath } from '@inzpro/domain/modules/preparation/u
 import { goalOptionsQueryOptions, preparationKeys } from '@inzpro/queries/modules/preparation'
 import { studyKeys } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
+import { toast } from '@inzpro/ui/components/toast'
 import { useForm, revalidateLogic } from '@tanstack/react-form'
 import { useInfiniteQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { Schema } from 'effect'
-import { toast } from 'sonner'
 import { apiHttpClient } from '~platform/lib/api-client'
 import { dateTimeInputToUtc, formatDateTimeInput } from '~platform/utils/date-time-input'
 
@@ -38,8 +38,8 @@ export const GoalSettings = ({ path, userId }: { path: UserQualificationPath; us
     validationLogic: revalidateLogic(),
     validators: { onDynamic: Schema.toStandardSchemaV1(GoalFormValues) },
     onSubmit: async ({ value }) => {
-      toast.promise(
-        async () => {
+      void toast.promise(
+        (async () => {
           const payload = Schema.decodeSync(ChangeGoalPayload)({
             ...value,
             oralExamDate: dateTimeInputToUtc(value.oralExamDate),
@@ -53,12 +53,14 @@ export const GoalSettings = ({ path, userId }: { path: UserQualificationPath; us
             client.invalidateQueries({ queryKey: preparationKeys.path(userId, path.id) }),
             client.invalidateQueries({ queryKey: studyKeys.path(userId, path.id) }),
           ])
-        },
+        })(),
         {
-          loading: 'Zapisywanie celu…',
-          success: 'Cel został zapisany.',
-          error:
-            'Nie udało się zapisać celu. Odśwież dane, jeśli został zmieniony na innym urządzeniu.',
+          loading: { title: 'Zapisywanie celu…' },
+          success: { title: 'Cel został zapisany.' },
+          error: {
+            title: 'Nie udało się zapisać celu.',
+            description: 'Odśwież dane, jeśli cel został zmieniony na innym urządzeniu.',
+          },
         },
       )
     },

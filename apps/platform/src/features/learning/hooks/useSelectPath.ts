@@ -1,7 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { preparationKeys } from '@inzpro/queries/modules/preparation'
+import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
 import { selectQualificationPath } from '../actions'
 
@@ -13,6 +13,7 @@ export const useSelectPath = (userId: UserId) => {
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: preparationKeys.selection(userId) })
     },
-    onError: () => toast.error('Nie udało się zapisać ścieżki. Spróbuj ponownie.'),
+    onError: () =>
+      toast.add({ type: 'error', title: 'Nie udało się zapisać ścieżki. Spróbuj ponownie.' }),
   })
 }

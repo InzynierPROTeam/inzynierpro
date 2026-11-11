@@ -1,7 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Button } from '@inzpro/ui/components/button'
-import { toast } from 'sonner'
+import { toast } from '@inzpro/ui/components/toast'
 
 import { usePathMutation } from '../hooks/usePathMutation'
 
@@ -25,9 +25,9 @@ export const AccessExtension = ({
         disabled={mutation.isPending}
         onClick={() =>
           toast.promise(mutation.mutateAsync({ params: { qualificationPathId: pathId } }), {
-            loading: 'Rozszerzanie dostępu…',
-            success: 'Dostęp został rozszerzony. Możesz kontynuować naukę.',
-            error: 'Nie udało się rozszerzyć dostępu. Spróbuj ponownie.',
+            loading: { title: 'Rozszerzanie dostępu…' },
+            success: { title: 'Dostęp został rozszerzony. Możesz kontynuować naukę.' },
+            error: { title: 'Nie udało się rozszerzyć dostępu. Spróbuj ponownie.' },
           })
         }
       >

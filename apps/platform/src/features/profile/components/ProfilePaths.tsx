@@ -2,11 +2,11 @@ import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { pathsQueryOptions, selectedPathQueryOptions } from '@inzpro/queries/modules/preparation'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@inzpro/ui/components/card'
+import { toast } from '@inzpro/ui/components/toast'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Option } from 'effect'
 import { Match } from 'effect'
-import { toast } from 'sonner'
 import { RequestFailure } from '~platform/features/learning/components/RequestFailure'
 import { usePathMutation } from '~platform/features/learning/hooks/usePathMutation'
 import { useSelectPath } from '~platform/features/learning/hooks/useSelectPath'
@@ -108,9 +108,9 @@ export const ProfilePaths = ({ userId }: { userId: UserId }) => {
                         params: { qualificationPathId: path.id },
                       }),
                       {
-                        loading: 'Aktualizowanie ścieżki…',
-                        success: 'Ścieżka została zaktualizowana.',
-                        error: 'Nie udało się zaktualizować ścieżki.',
+                        loading: { title: 'Aktualizowanie ścieżki…' },
+                        success: { title: 'Ścieżka została zaktualizowana.' },
+                        error: { title: 'Nie udało się zaktualizować ścieżki.' },
                       },
                     )
                   }
@@ -128,9 +128,11 @@ export const ProfilePaths = ({ userId }: { userId: UserId }) => {
                       toast.promise(
                         mutation.extend.mutateAsync({ params: { qualificationPathId: path.id } }),
                         {
-                          loading: 'Rozszerzanie dostępu…',
-                          success: 'Dostęp do egzaminu pisemnego i ustnego został włączony.',
-                          error: 'Nie udało się rozszerzyć dostępu.',
+                          loading: { title: 'Rozszerzanie dostępu…' },
+                          success: {
+                            title: 'Dostęp do egzaminu pisemnego i ustnego został włączony.',
+                          },
+                          error: { title: 'Nie udało się rozszerzyć dostępu.' },
                         },
                       )
                     }
