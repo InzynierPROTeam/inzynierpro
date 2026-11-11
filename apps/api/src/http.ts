@@ -9,7 +9,7 @@ import { layer as RedisLayer } from '@inzpro/redis'
 import { layer as RateLimiterLayer } from '@inzpro/redis/rate-limiter'
 import { Effect, Layer, Logger, References } from 'effect'
 import { Digest, SecureRandom } from 'effect/crypto'
-import { HttpRouter, HttpServer } from 'effect/http'
+import { HttpRouter } from 'effect/http'
 import { ApiLive } from '~api/api.js'
 import { env, type Env } from '~api/lib/env.js'
 import { observabilityLayer, untracedRequestsLayer } from '~api/lib/observability.js'
@@ -52,7 +52,6 @@ export const httpServerLayer = (config: Env) =>
     ),
     { disableLogger: true },
   ).pipe(
-    HttpServer.withLogAddress,
     Layer.provide(
       AuthLayer({
         secret: config.BETTER_AUTH_SECRET,
