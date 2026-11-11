@@ -1,0 +1,33 @@
+# Required account and authentication
+
+## Account and access
+
+Study requires an account. The public website and informational material stay available without signing in. The first release has no anonymous study mode and no merging of anonymous progress into an account.
+
+The first release gives signed-in users all of study with no paywall or paid limits, and no billing is built for launch. Future monetization is a separate area and never enters scoring or SRS rules.
+
+## Sign-in methods
+
+Web offers Google or an e-mail code; mobile adds Apple. Sign-up and sign-in are one flow: a new account is created on first authentication. A user has one identity across web and mobile.
+
+## Better Auth
+
+Better Auth is enclosed in the Identity & Access module. It uses the official PostgreSQL integration through pg/Kysely only inside auth; our business modules use native Effect SQL. Effect v4 has no ready bridge to the plain Kysely Better Auth needs, and the old sql-kysely was not a drop-in Promise driver for an external library. Our own bridge would have to handle transactions on one reserved connection, resources and adapter compatibility, so we use the supported integration and keep auth infrastructure we maintain small. Removing pg from auth stays a preference for a later, separately verified integration.
+
+## Account linking
+
+Linking keeps the behaviour verified in Better Auth 1.7.14 in V1. An existing link of provider and provider account ID identifies the owner. A new OAuth method joins a user with the same normalized e-mail automatically only when the provider confirms the address and the local address is already verified. No trusted providers bypass this, and different addresses never imply the same person. There is no linking panel or account merging at launch. These rules are set explicitly in configuration rather than relying on library defaults.
+
+An e-mail code signs in to the existing account with that address or creates a verified one. When verifying a previously unverified account, V1 removes its unproven links and sessions; V2 must keep that protection.
+
+## Sessions and Redis
+
+PostgreSQL is the durable store for sign-in sessions and codes; codes are stored hashed. Redis caches sessions and holds rate-limit counters, and is never the only copy of a session. When Redis is unavailable the API fails closed with a server error: it does not send codes without limits, confirm sign-out or report a signed-in user as signed out. Sessions keep working once Redis returns. Integration tests cover this.
+
+The session cookie uses its own prefix, distinct from V1, so the shared domain never overwrites pilot sessions. Codes and session tokens never reach logs. Better Auth answers success even when sending a code fails; we turn that failure into an explicit error so the user knows the code did not go out.
+
+## Test scope
+
+Auth tests cover our configuration and integration: Google authorization URLs and allowed callbacks, code sign-in to the protected API, the PostgreSQL/Redis integration, e-mail, logs and CORS. We do not simulate Google or re-test OTP and linking mechanisms owned by Better Auth. A real Google smoke test needs a configured client and separate verification.
+
+The sign-in boundary in onboarding is in ADR-0025.

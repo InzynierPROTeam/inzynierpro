@@ -47,7 +47,7 @@ const tracerLayer = Layer.effect(
  * Exports traces and logs over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set and
  * `OTEL_TRACES_EXPORTER` / `OTEL_LOGS_EXPORTER` are `otlp`; otherwise spans stay in memory.
  * `stdoutLoggers` keep writing to stdout next to the OTLP exporter. Version and environment
- * come from `OTEL_SERVICE_VERSION` and `OTEL_RESOURCE_ATTRIBUTES` (ADR-0042).
+ * come from `OTEL_SERVICE_VERSION` and `OTEL_RESOURCE_ATTRIBUTES` (ADR-0022).
  */
 export const observabilityLayer = (stdoutLoggers: ReadonlyArray<Logger.Logger<unknown, unknown>>) =>
   Layer.mergeAll(

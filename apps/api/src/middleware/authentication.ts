@@ -35,7 +35,7 @@ export const AuthenticationLive = Layer.effect(
           Effect.mapError(() => unauthenticated),
         )
 
-        // The pseudonymous id lets a trace be tied to an account; e-mail stays out (ADR-0042).
+        // The pseudonymous id lets a trace be tied to an account; e-mail stays out (ADR-0022).
         yield* Effect.annotateCurrentSpan('user.id', user.id)
 
         const response = yield* Effect.provideService(httpEffect, CurrentUser, user)

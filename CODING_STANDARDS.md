@@ -39,15 +39,14 @@ Shared packages that adapt one layer to another stay thin: `@inzpro/queries` pas
 
 Issues define delivery scope and acceptance criteria; ADRs own lasting product and architecture decisions. Review the relevant source rather than maintaining another copy here:
 
-- [ADR-0021](docs/adr/0021-module-interfaces-data-ownership-and-client-responsibilities.md): module ownership, CQRS and authentication/authorization responsibilities.
-- [ADR-0024](docs/adr/0024-shared-http-contracts-and-client.md): HTTP contracts, dates, collection pagination, client requests and query keys.
-- [ADR-0041](docs/adr/0041-configured-paths-goals-and-access.md): public onboarding, assignments, goals and access scope.
-- [ADR-0010](docs/adr/0010-published-revisions-and-emergency-withdrawal.md): normalized answers and revision publication/immutability.
-- [ADR-0003](docs/adr/0003-session-references-to-shared-revisions.md): session references and answer presentation order.
-- [ADR-0035](docs/adr/0035-diagnostics-from-first-vertical-slice.md): error diagnostics and logging ownership.
-- [ADR-0042](docs/adr/0042-otlp-telemetry-and-grafana-cloud.md): telemetry export, span naming and data kept out of telemetry.
-- [ADR-0043](docs/adr/0043-api-rate-limiting.md): rate-limit tiers, keys and behaviour during a Redis outage.
-- [ADR-0025](docs/adr/0025-monorepo-toolchain-and-verification.md): schema timestamps and verification tooling.
+- [ADR-0012](docs/adr/0012-modular-monolith-and-data-ownership.md): module ownership, CQRS, authorization policies and atomic learning actions.
+- [ADR-0014](docs/adr/0014-shared-http-contracts-and-client.md): HTTP contracts, dates, collection pagination and personal caching. Client actions and query keys follow the `api-client` and `queries` package READMEs.
+- [ADR-0025](docs/adr/0025-configured-paths-goals-and-access.md): public onboarding, assignments, goals and access scope.
+- [ADR-0003](docs/adr/0003-shared-revisions-publication-and-withdrawal.md): normalized answers, session references, revision publication and withdrawal.
+- [ADR-0002](docs/adr/0002-study-session-lifecycle.md): session rules and answer presentation order.
+- [ADR-0022](docs/adr/0022-diagnostics-and-telemetry.md): error diagnostics, logging, telemetry export, spans and data kept out of telemetry.
+- [ADR-0026](docs/adr/0026-api-rate-limiting.md): rate-limit tiers, keys and behaviour during a Redis outage.
+- [ADR-0015](docs/adr/0015-monorepo-structure-toolchain-and-verification.md): verification tooling and test strategy.
 
 Mechanical conventions are enforced by the [Oxlint conventions plugin](packages/tools/src/oxlint/conventions/index.ts); its rules and regression cases define the checked syntax. Keep additional review guidance focused on decisions static checks cannot make.
 
@@ -67,17 +66,20 @@ Use concrete branded schemas for concurrency versions and meaningful quantities.
 - A repository exposes persistence operations used by commands. Commands can also use readers when they need current data to decide a write.
 - PostgreSQL adapters own SQL, row decoding and persistence conversion. Prepare input variables before interpolating SQL. Select flat columns and assemble nested objects in TypeScript. Use SQL joins, predicates, counts and limits for the requested read; keep JSON object/array construction out of SELECTs.
 - Retrieve Effect services into local variables named after the concrete service: `preparationReader`, `preparationRepository`, `examCalendarReader`, `examCalendarRepository`. Keep those names across use cases, adapters and fixtures.
+- A handler maps a module's specific failures with an inline `Effect.catchTags`.
 - Map an unexpected infrastructure failure in a handler with `logAndFailInternalServerError(message)` from `~api/lib/internal-server-error.js`: it logs the cause, tags the span with `error.type` and fails with HTTP 500. Do not log it by hand. Business failures keep their own responses.
-- A handler starts with its rate limit: `limitByClient(publicReadLimit)` for anonymous endpoints, `limitByUser(accountReadLimit)` or `limitByUser(accountWriteLimit)` for signed-in ones, and declares `RateLimitExceeded` in its contract. A new tier needs a reason in ADR-0043.
-- Log levels: `error` for failures someone must fix, `warn` for degraded operation (a fallback, a lost connection), `info` for lifecycle events, `debug` for diagnosis only. Requests themselves are not logged; their spans carry method, route, status and duration. Never put e-mail addresses, IP addresses, tokens, codes or note content into a log message or annotation.
+- A handler starts with its rate limit: `limitByClient(publicReadLimit)` for anonymous endpoints, `limitByUser(accountReadLimit)` or `limitByUser(accountWriteLimit)` for signed-in ones, and declares `RateLimitExceeded` in its contract. A new tier needs a reason in ADR-0026.
+- Log levels: `error` for failures someone must fix, `warn` for degraded operation (a fallback, a lost connection), `info` for lifecycle events, `debug` for diagnosis only. Requests themselves are not logged; their spans carry method, route, status and duration. Never put e-mail addresses, IP addresses, tokens, codes or note content into a log message or annotation. Span attributes follow OpenTelemetry semantic conventions; our own attributes take the `app.` prefix.
 - API integration tests exercise the real HTTP handlers and real adapters. Prepare fixtures through actual module repositories; assert behavior through the agreed public API/UI. Seed scripts may own fixture SQL. Test bodies do not implement independent persistence queries.
 
 ## Contract and persistence review
 
-Check that a resource collection follows the pagination decision in ADR-0024, rather than mistaking bounded configuration values for a collection. Verify that clients can fetch subsequent pages and that filters and account identity participate in the appropriate cache keys.
+Check that a resource collection follows the pagination decision in ADR-0014, rather than mistaking bounded configuration values for a collection. Verify that clients can fetch subsequent pages and that filters and account identity participate in the appropriate cache keys.
 
 Use the existing schema directly when it already expresses the complete request; extend its fields only when adding or changing fields. Preserve endpoint-derived request types instead of hiding a newly required field with assertions, Partial or optional fields.
 
 Keep finite literal choices reusable: export named literals, then a readonly values tuple, then the schema consuming that tuple.
+
+Mutable tables usually have `created_at` and `updated_at`; append-only history has only `created_at`. The first migration defines the shared `set_updated_at` function, and every mutable table attaches a `BEFORE UPDATE` trigger. Application timestamps are `timestamptz(3)`. Choose a table's columns by its real lifecycle.
 
 Generic transaction adapters preserve both rollback and the original operation failure while mapping infrastructure failures. Review this behavior independently of the adapter's error-handling syntax.

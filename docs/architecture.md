@@ -1,7 +1,7 @@
 # Workspace architecture
 
 Read this document before adding a workspace, moving shared code, or changing dependencies.
-The implementation decisions are recorded in [ADR-0021](adr/0021-module-interfaces-data-ownership-and-client-responsibilities.md), [ADR-0024](adr/0024-shared-http-contracts-and-client.md), [ADR-0025](adr/0025-monorepo-toolchain-and-verification.md), and [ADR-0026](adr/0026-applications-packages-and-naming.md).
+The implementation decisions are recorded in [ADR-0012](adr/0012-modular-monolith-and-data-ownership.md), [ADR-0014](adr/0014-shared-http-contracts-and-client.md) and [ADR-0015](adr/0015-monorepo-structure-toolchain-and-verification.md).
 
 ## Package responsibilities
 
@@ -9,7 +9,7 @@ Existing packages:
 
 - `api-contracts`: public HTTP endpoints, requests, responses, and declared errors. Share JSON-compatible data schemas; keep backend implementation details in the API application.
 - `api-client`: Effect actions generated from the contracts, the Promise execution adapter, and reusable HTTP transport composition. Applications supply URLs, credentials, and request-specific adapters.
-- `queries`: query keys and TanStack Query options. Receive the HTTP client from the consumer and preserve cancellation. Follow ADR-0024 for key hierarchies.
+- `queries`: query keys and TanStack Query options. Receive the HTTP client from the consumer and preserve cancellation. Its README defines key hierarchies and invalidation.
 - `db`: PostgreSQL connection infrastructure. Module-owned SQL, persistence rules, and migrations live in `apps/api`.
 - `redis`: the Redis connection as a scoped Effect layer. Key layouts stay with the code that owns the data.
 - `email`: React Email templates in the shared theme and the `EmailService` Effect service over email-sdk adapters (Resend in production, memory in tests). Deciding when to send stays with the owning module.
@@ -78,10 +78,14 @@ Canonical page URLs have exactly one trailing slash, including the root path. Ca
 
 ## Preparation modules
 
-The API and public domain vocabulary use five business modules: qualification-paths (shared path catalogue), exam-calendar (official targets), preparation (assignments, access and goals), learning-content (shared material) and study (personal learning read models). Public qualification-paths/exam-calendar catalogue groups and private preparation/study groups each have one http.ts. Learning-content exposes its internal repository. Collection contracts share cursor pagination for clients and offset pagination for administration. Module migration files create the final initial tables directly; the first migration owns the shared timestamp trigger. ADR-0024 owns date and collection contracts; ADR-0041 owns onboarding behavior. Identifier syntax is enforced by the conventions plugin.
+The API and public domain vocabulary use five business modules: qualification-paths (shared path catalogue), exam-calendar (official targets), preparation (assignments, access and goals), learning-content (shared material) and study (personal learning read models). Public qualification-paths/exam-calendar catalogue groups and private preparation/study groups each have one http.ts. Learning-content exposes its internal repository. A configuration change uses one PostgreSQL transaction, an account lock and revalidation against the catalogue and calendar. Documents with personal progress are one user-specific HTTP request. Collection contracts share cursor pagination for clients and offset pagination for administration. Module migration files create the final initial tables directly; the first migration owns the shared timestamp trigger. ADR-0014 owns date and collection contracts; ADR-0025 owns onboarding behavior. Identifier syntax is enforced by the conventions plugin.
 
 ## Backend and contract convention checks
 
 The conventions plugin also enforces SQL placement in API PostgreSQL readers/repositories, migrations and explicit seeds, including rejection of direct fixture SQL. It checks backend role filenames, one module http.ts naming, concept filenames without -id, semantic UUID schemas built from the shared Uuid, request schemas imported from requests.ts, and api-client action/request/response/error groups with an inferred req forwarded to the generated client. These checks run through the existing lint, pre-commit and CI commands.
 
-Checks cover static syntax and imports. They do not prove authorization order, bounded SQL cardinality, module ownership or whether a query wrapper adds useful behavior; those remain review responsibilities under ADR-0021 and CODING_STANDARDS.md.
+Checks cover static syntax and imports. They do not prove authorization order, bounded SQL cardinality, module ownership or whether a query wrapper adds useful behavior; those remain review responsibilities under ADR-0012 and CODING_STANDARDS.md.
+
+## Web authentication
+
+Clients read session state through `GET /api/v1/identity/session`, which answers `Unauthenticated` (401) without a session. On the web, the shared `_maybeauthenticated` parent route reads the session once and distinguishes an authentication denial from a network or server failure; only a denial means there is no user. Its `_authenticated` and `_notauthenticated` children check the received context and redirect without another session query. Public onboarding belongs to this parent; the home page stays outside it and never reads the session.

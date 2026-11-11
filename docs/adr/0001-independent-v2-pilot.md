@@ -1,3 +1,3 @@
-# Niezależny start pilotażu V2
+# Independent V2 pilot
 
-V2 powstaje od podstaw w tym repozytorium, a V1 pozostaje dostępna podczas jej budowy. Pierwszy pilotaż V2 może korzystać z nowych kont, bez migracji historii nauki użytkowników V1. Pozwala to zweryfikować nowy produkt bez uzależniania pilotażu od odwzorowania starego modelu kont i postępów; import treści jest osobnym zagadnieniem. Wymagania migracji kont i historii przed zastąpieniem V1 pozostają do ustalenia.
+V2 is built from scratch in this repository while V1 stays available. The first V2 pilot may run on new accounts without migrating V1 learning history, so the new product can be validated without first mapping the old account and progress model. Content import is a separate concern (ADR-0018). Migration requirements for accounts and history before V2 replaces V1 are still open.

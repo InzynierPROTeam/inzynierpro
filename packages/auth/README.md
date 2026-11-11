@@ -4,7 +4,9 @@ Better Auth configuration shared by backend entrypoints.
 
 **Runtime:** Server-side Node.js.
 
-Build the Better Auth instance as the `Auth` service from a PostgreSQL pool, Redis and `EmailService` from `@inzpro/email` (tests provide an in-memory adapter). Session storage, sign-in codes, rate limiting and cookies are configured here. A sign-in code that cannot be sent is answered with `503 SIGN_IN_CODE_NOT_SENT`. Endpoint mounting and environment loading remain in the application. Client applications must not import this package; they use `@inzpro/auth-client`.
+Build the Better Auth instance as the `Auth` service from a PostgreSQL pool, Redis and `EmailService` from `@inzpro/email` (tests provide an in-memory adapter). Session storage, sign-in codes, rate limiting and cookies are configured here. A sign-in code that cannot be sent is answered with `503 SIGN_IN_CODE_NOT_SENT`. Endpoint mounting (`/api/v1/auth/*` in the identity module) and environment loading remain in the application. Better Auth swallows a failed code send and answers success, so the failure is recorded in Better Auth request state (`defineRequestState`) and an `after` hook turns the response into the 503.
+
+The `users`, `auth_sessions`, `auth_accounts` and `auth_verifications` tables come from a shared Effect SQL migration; the `auth_` prefix separates sign-in sessions from study sessions. Better Auth checks the schema at startup and a test guards against drift. The session cookie prefix is `inzynierpro`, distinct from V1. Decisions behind this setup are in [ADR-0011](../../docs/adr/0011-required-account-and-authentication.md). Client applications must not import this package; they use `@inzpro/auth-client`.
 
 An optional Google configuration enables the built-in provider with `prompt: 'select_account'`, matching V1. Account linking explicitly requires verified provider and local emails, with no trusted providers or different-email linking. Existing provider account IDs retain their owner. Origin checking stays enabled in tests as well as production. See the root [Google setup and smoke procedure](../../README.md#google-sign-in) for callback/origin configuration.
 

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Build from the repository root: docker build -f apps/api/Dockerfile .
 
-# The latest Node 26 release (ADR-0029), the major in .nvmrc.
+# The latest Node 26 release (ADR-0017), the major in .nvmrc.
 ARG NODE_VERSION=26
 
 FROM node:${NODE_VERSION}-alpine AS tools
@@ -43,5 +43,5 @@ EXPOSE 4000
 # The start period covers migrations, which run before the server listens.
 HEALTHCHECK --interval=10s --timeout=3s --start-period=60s --start-interval=2s --retries=3 \
   CMD wget -q -O /dev/null "http://127.0.0.1:${PORT}/api/v1/health-check" || exit 1
-# Migrations run once before the server starts; a failed migration stops the deployment (ADR-0029).
+# Migrations run once before the server starts; a failed migration stops the deployment (ADR-0017).
 CMD ["sh", "-c", "node dist/lib/migrate.js && exec node dist/main.js"]

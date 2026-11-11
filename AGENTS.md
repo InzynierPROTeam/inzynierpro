@@ -29,7 +29,7 @@ Read `docs/agents/domain.md` before exploring the codebase.
 
 ### Client queries
 
-Before adding or changing client queries or query keys, read [ADR-0024](docs/adr/0024-shared-http-contracts-and-client.md) for module layout, Effect execution, and hierarchical cache invalidation.
+Before adding or changing client actions, queries or query keys, read [packages/queries/README.md](packages/queries/README.md) and [packages/api-client/README.md](packages/api-client/README.md) for module layout, Effect execution, and hierarchical cache invalidation.
 
 ### Package architecture
 
