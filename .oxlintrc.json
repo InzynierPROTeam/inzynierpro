@@ -201,6 +201,15 @@
           {
             "name": "crypto",
             "message": "Use effect modules: SecureRandom, Digest from 'effect/crypto', or Random from 'effect'."
+          },
+          // shadcn generates these imports; this repo styles with tailwind-variants.
+          {
+            "name": "class-variance-authority",
+            "message": "Use tv from 'tailwind-variants' instead of cva."
+          },
+          {
+            "name": "cn",
+            "message": "Import cn from 'tailwind-variants'."
           }
         ]
       }
