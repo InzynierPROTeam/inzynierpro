@@ -2,7 +2,7 @@ import { POLISH_LANGUAGE } from '@inzpro/config/localization'
 import { mobileAppStoreId } from '@inzpro/config/mobile'
 import { TWITTER_HANDLE } from '@inzpro/config/social'
 import { DefaultCatchBoundary } from '@inzpro/ui/components/default-catch-boundary'
-import { NotFound } from '@inzpro/ui/components/not-found'
+import { NotFoundPage } from '@inzpro/ui/components/not-found-page'
 import { Toaster } from '@inzpro/ui/components/sonner'
 import { CookieConsent, type TrackingConsent } from '@inzpro/ui/containers/cookie-consent'
 import { ThemeProvider } from '@inzpro/ui/providers/theme-provider'
@@ -119,21 +119,18 @@ export const Route = createRootRouteWithContext<Context>()({
   errorComponent: props => {
     return (
       <DefaultCatchBoundary
-        homeHref="/"
         title="Coś poszło nie tak"
         description="Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę."
         goBackText="Wstecz"
-        homeText="Strona główna"
         tryAgainText="Spróbuj ponownie"
         {...props}
       />
     )
   },
   notFoundComponent: () => (
-    <NotFound
+    <NotFoundPage
       homeHref="/"
-      title="404"
-      subtitle="Nie znaleziono strony"
+      title="Nie znaleziono strony"
       description="Strona, której szukasz nie istnieje lub została przeniesiona."
       goBack="Wróć"
       goHome="Zacznij od początku"

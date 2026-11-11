@@ -24,7 +24,7 @@ export const SendOTPAgainButton = () => {
           })
         }
         variant="link"
-        size="bare"
+        size="empty"
         disabled={mutation.isPending}
       >
         Wyślij ponownie

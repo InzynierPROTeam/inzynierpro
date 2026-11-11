@@ -3,42 +3,39 @@ import { Predicate } from 'effect'
 import * as React from 'react'
 import { tv, type VariantProps } from 'tailwind-variants'
 
-export const buttonVariants = tv({
-  base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-full border border-transparent bg-clip-padding cursor-pointer font-semibold focus-visible:ring-3 aria-invalid:ring-3 active:not-aria-[haspopup]:translate-y-px [&_svg:not([class*='size-'])]:size-4 inline-flex items-center justify-center whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none",
+const buttonVariants = tv({
+  base: "group/button inline-flex shrink-0 items-center justify-center rounded-4xl border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   variants: {
     variant: {
-      primary: 'border-transparent bg-primary text-primary-foreground [a]:hover:bg-primary/80',
-      'primary-foreground':
-        'border-transparent bg-primary-foreground text-primary [a]:hover:bg-primary-foreground/80',
+      primary: 'bg-primary text-primary-foreground hover:bg-primary/80',
       secondary:
-        'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
-      outline: 'border-border text-foreground hover:bg-primary/3 bg-transparent',
-      'outline-primary': 'border-primary text-primary hover:bg-primary/5',
-      'outline-accent': 'border-accent text-accent hover:bg-accent/5',
-      'outline-secondary': 'border-secondary text-secondary hover:bg-secondary/5',
-      background: 'border-border bg-background text-foreground hover:bg-background/80',
+        'bg-secondary text-secondary-foreground hover:bg-secondary/90 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
+      outline:
+        'border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-transparent dark:hover:bg-input/30',
+      'border-primary': 'border-primary text-primary hover:bg-primary/5',
+      'border-secondary': 'border-secondary text-secondary hover:bg-secondary/5',
       ghost:
-        'border-transparent hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 aria-expanded:bg-muted aria-expanded:text-foreground',
+        'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
       destructive:
-        'border-transparent bg-destructive hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-destructive-foreground focus-visible:border-destructive/40',
-      link: 'border-0 text-primary underline-offset-4 hover:underline',
+        'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
+      link: 'text-primary underline-offset-4 hover:underline',
 
-      blank: '',
+      empty: '',
     },
     size: {
-      bare: '',
+      empty: '',
 
-      xl: "gap-2.5 px-4 py-2.5 text-lg [&_svg:not([class*='size-'])]:size-5",
-      lg: "gap-2 px-4 py-1.5 text-base [&_svg:not([class*='size-'])]:size-4.5",
-      md: "gap-1.5 px-3 py-1.25 text-base [&_svg:not([class*='size-'])]:size-4",
-      sm: "gap-1 px-2.5 py-1.25 text-sm [&_svg:not([class*='size-'])]:size-3.5",
-      xs: "gap-1 px-2 py-1 text-xs [&_svg:not([class*='size-'])]:size-3",
+      xl: "h-11 gap-1.5 px-5.5 has-data-[icon=inline-end]:pe-3.5 has-data-[icon=inline-start]:ps-3.5 [&_svg:not([class*='size-'])]:size-4.5",
+      lg: "h-10 gap-1.5 px-4 has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3 [&_svg:not([class*='size-'])]:size-4",
+      md: "h-9 gap-1.5 px-3 has-data-[icon=inline-end]:pe-2.5 has-data-[icon=inline-start]:ps-2.5 [&_svg:not([class*='size-'])]:size-3.5",
+      sm: "h-8 gap-1 px-3 has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2 [&_svg:not([class*='size-'])]:size-3",
+      xs: "h-7 gap-1 px-2.5 text-xs has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2 [&_svg:not([class*='size-'])]:size-2.5",
 
-      'icon-xl': "size-12 [&_svg:not([class*='size-'])]:size-6",
-      'icon-lg': "size-10 [&_svg:not([class*='size-'])]:size-5",
-      'icon-md': "size-8 [&_svg:not([class*='size-'])]:size-4",
-      'icon-sm': "size-7 [&_svg:not([class*='size-'])]:size-3.5",
-      'icon-xs': "size-6 [&_svg:not([class*='size-'])]:size-3",
+      'icon-xl': "size-12 [&_svg:not([class*='size-'])]:size-5",
+      'icon-lg': "size-10 [&_svg:not([class*='size-'])]:size-4",
+      'icon-md': "size-8 [&_svg:not([class*='size-'])]:size-3",
+      'icon-sm': "size-7 [&_svg:not([class*='size-'])]:size-3",
+      'icon-xs': "size-6 [&_svg:not([class*='size-'])]:size-2.5",
     },
   },
   defaultVariants: {
@@ -49,12 +46,9 @@ export const buttonVariants = tv({
 
 export type ButtonVariantProps = VariantProps<typeof buttonVariants>
 
-export function Button({
-  className,
-  variant = 'primary',
-  size = 'md',
-  ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+export type ButtonProps = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>
+
+function Button({ className, variant, size, ...props }: ButtonProps) {
   return (
     <ButtonPrimitive
       data-slot="button"
@@ -69,3 +63,5 @@ export function Button({
     />
   )
 }
+
+export { Button, buttonVariants }

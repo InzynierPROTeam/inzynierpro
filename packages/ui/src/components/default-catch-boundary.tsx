@@ -1,48 +1,60 @@
+import { AlertCircleIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import { Button, buttonVariants } from './button.js'
+import { Button } from './button.js'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './empty.js'
+import { IconWrapper } from './icon-wrapper.js'
 
 type DefaultCatchBoundaryProps = {
   title: ReactNode
   description: ReactNode
-  homeText: ReactNode
   goBackText: ReactNode
   tryAgainText: ReactNode
-  homeHref: string
   reset: VoidFunction
+  media?: React.ReactNode
 }
 
 export function DefaultCatchBoundary({
   title,
   description,
-  homeText,
   goBackText,
   tryAgainText,
-  homeHref,
   reset,
+  media,
 }: DefaultCatchBoundaryProps) {
   return (
-    <section
-      className="layout-section flex-1 items-center justify-center gap-6 text-center text-balance"
-      role="alert"
-    >
-      <h2 className="text-3xl font-bold">{title}</h2>
-      <p className="text-current/70">{description}</p>
-      <div className="flex flex-wrap items-center gap-4">
-        <a
-          href={homeHref}
-          className={buttonVariants({ variant: 'outline-primary' })}
-        >
-          {homeText}
-        </a>
+    <Empty className="max-w-xl self-center">
+      <EmptyHeader>
+        <EmptyMedia>
+          {media !== null ? (
+            media ? (
+              media
+            ) : (
+              <IconWrapper>
+                <AlertCircleIcon />
+              </IconWrapper>
+            )
+          ) : null}
+        </EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent className="flex-row justify-center">
         <Button
-          variant="outline-primary"
+          variant="border-primary"
           onClick={() => window.history.back()}
         >
           {goBackText}
         </Button>
         <Button onClick={reset}>{tryAgainText}</Button>
-      </div>
-    </section>
+      </EmptyContent>
+    </Empty>
   )
 }
