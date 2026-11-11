@@ -23,11 +23,6 @@ jobs:
           cp apps/api/.env.test.example apps/api/.env.test
           cp apps/platform/.env.example apps/platform/.env
           cp packages/db/.env.test.example packages/db/.env.test
-      - run: pnpm --filter @inzpro/api services:test:up
-      - run: pnpm --filter @inzpro/api migrate:test
       - run: pnpm check:ci
       - name: Verify checks did not modify tracked sources
         run: git diff --exit-code
-      - name: Stop test services
-        if: always()
-        run: pnpm --filter @inzpro/api services:test:down

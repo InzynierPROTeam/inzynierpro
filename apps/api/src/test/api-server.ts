@@ -1,4 +1,3 @@
-import { randomInt } from 'node:crypto'
 import { createServer } from 'node:http'
 
 import { NodeHttpServer } from '@effect/platform-node'
@@ -17,6 +16,7 @@ import {
   Logger,
   Option,
   Predicate,
+  Random,
   Redacted,
   Scope,
   Tracer,
@@ -44,9 +44,14 @@ export type TestVisitor = {
   readonly session: () => Promise<Response>
 }
 
-// Each visitor has its own random client address, so rate-limit buckets do not leak between tests,
-// test files running in parallel, or consecutive runs within one limit window.
-export const uniqueAddress = () => `10.${randomInt(256)}.${randomInt(256)}.${randomInt(256)}`
+// Each visitor has its own random client address, so rate-limit buckets do not leak between tests
+// or test files running in parallel.
+const octet = Random.nextIntBetween(0, 255)
+
+export const uniqueAddress = () =>
+  Effect.runSync(
+    Effect.all([octet, octet, octet]).pipe(Effect.map(parts => `10.${parts.join('.')}`)),
+  )
 
 // The API addresses sign-in emails to a single plain address.
 const isSentTo = (message: EmailMessage, email: string) =>
