@@ -1,6 +1,6 @@
 import * as React from 'react'
+import { cn } from 'tailwind-variants'
 import { Label } from '~ui/components/label.js'
-import { cn } from '~ui/utils/styles.js'
 
 export function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (

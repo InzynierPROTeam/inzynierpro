@@ -1,7 +1,7 @@
 import { OTPInput, OTPInputContext } from 'input-otp'
 import { MinusIcon } from 'lucide-react'
 import * as React from 'react'
-import { cn } from '~ui/utils/styles.js'
+import { cn } from 'tailwind-variants'
 
 function InputOTP({
   className,

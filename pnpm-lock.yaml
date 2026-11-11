@@ -252,9 +252,6 @@ catalogs:
     better-auth:
       specifier: 1.7.18
       version: 1.7.18
-    class-variance-authority:
-      specifier: 0.7.1
-      version: 0.7.1
     dotenv:
       specifier: 18.0.9
       version: 18.0.9
@@ -318,9 +315,9 @@ catalogs:
     sonner:
       specifier: 2.0.8
       version: 2.0.8
-    tailwind-merge:
-      specifier: 3.7.0
-      version: 3.7.0
+    tailwind-variants:
+      specifier: 4.0.1
+      version: 4.0.1
     tailwindcss:
       specifier: 4.3.4
       version: 4.3.4
@@ -558,9 +555,6 @@ importers:
       '@tanstack/react-start':
         specifier: 'catalog:'
         version: 1.169.4(esbuild@0.28.2)(react-dom@19.3.1)(react@19.3.1)(rolldown@1.2.16)(supports-color@10.2.2)(vite@8.3.6)
-      class-variance-authority:
-        specifier: 'catalog:'
-        version: 0.7.1
       effect:
         specifier: 'catalog:'
         version: 4.1.2
@@ -579,6 +573,9 @@ importers:
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
+      tailwind-variants:
+        specifier: 'catalog:'
+        version: 4.0.1
       ua-parser-js:
         specifier: 'catalog:'
         version: 2.0.10
@@ -791,9 +788,6 @@ importers:
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.46(react-dom@19.3.1)(react@19.3.1)
-      class-variance-authority:
-        specifier: 'catalog:'
-        version: 0.7.1
       effect:
         specifier: 'catalog:'
         version: 4.1.2
@@ -815,9 +809,9 @@ importers:
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1)(react@19.3.1)
-      tailwind-merge:
+      tailwind-variants:
         specifier: 'catalog:'
-        version: 3.7.0
+        version: 4.0.1
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.4.0
@@ -3534,9 +3528,6 @@ packages:
   citty@0.2.2:
     resolution: {integrity: sha512-+6vJA3L98yv+IdfKGZHBNiGW5KHn22e/JwID0Strsz8h4S/csAu/OuICwxrg44k5MRiZHWIo8XXuJgQTriRP4w==}
 
-  class-variance-authority@0.7.1:
-    resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
-
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
     engines: {node: '>=18'}
@@ -4977,8 +4968,9 @@ packages:
     resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
     engines: {node: '>=20'}
 
-  tailwind-merge@3.7.0:
-    resolution: {integrity: sha512-XPPUyAc+cvspz3lHTcR/QgPfW2A0lv/xQNIjX3HGhLR+Nq2lHaLq5MtTesHn8GUr3W3DguT2KT5x3NVgRtYwmA==}
+  tailwind-variants@4.0.1:
+    resolution: {integrity: sha512-VumzgPklIwpneDWtskGuhEqPlfZZ2DeN1nIb2um9DRhk9XBX580s4N84A533j+oHN+dLz274HkKvSjr+64fggA==}
+    engines: {node: '>=16.9.x', pnpm: '>=7.x'}
 
   tailwindcss@4.3.4:
     resolution: {integrity: sha512-PCJZTFFdG+sL3gvnP1Do9o6GbkvH2q0p04xSs3f7cSvmAeK+sttG+/7ncK1fdRwKFfC7n+wDDJaOMBSefkI9ow==}
@@ -7565,10 +7557,6 @@ snapshots:
 
   citty@0.2.2: {}
 
-  class-variance-authority@0.7.1:
-    dependencies:
-      clsx: 2.1.1
-
   cli-cursor@5.0.0:
     dependencies:
       restore-cursor: 5.1.0
@@ -9045,7 +9033,7 @@ snapshots:
 
   tagged-tag@1.0.0: {}
 
-  tailwind-merge@3.7.0: {}
+  tailwind-variants@4.0.1: {}
 
   tailwindcss@4.3.4: {}
 

@@ -18,7 +18,6 @@
     "@fontsource-variable/nunito-sans": "catalog:",
     "@inzpro/react-utils": "workspace:*",
     "@tanstack/react-router": "catalog:",
-    "class-variance-authority": "catalog:",
     "effect": "catalog:",
     "input-otp": "catalog:",
     "lucide-react": "catalog:",
@@ -26,7 +25,7 @@
     "react-cookie-manager": "catalog:",
     "shadcn": "catalog:",
     "sonner": "catalog:",
-    "tailwind-merge": "catalog:",
+    "tailwind-variants": "catalog:",
     "tw-animate-css": "catalog:"
   },
   "devDependencies": {

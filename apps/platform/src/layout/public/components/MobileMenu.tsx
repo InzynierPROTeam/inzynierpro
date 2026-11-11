@@ -1,7 +1,7 @@
 import { useMobileMenu } from '@inzpro/ui/hooks/use-mobile-menu'
 import { ClientOnly } from '@tanstack/react-router'
-import { cx } from 'class-variance-authority'
 import { createPortal } from 'react-dom'
+import { cx } from 'tailwind-variants'
 import { Hamburger } from '~platform/layout/components/Hamburger'
 
 import { NavLinks } from './NavLinks'

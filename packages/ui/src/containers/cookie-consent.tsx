@@ -1,10 +1,10 @@
-import { cx } from 'class-variance-authority'
 import * as React from 'react'
 import {
   CookieManager,
   type CookieCategories,
   type DetailedCookieConsent,
 } from 'react-cookie-manager'
+import { cx } from 'tailwind-variants'
 import { buttonVariants } from '~ui/components/button.js'
 import { useTheme } from '~ui/providers/theme-provider.js'
 

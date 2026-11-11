@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { cn } from '~ui/utils/styles.js'
+import { cn } from 'tailwind-variants'
 
 function Card({
   className,
