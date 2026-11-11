@@ -17,13 +17,13 @@ export type Cursor = typeof Cursor.Type
 
 export const CursorPagination = Schema.Struct({
   cursor: Schema.optional(Cursor),
-  limit: Schema.optional(Schema.NumberFromString.pipe(Schema.decodeTo(PageLimit))),
+  limit: Schema.optional(Schema.FiniteFromString.pipe(Schema.decodeTo(PageLimit))),
 })
 
 export type CursorPagination = typeof CursorPagination.Type
 
 export const OffsetPagination = Schema.Struct({
-  page: Schema.optional(Schema.NumberFromString.pipe(Schema.decodeTo(PageNumber))),
+  page: Schema.optional(Schema.FiniteFromString.pipe(Schema.decodeTo(PageNumber))),
   limit: CursorPagination.fields.limit,
 })
 
@@ -71,8 +71,8 @@ export const decodeCursor = <S extends Schema.Top & { readonly DecodingServices:
   cursor: Cursor | undefined,
 ) =>
   cursor === undefined
-    ? Effect.succeed(undefined)
-    : Schema.decodeUnknownEffect(key)(cursor).pipe(Effect.mapError(() => new InvalidCursor()))
+    ? Effect.undefined
+    : Schema.decodeEffect(key)(cursor).pipe(Effect.mapError(() => new InvalidCursor()))
 
 export const makeCursorPage = <A>(
   rows: ReadonlyArray<A>,
@@ -96,5 +96,5 @@ export const makeCursorPage = <A>(
 export const makeOffsetPage = <A>(data: ReadonlyArray<A>, total: number, req: OffsetPagination) => {
   const pagination = resolveOffsetPagination(req)
 
-  return { data, meta: Schema.decodeUnknownSync(OffsetPaginationMeta)({ ...pagination, total }) }
+  return { data, meta: Schema.decodeSync(OffsetPaginationMeta)({ ...pagination, total }) }
 }
