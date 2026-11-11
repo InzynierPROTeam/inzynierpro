@@ -2,7 +2,7 @@ import { Unauthenticated } from '@inzpro/api-contracts/middleware/authentication
 import { failingAdapter } from '@opencoredev/email-sdk/testing'
 import { Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { sessionCookie, startTestApi, type TestApi } from '~api/test/api-server.js'
+import { sessionCookie, startTestApi, type TestApi, uniqueAddress } from '~api/test/api-server.js'
 
 let api: TestApi
 
@@ -126,6 +126,21 @@ describe('Redis rate-limit storage', () => {
 
     expect((await visitor.sendCode(uniqueEmail('limited'))).error?.status).toBe(429)
     expect(api.sentEmails.length - sent).toBe(3)
+  })
+
+  test('only the trusted client address header separates clients', async () => {
+    const address = uniqueAddress()
+
+    // Headers the proxy does not set are ignored, so forging them does not open a new bucket.
+    const forged = (forgedAddress: string) =>
+      api.visitor({ 'x-forwarded-for': address, 'cf-connecting-ip': forgedAddress })
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      expect((await forged(uniqueAddress()).sendCode(uniqueEmail('forged'))).error).toBeNull()
+    }
+
+    expect((await forged(uniqueAddress()).sendCode(uniqueEmail('forged'))).error?.status).toBe(429)
+    expect((await api.visitor().sendCode(uniqueEmail('other-client'))).error).toBeNull()
   })
 })
 

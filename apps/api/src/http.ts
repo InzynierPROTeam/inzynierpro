@@ -58,6 +58,7 @@ export const httpServerLayer = (config: Env) =>
         baseUrl: config.BETTER_AUTH_URL,
         trustedOrigins: config.TRUSTED_ORIGINS,
         cookiesDomain: config.COOKIES_DOMAIN,
+        trustedClientIpHeader: config.TRUSTED_CLIENT_IP_HEADER,
         google: config.GOOGLE,
       }),
     ),

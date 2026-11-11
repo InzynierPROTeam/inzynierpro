@@ -21,6 +21,11 @@ export type AuthConfig = {
   readonly baseUrl: URL
   readonly trustedOrigins: ReadonlyArray<string>
   readonly cookiesDomain: Option.Option<string>
+  /**
+   * The request header with the client address set by the proxy, e.g. `cf-connecting-ip`. Without
+   * it, the sign-in rate limit cannot tell clients apart and shares one bucket per path.
+   */
+  readonly trustedClientIpHeader: Option.Option<string>
   readonly google: Option.Option<{
     readonly clientId: string
     readonly clientSecret: Redacted.Redacted
@@ -135,8 +140,9 @@ const makeAuth = (
     advanced: {
       // Keep callback/origin validation enabled in tests too (Better Auth skips it by default).
       disableOriginCheck: false,
+      // Only the header set by our proxy is trusted; any other one can be forged by the client.
       ipAddress: {
-        ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for', 'x-real-ip'],
+        ipAddressHeaders: Option.toArray(config.trustedClientIpHeader),
       },
       // PostgreSQL generates uuidv7 ids. Ids Better Auth must generate itself are UUIDs too.
       database: { generateId: 'uuid' },

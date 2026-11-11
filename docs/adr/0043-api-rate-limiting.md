@@ -6,4 +6,4 @@ Każdy handler jawnie wywołuje limit przed swoją pracą, tak jak w V1. Nie sto
 
 Przy niedostępnym Redis odczyty są obsługiwane dalej z ostrzeżeniem w logu i na spanie, a zapisy kończą się błędem serwera. Odczyty zalogowanych i tak wymagają sesji z Redis, więc w praktyce fail-open dotyczy publicznego katalogu.
 
-Adres klienta pochodzi wyłącznie z nagłówka wskazanego w `TRUSTED_CLIENT_IP_HEADER`, na produkcji `cf-connecting-ip`. Nagłówek jest wiarygodny tylko wtedy, gdy origin przyjmuje ruch wyłącznie z Cloudflare; bez konfiguracji używamy adresu gniazda. Globalnym zabezpieczeniem przed zalewem żądań jest reguła rate limitingu Cloudflare WAF dla całego API.
+Adres klienta pochodzi wyłącznie z nagłówka wskazanego w `TRUSTED_CLIENT_IP_HEADER`, na produkcji `cf-connecting-ip`. Nagłówek jest wiarygodny tylko wtedy, gdy origin przyjmuje ruch wyłącznie z Cloudflare; bez konfiguracji używamy adresu gniazda. Better Auth korzysta z tego samego nagłówka; bez niego jego limity logowania obejmują wszystkich klientów jednym licznikiem. Globalnym zabezpieczeniem przed zalewem żądań jest reguła rate limitingu Cloudflare WAF dla całego API.

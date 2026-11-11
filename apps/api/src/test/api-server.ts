@@ -120,8 +120,14 @@ export const startTestApi = async ({ emailAdapter, google }: TestApiOptions = {}
   await redis.connect()
 
   // A client of the API: the shared Better Auth client over a fetch that keeps cookies.
-  const visitor = (): TestVisitor => {
-    const jar = makeCookieJar({ origin: platformOrigin, 'x-forwarded-for': uniqueAddress() })
+  // Extra headers are sent with every request, e.g. a forged client address.
+  const visitor = (headers: Record<string, string> = {}): TestVisitor => {
+    const jar = makeCookieJar({
+      origin: platformOrigin,
+      'x-forwarded-for': uniqueAddress(),
+      ...headers,
+    })
+
     const auth = getAuthClient({ baseURL: baseUrl, fetchOptions: { customFetchImpl: jar.fetch } })
 
     return {
