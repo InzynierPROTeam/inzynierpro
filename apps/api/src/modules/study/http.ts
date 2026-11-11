@@ -6,6 +6,7 @@ import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
 import { Effect, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
+import { accountReadLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { PreparationReader } from '~api/modules/preparation/preparation.reader.js'
 import { PreparationReaderLive } from '~api/modules/preparation/preparation.reader.postgres.js'
@@ -28,77 +29,95 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
 
     return handlers
       .handle('GetDocuments', ({ query, params }) =>
-        Effect.flatMap(CurrentUser, user =>
-          getDocuments(user.id, params.qualificationPathId, query),
-        ).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: logAndFailInternalServerError('Could not read preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-            StudyReadError: logAndFailInternalServerError('Could not read study material.'),
-            InvalidCursor: () =>
-              Effect.fail(
-                new InvalidRequest({
-                  type: 'invalid_request',
-                  message: 'Invalid pagination cursor.',
-                }),
-              ),
-          }),
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              getDocuments(user.id, params.qualificationPathId, query),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+                StudyReadError: logAndFailInternalServerError('Could not read study material.'),
+                InvalidCursor: () =>
+                  Effect.fail(
+                    new InvalidRequest({
+                      type: 'invalid_request',
+                      message: 'Invalid pagination cursor.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('GetSessionPreview', ({ params }) =>
-        Effect.flatMap(CurrentUser, user =>
-          getSessionPreview(user.id, params.qualificationPathId, params.documentId),
-        ).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            PreparationReadError: logAndFailInternalServerError('Could not read preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-            StudyReadError: logAndFailInternalServerError('Could not read study material.'),
-            StudyDocumentNotFound: () =>
-              Effect.fail(
-                new DocumentNotFound({
-                  type: 'document_not_found',
-                  message: 'The selected material was not found.',
-                }),
-              ),
-          }),
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              getSessionPreview(user.id, params.qualificationPathId, params.documentId),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+                StudyReadError: logAndFailInternalServerError('Could not read study material.'),
+                StudyDocumentNotFound: () =>
+                  Effect.fail(
+                    new DocumentNotFound({
+                      type: 'document_not_found',
+                      message: 'The selected material was not found.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
       .handle('GetOralMaterials', ({ query, params }) =>
-        Effect.flatMap(CurrentUser, user =>
-          getOralMaterials(user.id, params.qualificationPathId, query),
-        ).pipe(
-          Effect.provide(dependencies),
-          Effect.catchTags({
-            InvalidCursor: () =>
-              Effect.fail(
-                new InvalidRequest({
-                  type: 'invalid_request',
-                  message: 'Invalid pagination cursor.',
-                }),
-              ),
-            PreparationReadError: logAndFailInternalServerError('Could not read preparation data.'),
-            PathPermissionDenied: () =>
-              Effect.fail(
-                new PathAccessDenied({
-                  type: 'path_access_denied',
-                  message: 'Your active path does not include this material.',
-                }),
-              ),
-          }),
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              getOralMaterials(user.id, params.qualificationPathId, query),
+            ).pipe(
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                InvalidCursor: () =>
+                  Effect.fail(
+                    new InvalidRequest({
+                      type: 'invalid_request',
+                      message: 'Invalid pagination cursor.',
+                    }),
+                  ),
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+              }),
+            ),
+          ),
         ),
       )
   }),

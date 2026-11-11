@@ -184,3 +184,9 @@ export class InternalServerError extends Schema.TaggedError<
   errorFields('internal_server_error'),
   InternalServerErrorAnnotations(),
 ) {}
+
+// Shared by every rate-limited endpoint; `retry-after` and `x-ratelimit-*` headers carry the timing.
+export class RateLimitExceeded extends Schema.TaggedError<
+  RateLimitExceeded,
+  { readonly brand: unique symbol }
+>()('RateLimitExceeded', errorFields('rate_limit_exceeded'), TooManyRequestsAnnotations()) {}

@@ -1,5 +1,9 @@
 import { HttpApiEndpoint, HttpApiGroup } from 'effect/http-api'
-import { InternalServerError, InvalidRequest } from '~api-contracts/utils/api-error.js'
+import {
+  InternalServerError,
+  InvalidRequest,
+  RateLimitExceeded,
+} from '~api-contracts/utils/api-error.js'
 
 import {
   QualificationKindsQuery,
@@ -20,7 +24,7 @@ export const ListSpecializationsEndpoint = HttpApiEndpoint.get(
   {
     query: SpecializationsQuery,
     success: SpecializationsResponse,
-    error: [InternalServerError, InvalidRequest],
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest],
   },
 )
 
@@ -30,7 +34,7 @@ export const ListQualificationKindsEndpoint = HttpApiEndpoint.get(
   {
     query: QualificationKindsQuery,
     success: QualificationKindsResponse,
-    error: [InternalServerError, InvalidRequest],
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest],
   },
 )
 
@@ -40,7 +44,7 @@ export const ListQualificationScopesEndpoint = HttpApiEndpoint.get(
   {
     query: QualificationScopesQuery,
     success: QualificationScopesResponse,
-    error: [InternalServerError, InvalidRequest],
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest],
   },
 )
 
@@ -50,7 +54,7 @@ export const ResolveQualificationPathEndpoint = HttpApiEndpoint.get(
   {
     query: ResolvePathQuery,
     success: ResolvedPathResponse,
-    error: [InternalServerError, InvalidRequest],
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest],
   },
 )
 

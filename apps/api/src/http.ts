@@ -6,12 +6,14 @@ import { databaseLayer } from '@inzpro/db'
 import { pgPoolLayer } from '@inzpro/db/pool'
 import { layerResend as EmailResendLayer } from '@inzpro/email/email-service'
 import { layer as RedisLayer } from '@inzpro/redis'
+import { layer as RateLimiterLayer } from '@inzpro/redis/rate-limiter'
 import { Effect, Layer, Logger, References } from 'effect'
-import { SecureRandom } from 'effect/crypto'
+import { Digest, SecureRandom } from 'effect/crypto'
 import { HttpRouter, HttpServer } from 'effect/http'
 import { ApiLive } from '~api/api.js'
 import { env, type Env } from '~api/lib/env.js'
 import { observabilityLayer, untracedRequestsLayer } from '~api/lib/observability.js'
+import { RateLimitHeadersMiddleware, TrustedClientIpHeader } from '~api/lib/rate-limit.js'
 import { ApiErrorMiddleware } from '~api/middleware/api-error.js'
 import { RequestIdMiddleware } from '~api/middleware/request-id.js'
 import { SecureHeadersMiddleware } from '~api/middleware/secure-headers.js'
@@ -27,11 +29,24 @@ export const httpServerLayer = (config: Env) =>
         allowedMethods: ['GET', 'POST'],
         // Effect's HTTP client adds trace headers to every request; the server continues the trace.
         allowedHeaders: ['content-type', 'traceparent', 'b3'],
-        exposedHeaders: ['x-request-id', 'x-retry-after'],
+        exposedHeaders: [
+          'x-request-id',
+          'x-retry-after',
+          'retry-after',
+          'x-ratelimit-limit',
+          'x-ratelimit-remaining',
+          'x-ratelimit-reset',
+        ],
         credentials: true,
       }),
       HttpRouter.middleware(
-        app => app.pipe(ApiErrorMiddleware, RequestIdMiddleware, SecureHeadersMiddleware),
+        app =>
+          app.pipe(
+            ApiErrorMiddleware,
+            RateLimitHeadersMiddleware,
+            RequestIdMiddleware,
+            SecureHeadersMiddleware,
+          ),
         { global: true },
       ),
     ),
@@ -47,6 +62,7 @@ export const httpServerLayer = (config: Env) =>
         google: config.GOOGLE,
       }),
     ),
+    Layer.provide(RateLimiterLayer),
     // Merged so tests can reach the connections, for example to simulate a Redis outage.
     Layer.provideMerge(
       Layer.mergeAll(
@@ -55,7 +71,12 @@ export const httpServerLayer = (config: Env) =>
         RedisLayer({ url: config.REDIS_URL }),
       ),
     ),
-    Layer.provide([SecureRandom.layerWebCrypto, untracedRequestsLayer]),
+    Layer.provide([
+      SecureRandom.layerWebCrypto,
+      Digest.layerWebCrypto,
+      untracedRequestsLayer,
+      Layer.succeed(TrustedClientIpHeader, config.TRUSTED_CLIENT_IP_HEADER),
+    ]),
   )
 
 export const HttpLive = Layer.unwrap(
