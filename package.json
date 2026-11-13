@@ -18,6 +18,7 @@
     "lint:fix": "effect-tsgo oxlint --type-aware --fix",
     "check": "pnpm lint:fix && pnpm format && pnpm type-check && pnpm test && pnpm build",
     "test": "scripts/with-test-services.sh turbo test",
+    "test:e2e": "scripts/with-test-services.sh pnpm --filter @inzpro/e2e test:e2e",
     "prepare": "effect-tsgo patch --oxlint && (test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky)",
     "check:ci": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build"
   },

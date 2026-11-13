@@ -80,3 +80,8 @@ yarn-error.log*
 .claude/settings.local.json
 
 apps/video/build
+
+# e2e
+apps/e2e/.outbox/
+apps/e2e/test-results/
+apps/e2e/playwright-report/

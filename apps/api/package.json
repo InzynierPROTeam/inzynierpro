@@ -17,7 +17,8 @@
     "services:test:up": "docker compose --env-file .env.test -p inzpro-test -f ../../docker-compose.test.yml up -d --wait --force-recreate",
     "services:test:down": "docker compose --env-file .env.test -p inzpro-test -f ../../docker-compose.test.yml down --volumes --remove-orphans",
     "seed:technical": "turbo build --filter=@inzpro/api^... && tsx src/seed/main.ts",
-    "seed:technical:test": "turbo build --filter=@inzpro/api^... && NODE_ENV=test tsx src/seed/main.ts"
+    "seed:technical:test": "turbo build --filter=@inzpro/api^... && NODE_ENV=test tsx src/seed/main.ts",
+    "e2e:serve": "turbo build --filter=@inzpro/api^... && NODE_ENV=test tsx src/test/e2e-server.ts"
   },
   "dependencies": {
     "@effect/platform-node": "catalog:",

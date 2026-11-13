@@ -1,0 +1,17 @@
+{
+  "name": "@inzpro/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "type-check": "effect-tsgo tsc --noEmit"
+  },
+  "devDependencies": {
+    "@inzpro/api-contracts": "workspace:*",
+    "@inzpro/auth-client": "workspace:*",
+    "@inzpro/testing": "workspace:*",
+    "@playwright/test": "catalog:",
+    "effect": "catalog:"
+  }
+}

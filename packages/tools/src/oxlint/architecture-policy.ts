@@ -44,6 +44,9 @@ export const applicationDependencies = {
     'config',
   ],
   platform: [...clientDependencies, 'ui'],
+  // Browser tests drive the running applications: they sign in through the shared auth client and
+  // type API requests with the contracts.
+  e2e: ['api-contracts', 'auth-client'],
   admin: [...clientDependencies, 'ui'],
   web: [...clientDependencies, 'ui'],
   mobile: [...clientDependencies, 'mobile-ui'],
