@@ -1,5 +1,4 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { GoalChange } from '@inzpro/domain/modules/preparation/onboarding'
 import { nextUserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Equal } from 'effect'
@@ -9,6 +8,7 @@ import { QualificationPathsRepository } from '~api/modules/qualification-paths/q
 
 import { StaleExamGoal, StalePathConfiguration } from './errors.js'
 import { requirePathAccess } from './path-access.policy.js'
+import type { GoalChange } from './preparation.model.js'
 import { PreparationRepository } from './preparation.repository.js'
 
 export const changeGoal = Effect.fn('Preparation.changeGoal')(function* (

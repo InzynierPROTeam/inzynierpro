@@ -7,7 +7,13 @@ import { currentSessionQueryOptions, identityKeys } from '~queries/modules/ident
 import { withQueryClient } from '~queries/test/query-client.js'
 
 const sessionPath = '/api/v1/identity/session'
-const user = { id: '0190f6a2-9c1d-7c3e-8a4b-1f2e3d4c5b6a', email: 'kandydat@example.com', name: '' }
+
+const user = {
+  id: '0190f6a2-9c1d-7c3e-8a4b-1f2e3d4c5b6a',
+  email: 'kandydat@example.com',
+  name: '',
+  image: null,
+}
 
 test('the current session is cached under the identity module key', () =>
   withHttpServer(

@@ -2,6 +2,7 @@ import { HttpApiEndpoint, HttpApiGroup } from 'effect/http-api'
 import { Authentication } from '~api-contracts/middleware/authentication/api.js'
 import {
   PathAccessDenied,
+  PathLimitReached,
   InvalidPathConfiguration,
   GoalConflict,
 } from '~api-contracts/modules/preparation/errors.js'
@@ -18,7 +19,6 @@ import {
   GoalOptionsQuery,
   PathParams,
   PathsQuery,
-  SelectPathPayload,
 } from './requests.js'
 import {
   GoalHistoryResponse,
@@ -34,21 +34,10 @@ export const GetPathsEndpoint = HttpApiEndpoint.get('GetPaths', '/paths', {
   error: [InternalServerError, RateLimitExceeded, InvalidRequest],
 })
 
-export const GetSelectedPathEndpoint = HttpApiEndpoint.get('GetSelectedPath', '/selection', {
-  success: PathResponse,
-  error: [InternalServerError, RateLimitExceeded],
-})
-
 export const GetPathEndpoint = HttpApiEndpoint.get('GetPath', '/paths/:qualificationPathId', {
   params: PathParams,
   success: PathResponse,
   error: [InternalServerError, RateLimitExceeded],
-})
-
-export const SelectPathEndpoint = HttpApiEndpoint.post('SelectPath', '/selection', {
-  payload: SelectPathPayload,
-  success: PathMutationResponse,
-  error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
 })
 
 export const CompleteOnboardingEndpoint = HttpApiEndpoint.post(
@@ -57,7 +46,7 @@ export const CompleteOnboardingEndpoint = HttpApiEndpoint.post(
   {
     payload: CompleteOnboardingPayload,
     success: PathMutationResponse,
-    error: [InternalServerError, RateLimitExceeded, InvalidPathConfiguration],
+    error: [InternalServerError, RateLimitExceeded, InvalidPathConfiguration, PathLimitReached],
   },
 )
 
@@ -132,9 +121,7 @@ export const GetGoalOptionsEndpoint = HttpApiEndpoint.get(
 
 export const PreparationApi = HttpApiGroup.make('Preparation')
   .add(GetPathsEndpoint)
-  .add(GetSelectedPathEndpoint)
   .add(GetPathEndpoint)
-  .add(SelectPathEndpoint)
   .add(CompleteOnboardingEndpoint)
   .add(ArchivePathEndpoint)
   .add(RestorePathEndpoint)

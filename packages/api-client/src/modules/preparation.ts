@@ -1,8 +1,6 @@
 import type {
   GetPathsEndpoint,
-  GetSelectedPathEndpoint,
   GetPathEndpoint,
-  SelectPathEndpoint,
   CompleteOnboardingEndpoint,
   ArchivePathEndpoint,
   RestorePathEndpoint,
@@ -23,15 +21,6 @@ export type GetPathsRes = Effect.Success<ReturnType<typeof getPaths>>
 
 export type GetPathsError = Effect.Error<ReturnType<typeof getPaths>>
 
-export const getSelectedPath = (req: GetSelectedPathRequest = {}) =>
-  apiAction(api => api.Preparation.GetSelectedPath(req))
-
-export type GetSelectedPathRequest = InferEndpointRequest<typeof GetSelectedPathEndpoint>
-
-export type GetSelectedPathRes = Effect.Success<ReturnType<typeof getSelectedPath>>
-
-export type GetSelectedPathError = Effect.Error<ReturnType<typeof getSelectedPath>>
-
 export const getPath = (req: GetPathRequest) => apiAction(api => api.Preparation.GetPath(req))
 
 export type GetPathRequest = InferEndpointRequest<typeof GetPathEndpoint>
@@ -39,15 +28,6 @@ export type GetPathRequest = InferEndpointRequest<typeof GetPathEndpoint>
 export type GetPathRes = Effect.Success<ReturnType<typeof getPath>>
 
 export type GetPathError = Effect.Error<ReturnType<typeof getPath>>
-
-export const selectPath = (req: SelectPathRequest) =>
-  apiAction(api => api.Preparation.SelectPath(req))
-
-export type SelectPathRequest = InferEndpointRequest<typeof SelectPathEndpoint>
-
-export type SelectPathRes = Effect.Success<ReturnType<typeof selectPath>>
-
-export type SelectPathError = Effect.Error<ReturnType<typeof selectPath>>
 
 export const completeOnboarding = (req: CompleteOnboardingRequest) =>
   apiAction(api => api.Preparation.CompleteOnboarding(req))

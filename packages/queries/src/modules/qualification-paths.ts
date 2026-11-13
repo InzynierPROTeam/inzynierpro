@@ -22,42 +22,48 @@ export const qualificationPathsKeys = {
   resolve: () => [...qualificationPathsKeys.all, 'resolve'] as const,
   listSpecializations: (req: ListSpecializationsRequest) =>
     [...qualificationPathsKeys.specializations(), 'listSpecializations', req] as const,
+  listSpecializationsInfinite: (req: ListSpecializationsRequest) =>
+    [...qualificationPathsKeys.listSpecializations(req), 'infinite'] as const,
   listQualificationKinds: (req: ListQualificationKindsRequest) =>
     [...qualificationPathsKeys.qualificationKinds(), 'listQualificationKinds', req] as const,
+  listQualificationKindsInfinite: (req: ListQualificationKindsRequest) =>
+    [...qualificationPathsKeys.listQualificationKinds(req), 'infinite'] as const,
   listQualificationScopes: (req: ListQualificationScopesRequest) =>
     [...qualificationPathsKeys.qualificationScopes(), 'listQualificationScopes', req] as const,
+  listQualificationScopesInfinite: (req: ListQualificationScopesRequest) =>
+    [...qualificationPathsKeys.listQualificationScopes(req), 'infinite'] as const,
   resolveQualificationPath: (req: ResolveQualificationPathRequest) =>
     [...qualificationPathsKeys.resolve(), 'resolveQualificationPath', req] as const,
 }
 
-export const specializationsQueryOptions = (
+export const specializationsInfiniteQueryOptions = (
   httpClient: HttpClient.HttpClient,
   req: ListSpecializationsRequest,
 ) =>
   effectInfiniteQueryOptions(
-    qualificationPathsKeys.listSpecializations(req),
+    qualificationPathsKeys.listSpecializationsInfinite(req),
     cursor => listSpecializations({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
   )
 
-export const qualificationKindsQueryOptions = (
+export const qualificationKindsInfiniteQueryOptions = (
   httpClient: HttpClient.HttpClient,
   req: ListQualificationKindsRequest,
 ) =>
   effectInfiniteQueryOptions(
-    qualificationPathsKeys.listQualificationKinds(req),
+    qualificationPathsKeys.listQualificationKindsInfinite(req),
     cursor => listQualificationKinds({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
   )
 
-export const qualificationScopesQueryOptions = (
+export const qualificationScopesInfiniteQueryOptions = (
   httpClient: HttpClient.HttpClient,
   req: ListQualificationScopesRequest,
 ) =>
   effectInfiniteQueryOptions(
-    qualificationPathsKeys.listQualificationScopes(req),
+    qualificationPathsKeys.listQualificationScopesInfinite(req),
     cursor => listQualificationScopes({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
@@ -70,5 +76,35 @@ export const resolveQualificationPathQueryOptions = (
   effectQueryOptions(
     qualificationPathsKeys.resolveQualificationPath(req),
     resolveQualificationPath(req),
+    httpClient,
+  )
+
+export const specializationsQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  req: ListSpecializationsRequest,
+) =>
+  effectQueryOptions(
+    qualificationPathsKeys.listSpecializations(req),
+    listSpecializations(req),
+    httpClient,
+  )
+
+export const qualificationKindsQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  req: ListQualificationKindsRequest,
+) =>
+  effectQueryOptions(
+    qualificationPathsKeys.listQualificationKinds(req),
+    listQualificationKinds(req),
+    httpClient,
+  )
+
+export const qualificationScopesQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  req: ListQualificationScopesRequest,
+) =>
+  effectQueryOptions(
+    qualificationPathsKeys.listQualificationScopes(req),
+    listQualificationScopes(req),
     httpClient,
   )

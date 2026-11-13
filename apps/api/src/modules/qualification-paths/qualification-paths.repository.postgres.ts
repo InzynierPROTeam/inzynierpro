@@ -10,18 +10,6 @@ export const QualificationPathsRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return QualificationPathsRepository.of({
-      createScope: Effect.fn('QualificationPathsRepository.createScope')(function* (scope) {
-        return yield* sql`INSERT INTO qualification_scopes (id,name) VALUES (${scope.id},${scope.name})`.pipe(
-          Effect.asVoid,
-          Effect.mapError(cause => new QualificationPathsWriteError({ cause })),
-        )
-      }),
-      createPath: Effect.fn('QualificationPathsRepository.createPath')(function* (path) {
-        return yield* sql`INSERT INTO qualification_paths (id,name,specialization_id,qualification_kind_id,qualification_scope_id,published) VALUES (${path.id},${path.name},${path.specializationId},${path.qualificationKindId},${path.qualificationScopeId},true)`.pipe(
-          Effect.asVoid,
-          Effect.mapError(cause => new QualificationPathsWriteError({ cause })),
-        )
-      }),
       lock: Effect.fn('QualificationPathsRepository.lock')(function* (id) {
         return yield* sql`SELECT p.id FROM qualification_paths p JOIN specializations s ON s.id=p.specialization_id WHERE p.id=${id} LIMIT 1 FOR SHARE OF p,s`.pipe(
           Effect.asVoid,

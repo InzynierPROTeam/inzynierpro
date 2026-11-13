@@ -2,6 +2,7 @@ import { defineRequestState } from '@better-auth/core/context'
 import { appName } from '@inzpro/config/app'
 import { PgPool } from '@inzpro/db/pool'
 import { Email } from '@inzpro/domain/common/email'
+import { Uuid } from '@inzpro/domain/common/id'
 import { EmailService } from '@inzpro/email/email-service'
 import { getSender } from '@inzpro/email/lib/address'
 import { SignInCode, signInCodeSubject } from '@inzpro/email/templates/sign-in-code'
@@ -10,9 +11,12 @@ import { betterAuth } from 'better-auth'
 import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { emailOTP } from 'better-auth/plugins'
 import { Context, Duration, Effect, Exit, Layer, Match, Option, Redacted, Schema } from 'effect'
+import { SecureRandom } from 'effect/crypto'
 // Better Auth's endpoint types refer to zod internals. This import lets TypeScript name them
 // in the emitted declarations, so `Auth` keeps the full, plugin-aware Better Auth type.
 import type {} from 'zod/v4/core'
+
+import { generateUserName } from './user-name.js'
 
 export const authBasePath = '/api/v1/auth'
 
@@ -86,6 +90,28 @@ const makeAuth = (
       }),
     }),
     database: pool,
+    databaseHooks: {
+      user: {
+        create: {
+          before: async user => {
+            if (user.name.trim() !== '') {
+              return
+            }
+
+            return {
+              data: await runPromise(
+                Effect.gen(function* () {
+                  const secureRandom = yield* SecureRandom.SecureRandom
+                  const nameSeed = yield* Schema.decodeEffect(Uuid)(yield* secureRandom.uuidV4())
+
+                  return { ...user, name: yield* generateUserName(nameSeed) }
+                }).pipe(Effect.provide(SecureRandom.layerWebCrypto)),
+              ),
+            }
+          },
+        },
+      },
+    },
     secondaryStorage: {
       get: key => redis.get(key),
       set: async (key, value, ttl) => {
@@ -144,8 +170,8 @@ const makeAuth = (
       ipAddress: {
         ipAddressHeaders: Option.toArray(config.trustedClientIpHeader),
       },
-      // PostgreSQL generates uuidv7 ids. Ids Better Auth must generate itself are UUIDs too.
-      database: { generateId: 'uuid' },
+      // PostgreSQL owns UUIDv7 generation through the table defaults.
+      database: { generateId: false },
       cookiePrefix: 'inzynierpro',
       crossSubDomainCookies: Option.match(config.cookiesDomain, {
         onNone: () => undefined,

@@ -2,11 +2,13 @@ import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
 import {
   PathAccessDenied,
+  PathLimitReached,
   InvalidPathConfiguration,
   GoalConflict,
 } from '@inzpro/api-contracts/modules/preparation/errors'
 import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
-import { Effect, Layer } from 'effect'
+import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
+import { Effect, Option, Layer, Schema } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
@@ -30,8 +32,9 @@ import { completeOnboarding } from './complete-onboarding.command.js'
 import { extendPath } from './extend-path.command.js'
 import { getGoalHistory } from './goal-history.query.js'
 import { getGoalOptions } from './goal-options.query.js'
+import { PathConfiguration, GoalChange } from './preparation.model.js'
+import { toUserExamGoalDto, toUserQualificationPathDto } from './preparation.presentation.js'
 import { restorePath } from './restore-path.command.js'
-import { selectPath } from './select-path.command.js'
 
 export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers =>
   Effect.gen(function* () {
@@ -56,6 +59,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         limitByUser(accountReadLimit).pipe(
           Effect.andThen(
             Effect.flatMap(CurrentUser, user => preparationReader.paths(user.id, query)).pipe(
+              Effect.map(page => ({ ...page, data: page.data.map(toUserQualificationPathDto) })),
               Effect.provide(dependencies),
               Effect.catchTags({
                 PreparationReadError: logAndFailInternalServerError(
@@ -73,59 +77,23 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           ),
         ),
       )
-      .handle('GetSelectedPath', () =>
-        limitByUser(accountReadLimit).pipe(
-          Effect.andThen(
-            Effect.flatMap(CurrentUser, user => preparationReader.selectedPath(user.id)).pipe(
-              Effect.map(path => ({ path })),
-              Effect.provide(dependencies),
-              Effect.catchTags({
-                PreparationReadError: logAndFailInternalServerError(
-                  'Could not read preparation data.',
-                ),
-              }),
-            ),
-          ),
-        ),
-      )
       .handle('GetPath', ({ params }) =>
         limitByUser(accountReadLimit).pipe(
           Effect.andThen(
             Effect.flatMap(CurrentUser, user =>
               preparationReader.path(user.id, params.qualificationPathId),
             ).pipe(
-              Effect.map(path => ({ path })),
+              Effect.map(path => ({
+                path: Option.match(path, {
+                  onNone: () => null,
+                  onSome: toUserQualificationPathDto,
+                }),
+              })),
               Effect.provide(dependencies),
               Effect.catchTags({
                 PreparationReadError: logAndFailInternalServerError(
                   'Could not read preparation data.',
                 ),
-              }),
-            ),
-          ),
-        ),
-      )
-      .handle('SelectPath', ({ payload }) =>
-        limitByUser(accountWriteLimit).pipe(
-          Effect.andThen(
-            Effect.flatMap(CurrentUser, user =>
-              selectPath(user.id, payload.qualificationPathId),
-            ).pipe(
-              Effect.provide(dependencies),
-              Effect.catchTags({
-                PreparationReadError: logAndFailInternalServerError(
-                  'Could not read preparation data.',
-                ),
-                PreparationWriteError: logAndFailInternalServerError(
-                  'Could not save preparation data.',
-                ),
-                PathPermissionDenied: () =>
-                  Effect.fail(
-                    new PathAccessDenied({
-                      type: 'path_access_denied',
-                      message: 'Your active path does not include this material.',
-                    }),
-                  ),
               }),
             ),
           ),
@@ -134,9 +102,14 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
       .handle('CompleteOnboarding', ({ payload }) =>
         limitByUser(accountWriteLimit).pipe(
           Effect.andThen(
-            Effect.flatMap(CurrentUser, user => completeOnboarding(user.id, payload)).pipe(
+            Effect.flatMap(CurrentUser, user =>
+              Schema.decodeEffect(PathConfiguration)(payload).pipe(
+                Effect.flatMap(configuration => completeOnboarding(user.id, configuration)),
+              ),
+            ).pipe(
               Effect.provide(dependencies),
               Effect.catchTags({
+                SchemaError: logAndFailInternalServerError('Could not decode preparation input.'),
                 PreparationReadError: logAndFailInternalServerError(
                   'Could not read preparation data.',
                 ),
@@ -155,6 +128,13 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
                 ExamCalendarWriteError: logAndFailInternalServerError(
                   'Could not validate exam sessions.',
                 ),
+                UserPathLimitReached: () =>
+                  Effect.fail(
+                    new PathLimitReached({
+                      type: 'path_limit_reached',
+                      message: `You can have at most ${maxUserQualificationPaths} qualification paths, including archived paths.`,
+                    }),
+                  ),
                 StalePathConfiguration: () =>
                   Effect.fail(
                     new InvalidPathConfiguration({
@@ -249,10 +229,13 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
         limitByUser(accountWriteLimit).pipe(
           Effect.andThen(
             Effect.flatMap(CurrentUser, user =>
-              changeGoal(user.id, params.qualificationPathId, payload),
+              Schema.decodeEffect(GoalChange)(payload).pipe(
+                Effect.flatMap(change => changeGoal(user.id, params.qualificationPathId, change)),
+              ),
             ).pipe(
               Effect.provide(dependencies),
               Effect.catchTags({
+                SchemaError: logAndFailInternalServerError('Could not decode preparation input.'),
                 PreparationReadError: logAndFailInternalServerError(
                   'Could not read preparation data.',
                 ),
@@ -300,6 +283,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
             Effect.flatMap(CurrentUser, user =>
               getGoalHistory(user.id, params.qualificationPathId, query),
             ).pipe(
+              Effect.map(page => ({ ...page, data: page.data.map(toUserExamGoalDto) })),
               Effect.provide(dependencies),
               Effect.catchTags({
                 PreparationReadError: logAndFailInternalServerError(

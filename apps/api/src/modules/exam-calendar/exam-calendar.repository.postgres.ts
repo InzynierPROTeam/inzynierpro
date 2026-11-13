@@ -15,7 +15,7 @@ export const ExamCalendarRepositoryLive = Layer.effect(
         const oralPlanningAt = DateTime.formatIso(session.oralPlanningAt)
         const selectionClosesAt = DateTime.formatIso(session.selectionClosesAt)
 
-        return yield* sql`INSERT INTO exam_sessions (id,general_chamber_id,name,written_at,oral_planning_at,selection_closes_at,published) VALUES (${session.id},${session.generalChamberId},${session.name},${writtenAt},${oralPlanningAt},${selectionClosesAt},true)`.pipe(
+        return yield* sql`INSERT INTO exam_sessions (id,general_chamber_id,name,written_at,oral_planning_at,selection_closes_at,is_confirmed,published) VALUES (${session.id},${session.generalChamberId},${session.name},${writtenAt},${oralPlanningAt},${selectionClosesAt},${session.isConfirmed},true)`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new ExamCalendarWriteError({ cause })),
         )

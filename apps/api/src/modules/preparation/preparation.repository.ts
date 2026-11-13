@@ -1,4 +1,4 @@
-import { ApiDateTime } from '@inzpro/domain/common/date-time'
+import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
@@ -25,11 +25,7 @@ export class PreparationRepository extends Context.Service<
       version: UserExamGoalVersion,
       sessionId: ExamSessionId,
       scope: ExamAccessScope,
-      oralDate: Option.Option<ApiDateTime>,
-    ) => Effect.Effect<void, PreparationWriteError>
-    readonly select: (
-      userId: UserId,
-      pathId: QualificationPathId,
+      oralDate: Option.Option<DateTimeUtc>,
     ) => Effect.Effect<void, PreparationWriteError>
     readonly archive: (
       userId: UserId,

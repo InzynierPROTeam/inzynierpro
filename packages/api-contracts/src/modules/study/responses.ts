@@ -7,6 +7,8 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
 
+export const DocumentResponse = Schema.Struct({ document: DocumentQuestionPool })
+
 export const DocumentsResponse = CursorPaginatedResponse(DocumentQuestionPool)
 
 export const SessionPreview = Schema.Struct({
@@ -23,5 +25,7 @@ export const SessionPreview = Schema.Struct({
 })
 
 export type SessionPreview = typeof SessionPreview.Type
+
+export const SessionPreviewResponse = Schema.NullOr(SessionPreview)
 
 export const OralMaterialsResponse = CursorPaginatedResponse(OralQuestionCategory)

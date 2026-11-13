@@ -6,6 +6,7 @@ export const SessionUser = Schema.Struct({
   id: UserId,
   email: Email,
   name: Schema.String,
+  image: Schema.NullOr(Schema.String),
 })
 
 export type SessionUser = typeof SessionUser.Type

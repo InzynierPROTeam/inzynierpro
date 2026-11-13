@@ -47,7 +47,7 @@ await queryClient.invalidateQueries({ queryKey: preparationKeys.paths(userId) })
 await queryClient.invalidateQueries({ queryKey: studyKeys.path(userId, pathId) })
 ```
 
-`path(userId, pathId)` covers every query of that path, without lists or other paths. A change affecting several groups invalidates each explicitly. `preparationKeys` groups onboarding, assignments and goals; `studyKeys` groups personal material reads. A write that changes an assignment's scope or state invalidates that path's group in both modules and the assignment list. Saving the path selection invalidates the selection lookup, plus `paths(userId)` when the list changes too.
+`path(userId, pathId)` covers every query of that path, without lists or other paths. A change affecting several groups invalidates each explicitly. `preparationKeys` groups onboarding, assignments and goals; `studyKeys` groups personal material reads. A write that changes an assignment's scope or state invalidates that path's group in both modules and the assignment list. Path selection is local to each client and has no query key or HTTP mutation. Platform components resolve the stored ID against the complete assignment list fetched with an ordinary query and the configured five-assignment limit. Assignment mutations invalidate `paths(userId)` and the affected path groups.
 
 ## Usage
 
@@ -58,3 +58,9 @@ import { checkHealthQueryOptions } from '@inzpro/queries/modules/health'
 ## Dependencies
 
 Follow the workspace dependency directions in [policy.ts](../tools/src/oxlint/architecture-policy.ts). The [architecture guide](../../docs/architecture.md) explains package placement, test exceptions, wildcard exports, and verification.
+
+## Ordinary and infinite query names
+
+Factories using `effectInfiniteQueryOptions` end in `InfiniteQueryOptions`. `pathsQueryOptions` is the ordinary request; `pathsInfiniteQueryOptions` uses cursor pages. Their cache keys differ in shape and share the account's `paths(userId)` invalidation group. Never reuse a cache key between ordinary and infinite data. Define every concrete key in the module's `XKeys` object, including infinite variants directly below their ordinary operation. Factories and consumers call those functions instead of assembling or extending key arrays themselves.
+
+Catalogue factories offer ordinary and infinite forms with separate cache keys. Prefetch the exact ordinary request consumed by the next step, including its limit. Identity also offers an optional-session factory with its own key: only an unauthenticated response becomes `null`; transport and server failures remain errors. Protected routes continue using the required-session factory.

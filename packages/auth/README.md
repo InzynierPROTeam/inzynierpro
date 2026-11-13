@@ -10,6 +10,8 @@ The `users`, `auth_sessions`, `auth_accounts` and `auth_verifications` tables co
 
 An optional Google configuration enables the built-in provider with `prompt: 'select_account'`, matching V1. Account linking explicitly requires verified provider and local emails, with no trusted providers or different-email linking. Existing provider account IDs retain their owner. Origin checking stays enabled in tests as well as production. See the root [Google setup and smoke procedure](../../README.md#google-sign-in) for callback/origin configuration.
 
+New accounts with a blank name receive a persisted `Inżynier#XXXXXX` name in the user creation hook. Effect's SecureRandom generates a temporary UUIDv4 used only as the name seed; its Digest service derives the six-character suffix without email or secrets. Better Auth ID generation is disabled and PostgreSQL assigns UUIDv7 IDs through table defaults. Supplied names are preserved; sign-in never regenerates a name. ADR-0011 records the display-name rules.
+
 ## Usage
 
 ```ts

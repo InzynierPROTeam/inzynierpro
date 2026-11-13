@@ -1,8 +1,6 @@
 import {
   getPaths,
   type GetPathsRequest,
-  getSelectedPath,
-  type GetSelectedPathRequest,
   getPath,
   type GetPathRequest,
   getGoalOptions,
@@ -21,13 +19,12 @@ import {
 export const preparationKeys = {
   all: ['preparation'] as const,
   paths: (userId: UserId) => [...preparationKeys.all, 'paths', userId] as const,
-  selection: (userId: UserId) => [...preparationKeys.all, 'selection', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
     [...preparationKeys.all, 'path', userId, id] as const,
   getPaths: (userId: UserId, req: GetPathsRequest) =>
     [...preparationKeys.paths(userId), 'getPaths', req] as const,
-  getSelectedPath: (userId: UserId, req: GetSelectedPathRequest) =>
-    [...preparationKeys.selection(userId), 'getSelectedPath', req] as const,
+  getPathsInfinite: (userId: UserId, req: GetPathsRequest) =>
+    [...preparationKeys.paths(userId), 'infinite', 'getPaths', req] as const,
   getPath: (userId: UserId, req: GetPathRequest) =>
     [...preparationKeys.path(userId, req.params.qualificationPathId), 'getPath', req] as const,
   getGoalOptions: (userId: UserId, req: GetGoalOptionsRequest) =>
@@ -48,20 +45,19 @@ export const pathsQueryOptions = (
   httpClient: HttpClient.HttpClient,
   userId: UserId,
   req: GetPathsRequest,
+) => effectQueryOptions(preparationKeys.getPaths(userId, req), getPaths(req), httpClient)
+
+export const pathsInfiniteQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetPathsRequest,
 ) =>
   effectInfiniteQueryOptions(
-    preparationKeys.getPaths(userId, req),
+    preparationKeys.getPathsInfinite(userId, req),
     cursor => getPaths({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
   )
-
-export const selectedPathQueryOptions = (
-  httpClient: HttpClient.HttpClient,
-  userId: UserId,
-  req: GetSelectedPathRequest = {},
-) =>
-  effectQueryOptions(preparationKeys.getSelectedPath(userId, req), getSelectedPath(req), httpClient)
 
 export const pathQueryOptions = (
   httpClient: HttpClient.HttpClient,
@@ -69,7 +65,7 @@ export const pathQueryOptions = (
   req: GetPathRequest,
 ) => effectQueryOptions(preparationKeys.getPath(userId, req), getPath(req), httpClient)
 
-export const goalOptionsQueryOptions = (
+export const goalOptionsInfiniteQueryOptions = (
   httpClient: HttpClient.HttpClient,
   userId: UserId,
   req: GetGoalOptionsRequest,
@@ -81,7 +77,7 @@ export const goalOptionsQueryOptions = (
     req.query.cursor,
   )
 
-export const goalHistoryQueryOptions = (
+export const goalHistoryInfiniteQueryOptions = (
   httpClient: HttpClient.HttpClient,
   userId: UserId,
   req: GetGoalHistoryRequest,

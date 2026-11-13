@@ -5,10 +5,15 @@ import { Schema } from 'effect'
 
 export const GetDocumentsParams = Schema.Struct({ qualificationPathId: QualificationPathId })
 
-export const GetSessionPreviewParams = Schema.Struct({
+export const GetDocumentParams = Schema.Struct({
   qualificationPathId: QualificationPathId,
   documentId: ReferenceDocumentId,
 })
 
 export const DocumentsQuery = CursorPagination
 export const OralMaterialsQuery = CursorPagination
+
+export const SessionPreviewQuery = Schema.Struct({
+  documentId: Schema.optional(ReferenceDocumentId),
+  afterDocumentId: Schema.optional(ReferenceDocumentId),
+})

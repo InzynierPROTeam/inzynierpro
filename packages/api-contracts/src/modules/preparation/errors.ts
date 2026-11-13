@@ -24,3 +24,8 @@ export class GoalConflict extends Schema.TaggedError<
   GoalConflict,
   { readonly brand: unique symbol }
 >()('GoalConflict', errorFields('goal_conflict'), ConflictAnnotations()) {}
+
+export class PathLimitReached extends Schema.TaggedError<
+  PathLimitReached,
+  { readonly brand: unique symbol }
+>()('PathLimitReached', errorFields('path_limit_reached'), ConflictAnnotations()) {}

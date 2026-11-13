@@ -50,7 +50,7 @@ export const httpServerLayer = (config: Env) =>
         { global: true },
       ),
     ),
-    { disableLogger: true },
+    { disableLogger: false },
   ).pipe(
     Layer.provide(
       AuthLayer({

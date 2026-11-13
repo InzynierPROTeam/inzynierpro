@@ -17,6 +17,11 @@ export class StudyReader extends Context.Service<
       pathId: QualificationPathId,
       page: CursorPagination,
     ) => Effect.Effect<CursorPage<DocumentQuestionPool>, StudyReadError | InvalidCursor>
+    readonly nextDocument: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      afterDocumentId: Option.Option<ReferenceDocumentId>,
+    ) => Effect.Effect<Option.Option<DocumentQuestionPool>, StudyReadError>
     readonly document: (
       userId: UserId,
       pathId: QualificationPathId,

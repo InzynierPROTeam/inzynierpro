@@ -1,4 +1,5 @@
 import { Unauthenticated } from '@inzpro/api-contracts/middleware/authentication/errors'
+import { CurrentSessionResponse } from '@inzpro/api-contracts/modules/identity/responses'
 import { failingAdapter } from '@opencoredev/email-sdk/testing'
 import { Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
@@ -51,7 +52,9 @@ describe('signing in with an email code', () => {
 
     const body = await session.json()
 
-    expect(body).toMatchObject({ user: { email, name: '' } })
+    expect(body).toMatchObject({
+      user: { email, name: expect.stringMatching(/^Inżynier#[0-9A-F]{6}$/) },
+    })
 
     // The request's span names the account by id only.
     const traceId = session.headers.get('x-request-id')
@@ -60,6 +63,47 @@ describe('signing in with an email code', () => {
 
     expect(body).toMatchObject({ user: { id: serverSpan?.attributes.get('user.id') } })
     expect(attributes).not.toContain(email)
+  })
+})
+
+describe('default account names', () => {
+  test.each(['', '   '])('a blank name gets a persistent generated name (%j)', async name => {
+    const visitor = api.visitor()
+    const email = uniqueEmail('default-name')
+    await visitor.sendCode(email)
+    expect((await visitor.signIn(email, lastCodeFor(email), name)).error).toBeNull()
+
+    const first = Schema.decodeUnknownSync(CurrentSessionResponse)(
+      await (await visitor.session()).json(),
+    )
+
+    expect(first.user.name).toMatch(/^Inżynier#[0-9A-F]{6}$/)
+    expect(Schema.is(Schema.String.check(Schema.isUUID(7)))(first.user.id)).toBe(true)
+    expect(first.user.image).toBeNull()
+
+    await visitor.signOut()
+    await visitor.sendCode(email)
+    expect((await visitor.signIn(email, lastCodeFor(email), 'Replacement name')).error).toBeNull()
+    expect(await (await visitor.session()).json()).toMatchObject({
+      user: { id: first.user.id, name: first.user.name },
+    })
+  })
+
+  test('a supplied name is kept during account creation and subsequent sign-in', async () => {
+    const visitor = api.visitor()
+    const email = uniqueEmail('provided-name')
+    await visitor.sendCode(email)
+    expect((await visitor.signIn(email, lastCodeFor(email), 'Anna Kowalska')).error).toBeNull()
+    expect(await (await visitor.session()).json()).toMatchObject({
+      user: { name: 'Anna Kowalska' },
+    })
+
+    await visitor.signOut()
+    await visitor.sendCode(email)
+    expect((await visitor.signIn(email, lastCodeFor(email))).error).toBeNull()
+    expect(await (await visitor.session()).json()).toMatchObject({
+      user: { name: 'Anna Kowalska' },
+    })
   })
 })
 

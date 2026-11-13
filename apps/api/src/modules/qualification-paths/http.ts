@@ -1,6 +1,6 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
-import { Effect, Layer } from 'effect'
+import { Effect, Option, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
 import { limitByClient, publicReadLimit } from '~api/lib/rate-limit.js'
@@ -78,7 +78,7 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
         limitByClient(publicReadLimit).pipe(
           Effect.andThen(
             qualificationPathsReader.resolve(query).pipe(
-              Effect.map(path => ({ path })),
+              Effect.map(path => ({ path: Option.getOrNull(path) })),
               Effect.catchTags({
                 QualificationPathsReadError: logAndFailInternalServerError(
                   'Could not read qualification paths.',

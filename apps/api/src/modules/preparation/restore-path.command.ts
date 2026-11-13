@@ -16,7 +16,6 @@ export const restorePath = Effect.fn('Preparation.restorePath')(function* (
       yield* preparationRepository.lockUser(userId)
       yield* requireAssignment(userId, pathId)
       yield* preparationRepository.restore(userId, pathId)
-      yield* preparationRepository.select(userId, pathId)
 
       return { qualificationPathId: pathId, existing: true, archived: false }
     }),

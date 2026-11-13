@@ -1,5 +1,8 @@
-import { SessionPreview } from '@inzpro/api-contracts/modules/study/responses'
-import { DocumentsResponse } from '@inzpro/api-contracts/modules/study/responses'
+import {
+  SessionPreview,
+  DocumentResponse,
+  DocumentsResponse,
+} from '@inzpro/api-contracts/modules/study/responses'
 import { databaseLayerFromConfig } from '@inzpro/db'
 import {
   WrittenQuestionId,
@@ -41,7 +44,8 @@ test('private material routes require authentication', async () => {
 
   for (const path of [
     `/paths/${technicalPathA}/documents`,
-    `/paths/${technicalPathA}/documents/${technicalDocumentA}/preview`,
+    `/paths/${technicalPathA}/documents/${technicalDocumentA}`,
+    `/paths/${technicalPathA}/preview?documentId=${technicalDocumentA}`,
     `/paths/${technicalPathA}/oral`,
   ]) {
     expect((await learningRequest(api, guest, path)).status).toBe(401)
@@ -61,7 +65,7 @@ test('documents return one cursor page of private coverage and archive preserves
         visitor.userId,
         yield* Schema.decodeEffect(QualificationPathId)(technicalPathA),
         yield* Schema.decodeEffect(WrittenQuestionId)('30000000-0000-4000-8000-000000000001'),
-        yield* Schema.decodeEffect(QuestionRevisionId)('41000000-0000-4000-8000-000000000001'),
+        yield* Schema.decodeEffect(QuestionRevisionId)('43000000-0000-4000-8000-000000000001'),
       )
     }),
   )
@@ -92,7 +96,7 @@ test('documents return one cursor page of private coverage and archive preserves
 
   const preview = Schema.decodeUnknownSync(SessionPreview)(
     await (
-      await request(`/paths/${technicalPathA}/documents/${technicalDocumentA}/preview`)
+      await request(`/paths/${technicalPathA}/preview?documentId=${technicalDocumentA}`)
     ).json(),
   )
 
@@ -103,15 +107,15 @@ test('documents return one cursor page of private coverage and archive preserves
     maximumQuestionCount: 2,
   })
   expect(
-    (await request(`/paths/${technicalPathB}/documents/${technicalDocumentB}/preview`)).status,
+    (await request(`/paths/${technicalPathB}/preview?documentId=${technicalDocumentB}`)).status,
   ).toBe(403)
-  expect(
-    (
-      await request(
-        `/paths/${technicalPathA}/documents/20000000-0000-4000-8000-000000000099/preview`,
-      )
-    ).status,
-  ).toBe(404)
+
+  const absentPreview = await request(
+    `/paths/${technicalPathA}/preview?documentId=20000000-0000-4000-8000-000000000099`,
+  )
+
+  expect(absentPreview.status).toBe(200)
+  expect(await absentPreview.json()).toBeNull()
   await request(`/paths/${technicalPathA}/archive`, {})
   expect((await request(`/paths/${technicalPathA}/documents`)).status).toBe(403)
   await request(`/paths/${technicalPathA}/restore`, {})
@@ -136,7 +140,7 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
         await learningRequest(
           api,
           visitor,
-          `/paths/${fixture.pathId}/documents/${fixture.documentId}/preview`,
+          `/paths/${fixture.pathId}/preview?documentId=${fixture.documentId}`,
         )
       ).json(),
     )
@@ -147,6 +151,10 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
     minimumQuestionCount: 0,
     maximumQuestionCount: 0,
   })
+  expect(
+    await (await learningRequest(api, visitor, `/paths/${fixture.pathId}/preview`)).json(),
+  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 2 })
+
   const questions: Array<Awaited<ReturnType<typeof addFixtureQuestion>>> = []
 
   for (let index = 0; index < 25; index++) {
@@ -177,4 +185,68 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
     }),
   )
   expect((await preview()).availableQuestionCount).toBe(0)
+  expect(
+    await (await learningRequest(api, visitor, `/paths/${fixture.pathId}/preview`)).json(),
+  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 2 })
+})
+
+test('category details are a private point lookup without preview settings', async () => {
+  const visitor = await loginForPreparation(api)
+  const other = await loginForPreparation(api)
+  await learningRequest(api, visitor, '/onboarding', technicalConfiguration)
+  const url = `/paths/${technicalPathA}/documents/${technicalDocumentA}`
+  const response = await learningRequest(api, visitor, url)
+  expect(response.status).toBe(200)
+  const detail = Schema.decodeUnknownSync(DocumentResponse)(await response.json())
+  expect(detail.document).toMatchObject({
+    id: technicalDocumentA,
+    availableQuestionCount: 2,
+    completedQuestionCount: 0,
+  })
+  expect(Object.keys(detail)).toEqual(['document'])
+  expect((await learningRequest(api, other, url)).status).toBe(403)
+  expect(
+    (
+      await learningRequest(
+        api,
+        visitor,
+        `/paths/${technicalPathB}/documents/${technicalDocumentA}`,
+      )
+    ).status,
+  ).toBe(403)
+  expect(
+    (
+      await learningRequest(
+        api,
+        visitor,
+        `/paths/${technicalPathA}/documents/20000000-0000-4000-8000-000000000099`,
+      )
+    ).status,
+  ).toBe(404)
+  expect(
+    (await learningRequest(api, visitor, `/paths/${technicalPathA}/documents/invalid`)).status,
+  ).toBe(400)
+  await learningRequest(api, visitor, `/paths/${technicalPathA}/archive`, {})
+  expect((await learningRequest(api, visitor, url)).status).toBe(403)
+})
+
+test('preview chooses the first or next available category on the selected path', async () => {
+  const visitor = await loginForPreparation(api)
+  await learningRequest(api, visitor, '/onboarding', technicalConfiguration)
+
+  const preview = async (query = '') =>
+    learningRequest(api, visitor, `/paths/${technicalPathA}/preview${query}`)
+
+  expect(await (await preview()).json()).toMatchObject({ document: { id: technicalDocumentA } })
+  expect(await (await preview(`?afterDocumentId=${technicalDocumentA}`)).json()).toMatchObject({
+    document: { id: technicalDocumentB },
+  })
+  expect(await (await preview(`?afterDocumentId=${technicalDocumentB}`)).json()).toBeNull()
+  expect((await preview('?documentId=invalid')).status).toBe(400)
+  expect((await preview('?afterDocumentId=invalid')).status).toBe(400)
+  expect(
+    await (
+      await preview(`?documentId=${technicalDocumentA}&afterDocumentId=${technicalDocumentB}`)
+    ).json(),
+  ).toMatchObject({ document: { id: technicalDocumentA } })
 })

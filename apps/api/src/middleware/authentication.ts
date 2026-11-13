@@ -31,9 +31,10 @@ export const AuthenticationLive = Layer.effect(
           return yield* unauthenticated
         }
 
-        const user = yield* Schema.decodeEffect(SessionUser)(session.user).pipe(
-          Effect.mapError(() => unauthenticated),
-        )
+        const user = yield* Schema.decodeEffect(SessionUser)({
+          ...session.user,
+          image: session.user.image ?? null,
+        }).pipe(Effect.mapError(() => unauthenticated))
 
         // The pseudonymous id lets a trace be tied to an account; e-mail stays out (ADR-0022).
         yield* Effect.annotateCurrentSpan('user.id', user.id)

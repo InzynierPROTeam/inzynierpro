@@ -10,5 +10,5 @@ export const QualificationKindsResponse = CursorPaginatedResponse(QualificationK
 export const QualificationScopesResponse = CursorPaginatedResponse(QualificationScope)
 
 export const ResolvedPathResponse = Schema.Struct({
-  path: Schema.OptionFromNullOr(QualificationPath),
+  path: Schema.NullOr(QualificationPath),
 })

@@ -3,7 +3,7 @@ import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/cur
 import { PathAccessDenied } from '@inzpro/api-contracts/modules/preparation/errors'
 import { DocumentNotFound } from '@inzpro/api-contracts/modules/study/errors'
 import { InvalidRequest } from '@inzpro/api-contracts/utils/api-error'
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
 import { accountReadLimit, limitByUser } from '~api/lib/rate-limit.js'
@@ -13,6 +13,7 @@ import { PreparationReaderLive } from '~api/modules/preparation/preparation.read
 import { StudyReader } from '~api/modules/study/study.reader.js'
 import { StudyReaderLive } from '~api/modules/study/study.reader.postgres.js'
 
+import { getDocument } from './document.query.js'
 import { getDocuments } from './documents.query.js'
 import { getOralMaterials } from './oral-materials.query.js'
 import { getSessionPreview } from './session-preview.query.js'
@@ -59,11 +60,11 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
           ),
         ),
       )
-      .handle('GetSessionPreview', ({ params }) =>
+      .handle('GetDocument', ({ params }) =>
         limitByUser(accountReadLimit).pipe(
           Effect.andThen(
             Effect.flatMap(CurrentUser, user =>
-              getSessionPreview(user.id, params.qualificationPathId, params.documentId),
+              getDocument(user.id, params.qualificationPathId, params.documentId),
             ).pipe(
               Effect.provide(dependencies),
               Effect.catchTags({
@@ -85,6 +86,36 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
                       message: 'The selected material was not found.',
                     }),
                   ),
+              }),
+            ),
+          ),
+        ),
+      )
+      .handle('GetSessionPreview', ({ params, query }) =>
+        limitByUser(accountReadLimit).pipe(
+          Effect.andThen(
+            Effect.flatMap(CurrentUser, user =>
+              getSessionPreview(
+                user.id,
+                params.qualificationPathId,
+                Option.fromNullishOr(query.documentId),
+                Option.fromNullishOr(query.afterDocumentId),
+              ),
+            ).pipe(
+              Effect.map(Option.getOrNull),
+              Effect.provide(dependencies),
+              Effect.catchTags({
+                PreparationReadError: logAndFailInternalServerError(
+                  'Could not read preparation data.',
+                ),
+                PathPermissionDenied: () =>
+                  Effect.fail(
+                    new PathAccessDenied({
+                      type: 'path_access_denied',
+                      message: 'Your active path does not include this material.',
+                    }),
+                  ),
+                StudyReadError: logAndFailInternalServerError('Could not read study material.'),
               }),
             ),
           ),

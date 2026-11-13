@@ -24,6 +24,28 @@ test('health-check uses /api/v1 and returns only status', async () => {
   expect(response.headers.get('x-frame-options')).toBe('DENY')
 })
 
+test('request completion logs include the method and status without query values or credentials', async () => {
+  const response = await fetch(`${baseUrl}/api/v1/health-check?code=private-query-value`, {
+    headers: { authorization: 'Bearer private-header-value', cookie: 'private-cookie-value' },
+  })
+
+  await response.text()
+
+  const completion = api.logs.find(
+    line => line.includes('Sent HTTP response') && line.includes('/api/v1/health-check'),
+  )
+
+  expect(completion).toBeDefined()
+  expect(completion).toContain('http.method')
+  expect(completion).toContain('GET')
+  expect(completion).toContain('http.status')
+  expect(completion).toContain('200')
+  const logs = api.logs.join('\n')
+  expect(logs).not.toContain('private-query-value')
+  expect(logs).not.toContain('private-header-value')
+  expect(logs).not.toContain('private-cookie-value')
+})
+
 test('an unknown API version returns an error response', async () => {
   const response = await fetch(`${baseUrl}/api/v2/health-check`)
   const body = await response.json()

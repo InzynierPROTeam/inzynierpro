@@ -11,10 +11,16 @@ import { DocumentNotFound } from './errors.js'
 import {
   DocumentsQuery,
   GetDocumentsParams,
-  GetSessionPreviewParams,
+  GetDocumentParams,
+  SessionPreviewQuery,
   OralMaterialsQuery,
 } from './requests.js'
-import { DocumentsResponse, OralMaterialsResponse, SessionPreview } from './responses.js'
+import {
+  DocumentResponse,
+  DocumentsResponse,
+  OralMaterialsResponse,
+  SessionPreviewResponse,
+} from './responses.js'
 
 export const GetDocumentsEndpoint = HttpApiEndpoint.get(
   'GetDocuments',
@@ -33,13 +39,24 @@ export const GetDocumentsEndpoint = HttpApiEndpoint.get(
   },
 )
 
+export const GetDocumentEndpoint = HttpApiEndpoint.get(
+  'GetDocument',
+  '/paths/:qualificationPathId/documents/:documentId',
+  {
+    params: GetDocumentParams,
+    success: DocumentResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, DocumentNotFound],
+  },
+)
+
 export const GetSessionPreviewEndpoint = HttpApiEndpoint.get(
   'GetSessionPreview',
-  '/paths/:qualificationPathId/documents/:documentId/preview',
+  '/paths/:qualificationPathId/preview',
   {
-    params: GetSessionPreviewParams,
-    success: SessionPreview,
-    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, DocumentNotFound],
+    params: GetDocumentsParams,
+    query: SessionPreviewQuery,
+    success: SessionPreviewResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
   },
 )
 
@@ -62,6 +79,7 @@ export const GetOralMaterialsEndpoint = HttpApiEndpoint.get(
 
 export const StudyApi = HttpApiGroup.make('Study')
   .add(GetDocumentsEndpoint)
+  .add(GetDocumentEndpoint)
   .add(GetSessionPreviewEndpoint)
   .add(GetOralMaterialsEndpoint)
   .middleware(Authentication)

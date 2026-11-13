@@ -1,5 +1,4 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { PathConfiguration } from '@inzpro/domain/modules/preparation/onboarding'
 import { initialUserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import { Effect, Option } from 'effect'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/exam-calendar.reader.js'
@@ -7,7 +6,8 @@ import { ExamCalendarRepository } from '~api/modules/exam-calendar/exam-calendar
 import { QualificationPathsReader } from '~api/modules/qualification-paths/qualification-paths.reader.js'
 import { QualificationPathsRepository } from '~api/modules/qualification-paths/qualification-paths.repository.js'
 
-import { StalePathConfiguration } from './errors.js'
+import { StalePathConfiguration, UserPathLimitReached } from './errors.js'
+import type { PathConfiguration } from './preparation.model.js'
 import { PreparationReader } from './preparation.reader.js'
 import { PreparationRepository } from './preparation.repository.js'
 
@@ -38,6 +38,10 @@ export const completeOnboarding = Effect.fn('Preparation.completeOnboarding')(fu
         return { qualificationPathId: path.id, existing: true, archived: existing.value.archived }
       }
 
+      if (yield* preparationReader.hasReachedPathLimit(userId)) {
+        return yield* new UserPathLimitReached()
+      }
+
       yield* qualificationPathsRepository.lock(path.id)
       yield* examCalendarRepository.lock(config.examSessionId)
       const current = yield* qualificationPathsReader.resolve(config)
@@ -59,7 +63,6 @@ export const completeOnboarding = Effect.fn('Preparation.completeOnboarding')(fu
         config.accessScope,
         config.oralExamDate,
       )
-      yield* preparationRepository.select(userId, path.id)
 
       return { qualificationPathId: path.id, existing: false, archived: false }
     }),

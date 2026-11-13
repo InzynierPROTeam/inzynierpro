@@ -5,7 +5,11 @@ import { Schema } from 'effect'
 import { HttpRouter, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { preparationKeys, pathsQueryOptions } from '~queries/modules/preparation.js'
-import { documentsQueryOptions, sessionPreviewQueryOptions } from '~queries/modules/study.js'
+import {
+  documentQueryOptions,
+  documentsInfiniteQueryOptions,
+  sessionPreviewQueryOptions,
+} from '~queries/modules/study.js'
 import { withQueryClient } from '~queries/test/query-client.js'
 
 import { studyKeys } from './study.js'
@@ -48,7 +52,12 @@ test('a path parent key invalidates its documents and preview while preserving o
       ),
       HttpRouter.route(
         'GET',
-        `/api/v1/study/paths/${pathA}/documents/${documentId}/preview`,
+        `/api/v1/study/paths/${pathA}/documents/${documentId}`,
+        HttpServerResponse.jsonUnsafe({ document }),
+      ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/preview`,
         HttpServerResponse.jsonUnsafe({
           qualificationPathId: pathA,
           document,
@@ -67,35 +76,52 @@ test('a path parent key invalidates its documents and preview while preserving o
       withQueryClient(async client => {
         const paths = pathsQueryOptions(httpClient, userId, { query: {} })
 
-        const documentsA = documentsQueryOptions(httpClient, userId, {
+        const documentsA = documentsInfiniteQueryOptions(httpClient, userId, {
           query: {},
           params: { qualificationPathId: pathA },
         })
 
-        const documentsB = documentsQueryOptions(httpClient, userId, {
+        const documentsB = documentsInfiniteQueryOptions(httpClient, userId, {
           query: {},
           params: { qualificationPathId: pathB },
         })
 
         const otherUserId = Schema.decodeSync(UserId)('a0000000-0000-4000-8000-000000000002')
 
-        const otherAccount = documentsQueryOptions(httpClient, otherUserId, {
+        const otherAccount = documentsInfiniteQueryOptions(httpClient, otherUserId, {
           query: {},
           params: { qualificationPathId: pathA },
         })
 
-        const preview = sessionPreviewQueryOptions(httpClient, userId, {
+        const category = documentQueryOptions(httpClient, userId, {
           params: { qualificationPathId: pathA, documentId },
         })
 
+        const foreignCategory = documentQueryOptions(httpClient, otherUserId, {
+          params: { qualificationPathId: pathA, documentId },
+        })
+
+        expect(category.queryKey).not.toEqual(foreignCategory.queryKey)
+        expect(category.queryKey).not.toEqual(documentsA.queryKey)
+
+        const preview = sessionPreviewQueryOptions(httpClient, userId, {
+          params: { qualificationPathId: pathA },
+          query: { documentId },
+        })
+
         await Promise.all([
-          client.infiniteQuery(paths),
+          client.query(paths),
           client.infiniteQuery(otherAccount),
           client.infiniteQuery(documentsA),
           client.infiniteQuery(documentsB),
           client.query(preview),
+          client.query(category),
+          client.query(foreignCategory),
         ])
+        expect(client.getQueryData(category.queryKey)).toEqual({ document })
         await client.invalidateQueries({ queryKey: studyKeys.path(userId, pathA) })
+        expect(client.getQueryState(category.queryKey)?.isInvalidated).toBe(true)
+        expect(client.getQueryState(foreignCategory.queryKey)?.isInvalidated).toBe(false)
         expect(client.getQueryState(documentsA.queryKey)?.isInvalidated).toBe(true)
         expect(client.getQueryState(preview.queryKey)?.isInvalidated).toBe(true)
         expect(client.getQueryState(documentsB.queryKey)?.isInvalidated).toBe(false)

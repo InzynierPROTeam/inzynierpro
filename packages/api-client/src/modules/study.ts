@@ -1,5 +1,6 @@
 import type {
   GetDocumentsEndpoint,
+  GetDocumentEndpoint,
   GetSessionPreviewEndpoint,
   GetOralMaterialsEndpoint,
 } from '@inzpro/api-contracts/modules/study/api'
@@ -33,3 +34,11 @@ export type GetOralMaterialsRequest = InferEndpointRequest<typeof GetOralMateria
 export type GetOralMaterialsRes = Effect.Success<ReturnType<typeof getOralMaterials>>
 
 export type GetOralMaterialsError = Effect.Error<ReturnType<typeof getOralMaterials>>
+
+export const getDocument = (req: GetDocumentRequest) => apiAction(api => api.Study.GetDocument(req))
+
+export type GetDocumentRequest = InferEndpointRequest<typeof GetDocumentEndpoint>
+
+export type GetDocumentRes = Effect.Success<ReturnType<typeof getDocument>>
+
+export type GetDocumentError = Effect.Error<ReturnType<typeof getDocument>>

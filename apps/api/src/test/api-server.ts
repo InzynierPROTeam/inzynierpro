@@ -9,6 +9,7 @@ import type { EmailAdapter, EmailMessage } from '@opencoredev/email-sdk'
 import { memoryAdapter } from '@opencoredev/email-sdk/testing'
 import {
   Context,
+  DateTime,
   Effect,
   Exit,
   identity,
@@ -27,6 +28,8 @@ import { httpServerLayer } from '~api/http.js'
 import { env } from '~api/lib/env.js'
 import { redactingTracer } from '~api/lib/observability.js'
 
+import { catalogueTestTime, fixedWallClockLayer } from './clock.js'
+
 export const platformOrigin = 'http://localhost:8001'
 
 export const sessionCookie = 'inzynierpro.session_token'
@@ -39,7 +42,7 @@ type AuthResult = {
 export type TestVisitor = {
   readonly jar: CookieJar
   readonly sendCode: (email: string) => Promise<AuthResult>
-  readonly signIn: (email: string, otp: string) => Promise<AuthResult>
+  readonly signIn: (email: string, otp: string, name?: string) => Promise<AuthResult>
   readonly signOut: () => Promise<AuthResult>
   readonly session: () => Promise<Response>
 }
@@ -58,12 +61,17 @@ const isSentTo = (message: EmailMessage, email: string) =>
   [message.to].flat().some(address => address === email)
 
 export type TestApiOptions = {
+  readonly now?: DateTime.Utc
   // Delivers email; defaults to an in-memory adapter whose messages the test can read.
   readonly emailAdapter?: EmailAdapter
   readonly google?: { readonly clientId: string; readonly clientSecret: string }
 }
 
-export const startTestApi = async ({ emailAdapter, google }: TestApiOptions = {}) => {
+export const startTestApi = async ({
+  emailAdapter,
+  google,
+  now = catalogueTestTime,
+}: TestApiOptions = {}) => {
   const loaded = await Effect.runPromise(Effect.map(env, identity))
 
   const config = {
@@ -103,6 +111,7 @@ export const startTestApi = async ({ emailAdapter, google }: TestApiOptions = {}
     Layer.provide(EmailLayer(emailAdapter ?? outbox)),
     Layer.provide(Logger.layer([Logger.map(Logger.formatJson, line => logs.push(line))])),
     Layer.provide(Layer.succeed(Tracer.Tracer, tracer)),
+    Layer.provide(fixedWallClockLayer(now)),
   )
 
   const context = await Effect.runPromise(Layer.buildWithScope(layer, scope))
@@ -133,7 +142,8 @@ export const startTestApi = async ({ emailAdapter, google }: TestApiOptions = {}
     return {
       jar,
       sendCode: (email: string) => auth.emailOtp.sendVerificationOtp({ email, type: 'sign-in' }),
-      signIn: (email: string, otp: string) => auth.signIn.emailOtp({ email, otp }),
+      signIn: (email: string, otp: string, name?: string) =>
+        auth.signIn.emailOtp({ email, otp, name }),
       signOut: () => auth.signOut(),
       session: () => jar.fetch(new URL('/api/v1/identity/session', baseUrl)),
     }

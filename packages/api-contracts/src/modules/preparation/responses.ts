@@ -6,7 +6,7 @@ import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/
 import { Schema } from 'effect'
 
 export const QualificationPathsResponse = CursorPaginatedResponse(UserQualificationPath)
-export const PathResponse = Schema.Struct({ path: Schema.OptionFromNullOr(UserQualificationPath) })
+export const PathResponse = Schema.Struct({ path: Schema.NullOr(UserQualificationPath) })
 
 export const PathMutationResponse = Schema.Struct({
   qualificationPathId: QualificationPathId,

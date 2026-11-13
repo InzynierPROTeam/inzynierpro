@@ -1,5 +1,7 @@
 import {
   getDocuments,
+  getDocument,
+  type GetDocumentRequest,
   type GetDocumentsRequest,
   getSessionPreview,
   type GetSessionPreviewRequest,
@@ -20,13 +22,15 @@ export const studyKeys = {
     [...studyKeys.all, 'path', userId, id] as const,
   getDocuments: (userId: UserId, req: GetDocumentsRequest) =>
     [...studyKeys.path(userId, req.params.qualificationPathId), 'getDocuments', req] as const,
+  getDocument: (userId: UserId, req: GetDocumentRequest) =>
+    [...studyKeys.path(userId, req.params.qualificationPathId), 'getDocument', req] as const,
   getSessionPreview: (userId: UserId, req: GetSessionPreviewRequest) =>
     [...studyKeys.path(userId, req.params.qualificationPathId), 'getSessionPreview', req] as const,
   getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
     [...studyKeys.path(userId, req.params.qualificationPathId), 'getOralMaterials', req] as const,
 }
 
-export const documentsQueryOptions = (
+export const documentsInfiniteQueryOptions = (
   httpClient: HttpClient.HttpClient,
   userId: UserId,
   req: GetDocumentsRequest,
@@ -45,7 +49,7 @@ export const sessionPreviewQueryOptions = (
 ) =>
   effectQueryOptions(studyKeys.getSessionPreview(userId, req), getSessionPreview(req), httpClient)
 
-export const oralMaterialsQueryOptions = (
+export const oralMaterialsInfiniteQueryOptions = (
   httpClient: HttpClient.HttpClient,
   userId: UserId,
   req: GetOralMaterialsRequest,
@@ -56,3 +60,9 @@ export const oralMaterialsQueryOptions = (
     httpClient,
     req.query.cursor,
   )
+
+export const documentQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetDocumentRequest,
+) => effectQueryOptions(studyKeys.getDocument(userId, req), getDocument(req), httpClient)
