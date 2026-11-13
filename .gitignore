@@ -61,7 +61,7 @@ next-env.d.ts
 .vercel
 
 # testing
-/coverage
+coverage/
 
 # next.js
 .next/

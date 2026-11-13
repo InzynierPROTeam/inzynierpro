@@ -18,9 +18,10 @@
     "lint:fix": "effect-tsgo oxlint --type-aware --fix",
     "check": "pnpm lint:fix && pnpm format && pnpm type-check && pnpm test && pnpm build",
     "test": "scripts/with-test-services.sh turbo test",
+    "test:coverage": "scripts/with-test-services.sh turbo test -- --coverage.enabled --coverage.include=src/** --coverage.reporter=json-summary --coverage.reporter=text-summary",
     "test:e2e": "scripts/with-test-services.sh pnpm --filter @inzpro/e2e test:e2e",
     "prepare": "effect-tsgo patch --oxlint && (test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky)",
-    "check:ci": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test && pnpm build"
+    "check:ci": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test:coverage && pnpm build"
   },
   "devDependencies": {
     "@babel/preset-typescript": "catalog:",
@@ -37,8 +38,10 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
+    "effect": "catalog:",
     "husky": "catalog:",
     "jsdom": "catalog:",
     "lint-staged": "catalog:",

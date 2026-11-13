@@ -34,15 +34,18 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "cache": true
+      "cache": true,
+      "outputs": ["coverage/**"]
     },
     "@inzpro/api#test": {
       "dependsOn": ["^build"],
-      "cache": false
+      "cache": false,
+      "outputs": ["coverage/**"]
     },
     "@inzpro/db#test": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "outputs": ["coverage/**"]
     }
   }
 }
