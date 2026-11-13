@@ -66,18 +66,33 @@ export const resolveOffsetPagination = (req: OffsetPagination) => {
   return { page, limit, offset: (page - 1) * limit }
 }
 
-export const decodeCursor = <S extends Schema.Top & { readonly DecodingServices: never }>(
-  key: S,
-  cursor: Cursor | undefined,
-) =>
+type CursorKey = Schema.Top & {
+  readonly DecodingServices: never
+  readonly EncodingServices: never
+}
+
+/**
+ * An opaque cursor: the sort-key fields as JSON, encoded as base64url. Clients pass it back
+ * unchanged and never parse it, so the server can change the key without a contract change.
+ */
+export const cursorCodec = <S extends CursorKey>(key: S) =>
+  Schema.StringFromBase64Url.pipe(Schema.decodeTo(Schema.fromJsonString(key)))
+
+export const encodeCursor =
+  <S extends CursorKey>(key: S) =>
+  (value: S['Type']): Cursor =>
+    Schema.decodeSync(Cursor)(Schema.encodeSync(cursorCodec(key))(value))
+
+export const decodeCursor = <S extends CursorKey>(key: S, cursor: Cursor | undefined) =>
   cursor === undefined
     ? Effect.undefined
-    : Schema.decodeEffect(key)(cursor).pipe(Effect.mapError(() => new InvalidCursor()))
+    : Schema.decodeEffect(cursorCodec(key))(cursor).pipe(Effect.mapError(() => new InvalidCursor()))
 
+/** Builds a page from `limit + 1` rows: the extra row only proves that another page exists. */
 export const makeCursorPage = <A>(
   rows: ReadonlyArray<A>,
   limit: number,
-  cursorOf: (row: A) => string,
+  cursorOf: (row: A) => Cursor,
 ): CursorPage<A> => {
   const hasMore = rows.length > limit
   const data = hasMore ? rows.slice(0, limit) : rows
@@ -85,13 +100,14 @@ export const makeCursorPage = <A>(
 
   return {
     data,
-    meta: {
-      hasMore,
-      nextCursor:
-        hasMore && last !== undefined ? Schema.decodeSync(Cursor)(cursorOf(last)) : undefined,
-    },
+    meta: { hasMore, nextCursor: hasMore && last !== undefined ? cursorOf(last) : undefined },
   }
 }
+
+export const mapCursorPage = <A, B>(page: CursorPage<A>, f: (item: A) => B): CursorPage<B> => ({
+  ...page,
+  data: page.data.map(f),
+})
 
 export const makeOffsetPage = <A>(data: ReadonlyArray<A>, total: number, req: OffsetPagination) => {
   const pagination = resolveOffsetPagination(req)

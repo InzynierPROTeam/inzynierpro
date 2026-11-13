@@ -14,6 +14,8 @@ A personal read, such as categories or documents combined with the user's progre
 
 Every resource list uses the shared pagination schemas and a `data`/`meta` response. Clients page by cursor; administration by offset. Bounded configuration values are not collections. Selection of the current path is a separate query, independent of the loaded page of assignments.
 
+Cursor pages use keyset pagination. A cursor is an opaque base64url token of the sort-key fields; clients pass it back unchanged and never build or parse it. API readers declare their sort columns once through `makeCursorPaginator` (`apps/api/src/lib/cursor-pagination.ts`), which derives ORDER BY, the predicate after the cursor and the next cursor from that declaration. Sort columns are NOT NULL and end with a unique column.
+
 ## Dates
 
 The database stores instants as `timestamptz(3)`. PostgreSQL preserves the instant, not the original input offset or IANA zone. No zone column is needed while the product interprets exam dates and business days in Europe/Warsaw. A future requirement to retain the user's original zone needs an explicit separate field.

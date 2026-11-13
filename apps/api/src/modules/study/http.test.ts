@@ -78,10 +78,12 @@ test('documents return one cursor page of private coverage and archive preserves
     { id: technicalDocumentA, availableQuestionCount: 2, completedQuestionCount: 1 },
   ])
   expect(first.meta.hasMore).toBe(true)
-  expect(first.meta.nextCursor).toBe(technicalDocumentA)
+  expect(first.meta.nextCursor).toEqual(expect.any(String))
 
   const second = await (
-    await request(`/paths/${technicalPathA}/documents?limit=1&cursor=${first.meta.nextCursor}`)
+    await request(
+      `/paths/${technicalPathA}/documents?limit=1&cursor=${encodeURIComponent(first.meta.nextCursor ?? '')}`,
+    )
   ).json()
 
   expect(second).toMatchObject({

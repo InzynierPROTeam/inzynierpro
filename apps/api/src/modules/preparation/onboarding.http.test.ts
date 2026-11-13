@@ -1,6 +1,9 @@
 import { ExamSessionsResponse } from '@inzpro/api-contracts/modules/exam-calendar/responses'
 import { PathLimitReached } from '@inzpro/api-contracts/modules/preparation/errors'
-import { QualificationPathsResponse } from '@inzpro/api-contracts/modules/preparation/responses'
+import {
+  GoalHistoryResponse,
+  QualificationPathsResponse,
+} from '@inzpro/api-contracts/modules/preparation/responses'
 import {
   SpecializationsResponse,
   QualificationKindsResponse,
@@ -52,12 +55,12 @@ test('guest onboarding uses separate cursor catalogues and only persistence requ
   const first = await (await publicRequest('/qualification-paths/specializations?limit=1')).json()
   expect(first).toMatchObject({
     data: [{ id: config.specializationId }],
-    meta: { hasMore: true, nextCursor: config.specializationId },
+    meta: { hasMore: true, nextCursor: expect.any(String) },
   })
 
   const second = await (
     await publicRequest(
-      `/qualification-paths/specializations?limit=1&cursor=${config.specializationId}`,
+      `/qualification-paths/specializations?limit=1&cursor=${encodeURIComponent(Schema.decodeUnknownSync(SpecializationsResponse)(first).meta.nextCursor ?? '')}`,
     )
   ).json()
 
@@ -207,14 +210,18 @@ test('scope extension, UTC instants, goal conflicts and cursor history preserve 
   expect((await request(`/paths/${pathId}/goal`, { ...change, expectedVersion: 0 })).status).toBe(
     400,
   )
-  expect(await (await request(`/paths/${pathId}/goals?limit=1`)).json()).toMatchObject({
+  const latestGoal = await (await request(`/paths/${pathId}/goals?limit=1`)).json()
+  expect(latestGoal).toMatchObject({
     data: [{ version: 3, oralExamDate: change.oralExamDate }],
-    meta: { hasMore: true, nextCursor: '3' },
+    meta: { hasMore: true, nextCursor: expect.any(String) },
   })
-  expect(await (await request(`/paths/${pathId}/goals?limit=1&cursor=3`)).json()).toMatchObject({
-    data: [{ version: 2 }],
-    meta: { hasMore: true, nextCursor: '2' },
-  })
+  expect(
+    await (
+      await request(
+        `/paths/${pathId}/goals?limit=1&cursor=${encodeURIComponent(Schema.decodeUnknownSync(GoalHistoryResponse)(latestGoal).meta.nextCursor ?? '')}`,
+      )
+    ).json(),
+  ).toMatchObject({ data: [{ version: 2 }], meta: { hasMore: true } })
   expect((await request(`/paths/${pathId}/documents`)).status).toBe(200)
 })
 

@@ -3,7 +3,7 @@ import { decodeCursor } from '@inzpro/domain/common/pagination'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Effect } from 'effect'
+import { Effect, Schema } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/path-access.policy.js'
 
 // TODO(#6): query published oral categories once the oral dataset is imported.
@@ -13,7 +13,7 @@ export const getOralMaterials = Effect.fn('Study.getOralMaterials')(function* (
   page: CursorPagination,
 ) {
   yield* requirePathAccess(userId, pathId, 'oral')
-  yield* decodeCursor(OralQuestionCategoryId, page.cursor)
+  yield* decodeCursor(Schema.Struct({ id: OralQuestionCategoryId }), page.cursor)
 
   return { data: [], meta: { hasMore: false } }
 })

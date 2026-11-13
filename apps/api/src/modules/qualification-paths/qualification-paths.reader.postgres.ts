@@ -1,9 +1,4 @@
 import { Uuid } from '@inzpro/domain/common/id'
-import {
-  decodeCursor,
-  makeCursorPage,
-  resolveCursorPagination,
-} from '@inzpro/domain/common/pagination'
 import { QualificationKind } from '@inzpro/domain/modules/qualification-paths/qualification-kind'
 import { QualificationPath } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
@@ -13,32 +8,41 @@ import {
 import { Specialization } from '@inzpro/domain/modules/qualification-paths/specialization'
 import { Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
+import { makeCursorPaginator } from '~api/lib/cursor-pagination.js'
 
 import { QualificationPathsReadError } from './errors.js'
 import { QualificationPathsReader } from './qualification-paths.reader.js'
-
-const ScopeCursor = Schema.fromJsonString(Schema.Struct({ order: Schema.Int, id: Uuid }))
 
 export const QualificationPathsReaderLive = Layer.effect(
   QualificationPathsReader,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
 
+    const specializationsPage = makeCursorPaginator(sql, Schema.Struct({ id: Uuid }), [
+      ['id', sql`s.id`, 'asc'],
+    ])
+
+    const kindsPage = makeCursorPaginator(sql, Schema.Struct({ id: Uuid }), [
+      ['id', sql`k.id`, 'asc'],
+    ])
+
+    // The restricted scope is listed first.
+    const scopesPage = makeCursorPaginator(sql, Schema.Struct({ order: Schema.Int, id: Uuid }), [
+      ['order', sql`CASE WHEN s.code=${restrictedQualificationScopeCode} THEN 0 ELSE 1 END`, 'asc'],
+      ['id', sql`s.id`, 'asc'],
+    ])
+
     return QualificationPathsReader.of({
       specializations: Effect.fn('QualificationPathsReader.specializations')(
         function* (req) {
-          const { limit } = resolveCursorPagination(req)
-          const fetchLimit = limit + 1
-          const cursor = yield* decodeCursor(Uuid, req.cursor)
-
-          const afterCursor = cursor === undefined ? sql`true` : sql`s.id > ${cursor}`
-
-          const rows =
-            yield* sql`SELECT s.id,s.code,s.name,s.description FROM specializations s WHERE EXISTS (SELECT 1 FROM qualification_paths p WHERE p.specialization_id=s.id AND p.published) AND ${afterCursor} ORDER BY s.id LIMIT ${fetchLimit}`
-
-          const data = yield* Schema.decodeUnknownEffect(Schema.Array(Specialization))(rows)
-
-          return makeCursorPage(data, limit, row => row.id)
+          return yield* specializationsPage(
+            req,
+            page =>
+              sql`SELECT s.id,s.code,s.name,s.description FROM specializations s WHERE EXISTS (SELECT 1 FROM qualification_paths p WHERE p.specialization_id=s.id AND p.published) AND ${page.after} ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
+                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(Specialization))),
+              ),
+            row => ({ id: row.id }),
+          )
         },
         Effect.catchTags({
           SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
@@ -47,18 +51,14 @@ export const QualificationPathsReaderLive = Layer.effect(
       ),
       kinds: Effect.fn('QualificationPathsReader.kinds')(
         function* (specializationId, req) {
-          const { limit } = resolveCursorPagination(req)
-          const fetchLimit = limit + 1
-          const cursor = yield* decodeCursor(Uuid, req.cursor)
-
-          const afterCursor = cursor === undefined ? sql`true` : sql`k.id > ${cursor}`
-
-          const rows =
-            yield* sql`SELECT k.id,k.code,k.name FROM qualification_kinds k WHERE EXISTS (SELECT 1 FROM qualification_paths p WHERE p.qualification_kind_id=k.id AND p.specialization_id=${specializationId} AND p.published) AND ${afterCursor} ORDER BY k.id LIMIT ${fetchLimit}`
-
-          const data = yield* Schema.decodeUnknownEffect(Schema.Array(QualificationKind))(rows)
-
-          return makeCursorPage(data, limit, row => row.id)
+          return yield* kindsPage(
+            req,
+            page =>
+              sql`SELECT k.id,k.code,k.name FROM qualification_kinds k WHERE EXISTS (SELECT 1 FROM qualification_paths p WHERE p.qualification_kind_id=k.id AND p.specialization_id=${specializationId} AND p.published) AND ${page.after} ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
+                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(QualificationKind))),
+              ),
+            row => ({ id: row.id }),
+          )
         },
         Effect.catchTags({
           SqlError: cause => Effect.fail(new QualificationPathsReadError({ cause })),
@@ -67,22 +67,13 @@ export const QualificationPathsReaderLive = Layer.effect(
       ),
       scopes: Effect.fn('QualificationPathsReader.scopes')(
         function* (specializationId, kindId, req) {
-          const { limit } = resolveCursorPagination(req)
-          const fetchLimit = limit + 1
-          const cursor = yield* decodeCursor(ScopeCursor, req.cursor)
-
-          const order = sql`CASE WHEN s.code=${restrictedQualificationScopeCode} THEN 0 ELSE 1 END`
-
-          const afterCursor =
-            cursor === undefined ? sql`true` : sql`(${order},s.id) > (${cursor.order},${cursor.id})`
-
-          const rows =
-            yield* sql`SELECT s.id,s.code,s.name FROM qualification_scopes s WHERE EXISTS (SELECT 1 FROM qualification_paths p WHERE p.qualification_scope_id=s.id AND p.specialization_id=${specializationId} AND p.qualification_kind_id=${kindId} AND p.published) AND ${afterCursor} ORDER BY ${order},s.id LIMIT ${fetchLimit}`
-
-          const data = yield* Schema.decodeUnknownEffect(Schema.Array(QualificationScope))(rows)
-
-          return makeCursorPage(data, limit, row =>
-            Schema.encodeSync(ScopeCursor)({
+          return yield* scopesPage(
+            req,
+            page =>
+              sql`SELECT s.id,s.code,s.name FROM qualification_scopes s WHERE EXISTS (SELECT 1 FROM qualification_paths p WHERE p.qualification_scope_id=s.id AND p.specialization_id=${specializationId} AND p.qualification_kind_id=${kindId} AND p.published) AND ${page.after} ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
+                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(QualificationScope))),
+              ),
+            row => ({
               order: row.code === restrictedQualificationScopeCode ? 0 : 1,
               id: row.id,
             }),

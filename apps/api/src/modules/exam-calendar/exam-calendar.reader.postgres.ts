@@ -1,54 +1,49 @@
 import { DateTimeUtc, dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
-import {
-  decodeCursor,
-  resolveCursorPagination,
-  makeCursorPage,
-} from '@inzpro/domain/common/pagination'
+import { mapCursorPage } from '@inzpro/domain/common/pagination'
 import { ExamSessionId, ExamSessionOption } from '@inzpro/domain/modules/exam-calendar/exam-session'
 import { DateTime, Effect, Layer, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
+import { makeCursorPaginator } from '~api/lib/cursor-pagination.js'
 
 import { ExamCalendarReadError } from './errors.js'
 import { ExamCalendarReader } from './exam-calendar.reader.js'
 
 const SessionRow = Schema.Struct({ ...ExamSessionOption.fields, writtenAt: DateTimeUtc })
 
-const SessionCursor = Schema.fromJsonString(Schema.Struct({ at: DateTimeUtc, id: ExamSessionId }))
+const sessionFromRow = (row: typeof SessionRow.Type) => ({
+  ...row,
+  writtenAt: dateTimeUtcToUtcIsoDateTime(row.writtenAt),
+})
 
 export const ExamCalendarReaderLive = Layer.effect(
   ExamCalendarReader,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
 
+    const sessionsPage = makeCursorPaginator(
+      sql,
+      Schema.Struct({ writtenAt: DateTimeUtc, id: ExamSessionId }),
+      [
+        ['writtenAt', sql`e.written_at`, 'asc'],
+        ['id', sql`e.id`, 'asc'],
+      ],
+    )
+
     return ExamCalendarReader.of({
       sessions: Effect.fn('ExamCalendarReader.sessions')(
         function* (specializationId, req) {
           const now = DateTime.formatIso(yield* DateTime.now)
-          const { limit } = resolveCursorPagination(req)
-          const fetchLimit = limit + 1
-          const cursor = yield* decodeCursor(SessionCursor, req.cursor)
 
-          const afterCursor =
-            cursor === undefined
-              ? sql`true`
-              : sql`(e.written_at,e.id) > (${DateTime.formatIso(cursor.at)},${cursor.id})`
-
-          const rows =
-            yield* sql`SELECT e.id,e.name,e.written_at,e.is_confirmed FROM exam_sessions e JOIN specializations s ON s.general_chamber_id=e.general_chamber_id WHERE s.id=${specializationId} AND e.published AND e.selection_closes_at>${now} AND ${afterCursor} ORDER BY e.written_at,e.id LIMIT ${fetchLimit}`
-
-          const data = yield* Schema.decodeUnknownEffect(Schema.Array(SessionRow))(rows)
-
-          const page = makeCursorPage(data, limit, row =>
-            Schema.encodeSync(SessionCursor)({ at: row.writtenAt, id: row.id }),
+          const page = yield* sessionsPage(
+            req,
+            window =>
+              sql`SELECT e.id,e.name,e.written_at,e.is_confirmed FROM exam_sessions e JOIN specializations s ON s.general_chamber_id=e.general_chamber_id WHERE s.id=${specializationId} AND e.published AND e.selection_closes_at>${now} AND ${window.after} ORDER BY ${window.orderBy} LIMIT ${window.limit}`.pipe(
+                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(SessionRow))),
+              ),
+            row => ({ writtenAt: row.writtenAt, id: row.id }),
           )
 
-          return {
-            ...page,
-            data: page.data.map(row => ({
-              ...row,
-              writtenAt: dateTimeUtcToUtcIsoDateTime(row.writtenAt),
-            })),
-          }
+          return mapCursorPage(page, sessionFromRow)
         },
         Effect.catchTags({
           SqlError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
@@ -58,31 +53,17 @@ export const ExamCalendarReaderLive = Layer.effect(
       sessionsForPath: Effect.fn('ExamCalendarReader.sessionsForPath')(
         function* (pathId, req) {
           const now = DateTime.formatIso(yield* DateTime.now)
-          const { limit } = resolveCursorPagination(req)
-          const fetchLimit = limit + 1
-          const cursor = yield* decodeCursor(SessionCursor, req.cursor)
 
-          const afterCursor =
-            cursor === undefined
-              ? sql`true`
-              : sql`(e.written_at,e.id) > (${DateTime.formatIso(cursor.at)},${cursor.id})`
-
-          const rows =
-            yield* sql`SELECT e.id,e.name,e.written_at,e.is_confirmed FROM exam_sessions e JOIN specializations s ON s.general_chamber_id=e.general_chamber_id JOIN qualification_paths p ON p.specialization_id=s.id WHERE p.id=${pathId} AND e.published AND e.selection_closes_at>${now} AND ${afterCursor} ORDER BY e.written_at,e.id LIMIT ${fetchLimit}`
-
-          const data = yield* Schema.decodeUnknownEffect(Schema.Array(SessionRow))(rows)
-
-          const page = makeCursorPage(data, limit, row =>
-            Schema.encodeSync(SessionCursor)({ at: row.writtenAt, id: row.id }),
+          const page = yield* sessionsPage(
+            req,
+            window =>
+              sql`SELECT e.id,e.name,e.written_at,e.is_confirmed FROM exam_sessions e JOIN specializations s ON s.general_chamber_id=e.general_chamber_id JOIN qualification_paths p ON p.specialization_id=s.id WHERE p.id=${pathId} AND e.published AND e.selection_closes_at>${now} AND ${window.after} ORDER BY ${window.orderBy} LIMIT ${window.limit}`.pipe(
+                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(SessionRow))),
+              ),
+            row => ({ writtenAt: row.writtenAt, id: row.id }),
           )
 
-          return {
-            ...page,
-            data: page.data.map(row => ({
-              ...row,
-              writtenAt: dateTimeUtcToUtcIsoDateTime(row.writtenAt),
-            })),
-          }
+          return mapCursorPage(page, sessionFromRow)
         },
         Effect.catchTags({
           SqlError: cause => Effect.fail(new ExamCalendarReadError({ cause })),
