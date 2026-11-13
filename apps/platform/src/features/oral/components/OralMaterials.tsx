@@ -10,7 +10,7 @@ import {
 } from '@inzpro/ui/components/empty'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Item, ItemContent, ItemTitle, ItemGroup } from '@inzpro/ui/components/item'
-import { Skeleton } from '@inzpro/ui/components/skeleton'
+import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { LoaderCircle, Mic2 } from 'lucide-react'
 import {
   SuspenseInfiniteQuery,
@@ -30,7 +30,11 @@ export const OralMaterials = () => {
       fallback={
         <Item variant="background-soft">
           <ItemContent>
-            <Skeleton className="h-5 w-64" />
+            <TextSkeleton
+              size="sm"
+              leading="snug"
+              className="w-64"
+            />
           </ItemContent>
         </Item>
       }

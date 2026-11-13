@@ -1,7 +1,7 @@
 import { PageLimit } from '@inzpro/domain/common/pagination'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
 import { pathsQueryOptions } from '@inzpro/queries/modules/preparation'
-import { Skeleton } from '@inzpro/ui/components/skeleton'
+import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { Link } from '@tanstack/react-router'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { authenticatedRouteApi } from '~platform/features/auth/utils'
@@ -47,7 +47,12 @@ const OptionalSpecialty = () => {
 
   return (
     <SuspenseQueryWrapper
-      fallback={<Skeleton className="h-7" />}
+      fallback={
+        <TextSkeleton
+          leading="tight"
+          lines={1}
+        />
+      }
       errorFallback={() => (
         <p className="text-destructive line-clamp-2 font-semibold">Wystąpił błąd</p>
       )}

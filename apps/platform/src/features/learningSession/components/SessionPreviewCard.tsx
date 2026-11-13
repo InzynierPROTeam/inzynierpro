@@ -10,6 +10,7 @@ import {
 } from '@inzpro/ui/components/card'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Skeleton } from '@inzpro/ui/components/skeleton'
+import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { List, Scale, Split } from 'lucide-react'
 import type React from 'react'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
@@ -93,16 +94,45 @@ export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview 
 export const SessionPreviewCardSkeleton = () => (
   <Card>
     <CardHeader>
-      <Skeleton className="h-6 w-56" />
-      <Skeleton className="h-4 w-full max-w-xl" />
+      <TextSkeleton
+        size="base"
+        className="w-56"
+      />
+      <TextSkeleton
+        size="sm"
+        lines={2}
+        className="max-w-xl"
+      />
     </CardHeader>
     <CardContent className="flex flex-col gap-8">
-      <Skeleton className="h-12 w-full max-w-lg" />
-      <Skeleton className="h-12 w-64" />
-      <Skeleton className="h-12 w-32" />
+      <DetailSkeleton className="max-w-lg" />
+      <DetailSkeleton className="max-w-64" />
+      <DetailSkeleton className="max-w-32" />
     </CardContent>
-    <CardFooter>
-      <Skeleton className="h-10 w-36" />
+    <CardFooter className="flex-col items-start gap-2">
+      <Skeleton className="h-9 w-32 rounded-4xl" />
+      <TextSkeleton
+        size="xs"
+        className="w-64"
+      />
     </CardFooter>
   </Card>
+)
+
+type DetailSkeletonProps = { className?: string }
+
+const DetailSkeleton: React.FC<DetailSkeletonProps> = ({ className }) => (
+  <div className="flex items-start gap-4">
+    <Skeleton className="size-10 shrink-0 rounded-full" />
+    <div className="flex w-full flex-col gap-1">
+      <TextSkeleton
+        size="sm"
+        className="w-24"
+      />
+      <TextSkeleton
+        size="sm"
+        className={className}
+      />
+    </div>
+  </div>
 )

@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardContent,
 } from '@inzpro/ui/components/card'
-import { Skeleton } from '@inzpro/ui/components/skeleton'
+import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import type React from 'react'
 
 type CategorySummaryCardProps = { document: GetDocumentRes['document'] }
@@ -46,15 +46,34 @@ export const CategorySummaryCard: React.FC<CategorySummaryCardProps> = ({ docume
 )
 
 export const CategorySummaryCardSkeleton = () => (
-  <Card className="flex-2">
+  <Card className="@container min-w-0 flex-2">
     <CardHeader>
-      <Skeleton className="h-6 w-full max-w-lg" />
-      <Skeleton className="h-4 w-48" />
+      <TextSkeleton
+        size="base"
+        className="max-w-lg"
+      />
+      <TextSkeleton
+        size="sm"
+        className="w-48"
+      />
     </CardHeader>
-    <CardContent className="grid grid-cols-3 gap-4">
-      <Skeleton className="h-14" />
-      <Skeleton className="h-14" />
-      <Skeleton className="h-14" />
+    <CardContent className="grid grid-cols-3 gap-4 @max-sm:grid-cols-1">
+      <StatSkeleton />
+      <StatSkeleton />
+      <StatSkeleton />
     </CardContent>
   </Card>
+)
+
+const StatSkeleton = () => (
+  <div className="flex flex-col gap-1">
+    <TextSkeleton
+      size="sm"
+      className="w-20"
+    />
+    <TextSkeleton
+      size="2xl"
+      className="w-12"
+    />
+  </div>
 )

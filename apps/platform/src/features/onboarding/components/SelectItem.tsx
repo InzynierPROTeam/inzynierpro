@@ -1,6 +1,7 @@
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { RadioGroupItemRaw } from '@inzpro/ui/components/radio-group'
 import { Skeleton } from '@inzpro/ui/components/skeleton'
+import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import type { LucideIcon } from 'lucide-react'
 import type React from 'react'
 
@@ -29,9 +30,15 @@ export const SelectItem: React.FC<SelectItemProps> = ({ name, value, icon: Icon,
 export const SelectItemSkeleton = () => (
   <Skeleton className="@container flex flex-col items-center justify-center gap-4 rounded-2xl p-4">
     <Skeleton className="@max-7xs:size-8 size-12 shrink-0 rounded-full" />
-    <div className="flex w-full flex-col items-center gap-0.5">
-      <Skeleton className="h-5 w-full max-w-28 rounded-sm" />
-      <Skeleton className="h-5 w-full max-w-24 rounded-sm" />
+    <div className="flex w-full flex-col items-center">
+      <TextSkeleton
+        size="sm"
+        className="max-w-28"
+      />
+      <TextSkeleton
+        size="xs"
+        className="max-w-24"
+      />
     </div>
   </Skeleton>
 )

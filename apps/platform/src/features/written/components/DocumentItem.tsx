@@ -6,8 +6,8 @@ import {
   ItemDescription,
   ItemTitle,
 } from '@inzpro/ui/components/item'
-import { Progress } from '@inzpro/ui/components/progress'
-import { Skeleton } from '@inzpro/ui/components/skeleton'
+import { Progress, ProgressSkeleton } from '@inzpro/ui/components/progress'
+import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { Link } from '@tanstack/react-router'
 import { ChevronRight } from 'lucide-react'
 import type React from 'react'
@@ -32,6 +32,8 @@ export const DocumentItem: React.FC<DocumentItemProps> = ({ document }) => (
         Ukończone: {document.completedQuestionCount} / {document.availableQuestionCount} pytań
       </ItemDescription>
       <Progress
+        variant="primary"
+        size="sm"
         aria-label={`Postęp nauki: ${document.title}`}
         value={
           document.availableQuestionCount === 0
@@ -52,9 +54,16 @@ export const DocumentItem: React.FC<DocumentItemProps> = ({ document }) => (
 export const DocumentItemSkeleton = () => (
   <Item variant="background-soft">
     <ItemContent>
-      <Skeleton className="h-5 w-full max-w-lg" />
-      <Skeleton className="h-4 w-48" />
-      <Skeleton className="h-2 w-full max-w-sm" />
+      <TextSkeleton
+        size="sm"
+        leading="snug"
+        className="max-w-lg"
+      />
+      <TextSkeleton
+        size="sm"
+        className="w-48"
+      />
+      <ProgressSkeleton size="sm" />
     </ItemContent>
   </Item>
 )
