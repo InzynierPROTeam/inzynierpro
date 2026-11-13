@@ -14,7 +14,7 @@ export const useSignOutMutation = () => {
     onSuccess: async (_, __, ___, context) => {
       // Nothing cached for the previous account may be shown to the next one.
       context.client.clear()
-      await router.navigate({ to: '/logowanie', replace: true })
+      await router.navigate({ to: '/', replace: true })
       await router.invalidate()
     },
     onError: error => toast.add({ type: 'error', title: getAuthErrorMessage(error) }),

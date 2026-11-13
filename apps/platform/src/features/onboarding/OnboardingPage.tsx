@@ -1,8 +1,3 @@
-import { OnboardingForm } from './components/OnboardingForm'
+import { OnboardingSection } from './components/OnboardingSection'
 
-export const OnboardingPage = () => (
-  <section className="layout-section">
-    <h1 className="text-2xl font-semibold">Wybierz ścieżkę nauki</h1>
-    <OnboardingForm />
-  </section>
-)
+export const OnboardingPage = () => <OnboardingSection />
