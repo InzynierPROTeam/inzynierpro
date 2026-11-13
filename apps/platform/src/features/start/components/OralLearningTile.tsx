@@ -2,14 +2,18 @@ import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@inzpro/ui/components/card'
 import { Link } from '@tanstack/react-router'
+import { useId } from 'react'
 import { cx } from 'tailwind-variants'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 
 export const OralLearningTile = () => {
   const { selectedPath } = onboardedRouteApi.useRouteContext()
+  const titleId = useId()
 
   return (
     <Card
+      role="region"
+      aria-labelledby={titleId}
       className={cx(
         selectedPath.accessScope === oralExamAccess
           ? 'col-span-full'
@@ -18,7 +22,7 @@ export const OralLearningTile = () => {
     >
       <CardHeader>
         <CardTitle>
-          <h2>Nauka do egzaminu ustnego</h2>
+          <h2 id={titleId}>Nauka do egzaminu ustnego</h2>
         </CardTitle>
       </CardHeader>
       <CardContent>
