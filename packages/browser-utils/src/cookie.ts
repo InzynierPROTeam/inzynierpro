@@ -1,25 +1,31 @@
+import { Duration } from 'effect'
 import Cookies from 'js-cookie'
 
 export const secureCookieOptions = {
   path: '/',
   sameSite: 'strict',
   secure: true,
-} satisfies Cookies.CookieAttributes
+} as const
 
-const secureCookie = Cookies.withAttributes(secureCookieOptions)
-
-export const getCookie = (key: string) => {
-  return secureCookie.get(key) ?? null
+export type CookieOptions = {
+  maxAge?: Duration.Duration
 }
 
-export const setCookie = (
-  key: string,
-  value: string,
-  options: Cookies.CookieAttributes = { expires: 7 },
-) => {
-  secureCookie.set(key, value, options)
+export const getCookieOptions = (options: CookieOptions = {}) => ({
+  ...secureCookieOptions,
+  maxAge: Duration.toSeconds(options.maxAge ?? Duration.days(7)),
+})
+
+export const getCookie = (key: string) => {
+  return Cookies.get(key) ?? null
+}
+
+export const setCookie = (key: string, value: string, options: CookieOptions = {}) => {
+  const { maxAge, ...attributes } = getCookieOptions(options)
+
+  Cookies.set(key, value, { ...attributes, 'max-age': String(maxAge) })
 }
 
 export const removeCookie = (key: string) => {
-  secureCookie.remove(key)
+  Cookies.remove(key, secureCookieOptions)
 }

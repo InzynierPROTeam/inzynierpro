@@ -14,7 +14,11 @@
   "dependencies": {
     "@inzpro/browser-utils": "workspace:*",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-start": "catalog:",
     "effect": "catalog:",
     "react": "catalog:"
+  },
+  "devDependencies": {
+    "@tanstack/react-router": "catalog:"
   }
 }

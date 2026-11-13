@@ -147,7 +147,9 @@ function ToastClose({
   )
 }
 
-function ToastIcon({ type }: { type: string | undefined }) {
+type ToastIconProps = { type: string | undefined }
+
+function ToastIcon({ type }: ToastIconProps) {
   let icon: React.ReactNode = null
 
   if (type === 'success') {

@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { ApiDateTime } from '~domain/common/date-time.js'
+import { UtcIsoDateTime } from '~domain/common/date-time.js'
 import { ExamSessionId } from '~domain/modules/exam-calendar/exam-session.js'
 import { ExamAccessScope } from '~domain/modules/preparation/exam-access.js'
 
@@ -18,9 +18,10 @@ export const UserExamGoal = Schema.Struct({
   version: UserExamGoalVersion,
   examSessionId: ExamSessionId,
   sessionName: Schema.String,
-  writtenAt: ApiDateTime,
-  oralPlanningAt: ApiDateTime,
-  oralExamDate: Schema.OptionFromNullOr(ApiDateTime),
+  sessionIsConfirmed: Schema.Boolean,
+  writtenAt: UtcIsoDateTime,
+  oralPlanningAt: UtcIsoDateTime,
+  oralExamDate: Schema.NullOr(UtcIsoDateTime),
   accessScope: ExamAccessScope,
 })
 

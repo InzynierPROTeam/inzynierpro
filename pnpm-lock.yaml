@@ -303,6 +303,9 @@ catalogs:
     react-email:
       specifier: 6.11.7
       version: 6.11.7
+    react-intersection-observer:
+      specifier: 11.0.1
+      version: 11.0.1
     redis:
       specifier: 6.3.1
       version: 6.3.1
@@ -631,6 +634,9 @@ importers:
 
   packages/browser-utils:
     dependencies:
+      effect:
+        specifier: 'catalog:'
+        version: 4.1.2
       js-cookie:
         specifier: 'catalog:'
         version: 3.0.8
@@ -731,12 +737,19 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.106.1(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-start':
+        specifier: 'catalog:'
+        version: 1.169.4(esbuild@0.28.2)(react-dom@19.3.1)(react@19.3.1)(rolldown@1.2.16)(supports-color@10.2.2)(vite@8.3.6)
       effect:
         specifier: 'catalog:'
         version: 4.1.2
       react:
         specifier: 'catalog:'
         version: 19.3.1
+    devDependencies:
+      '@tanstack/react-router':
+        specifier: 'catalog:'
+        version: 1.170.46(react-dom@19.3.1)(react@19.3.1)
 
   packages/redis:
     dependencies:
@@ -773,6 +786,9 @@ importers:
       '@inzpro/react-utils':
         specifier: workspace:*
         version: link:../react-utils
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.106.1(@types/react@19.3.0)(react@19.3.1)
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.46(react-dom@19.3.1)(react@19.3.1)
@@ -791,6 +807,9 @@ importers:
       react-cookie-manager:
         specifier: 'catalog:'
         version: 5.4.1(react-dom@19.3.1)(react@19.3.1)
+      react-intersection-observer:
+        specifier: 'catalog:'
+        version: 11.0.1(react-dom@19.3.1)(react@19.3.1)
       shadcn:
         specifier: 'catalog:'
         version: 4.23.0(supports-color@10.2.2)
@@ -810,6 +829,12 @@ importers:
 
   packages/utils:
     dependencies:
+      '@inzpro/config':
+        specifier: workspace:*
+        version: link:../config
+      '@inzpro/domain':
+        specifier: workspace:*
+        version: link:../domain
       effect:
         specifier: 'catalog:'
         version: 4.1.2
@@ -4693,6 +4718,15 @@ packages:
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
       react-dom: ^18.0 || ^19.0 || ^19.0.0-rc
+
+  react-intersection-observer@11.0.1:
+    resolution: {integrity: sha512-BIZ1M40GPSKDIT1MJbXK7SB0BwBaTKr84QfZCs5asKer7YMOYLzMi+RI1F4VStbZLGHoosJmd+aOQDDipUV1gA==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
 
   react@19.3.1:
     resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
@@ -8702,6 +8736,12 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
+
+  react-intersection-observer@11.0.1(react-dom@19.3.1)(react@19.3.1):
+    dependencies:
+      react: 19.3.1
+    optionalDependencies:
+      react-dom: 19.3.1(react@19.3.1)
 
   react@19.3.1: {}
 

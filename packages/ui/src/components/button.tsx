@@ -11,7 +11,7 @@ const buttonVariants = tv({
       secondary:
         'bg-secondary text-secondary-foreground hover:bg-secondary/90 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
       outline:
-        'border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-transparent dark:hover:bg-input/30',
+        'border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground',
       'border-primary': 'border-primary text-primary hover:bg-primary/5',
       'border-secondary': 'border-secondary text-secondary hover:bg-secondary/5',
       ghost:

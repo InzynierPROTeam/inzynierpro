@@ -3,13 +3,11 @@ import { MinusIcon } from 'lucide-react'
 import * as React from 'react'
 import { cn } from 'tailwind-variants'
 
-function InputOTP({
-  className,
-  containerClassName,
-  ...props
-}: React.ComponentProps<typeof OTPInput> & {
+type InputOTPProps = React.ComponentProps<typeof OTPInput> & {
   containerClassName?: string
-}) {
+}
+
+function InputOTP({ className, containerClassName, ...props }: InputOTPProps) {
   return (
     <OTPInput
       data-slot="input-otp"
@@ -37,13 +35,11 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function InputOTPSlot({
-  index,
-  className,
-  ...props
-}: React.ComponentProps<'div'> & {
+type InputOTPSlotProps = React.ComponentProps<'div'> & {
   index: number
-}) {
+}
+
+function InputOTPSlot({ index, className, ...props }: InputOTPSlotProps) {
   const inputOTPContext = React.useContext(OTPInputContext)
   const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {}
 

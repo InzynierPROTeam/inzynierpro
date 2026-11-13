@@ -27,10 +27,9 @@ describe('shared display helpers', () => {
     },
   )
 
-  it('uses the consumer time zone at a year boundary', () => {
+  it('uses Warsaw at a year boundary', () => {
     const date = DateTime.makeUnsafe('2026-12-31T23:30:00Z')
 
-    expect(getCurrentFullYear(date, 'UTC')).toBe(2026)
-    expect(getCurrentFullYear(date, 'Europe/Warsaw')).toBe(2027)
+    expect(getCurrentFullYear(date)).toBe(2027)
   })
 })

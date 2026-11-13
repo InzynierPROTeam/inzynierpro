@@ -12,6 +12,8 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@inzpro/config": "workspace:*",
+    "@inzpro/domain": "workspace:*",
     "effect": "catalog:"
   }
 }

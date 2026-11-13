@@ -1,4 +1,5 @@
 import { getCookie, setCookie } from '@inzpro/browser-utils/cookie'
+import { Duration } from 'effect'
 
 export type ResolvedTheme = 'light' | 'dark'
 
@@ -24,9 +25,7 @@ export const createThemeStore = (storageKey: string = THEME_KEY) => {
     get: () => readTheme(getCookie(storageKey)),
     set: (theme: Theme) => {
       setCookie(storageKey, theme, {
-        expires: 365,
-        sameSite: 'lax',
-        secure: window.location.protocol === 'https:',
+        maxAge: Duration.days(365),
       })
       window.dispatchEvent(new Event(eventName))
     },

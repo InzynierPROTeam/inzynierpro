@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { ApiDateTime } from '~domain/common/date-time.js'
+import { UtcIsoDateTime } from '~domain/common/date-time.js'
 import { ExamSessionId } from '~domain/modules/exam-calendar/exam-session.js'
 import { ExamAccessScope } from '~domain/modules/preparation/exam-access.js'
 import { UserExamGoalVersion } from '~domain/modules/preparation/user-exam-goal.js'
@@ -13,7 +13,7 @@ export const PathConfiguration = Schema.Struct({
   qualificationScopeId: QualificationScopeId,
   accessScope: ExamAccessScope,
   examSessionId: ExamSessionId,
-  oralExamDate: Schema.OptionFromNullOr(ApiDateTime),
+  oralExamDate: Schema.NullOr(UtcIsoDateTime),
 })
 
 export type PathConfiguration = typeof PathConfiguration.Type

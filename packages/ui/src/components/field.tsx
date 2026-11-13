@@ -17,11 +17,9 @@ function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
   )
 }
 
-function FieldLegend({
-  className,
-  variant = 'legend',
-  ...props
-}: React.ComponentProps<'legend'> & { variant?: 'legend' | 'label' }) {
+type FieldLegendProps = React.ComponentProps<'legend'> & { variant?: 'legend' | 'label' }
+
+function FieldLegend({ className, variant = 'legend', ...props }: FieldLegendProps) {
   return (
     <legend
       data-slot="field-legend"
@@ -132,13 +130,11 @@ function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
   )
 }
 
-function FieldSeparator({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<'div'> & {
+type FieldSeparatorProps = React.ComponentProps<'div'> & {
   children?: React.ReactNode
-}) {
+}
+
+function FieldSeparator({ children, className, ...props }: FieldSeparatorProps) {
   return (
     <div
       data-slot="field-separator"
@@ -162,14 +158,11 @@ function FieldSeparator({
   )
 }
 
-function FieldError({
-  className,
-  children,
-  errors,
-  ...props
-}: React.ComponentProps<'div'> & {
+type FieldErrorProps = React.ComponentProps<'div'> & {
   errors?: Array<{ message?: string } | undefined>
-}) {
+}
+
+function FieldError({ className, children, errors, ...props }: FieldErrorProps) {
   const content = useMemo(() => {
     if (children) {
       return children

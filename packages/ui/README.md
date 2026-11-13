@@ -24,3 +24,15 @@ import { ThemeProvider } from '@inzpro/ui/providers/theme-provider'
 ## Dependencies
 
 The permitted workspace directions are defined in [policy.ts](../tools/src/oxlint/architecture-policy.ts). Follow the [architecture guide](../../docs/architecture.md) for imports, wildcard exports, test exceptions and verification.
+
+## Suspense queries
+
+`components/containers/suspense-query-boundary` provides a resettable `SuspenseQueryWrapper`, render-prop `SuspenseQuery` and `WithSuspenseQuery`. The wrapper coordinates React Suspense, an error boundary and TanStack Query error reset. Loading, empty and error presentations are supplied by the consumer; `undefined` fallbacks render nothing in the shared package.
+
+`components/containers/suspense-infinite-query-boundary` provides the equivalent infinite-query render props, preserving page parameters, cursor types and next-page controls. Both empty-aware containers require `isDataEmpty(data)`, which receives the selected data after `options.select`; no array, null or page-count heuristics are applied. Query-function data and selected data are inferred independently, while the cache retains the original response. The `With…` variants expose the query result without handling empty states. Application-level defaults should compose the existing `Empty` primitives directly, keeping copy and routes outside this package.
+
+`pnpm --filter @inzpro/ui test` runs all UI tests without React Compiler and repeats the container tests with the platform's React 19 compiler settings. The refetch regressions count React Profiler commits and render-prop calls rather than asserting environment-dependent timing thresholds.
+
+## Card
+
+Keep the shadcn header/content/footer composition. Card sizes are `md` (default), `sm` and `xs`; the root owns both spacing and radius through inherited CSS variables, including header, footer and edge images. Rounded sizes descend from 4xl to 3xl to 2xl. Background variants do not change composition.
