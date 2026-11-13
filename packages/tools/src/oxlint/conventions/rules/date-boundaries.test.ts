@@ -5,7 +5,9 @@ import { dateBoundariesRule } from './date-boundaries.ts'
 const tester = new RuleTester({ languageOptions: { parserOptions: { lang: 'ts' } } })
 const dto = '/repo/packages/api-contracts/src/modules/preparation/responses.ts'
 const client = '/repo/apps/platform/src/features/start/Tile.ts'
-const backend = '/repo/apps/api/src/modules/preparation/change-goal.command.ts'
+const backend = '/repo/apps/api/src/modules/preparation/application/change-goal.command.ts'
+const mappers = '/repo/apps/api/src/modules/preparation/http/mappers.ts'
+const model = '/repo/apps/api/src/modules/preparation/domain/preparation.model.ts'
 
 tester.run('conventions/date-boundaries', dateBoundariesRule, {
   valid: [
@@ -15,10 +17,17 @@ tester.run('conventions/date-boundaries', dateBoundariesRule, {
     },
     { filename: client, code: "import {formatDateTime} from '@inzpro/utils/date'" },
     { filename: client, code: "import type {DateTime} from 'effect'" },
-    { filename: backend, code: "import {UserExamGoal} from './preparation.model.js'" },
     {
-      filename: backend.replace('.command', '.presentation'),
-      code: "import {UserExamGoal} from '@inzpro/domain/modules/preparation/user-exam-goal'",
+      filename: backend,
+      code: "import {UserExamGoal} from '~api/modules/preparation/domain/preparation.model.js'",
+    },
+    {
+      filename: mappers,
+      code: "import {UtcIsoDateTime} from '@inzpro/domain/common/date-time'",
+    },
+    {
+      filename: '/repo/packages/api-contracts/src/utils/pagination.ts',
+      code: "import {Schema} from 'effect'; const limit = Schema.FiniteFromString.pipe(Schema.decodeTo(PageLimit))",
     },
     { filename: client.replace('.ts', '.test.ts'), code: "import {DateTime} from 'effect'" },
   ],
@@ -29,7 +38,7 @@ tester.run('conventions/date-boundaries', dateBoundariesRule, {
       errors: [{ messageId: 'backend' }],
     },
     {
-      filename: backend.replace('.command', '.model'),
+      filename: model,
       code: "import {Schema} from 'effect'; const Goal = Schema.Struct({writtenAt: Schema.String})",
       errors: [{ messageId: 'backend' }],
     },
@@ -83,11 +92,6 @@ tester.run('conventions/date-boundaries', dateBoundariesRule, {
       filename: client,
       code: 'const start = {serializationAdapters: [adapter]}',
       errors: [{ messageId: 'serializer' }],
-    },
-    {
-      filename: backend,
-      code: "import type {UserExamGoal} from '@inzpro/domain/modules/preparation/user-exam-goal'",
-      errors: [{ messageId: 'backend' }],
     },
     {
       filename: backend,

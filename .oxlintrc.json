@@ -53,6 +53,8 @@
     "conventions/api-client-contracts": "error",
     "conventions/backend-boundaries": "error",
     "conventions/domain-identifiers": "error",
+    "conventions/domain-vocabulary": "error",
+    "conventions/module-layers": "error",
     "conventions/date-boundaries": "error",
     "conventions/prefer-duration": "error",
     "conventions/hooks-in-hooks-folder": "error",

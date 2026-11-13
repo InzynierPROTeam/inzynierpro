@@ -4,8 +4,10 @@ import { apiClientContractsRule } from './rules/api-client-contracts.ts'
 import { backendBoundariesRule } from './rules/backend-boundaries.ts'
 import { dateBoundariesRule } from './rules/date-boundaries.ts'
 import { domainIdentifiersRule } from './rules/domain-identifiers.ts'
+import { domainVocabularyRule } from './rules/domain-vocabulary.ts'
 import { hooksInHooksFolderRule } from './rules/hooks-in-hooks-folder.ts'
 import { infiniteQueryNamesRule } from './rules/infinite-query-names.ts'
+import { moduleLayersRule } from './rules/module-layers.ts'
 import { namedComponentPropsRule } from './rules/named-component-props.ts'
 import { noFeaturePrefixRule } from './rules/no-feature-prefix.ts'
 import { noSpreadRouteHooksRule } from './rules/no-spread-route-hooks.ts'
@@ -20,7 +22,7 @@ import { queryKeysRule } from './rules/query-keys.ts'
 import { requestSchemasRule } from './rules/request-schemas.ts'
 import { tracedBackendOperationsRule } from './rules/traced-backend-operations.ts'
 
-/** Workspace conventions for file placement, route state, failure handling, query modules and backend tracing. */
+/** Workspace conventions for file placement, schema ownership, route state, failure handling, query modules and backend tracing. */
 const conventionsPlugin = eslintCompatPlugin({
   meta: { name: 'conventions' },
   rules: {
@@ -34,6 +36,8 @@ const conventionsPlugin = eslintCompatPlugin({
     'api-client-contracts': apiClientContractsRule,
     'backend-boundaries': backendBoundariesRule,
     'domain-identifiers': domainIdentifiersRule,
+    'domain-vocabulary': domainVocabularyRule,
+    'module-layers': moduleLayersRule,
     'date-boundaries': dateBoundariesRule,
     'prefer-duration': preferDurationRule,
     'hooks-in-hooks-folder': hooksInHooksFolderRule,

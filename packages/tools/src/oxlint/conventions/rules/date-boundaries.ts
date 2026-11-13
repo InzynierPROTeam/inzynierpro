@@ -14,13 +14,6 @@ const richSchemas = new Set([
   'Class',
 ])
 
-const publicModels = new Set([
-  'UserExamGoal',
-  'UserQualificationPath',
-  'PathConfiguration',
-  'GoalChange',
-])
-
 /** Transport schemas preserve JSON; backend operations use their module's rich models. */
 export const dateBoundariesRule = defineRule({
   meta: {
@@ -43,20 +36,21 @@ export const dateBoundariesRule = defineRule({
       return {}
     }
 
+    // Query-string pagination decodes numbers; every other contract schema keeps JSON values.
     const transport =
       filename.includes('/packages/domain/src/modules/') ||
-      (filename.includes('/packages/api-contracts/src/') && !filename.endsWith('/errors.ts'))
+      (filename.includes('/packages/api-contracts/src/') &&
+        !filename.endsWith('/errors.ts') &&
+        !filename.endsWith('/utils/pagination.ts'))
 
     const client = /\/apps\/(platform|web|admin|mobile)\/src\//.test(filename)
 
-    const backend =
-      /\/apps\/api\/src\/modules\//.test(filename) &&
-      !/(?:http|\.http|\.model|\.presentation|\.postgres)\.ts$/.test(filename)
+    // HTTP mappers and SQL adapters convert representations; domain and application use models.
+    const backend = /\/apps\/api\/src\/modules\/[^/]+\/(?:domain|application)\//.test(filename)
 
     const schemaNamespaces = new Set<string>()
     const effectNamespaces = new Set<string>()
     const dateNamespaces = new Set<string>()
-    const internalModel = backend || /\/apps\/api\/src\/modules\/.*\.model\.ts$/.test(filename)
 
     return {
       ImportDeclaration(node) {
@@ -106,11 +100,7 @@ export const dateBoundariesRule = defineRule({
             context.report({ node: specifier, messageId: 'client' })
           }
 
-          if (
-            backend &&
-            (name === 'UtcIsoDateTime' ||
-              (publicModels.has(name) && /\/modules\/preparation\//.test(source)))
-          ) {
+          if (backend && name === 'UtcIsoDateTime') {
             context.report({ node: specifier, messageId: 'backend' })
           }
         }
@@ -161,7 +151,7 @@ export const dateBoundariesRule = defineRule({
         const annotation = node.typeAnnotation?.typeAnnotation
 
         if (
-          internalModel &&
+          backend &&
           node.key.type === 'Identifier' &&
           /(?:At|Date|Until|Timestamp)$/.test(node.key.name) &&
           (annotation?.type === 'TSStringKeyword' ||
@@ -174,7 +164,7 @@ export const dateBoundariesRule = defineRule({
       },
       Property(node) {
         if (
-          internalModel &&
+          backend &&
           node.key.type === 'Identifier' &&
           /(?:At|Date|Until|Timestamp)$/.test(node.key.name) &&
           node.value.type === 'MemberExpression' &&

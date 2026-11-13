@@ -10,7 +10,7 @@ export const backendBoundariesRule = defineRule({
     messages: {
       sql: 'Keep SQL in a *.reader.postgres.ts or *.repository.postgres.ts adapter, migration or seed. Tests prepare data through repositories.',
       filename:
-        'Name backend operations <concept>.<role>.ts; transport belongs in the module http.ts.',
+        'Name backend operations <concept>.<role>.ts; transport belongs in the module http/handlers.ts.',
     },
   },
   create(context) {
@@ -74,7 +74,7 @@ export const backendBoundariesRule = defineRule({
           httpBuilders.has(node.callee.object.name) &&
           node.callee.property.type === 'Identifier' &&
           node.callee.property.name === 'group' &&
-          !/\/src\/modules\/[^/]+\/http\.ts$/.test(filename)
+          !/\/src\/modules\/[^/]+\/http\/(?:[a-z0-9-]+\.)?handlers\.ts$/.test(filename)
         ) {
           context.report({ node, messageId: 'filename' })
         }
