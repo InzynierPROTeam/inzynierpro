@@ -105,6 +105,34 @@ Tests sit beside the code they cover. The `conventions/module-layers` and `conve
 - Log levels: `error` for failures someone must fix, `warn` for degraded operation (a fallback, a lost connection), `info` for lifecycle events, `debug` for diagnosis only. HTTP request completion is logged at info with method, path without query parameters, status and duration; spans retain the matching request context. Never put e-mail addresses, IP addresses, tokens, codes or note content into a log message or annotation. Span attributes follow OpenTelemetry semantic conventions; our own attributes take the `app.` prefix.
 - API integration tests exercise the real HTTP handlers and real adapters. Prepare fixtures through actual module repositories; assert behavior through the agreed public API/UI. Seed scripts may own fixture SQL. Test bodies do not implement independent persistence queries.
 
+## Testing
+
+ADR-0015 sets the strategy; this section is how to apply it. Name tests after behaviour in English and use glossary terms.
+
+| What changes                                                         | Test it with                                                                              |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| A pure rule or policy (`*.rules.ts`, `*.policy.ts`, schema messages) | A unit test beside it. Supply services through layers with in-memory values, never mocks. |
+| An API endpoint, SQL adapter, auth or rate limit                     | An integration test through `startTestApi` against real PostgreSQL and Redis.             |
+| A client action, query or React hook in a package                    | A test beside it with the scoped HTTP test server from `@inzpro/testing`.                 |
+| A UI component with its own logic (state, branching, side effects)   | A behaviour test beside it. A pure styling wrapper over shadcn or Base UI gets no test.   |
+| A user flow across pages: sign-in, onboarding, guards, study         | An E2E test in `apps/e2e`.                                                                |
+
+Data and isolation:
+
+- Every test creates its own account with a unique e-mail. Tests never truncate tables or depend on order, so files and workers run in parallel against one database.
+- The catalogue comes from the idempotent technical seed. Test-specific content goes through module repositories (`apps/api/src/test/learning-fixtures.ts`); test bodies write no SQL.
+- Business time is fixed (`catalogueTestTime`), so exam sessions do not expire under the suite.
+
+E2E:
+
+- Select by role and Polish accessible name, as a user reads the page (`getByRole('button', { name: 'Zaloguj się' })`). A `data-testid` needs a comment explaining why no accessible name fits.
+- Sign in through the UI only when signing in is part of the behaviour under test, as in sign-in or guest onboarding. Other tests start from the `signedIn` or `onboarded` fixtures, which sign in through the API and share the session cookie.
+- Read sign-in codes from the outbox file; never add test-only endpoints to the API.
+- Assert what the user sees and where they land, not request payloads or internal state.
+- A flaky test fails CI: CI retries a failed test once only to record its trace, and a test that passes on retry still fails the run. Fix the cause (usually a missing web-first assertion) rather than raising retries or timeouts.
+
+Coverage is reported per workspace in the CI job summary. It informs review; no threshold blocks a change.
+
 ## Contract and persistence review
 
 Check that a resource collection follows the pagination decision in ADR-0014, rather than mistaking bounded configuration values for a collection. Verify that clients can fetch subsequent pages and that filters and account identity participate in the appropriate cache keys.
