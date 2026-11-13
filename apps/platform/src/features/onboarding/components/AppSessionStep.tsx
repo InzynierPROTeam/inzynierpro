@@ -1,6 +1,6 @@
 import { PathLimitReached } from '@inzpro/api-contracts/modules/preparation/errors'
+import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
-import { PathConfiguration } from '@inzpro/domain/modules/preparation/onboarding'
 import { Button } from '@inzpro/ui/components/button'
 import { toast } from '@inzpro/ui/components/toast'
 import { Schema } from 'effect'
@@ -41,7 +41,7 @@ export const AppSessionStep = () => {
           onClick={event => {
             event.preventDefault()
             void submit(async selection => {
-              const payload = Schema.decodeUnknownSync(PathConfiguration)({
+              const payload = Schema.decodeUnknownSync(CompleteOnboardingPayload)({
                 specializationId: draft.specjalnosc,
                 qualificationKindId: draft.rodzaj,
                 qualificationScopeId: draft.zakres,

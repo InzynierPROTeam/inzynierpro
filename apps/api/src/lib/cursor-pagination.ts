@@ -1,14 +1,62 @@
-import {
-  type CursorPage,
-  type CursorPagination,
-  type InvalidCursor,
-  decodeCursor,
-  encodeCursor,
-  makeCursorPage,
-  resolveCursorPagination,
-} from '@inzpro/domain/common/pagination'
-import { type Array as Arr, Effect, Schema } from 'effect'
+import { Cursor, defaultPageLimit, type PageLimit } from '@inzpro/domain/common/pagination'
+import { type Array as Arr, Data, Effect, Schema } from 'effect'
 import type { Statement } from 'effect/sql'
+
+/** The page a use case asks a reader for; HTTP pagination queries satisfy it structurally. */
+export type CursorPageRequest = {
+  readonly cursor?: Cursor | undefined
+  readonly limit?: PageLimit | undefined
+}
+
+export type CursorPage<A> = {
+  readonly data: ReadonlyArray<A>
+  readonly meta: { readonly hasMore: boolean; readonly nextCursor?: Cursor | undefined }
+}
+
+export class InvalidCursor extends Data.TaggedError('InvalidCursor') {}
+
+type CursorKey = Schema.Top & {
+  readonly DecodingServices: never
+  readonly EncodingServices: never
+}
+
+/**
+ * An opaque cursor: the sort-key fields as JSON, encoded as base64url. Clients pass it back
+ * unchanged and never parse it, so the server can change the key without a contract change.
+ */
+export const cursorCodec = <S extends CursorKey>(key: S) =>
+  Schema.StringFromBase64Url.pipe(Schema.decodeTo(Schema.fromJsonString(key)))
+
+export const encodeCursor =
+  <S extends CursorKey>(key: S) =>
+  (value: S['Type']): Cursor =>
+    Schema.decodeSync(Cursor)(Schema.encodeSync(cursorCodec(key))(value))
+
+export const decodeCursor = <S extends CursorKey>(key: S, cursor: Cursor | undefined) =>
+  cursor === undefined
+    ? Effect.undefined
+    : Schema.decodeEffect(cursorCodec(key))(cursor).pipe(Effect.mapError(() => new InvalidCursor()))
+
+/** Builds a page from `limit + 1` rows: the extra row only proves that another page exists. */
+export const makeCursorPage = <A>(
+  rows: ReadonlyArray<A>,
+  limit: number,
+  cursorOf: (row: A) => Cursor,
+): CursorPage<A> => {
+  const hasMore = rows.length > limit
+  const data = hasMore ? rows.slice(0, limit) : rows
+  const last = data[data.length - 1]
+
+  return {
+    data,
+    meta: { hasMore, nextCursor: hasMore && last !== undefined ? cursorOf(last) : undefined },
+  }
+}
+
+export const mapCursorPage = <A, B>(page: CursorPage<A>, f: (item: A) => B): CursorPage<B> => ({
+  ...page,
+  data: page.data.map(f),
+})
 
 export type SortDirection = 'asc' | 'desc'
 
@@ -95,12 +143,12 @@ export const makeCursorPaginator = <F extends KeyFields>(
   }
 
   return <Row, E, R>(
-    page: CursorPagination,
+    page: CursorPageRequest,
     select: (window: KeysetWindow) => Effect.Effect<ReadonlyArray<Row>, E, R>,
     keyOf: (row: Row) => Schema.Struct.Type<F>,
   ): Effect.Effect<CursorPage<Row>, E | InvalidCursor, R> =>
     Effect.gen(function* () {
-      const { limit } = resolveCursorPagination(page)
+      const limit = page.limit ?? defaultPageLimit
       const cursor = yield* decodeCursor(key, page.cursor)
 
       const rows = yield* select({

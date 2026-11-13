@@ -1,7 +1,7 @@
+import { UserQualificationPath } from '@inzpro/api-contracts/modules/preparation/responses'
 // @vitest-environment jsdom
 import { getCookie, setCookie, removeCookie } from '@inzpro/browser-utils/cookie'
 import { UserId } from '@inzpro/domain/modules/identity/user'
-import { UserQualificationPath } from '@inzpro/domain/modules/preparation/user-qualification-path'
 import { Schema } from 'effect'
 import { afterEach, describe, expect, it } from 'vitest'
 

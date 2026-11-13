@@ -1,5 +1,5 @@
+import type { UserQualificationPath } from '@inzpro/api-contracts/modules/preparation/responses'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { UserQualificationPath } from '@inzpro/domain/modules/preparation/user-qualification-path'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Option, Schema } from 'effect'
 

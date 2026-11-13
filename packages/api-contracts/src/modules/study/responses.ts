@@ -1,11 +1,27 @@
-import { CursorPaginatedResponse } from '@inzpro/domain/common/pagination'
-import { OralQuestionCategory } from '@inzpro/domain/modules/learning-content/oral-question-category'
+import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import {
-  DocumentQuestionPool,
   QuestionCount,
+  ReferenceDocumentId,
 } from '@inzpro/domain/modules/learning-content/reference-document'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
+import { CursorPaginatedResponse } from '~api-contracts/utils/pagination.js'
+
+export const DocumentQuestionPool = Schema.Struct({
+  id: ReferenceDocumentId,
+  title: Schema.NonEmptyString,
+  availableQuestionCount: QuestionCount,
+  completedQuestionCount: QuestionCount,
+})
+
+export type DocumentQuestionPool = typeof DocumentQuestionPool.Type
+
+export const OralQuestionCategory = Schema.Struct({
+  id: OralQuestionCategoryId,
+  name: Schema.NonEmptyString,
+})
+
+export type OralQuestionCategory = typeof OralQuestionCategory.Type
 
 export const DocumentResponse = Schema.Struct({ document: DocumentQuestionPool })
 

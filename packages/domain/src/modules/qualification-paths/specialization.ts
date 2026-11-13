@@ -34,12 +34,3 @@ export const specializationCodes = [
 export const SpecializationCode = Schema.Literals(specializationCodes)
 
 export type SpecializationCode = typeof SpecializationCode.Type
-
-export const Specialization = Schema.Struct({
-  code: SpecializationCode,
-  id: SpecializationId,
-  name: Schema.NonEmptyString,
-  description: Schema.NullOr(Schema.NonEmptyString),
-})
-
-export type Specialization = typeof Specialization.Type

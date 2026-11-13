@@ -1,8 +1,8 @@
-import { CursorPagination } from '@inzpro/domain/common/pagination'
 import { QualificationKindId } from '@inzpro/domain/modules/qualification-paths/qualification-kind'
 import { QualificationScopeId } from '@inzpro/domain/modules/qualification-paths/qualification-scope'
 import { SpecializationId } from '@inzpro/domain/modules/qualification-paths/specialization'
 import { Schema } from 'effect'
+import { CursorPagination } from '~api-contracts/utils/pagination.js'
 
 export const SpecializationsQuery = CursorPagination
 

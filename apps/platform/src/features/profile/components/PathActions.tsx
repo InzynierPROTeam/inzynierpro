@@ -1,4 +1,4 @@
-import type { UserQualificationPath } from '@inzpro/domain/modules/preparation/user-qualification-path'
+import type { UserQualificationPath } from '@inzpro/api-contracts/modules/preparation/responses'
 import { Button } from '@inzpro/ui/components/button'
 import {
   DropdownMenu,

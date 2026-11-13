@@ -1,5 +1,6 @@
 import { runApi } from '@inzpro/api-client/lib/run-api'
-import type { Cursor, CursorPage } from '@inzpro/domain/common/pagination'
+import type { CursorPage } from '@inzpro/api-contracts/utils/pagination'
+import type { Cursor } from '@inzpro/domain/common/pagination'
 import {
   infiniteQueryOptions,
   queryOptions,

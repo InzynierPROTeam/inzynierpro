@@ -18,11 +18,3 @@ export const qualificationKindCodes = [
 export const QualificationKindCode = Schema.Literals(qualificationKindCodes)
 
 export type QualificationKindCode = typeof QualificationKindCode.Type
-
-export const QualificationKind = Schema.Struct({
-  code: QualificationKindCode,
-  id: QualificationKindId,
-  name: Schema.NonEmptyString,
-})
-
-export type QualificationKind = typeof QualificationKind.Type

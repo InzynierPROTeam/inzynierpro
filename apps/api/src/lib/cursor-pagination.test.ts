@@ -1,9 +1,10 @@
+import { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import { Uuid } from '@inzpro/domain/common/id'
+import { Cursor } from '@inzpro/domain/common/pagination'
 import { Effect, Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { DateTimeUtc } from './date-time.js'
-import { Uuid } from './id.js'
-import { Cursor, decodeCursor, encodeCursor, makeCursorPage, mapCursorPage } from './pagination.js'
+import { decodeCursor, encodeCursor, makeCursorPage, mapCursorPage } from './cursor-pagination.js'
 
 const Key = Schema.Struct({ at: DateTimeUtc, id: Uuid })
 
