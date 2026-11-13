@@ -7,7 +7,7 @@ The implementation decisions are recorded in [ADR-0012](adr/0012-modular-monolit
 
 Existing packages:
 
-- `api-contracts`: public HTTP endpoints, requests, responses, and declared errors. Share JSON-compatible data schemas; keep backend implementation details in the API application.
+- `api-contracts`: public HTTP endpoints and every object that crosses HTTP: resources, requests, responses, pagination parameters and envelopes, and declared errors. Schemas are JSON-compatible and built from `domain` vocabulary; backend models stay in the API application (ADR-0027).
 - `api-client`: Effect actions generated from the contracts, the Promise execution adapter, and reusable HTTP transport composition. Applications supply URLs, credentials, and request-specific adapters.
 - `queries`: query keys and TanStack Query options. Receive the HTTP client from the consumer and preserve cancellation. Its README defines key hierarchies and invalidation.
 - `db`: PostgreSQL connection infrastructure. Module-owned SQL, persistence rules, and migrations live in `apps/api`.
@@ -24,7 +24,7 @@ Shared foundations used by the platform setup:
 - `browser-utils`: browser APIs such as cookies and storage. Access browser globals when a function runs, and distinguish a missing value from unavailable storage. React integration belongs in `react-utils`.
 - `react-utils`: shared hooks, QueryClient factories, and React integrations. A browser QueryClient can be reused; server-side QueryClients must remain request-scoped. Separate web and native integrations through subpaths.
 - `config`: public organization configuration such as branding, contact details, and supported locales. Environment variables, deployment settings, credentials, and environment loading stay with the application.
-- `domain`: public business vocabulary, branded identifiers, and genuinely shared pure rules. Internal entities, authorization, use cases, repositories, and authoritative business decisions remain inside the owning API module.
+- `domain`: shared business vocabulary: branded identifiers, literal codes, value primitives (`UtcIsoDateTime`, `QuestionCount`, `PageLimit`, `Cursor`) and genuinely shared pure rules. It has no object schemas: HTTP shapes belong to `api-contracts`, and models, authorization, use cases, repositories and authoritative business decisions remain inside the owning API module (ADR-0027).
 - `ui`: shared web UI primitives based on shadcn and reusable custom UI. Receive data and callbacks; keep session fetching, endpoint calls, and application routes in the consumer. Its `theme.css` holds the design tokens; `email` reads that file and overrides only email-specific values, such as pixel sizes.
   Reserved for later: `mobile-ui` owns native controls when the mobile application needs them. Share suitable rules and data, while keeping platform controls separate.
 
@@ -60,7 +60,7 @@ Relative paths and workspace aliases are checked against source ownership withou
 
 ## Dates and canonical URLs
 
-Public HTTP schemas and query caches contain JSON-compatible values: `UtcIsoDateTime` strings and `null`. Backend module models use `DateTimeUtc` and `Option`; SQL adapters and HTTP handlers own conversions. A handler maps rich models to public DTOs explicitly. No custom SSR serialization adapters are needed. ADR-0014 defines these boundaries.
+Public HTTP schemas and query caches contain JSON-compatible values: `UtcIsoDateTime` strings and `null`. Backend module models use `DateTimeUtc` and `Option`; SQL adapters and each module's `http/mappers.ts` own conversions. No custom SSR serialization adapters are needed. ADR-0014 defines these boundaries.
 
 Use Effect's `DateTime`, `Clock`, `Duration` and related built-in modules for date/time creation, arithmetic, time-zone conversion and formatting. Shared `utils/date` helpers use Polish localization and Europe/Warsaw from `config` for display, form input and business days, independent of the device zone. Use Effect clocks for the current time rather than direct `new Date()` or `Date.now()` calls, and keep date formatting behind Effect date/time helpers.
 
@@ -80,7 +80,7 @@ Canonical page URLs have exactly one trailing slash, including the root path. Ca
 
 ## Preparation modules
 
-The API and public domain vocabulary use five business modules: qualification-paths (shared path catalogue), exam-calendar (official targets), preparation (assignments, access and goals), learning-content (shared material) and study (personal learning read models). Public qualification-paths/exam-calendar catalogue groups and private preparation/study groups each have one http.ts. Learning-content exposes its internal repository. A configuration change uses one PostgreSQL transaction, an account lock and revalidation against the catalogue and calendar. Documents with personal progress are one user-specific HTTP request. Collection contracts share cursor pagination for clients and offset pagination for administration. Module migration files create the final initial tables directly; the first migration owns the shared timestamp trigger. ADR-0014 owns date and collection contracts; ADR-0025 owns onboarding behavior. Identifier syntax is enforced by the conventions plugin.
+The API and public domain vocabulary use five business modules: qualification-paths (shared path catalogue), exam-calendar (official targets), preparation (assignments, access and goals), learning-content (shared material) and study (personal learning read models). Public qualification-paths/exam-calendar catalogue groups and private preparation/study groups each have one `http/handlers.ts`; module files sit in `domain/`, `application/`, `infrastructure/` and `http/` folders (ADR-0027). Learning-content exposes its internal repository. A configuration change uses one PostgreSQL transaction, an account lock and revalidation against the catalogue and calendar. Documents with personal progress are one user-specific HTTP request. Collection contracts share cursor pagination for clients and offset pagination for administration. Module migration files create the final initial tables directly; the first migration owns the shared timestamp trigger. ADR-0014 owns date and collection contracts; ADR-0025 owns onboarding behavior. Identifier syntax is enforced by the conventions plugin.
 
 ## Back navigation
 
@@ -88,9 +88,9 @@ Platform pages return with `components/BackLink.tsx` and a typed `fallback` link
 
 ## Backend and contract convention checks
 
-The conventions plugin also enforces SQL placement in API PostgreSQL readers/repositories, migrations and explicit seeds, including rejection of direct fixture SQL. It checks backend role filenames, one module http.ts naming, concept filenames without -id, semantic UUID schemas built from the shared Uuid, request schemas imported from requests.ts, and api-client action/request/response/error groups with an inferred req forwarded to the generated client. These checks run through the existing lint, pre-commit and CI commands.
+The conventions plugin also enforces SQL placement in API PostgreSQL readers/repositories, migrations and explicit seeds, including rejection of direct fixture SQL. It checks backend role filenames, handler groups only in a module's `http/handlers.ts` or `http/<group>.handlers.ts`, module layer folders and their inward import direction (`module-layers`), the absence of object schemas in `domain` (`domain-vocabulary`), concept filenames without -id, semantic UUID schemas built from the shared Uuid, request schemas imported from requests.ts, and api-client action/request/response/error groups with an inferred req forwarded to the generated client. These checks run through the existing lint, pre-commit and CI commands.
 
-Checks cover static syntax and imports. They do not prove authorization order, bounded SQL cardinality, module ownership or whether a query wrapper adds useful behavior; those remain review responsibilities under ADR-0012 and CODING_STANDARDS.md.
+Checks cover static syntax and imports. They do not prove that a model is declared independently of its DTO, authorization order, bounded SQL cardinality, module ownership or whether a query wrapper adds useful behavior; those remain review responsibilities under ADR-0012 and CODING_STANDARDS.md.
 
 ## Web authentication
 

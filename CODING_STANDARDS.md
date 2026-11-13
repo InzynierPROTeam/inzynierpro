@@ -36,7 +36,7 @@ Forms use TanStack `useForm` with `revalidateLogic()` and an Effect schema throu
 
 ## Dates
 
-Public DTOs, query caches and router context preserve `UtcIsoDateTime` strings and `null`. Backend commands, readers and repositories use private module models with `DateTimeUtc` and `Option`; SQL adapters and HTTP handlers own representation changes. Client form/display/day helpers belong in `@inzpro/utils/date` and use Europe/Warsaw independently of the device zone. Native Date is interop only. The date-boundaries, prefer-duration and Effect DateTime lint rules enforce these conventions; ADR-0014 owns the complete policy and DST behavior.
+Public DTOs, query caches and router context preserve `UtcIsoDateTime` strings and `null`. Backend commands, readers and repositories use private module models with `DateTimeUtc` and `Option`; SQL adapters and `http/mappers.ts` own representation changes. Client form/display/day helpers belong in `@inzpro/utils/date` and use Europe/Warsaw independently of the device zone. Native Date is interop only. The date-boundaries, prefer-duration and Effect DateTime lint rules enforce these conventions; ADR-0014 owns the complete policy and DST behavior.
 
 ## Thin wrappers
 
@@ -47,6 +47,7 @@ Shared packages that adapt one layer to another stay thin: `@inzpro/queries` pas
 Issues define delivery scope and acceptance criteria; ADRs own lasting product and architecture decisions. Review the relevant source rather than maintaining another copy here:
 
 - [ADR-0012](docs/adr/0012-modular-monolith-and-data-ownership.md): module ownership, CQRS, authorization policies and atomic learning actions.
+- [ADR-0027](docs/adr/0027-schema-ownership-and-module-layers.md): schema ownership, module layer folders and dependency direction.
 - [ADR-0014](docs/adr/0014-shared-http-contracts-and-client.md): HTTP contracts, dates, collection pagination and personal caching. Client actions and query keys follow the `api-client` and `queries` package READMEs.
 - [ADR-0025](docs/adr/0025-configured-paths-goals-and-access.md): public onboarding, assignments, goals and access scope.
 - [ADR-0003](docs/adr/0003-shared-revisions-publication-and-withdrawal.md): normalized answers, session references, revision publication and withdrawal.
@@ -65,6 +66,31 @@ Polish is for UI text, validation feedback shown by applications, e-mails, SEO, 
 
 Use concrete branded schemas for concurrency versions and meaningful quantities. Keep semantic types in catalogue options, request/response fields, service interfaces and query keys. Presentation drafts, arithmetic intermediates and loop indices may remain primitive; decode them at the domain boundary.
 
+## Where a schema goes
+
+Every schema has one home ([ADR-0027](docs/adr/0027-schema-ownership-and-module-layers.md)). Ask in order:
+
+1. **Does it cross HTTP as an object** (resource, request, response, pagination envelope, transport error)? It goes in `@inzpro/api-contracts/src/modules/<module>/{requests,responses,errors}.ts`, or `utils/` when every module shares it.
+2. **Is it a single value or pure rule that both clients and the backend need** (branded ID, literal code, value primitive, limit, version step)? It goes in `@inzpro/domain`. That package has no object schemas.
+3. **Otherwise it is private to the owning API module**:
+   - a model (`DateTimeUtc`, `Option`), business rule or business error goes in `domain/`;
+   - a command, query, policy, reader or repository port, or a read/write error goes in `application/`;
+   - a SQL row stays private inside its `infrastructure/*.postgres.ts` adapter;
+   - DTO⇄model conversion goes in `http/mappers.ts`, and module failure → contract error mapping goes in `http/errors.ts`.
+
+A model never spreads DTO fields, and a row never chains through `Model.fields`. Declare fields from vocabulary instead. Decode rows straight into the model only when the columns match it one to one. A model without rich values can be returned as its DTO without a mapper.
+
+An API module keeps its files in layer folders and creates only the ones it needs:
+
+| Folder            | Files                                                                                                         | May import                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `domain/`         | `<concept>.model.ts`, `<concept>.rules.ts`, `errors.ts`                                                       | `@inzpro/domain`, other modules' `domain/`                        |
+| `application/`    | `<concept>.command.ts`, `.query.ts`, `.policy.ts`, `.reader.ts`, `.repository.ts`, `.service.ts`, `errors.ts` | `domain/`, other modules' `application/`, `~api/lib`              |
+| `infrastructure/` | `<concept>.reader.postgres.ts`, `<concept>.repository.postgres.ts`                                            | its module's `application/` and `domain/`, `effect/sql`           |
+| `http/`           | `handlers.ts` (`<group>.handlers.ts` when a module serves several contract groups), `mappers.ts`, `errors.ts` | everything above, `@inzpro/api-contracts`, other modules' `http/` |
+
+Tests sit beside the code they cover. The `conventions/module-layers` and `conventions/domain-vocabulary` lint rules enforce placement and direction.
+
 ## Backend responsibilities
 
 - A query operation owns authorization or composition for one read use case. A handler may call its reader directly when there is no application behavior to add. Create query files only when they do useful work.
@@ -73,8 +99,8 @@ Use concrete branded schemas for concurrency versions and meaningful quantities.
 - A repository exposes persistence operations used by commands. Commands can also use readers when they need current data to decide a write.
 - PostgreSQL adapters own SQL, row decoding and persistence conversion. Prepare input variables before interpolating SQL. Select flat columns and assemble nested objects in TypeScript. Use SQL joins, predicates, counts and limits for the requested read; keep JSON object/array construction out of SELECTs.
 - Retrieve Effect services into local variables named after the concrete service: `preparationReader`, `preparationRepository`, `examCalendarReader`, `examCalendarRepository`. Keep those names across use cases, adapters and fixtures.
-- A handler maps a module's specific failures with an inline `Effect.catchTags`.
-- Map an unexpected infrastructure failure in a handler with `logAndFailInternalServerError(message)` from `~api/lib/internal-server-error.js`: it logs the cause, tags the span with `error.type` and fails with HTTP 500. Do not log it by hand. Business failures keep their own responses.
+- A handler maps a module's specific failures with an inline `Effect.catchTags` whose values are named mappers from the module's `http/errors.ts` (`PathPermissionDenied: failPathAccessDenied`), so every endpoint returns the same contract error and message. Failures shared by all modules have mappers in `~api/lib`, such as `failInvalidCursor`. Another module's failures use that module's `http/errors.ts`.
+- Map an unexpected infrastructure failure with `logAndFailInternalServerError(message)` from `~api/lib/internal-server-error.js`, bound once in `http/errors.ts` (`failPreparationRead`): it logs the cause, tags the span with `error.type` and fails with HTTP 500. Do not log it by hand. Business failures keep their own responses.
 - A handler starts with its rate limit: `limitByClient(publicReadLimit)` for anonymous endpoints, `limitByUser(accountReadLimit)` or `limitByUser(accountWriteLimit)` for signed-in ones, and declares `RateLimitExceeded` in its contract. A new tier needs a reason in ADR-0026.
 - Log levels: `error` for failures someone must fix, `warn` for degraded operation (a fallback, a lost connection), `info` for lifecycle events, `debug` for diagnosis only. HTTP request completion is logged at info with method, path without query parameters, status and duration; spans retain the matching request context. Never put e-mail addresses, IP addresses, tokens, codes or note content into a log message or annotation. Span attributes follow OpenTelemetry semantic conventions; our own attributes take the `app.` prefix.
 - API integration tests exercise the real HTTP handlers and real adapters. Prepare fixtures through actual module repositories; assert behavior through the agreed public API/UI. Seed scripts may own fixture SQL. Test bodies do not implement independent persistence queries.

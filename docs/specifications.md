@@ -38,6 +38,7 @@ Before implementation read the applicable issue, glossary and ADRs. Treat V1 at 
 | [0024-chamber-directory-and-qualification-process-guide](adr/0024-chamber-directory-and-qualification-process-guide.md) | D10                              |
 | [0025-configured-paths-goals-and-access](adr/0025-configured-paths-goals-and-access.md)                                 | D1, D2, D13, D15; Foundation F4  |
 | [0026-api-rate-limiting](adr/0026-api-rate-limiting.md)                                                                 | D1, D15, D17                     |
+| [0027-schema-ownership-and-module-layers](adr/0027-schema-ownership-and-module-layers.md)                               | D15                              |
 
 ## Product scope notes
 

@@ -6,7 +6,7 @@ The backend is one business system of modules with explicit responsibilities. An
 
 ## Module interfaces
 
-Each backend module holds its own domain rules, application operations, infrastructure implementations and transport, and exposes a small explicit interface to other modules. We follow the Clean Architecture direction, organized by business responsibility. Layers and adapters exist where they have a real role; a small module needs no empty folders or pass-through classes.
+Each backend module holds its own domain rules, application operations, infrastructure implementations and transport, and exposes a small explicit interface to other modules. We follow the Clean Architecture direction, organized by business responsibility. ADR-0027 fixes the layer folders, their dependency direction and where each kind of schema lives; a module creates only the folders it needs and no pass-through classes.
 
 A module owns writes to its data. Other modules use its interface instead of changing its private tables. The shared database keeps transactions and foreign keys. Cross-cutting dashboard and report reads use explicitly defined read models instead of reaching into other modules' private data.
 

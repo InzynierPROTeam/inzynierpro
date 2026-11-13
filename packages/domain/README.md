@@ -1,10 +1,10 @@
 # @inzpro/domain
 
-Small shared schemas for public business vocabulary.
+Shared business vocabulary: single values and pure rules that clients and the backend both need.
 
 **Runtime:** Universal JavaScript.
 
-The initial identifier schema validates UUIDs while retaining plain string values. Add public branded identifiers and genuinely shared pure rules as consumers need them. Private entities, use cases, SQL and authoritative business decisions stay inside apps/api modules.
+Holds branded identifiers, literal codes, value primitives and genuinely shared pure rules such as limits and version steps. It holds no object schemas: shapes that cross HTTP belong in `@inzpro/api-contracts`, and backend models, use cases, SQL and authoritative business decisions stay inside `apps/api` modules. [ADR-0027](../../docs/adr/0027-schema-ownership-and-module-layers.md) records the split, and the `conventions/domain-vocabulary` lint rule rejects `Schema.Struct`, `Schema.Class` and similar here.
 
 ## Usage
 
@@ -18,8 +18,8 @@ Domain depends on no other workspace package. `utils` may consume its vocabulary
 
 The permitted workspace directions are defined in [policy.ts](../tools/src/oxlint/architecture-policy.ts). Follow the [architecture guide](../../docs/architecture.md) for imports, wildcard exports, test exceptions and verification.
 
-Public vocabulary is grouped by qualification-paths, exam-calendar, preparation and learning-content. The common date-time module separates `UtcIsoDateTime` (a canonical UTC ISO string for public DTOs) from `DateTimeUtc` (an Effect UTC codec for private backend models and SQL boundaries). Public schemas retain ISO/null without runtime transformations. Backend module presentation functions map rich dates and Option back to DTOs. Catalogue options retain their concrete branded IDs; goal versions and question counts also have dedicated brands.
+Public vocabulary is grouped by qualification-paths, exam-calendar, preparation and learning-content. The common date-time module separates `UtcIsoDateTime` (a canonical UTC ISO string for public DTOs) from `DateTimeUtc` (an Effect UTC codec for private backend models and SQL boundaries). Public schemas retain ISO/null without runtime transformations; each API module's `http/mappers.ts` maps rich dates and Option to DTOs. Catalogue IDs are concretely branded; goal versions and question counts also have dedicated brands.
 
-Collection contracts reuse common/pagination: cursor pages for clients and offset pages for administration, always with data/meta envelopes.
+`common/pagination` holds the page vocabulary: `PageLimit`, `PageNumber`, the opaque `Cursor` and the default and maximum limits. Pagination parameters and `data`/`meta` envelopes are contracts in `@inzpro/api-contracts/utils/pagination`; cursor encoding and keyset paging are backend mechanics in `apps/api/src/lib/cursor-pagination.ts`.
 
-Catalogue codes are closed literal schemas built from named constants and readonly arrays. Adding a specialization, kind or scope requires updating those constants and the exhaustive client icon mappings. Specializations also expose a nullable description for railway variants. Exam-session options contain an ISO written date and an explicit confirmation flag; goals retain that flag for consistent estimated-date presentation.
+Catalogue codes are closed literal schemas built from named constants and readonly arrays. Adding a specialization, kind or scope requires updating those constants and the exhaustive client icon mappings.
