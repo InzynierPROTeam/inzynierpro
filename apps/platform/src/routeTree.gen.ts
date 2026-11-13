@@ -135,6 +135,7 @@ const appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute =
 
 export interface FileRoutesByFullPath {
   '/health-check': typeof HealthCheckRoute
+  '/': typeof publicLayoutNotauthenticatedIndexRoute
   '/pierwsze-kroki': typeof appAuthenticatedPierwszeKrokiRoute
   '/profil': typeof appAuthenticatedProfilRoute
   '/zacznij': typeof publicLayoutZacznijRoute
@@ -142,7 +143,6 @@ export interface FileRoutesByFullPath {
   '/start': typeof appAuthenticatedOnboardedStartRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
-  '/': typeof publicLayoutNotauthenticatedIndexRoute
   '/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka/': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
@@ -150,6 +150,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/health-check': typeof HealthCheckRoute
+  '/': typeof publicLayoutNotauthenticatedIndexRoute
   '/pierwsze-kroki': typeof appAuthenticatedPierwszeKrokiRoute
   '/profil': typeof appAuthenticatedProfilRoute
   '/zacznij': typeof publicLayoutZacznijRoute
@@ -157,7 +158,6 @@ export interface FileRoutesByTo {
   '/start': typeof appAuthenticatedOnboardedStartRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
-  '/': typeof publicLayoutNotauthenticatedIndexRoute
   '/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
@@ -189,6 +189,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/health-check'
+    | '/'
     | '/pierwsze-kroki'
     | '/profil'
     | '/zacznij'
@@ -196,7 +197,6 @@ export interface FileRouteTypes {
     | '/start'
     | '/logowanie'
     | '/zweryfikuj-otp'
-    | '/'
     | '/ustny'
     | '/nauka/start'
     | '/nauka/'
@@ -204,6 +204,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/health-check'
+    | '/'
     | '/pierwsze-kroki'
     | '/profil'
     | '/zacznij'
@@ -211,7 +212,6 @@ export interface FileRouteTypes {
     | '/start'
     | '/logowanie'
     | '/zweryfikuj-otp'
-    | '/'
     | '/ustny'
     | '/nauka/start'
     | '/nauka'
@@ -257,21 +257,21 @@ declare module '@tanstack/react-router' {
     '/(app)/_authenticated': {
       id: '/(app)/_authenticated'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof appAuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(public)/_layout': {
       id: '/(public)/_layout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof publicLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(app)/_authenticated/_onboarded': {
       id: '/(app)/_authenticated/_onboarded'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof appAuthenticatedOnboardedRouteImport
       parentRoute: typeof appAuthenticatedRoute
     }
@@ -292,7 +292,7 @@ declare module '@tanstack/react-router' {
     '/(public)/_layout/_notauthenticated': {
       id: '/(public)/_layout/_notauthenticated'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof publicLayoutNotauthenticatedRouteImport
       parentRoute: typeof publicLayoutRoute
     }
@@ -306,14 +306,14 @@ declare module '@tanstack/react-router' {
     '/(app)/_authenticated/_onboarded/_oralValid': {
       id: '/(app)/_authenticated/_onboarded/_oralValid'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof appAuthenticatedOnboardedOralValidRouteImport
       parentRoute: typeof appAuthenticatedOnboardedRoute
     }
     '/(app)/_authenticated/_onboarded/_writtenValid': {
       id: '/(app)/_authenticated/_onboarded/_writtenValid'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidRouteImport
       parentRoute: typeof appAuthenticatedOnboardedRoute
     }
