@@ -17,7 +17,7 @@ import { RateLimitHeadersMiddleware, TrustedClientIpHeader } from '~api/lib/rate
 import { ApiErrorMiddleware } from '~api/middleware/api-error.js'
 import { RequestIdMiddleware } from '~api/middleware/request-id.js'
 import { SecureHeadersMiddleware } from '~api/middleware/secure-headers.js'
-import { AuthHttp } from '~api/modules/identity/http.js'
+import { AuthHttp } from '~api/modules/identity/http/handlers.js'
 
 export const httpServerLayer = (config: Env) =>
   HttpRouter.serve(

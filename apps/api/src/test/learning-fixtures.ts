@@ -1,17 +1,17 @@
+import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { databaseLayerFromConfig } from '@inzpro/db'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
-import { PathConfiguration } from '@inzpro/domain/modules/preparation/onboarding'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Layer, Schema, Option } from 'effect'
-import { ExamCalendarRepository } from '~api/modules/exam-calendar/exam-calendar.repository.js'
-import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/exam-calendar.repository.postgres.js'
-import { LearningContentRepository } from '~api/modules/learning-content/learning-content.repository.js'
-import { LearningContentRepositoryLive } from '~api/modules/learning-content/learning-content.repository.postgres.js'
-import { NewQuestion } from '~api/modules/learning-content/question.model.js'
-import { QualificationPathsReader } from '~api/modules/qualification-paths/qualification-paths.reader.js'
-import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/qualification-paths.reader.postgres.js'
-import { StudyRepository } from '~api/modules/study/study.repository.js'
-import { StudyRepositoryLive } from '~api/modules/study/study.repository.postgres.js'
+import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
+import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
+import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
+import { NewQuestion } from '~api/modules/learning-content/domain/learning-content.model.js'
+import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
+import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
+import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
+import { StudyRepository } from '~api/modules/study/application/study.repository.js'
+import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
 import { technicalConfiguration } from './preparation.js'
 
@@ -37,7 +37,7 @@ export const createStudyFixture = (specializationId = '60000000-0000-4000-8000-0
       const learningContentRepository = yield* LearningContentRepository
       const documentId = yield* Schema.decodeEffect(ReferenceDocumentId)(crypto.randomUUID())
 
-      const config = yield* Schema.decodeUnknownEffect(PathConfiguration)({
+      const config = yield* Schema.decodeUnknownEffect(CompleteOnboardingPayload)({
         ...technicalConfiguration,
         specializationId,
       })
