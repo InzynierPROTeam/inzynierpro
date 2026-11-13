@@ -2,7 +2,7 @@ import { Api } from '@inzpro/api-contracts/api'
 import { Effect, Option, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
-import { failInvalidCursor } from '~api/lib/invalid-cursor.js'
+import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { limitByClient, publicReadLimit } from '~api/lib/rate-limit.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
@@ -22,7 +22,7 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
               Effect.map(page => mapCursorPage(page, toSpecializationDto)),
               Effect.catchTags({
                 QualificationPathsReadError: failQualificationPathsRead,
-                InvalidCursor: failInvalidCursor,
+                InvalidCursor: () => invalidCursor,
               }),
             ),
           ),
@@ -34,7 +34,7 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
             qualificationPathsReader.kinds(query.specializationId, query).pipe(
               Effect.catchTags({
                 QualificationPathsReadError: failQualificationPathsRead,
-                InvalidCursor: failInvalidCursor,
+                InvalidCursor: () => invalidCursor,
               }),
             ),
           ),
@@ -48,7 +48,7 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
               .pipe(
                 Effect.catchTags({
                   QualificationPathsReadError: failQualificationPathsRead,
-                  InvalidCursor: failInvalidCursor,
+                  InvalidCursor: () => invalidCursor,
                 }),
               ),
           ),

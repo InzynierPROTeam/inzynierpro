@@ -3,7 +3,7 @@ import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/cur
 import { Effect, Option, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
-import { failInvalidCursor } from '~api/lib/invalid-cursor.js'
+import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/application/exam-calendar.reader.js'
@@ -36,10 +36,10 @@ import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/i
 import { QualificationPathsRepositoryLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.repository.postgres.js'
 
 import {
-  failGoalConflict,
-  failInvalidPathConfiguration,
-  failPathAccessDenied,
-  failPathLimitReached,
+  goalConflict,
+  invalidPathConfiguration,
+  pathAccessDenied,
+  pathLimitReached,
   failPreparationRead,
   failPreparationWrite,
 } from './errors.js'
@@ -77,7 +77,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           Effect.map(page => mapCursorPage(page, toUserQualificationPathDto)),
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
-            InvalidCursor: failInvalidCursor,
+            InvalidCursor: () => invalidCursor,
           }),
         ),
       )
@@ -109,8 +109,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
             QualificationPathsWriteError: failQualificationPathsWrite,
             ExamCalendarReadError: failExamCalendarRead,
             ExamCalendarWriteError: failExamCalendarWrite,
-            UserPathLimitReached: failPathLimitReached,
-            StalePathConfiguration: failInvalidPathConfiguration,
+            UserPathLimitReached: () => pathLimitReached,
+            StalePathConfiguration: () => invalidPathConfiguration,
           }),
         ),
       )
@@ -123,7 +123,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
             PreparationWriteError: failPreparationWrite,
-            PathPermissionDenied: failPathAccessDenied,
+            PathPermissionDenied: () => pathAccessDenied,
           }),
         ),
       )
@@ -136,7 +136,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
             PreparationWriteError: failPreparationWrite,
-            PathPermissionDenied: failPathAccessDenied,
+            PathPermissionDenied: () => pathAccessDenied,
           }),
         ),
       )
@@ -149,7 +149,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
             PreparationWriteError: failPreparationWrite,
-            PathPermissionDenied: failPathAccessDenied,
+            PathPermissionDenied: () => pathAccessDenied,
           }),
         ),
       )
@@ -167,9 +167,9 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
             ExamCalendarReadError: failExamCalendarRead,
             ExamCalendarWriteError: failExamCalendarWrite,
             QualificationPathsWriteError: failQualificationPathsWrite,
-            PathPermissionDenied: failPathAccessDenied,
-            StaleExamGoal: failGoalConflict,
-            StalePathConfiguration: failInvalidPathConfiguration,
+            PathPermissionDenied: () => pathAccessDenied,
+            StaleExamGoal: () => goalConflict,
+            StalePathConfiguration: () => invalidPathConfiguration,
           }),
         ),
       )
@@ -184,8 +184,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           Effect.provide(dependencies),
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
-            PathPermissionDenied: failPathAccessDenied,
-            InvalidCursor: failInvalidCursor,
+            PathPermissionDenied: () => pathAccessDenied,
+            InvalidCursor: () => invalidCursor,
           }),
         ),
       )
@@ -201,8 +201,8 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
             ExamCalendarReadError: failExamCalendarRead,
-            PathPermissionDenied: failPathAccessDenied,
-            InvalidCursor: failInvalidCursor,
+            PathPermissionDenied: () => pathAccessDenied,
+            InvalidCursor: () => invalidCursor,
           }),
         ),
       )

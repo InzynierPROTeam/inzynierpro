@@ -2,7 +2,7 @@ import { Api } from '@inzpro/api-contracts/api'
 import { Effect, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
-import { failInvalidCursor } from '~api/lib/invalid-cursor.js'
+import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { limitByClient, publicReadLimit } from '~api/lib/rate-limit.js'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/application/exam-calendar.reader.js'
 import { ExamCalendarReaderLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.reader.postgres.js'
@@ -21,7 +21,7 @@ export const ExamCalendarLive = HttpApiBuilder.group(Api, 'ExamCalendar', handle
             Effect.map(page => mapCursorPage(page, toExamSessionOptionDto)),
             Effect.catchTags({
               ExamCalendarReadError: failExamCalendarRead,
-              InvalidCursor: failInvalidCursor,
+              InvalidCursor: () => invalidCursor,
             }),
           ),
         ),

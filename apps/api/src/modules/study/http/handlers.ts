@@ -2,11 +2,11 @@ import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
 import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
-import { failInvalidCursor } from '~api/lib/invalid-cursor.js'
+import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { PreparationReader } from '~api/modules/preparation/application/preparation.reader.js'
-import { failPathAccessDenied, failPreparationRead } from '~api/modules/preparation/http/errors.js'
+import { pathAccessDenied, failPreparationRead } from '~api/modules/preparation/http/errors.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { getDocument } from '~api/modules/study/application/document.query.js'
 import { getDocuments } from '~api/modules/study/application/documents.query.js'
@@ -15,7 +15,7 @@ import { getSessionPreview } from '~api/modules/study/application/session-previe
 import { StudyReader } from '~api/modules/study/application/study.reader.js'
 import { StudyReaderLive } from '~api/modules/study/infrastructure/study.reader.postgres.js'
 
-import { failDocumentNotFound, failStudyRead } from './errors.js'
+import { documentNotFound, failStudyRead } from './errors.js'
 
 export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
   Effect.gen(function* () {
@@ -38,9 +38,9 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
           Effect.provide(dependencies),
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
-            PathPermissionDenied: failPathAccessDenied,
+            PathPermissionDenied: () => pathAccessDenied,
             StudyReadError: failStudyRead,
-            InvalidCursor: failInvalidCursor,
+            InvalidCursor: () => invalidCursor,
           }),
         ),
       )
@@ -54,9 +54,9 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
           Effect.provide(dependencies),
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
-            PathPermissionDenied: failPathAccessDenied,
+            PathPermissionDenied: () => pathAccessDenied,
             StudyReadError: failStudyRead,
-            StudyDocumentNotFound: failDocumentNotFound,
+            StudyDocumentNotFound: () => documentNotFound,
           }),
         ),
       )
@@ -76,7 +76,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
           Effect.provide(dependencies),
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
-            PathPermissionDenied: failPathAccessDenied,
+            PathPermissionDenied: () => pathAccessDenied,
             StudyReadError: failStudyRead,
           }),
         ),
@@ -91,8 +91,8 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
           Effect.provide(dependencies),
           Effect.catchTags({
             PreparationReadError: failPreparationRead,
-            PathPermissionDenied: failPathAccessDenied,
-            InvalidCursor: failInvalidCursor,
+            PathPermissionDenied: () => pathAccessDenied,
+            InvalidCursor: () => invalidCursor,
           }),
         ),
       )
