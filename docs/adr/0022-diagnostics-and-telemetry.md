@@ -18,7 +18,7 @@ The observability layer lives in `apps/api`, because HTTP and worker are entry p
 
 ## Spans
 
-Every HTTP request has a server span with `http.route` and status. Commands, queries, readers and PostgreSQL repositories are traced spans. SQL gets spans from `@effect/sql` with query text but no parameters. Pure domain functions have no spans. Attributes follow OpenTelemetry semantic conventions.
+HTTP request completion logs use the built-in Effect HTTP logger with method, URL path without query or fragment, response status and elapsed time. They never include headers or bodies. Every HTTP request has a server span with `http.route` and status. Commands, queries, readers and PostgreSQL repositories are traced spans. SQL gets spans from `@effect/sql` with query text but no parameters. Pure domain functions have no spans. Attributes follow OpenTelemetry semantic conventions.
 
 ## Privacy
 

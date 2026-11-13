@@ -74,20 +74,20 @@ docker build -f apps/api/Dockerfile -t inzpro-api .
 
 ## Onboarding, paths and session preview
 
-After applying migrations, seed the small synthetic dataset explicitly:
+After applying migrations, seed the small development dataset explicitly:
 
 ```sh
 pnpm --filter @inzpro/api migrate:latest
 pnpm --filter @inzpro/api seed:technical
 ```
 
-Sign in and open `/onboarding`. Choose specialization, qualification kind, scope, exam access and a mandatory target session. The URL restores the draft; no assignment exists until confirmation. The backend validates the entire configuration and commits the assignment, initial goal and selection in one transaction. Repeated confirmation returns the existing assignment without overwriting it.
+Sign in and open `/onboarding`. Choose specialization, qualification kind, scope, exam access and a mandatory target session. The URL restores the draft; no assignment exists until confirmation. The backend validates the entire configuration and commits the assignment and initial goal in one transaction; the client saves its selection locally. Repeated confirmation returns the existing assignment without overwriting it.
 
-`/profile` contains the paths section: select, add, edit the exam goal, extend written/oral access to both, archive and restore. Target changes append goal versions; archive preserves history and switches to the most recently used active alternative. A past exam date does not expire access. Personal oral dates override the labelled approximate oral-planning date on the target session.
+`/profile` contains the paths section: select, add, edit the exam goal, extend written/oral access to both, archive and restore. Target changes append goal versions; archive preserves history; each client independently falls back to its first available active assignment. A past exam date does not expire access. Personal oral dates override the labelled approximate oral-planning date on the target session.
 
-`/start` restores the selected assignment. `/study/written` shows documents with personal coverage and read-only preview; `/study/oral` currently has a truthful empty catalogue. A missing exam-part permission offers explicit free extension to both and stays on the originally requested page after access refresh. API policies enforce the same permissions independently of the UI.
+`/start` resolves the account-scoped web cookie against the full assignment list fetched by an ordinary query. Accounts can have at most five assignments, including archived ones. A missing or invalid cookie is immediately replaced with the first active assignment. GET /preparation/paths orders assignments by assignment `updated_at` descending and is shared by profile and navigation through an ordinary query; there is no server-side selected-path table or endpoint. `/study/written` shows documents with personal coverage and read-only preview; `/study/oral` currently has a truthful empty catalogue. A missing exam-part permission offers explicit free extension to both and stays on the originally requested page after access refresh. API policies enforce the same permissions independently of the UI.
 
-The technical dataset has two chambers, two specialization/kind/scope combinations, future/ongoing-oral/closed sessions, two documents and three synthetic questions. Each question has a stable identity, an immutable published revision, exactly three options and one explanation. Path B shares one question/revision with A. Repeated seeding does not rewrite published content; the English sample uses new revision IDs when upgrading the earlier technical fixture. No V1 production data or subject-matter verification is imported.
+The development dataset uses Polish chamber names, construction and architectural qualifications, two reference documents and three authored questions with answers and explanations based on the cited legal sources. Session dates are relative fixtures, not official schedules. Each question has a stable identity and an immutable published revision. The paths share one question/revision. Repeated seeding updates catalogue labels and upgrades the previous technical question revisions without rewriting published content. No V1 production data is imported.
 
 The backend uses CQRS in one PostgreSQL database. Query/command operations depend on reader/repository ports; application policies check active membership and exam part using PostgreSQL on each material request. Each module has one `http.ts`. Personal category/document data is combined in one response and cached only by TanStack Query under account/path/request keys. Authenticated HTTP responses are private and not stored by browser/shared HTTP caches. No server-side learning-data Redis cache is introduced.
 

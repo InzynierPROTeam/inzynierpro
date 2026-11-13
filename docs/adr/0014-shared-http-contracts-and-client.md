@@ -16,4 +16,12 @@ Every resource list uses the shared pagination schemas and a `data`/`meta` respo
 
 ## Dates
 
-Every date in the system uses one codec and the ApiDateTime type: HTTP accepts and returns canonical UTC ISO 8601 with milliseconds, and decoding yields a validated Effect `DateTime.Utc`. There are no separate types per date role and no rule forcing midnight. The user may pick a local date and time; the client converts it to UTC and presents dates in its own time zone. A missing optional date is `Option` inside and `null` in JSON.
+The database stores instants as `timestamptz(3)`. PostgreSQL preserves the instant, not the original input offset or IANA zone. No zone column is needed while the product interprets exam dates and business days in Europe/Warsaw. A future requirement to retain the user's original zone needs an explicit separate field.
+
+Public schemas use `UtcIsoDateTime`, a branded canonical UTC ISO 8601 string with milliseconds, and `null` for an absent value. HTTP decoding preserves these primitives. API clients, query caches and router contexts contain JSON-compatible values, with no custom serialization adapters.
+
+Backend module models use `DateTimeUtc` (Effect `DateTime.Utc`) and `Option` for optional dates. Commands, readers and repositories operate on these models. SQL adapters decode native driver dates into Effect values and encode timestamps for SQL parameters. HTTP handlers decode validated ISO/null input into module models and explicitly map output back to ISO/null through module presentation functions. Public DTOs and private models are distinct schemas; the handler's response type prevents returning a rich model accidentally.
+
+Shared helpers live in `packages/utils/date`, use Effect DateTime/Clock/Duration and take Polish localization defaults from `config`. Forms interpret local date/time input in Europe/Warsaw regardless of the device zone. Nonexistent spring DST times are invalid; repeated autumn times use the earlier occurrence. Display and calendar-day boundaries also use Warsaw, including 23-hour and 25-hour days. Elapsed learning intervals remain durations rather than calendar-day calculations. Empty form values become `null`. Native Date exists only for SQL or widget interop, never in API data or cached state.
+
+The conventions lint rules enforce JSON schema boundaries, client date-helper imports, private backend model imports and Duration-based intervals. Existing native-date lint checks remain enabled. Type checking and tests cover the representations, presentation mapping, timezone-independent form round trips and DST day boundaries. These checks complement one another; syntax linting alone cannot prove that every nested response value is JSON-compatible.

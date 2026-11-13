@@ -22,14 +22,21 @@ A helper with nothing feature-specific in it belongs in `src/utils/<name>.ts`.
 
 Components read route state (search params, route context) through the feature's route API constant at the place that uses it. Props carry component inputs, not route state passed down the tree.
 
+Compose conditional classes inside `cx`. Within `cx`, prefer ternaries or logical expressions (`condition && className`, `!condition && className`); this argument style is a review preference, and other supported forms, including objects, remain allowed by lint.
+
 ## Forms
 
 Forms use TanStack `useForm` with `revalidateLogic()` and an Effect schema through `Schema.toStandardSchemaV1`, as in `features/auth/components/SignInForm.tsx`. Field state lives in the form, not in `useState`. Failed submissions surface through `toast.promise`; auth failures use `getAuthErrorMessage` from `@inzpro/auth-client/error`.
 
 ## Effect
 
-- Failures flow through the Effect error channel: `Effect.tryPromise` at the promise boundary, then `catchTag`, `catchIf` or `option`. Absence is an `Option`, not `null`.
+- Prefer Effect modules when they cover the operation. Express time intervals and lifetimes with `Duration`, converting units only at external boundaries rather than using manual unit arithmetic.
+- Failures flow through the Effect error channel: `Effect.tryPromise` at the promise boundary, then `catchTag`, `catchIf` or `option`. Internal absence is an `Option`; public HTTP DTOs and client query caches use JSON-compatible values, including `null`.
 - A value used once stays inline at its call site. A module constant such as `const isEmail = Schema.is(Email)` earns its place only through reuse or a name that explains something the expression does not.
+
+## Dates
+
+Public DTOs, query caches and router context preserve `UtcIsoDateTime` strings and `null`. Backend commands, readers and repositories use private module models with `DateTimeUtc` and `Option`; SQL adapters and HTTP handlers own representation changes. Client form/display/day helpers belong in `@inzpro/utils/date` and use Europe/Warsaw independently of the device zone. Native Date is interop only. The date-boundaries, prefer-duration and Effect DateTime lint rules enforce these conventions; ADR-0014 owns the complete policy and DST behavior.
 
 ## Thin wrappers
 
@@ -52,7 +59,7 @@ Mechanical conventions are enforced by the [Oxlint conventions plugin](packages/
 
 ## Language
 
-Polish is for what users see: UI text, user-facing and validation messages, e-mails, SEO, public route paths and educational content. Everything else is English: identifiers, comments, tests, technical sample data, documentation, ADRs, the glossary and issues. Route-group identifiers and HTTP contract field names are technical identifiers. Keep proper names (PIIB, IARP, InżynierPRO) and existing public identifiers intact. Glossary entries carry the Polish UI term beside the English one.
+Polish is for UI text, validation feedback shown by applications, e-mails, SEO, public route paths, educational content and development catalogue data displayed as product content. HTTP API error codes and technical message fields are English; clients map typed errors to Polish presentation instead of displaying raw API messages. Identifiers, comments, test descriptions, purely technical fixtures, documentation, ADRs, the glossary and issues are English. User-visible seed labels use realistic names. Route-group identifiers and HTTP contract field names are technical identifiers. Keep proper names (PIIB, IARP, InżynierPRO) and existing public identifiers intact. Glossary entries carry the Polish UI term beside the English one.
 
 ## Semantic primitives
 
@@ -69,7 +76,7 @@ Use concrete branded schemas for concurrency versions and meaningful quantities.
 - A handler maps a module's specific failures with an inline `Effect.catchTags`.
 - Map an unexpected infrastructure failure in a handler with `logAndFailInternalServerError(message)` from `~api/lib/internal-server-error.js`: it logs the cause, tags the span with `error.type` and fails with HTTP 500. Do not log it by hand. Business failures keep their own responses.
 - A handler starts with its rate limit: `limitByClient(publicReadLimit)` for anonymous endpoints, `limitByUser(accountReadLimit)` or `limitByUser(accountWriteLimit)` for signed-in ones, and declares `RateLimitExceeded` in its contract. A new tier needs a reason in ADR-0026.
-- Log levels: `error` for failures someone must fix, `warn` for degraded operation (a fallback, a lost connection), `info` for lifecycle events, `debug` for diagnosis only. Requests themselves are not logged; their spans carry method, route, status and duration. Never put e-mail addresses, IP addresses, tokens, codes or note content into a log message or annotation. Span attributes follow OpenTelemetry semantic conventions; our own attributes take the `app.` prefix.
+- Log levels: `error` for failures someone must fix, `warn` for degraded operation (a fallback, a lost connection), `info` for lifecycle events, `debug` for diagnosis only. HTTP request completion is logged at info with method, path without query parameters, status and duration; spans retain the matching request context. Never put e-mail addresses, IP addresses, tokens, codes or note content into a log message or annotation. Span attributes follow OpenTelemetry semantic conventions; our own attributes take the `app.` prefix.
 - API integration tests exercise the real HTTP handlers and real adapters. Prepare fixtures through actual module repositories; assert behavior through the agreed public API/UI. Seed scripts may own fixture SQL. Test bodies do not implement independent persistence queries.
 
 ## Contract and persistence review

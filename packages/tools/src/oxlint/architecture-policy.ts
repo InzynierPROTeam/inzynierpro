@@ -1,7 +1,7 @@
 export const packageDependencies = {
-  utils: [],
+  utils: ['config', 'domain'],
   config: [],
-  domain: ['utils'],
+  domain: [],
   'browser-utils': ['utils'],
   'react-utils': ['browser-utils', 'utils'],
   ui: ['react-utils', 'browser-utils', 'utils'],

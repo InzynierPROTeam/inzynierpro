@@ -31,3 +31,7 @@ Viewing the explanation or the user's own notes before submitting is allowed. It
 ## Conflicts between devices
 
 The backend resolves conflicts between devices using the same session. The first submitted answer wins, and retrying the same request does not award SRS or XP again.
+
+## Missing session reads
+
+A learning-session or preview lookup with no matching result returns HTTP 200 with `null`. Absence is a successful empty state that can refresh into session data through the query cache; clients use an empty fallback rather than an error boundary or forced component remount. Authentication, authorization and infrastructure failures retain their error responses. This convention does not change 404 responses for missing category details or other resource point lookups.

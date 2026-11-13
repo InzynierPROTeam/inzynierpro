@@ -11,6 +11,11 @@ const tester = new RuleTester({ languageOptions: { parserOptions: { lang: 'ts' }
 
 tester.run('architecture/workspace-imports', workspaceImports, {
   valid: [
+    {
+      filename: file('packages/utils'),
+      code: 'import "@inzpro/domain/modules/preparation/exam-access"',
+    },
+
     { filename: file('packages/utils'), code: 'export const value = 1' },
     { filename: file('packages/utils'), code: 'import "./string"' },
     { filename: file('packages/utils'), code: 'import "~utils/string"' },
@@ -35,8 +40,14 @@ tester.run('architecture/workspace-imports', workspaceImports, {
   ],
   invalid: [
     {
+      filename: file('packages/domain'),
+      code: 'import "@inzpro/utils/exam-access"',
+      errors: [{ messageId: 'dependency' }],
+    },
+
+    {
       filename: file('packages/utils'),
-      code: 'import "@inzpro/domain/common/id"',
+      code: 'import "@inzpro/db"',
       errors: [{ messageId: 'dependency' }],
     },
     {
@@ -96,27 +107,27 @@ tester.run('architecture/workspace-imports', workspaceImports, {
     },
     {
       filename: file('packages/utils'),
-      code: 'import type { X } from "@inzpro/domain/common/id"',
+      code: 'import type { X } from "@inzpro/db"',
       errors: [{ messageId: 'dependency' }],
     },
     {
       filename: file('packages/utils'),
-      code: 'export type X = import("@inzpro/domain/common/id").X',
+      code: 'export type X = import("@inzpro/db").X',
       errors: [{ messageId: 'dependency' }],
     },
     {
       filename: file('packages/utils'),
-      code: 'export const load = () => import("@inzpro/domain/common/id")',
+      code: 'export const load = () => import("@inzpro/db")',
       errors: [{ messageId: 'dependency' }],
     },
     {
       filename: file('packages/utils'),
-      code: 'export const load = () => import(`@inzpro/domain/common/id`)',
+      code: 'export const load = () => import(`@inzpro/db`)',
       errors: [{ messageId: 'dependency' }],
     },
     {
       filename: file('packages/utils'),
-      code: 'const value = require("@inzpro/domain/common/id")',
+      code: 'const value = require("@inzpro/db")',
       errors: [{ messageId: 'dependency' }],
     },
     {

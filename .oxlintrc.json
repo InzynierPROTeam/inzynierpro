@@ -49,9 +49,12 @@
     "anti-slop/require-safety-comment-for-type-assertion": "error",
     // end of anti-slop custom rules
     // conventions custom rules
+    "conventions/query-keys": "error",
     "conventions/api-client-contracts": "error",
     "conventions/backend-boundaries": "error",
     "conventions/domain-identifiers": "error",
+    "conventions/date-boundaries": "error",
+    "conventions/prefer-duration": "error",
     "conventions/hooks-in-hooks-folder": "error",
     "conventions/no-feature-prefix": "error",
     "conventions/no-spread-route-hooks": "error",
@@ -59,6 +62,12 @@
     "conventions/queries-wrap-actions": "error",
     "conventions/request-schemas": "error",
     "conventions/traced-backend-operations": "error",
+    "conventions/infinite-query-names": "error",
+    "conventions/named-component-props": "error",
+    "conventions/prefer-gap": "error",
+    "conventions/prefer-cx": "error",
+    "conventions/page-sections": "error",
+    "conventions/queries-read-only": "error",
     // end of conventions custom rules
     // The workspace deliberately builds on effect/http and effect/http-api.
     "effecttsgo/unstable-api-usage": "off",
