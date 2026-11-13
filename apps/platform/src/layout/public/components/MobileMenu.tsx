@@ -1,7 +1,10 @@
+import { SocialsLinks } from '@inzpro/config/social'
 import { useMobileMenu } from '@inzpro/ui/hooks/use-mobile-menu'
 import { ClientOnly } from '@tanstack/react-router'
 import { createPortal } from 'react-dom'
 import { cx } from 'tailwind-variants'
+import { Icon } from '~platform/components/Icon'
+import { SocialIcon } from '~platform/components/SocialIcon'
 import { Hamburger } from '~platform/layout/components/Hamburger'
 
 import { NavLinks } from './NavLinks'
@@ -29,6 +32,7 @@ export const MobileMenu = () => {
             id="mobile-menu"
             aria-label="Nawigacja mobilna"
             aria-hidden={!isOpen}
+            inert={!isOpen}
             className={cx(
               'gradient-brand text-primary-foreground border-border touch-none overflow-x-hidden overflow-y-auto rounded-3xl border bg-linear-to-br lg:hidden',
               'fixed flex flex-1 flex-col items-center justify-center gap-16',
@@ -44,6 +48,41 @@ export const MobileMenu = () => {
             onTouchEnd={handleTouchEnd}
           >
             <NavLinks onNavLinkClick={() => setIsOpen(false)} />
+            <div className="flex gap-x-4">
+              <SocialIcon
+                href={SocialsLinks.Instagram}
+                icon={
+                  <Icon
+                    name="Instagram"
+                    className="fill-primary size-5"
+                  />
+                }
+                label="Instagram"
+                className="text-primary bg-primary-foreground/90 hover:bg-primary-foreground"
+              />
+              <SocialIcon
+                href={SocialsLinks.Facebook}
+                icon={
+                  <Icon
+                    name="Facebook"
+                    className="size-5"
+                  />
+                }
+                label="Facebook"
+                className="text-primary bg-primary-foreground/90 hover:bg-primary-foreground"
+              />
+              <SocialIcon
+                href={SocialsLinks.TikTok}
+                icon={
+                  <Icon
+                    name="Tiktok"
+                    className="size-4.25"
+                  />
+                }
+                label="TikTok"
+                className="text-primary bg-primary-foreground/90 hover:bg-primary-foreground"
+              />
+            </div>
           </nav>
         </MobileMenuPortal>
       </ClientOnly>

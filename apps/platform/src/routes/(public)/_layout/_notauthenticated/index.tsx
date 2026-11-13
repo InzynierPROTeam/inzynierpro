@@ -3,7 +3,7 @@ import { appName, seo } from '~platform/config/app'
 import { faqPageSchema, softwareApplicationSchema } from '~platform/config/seo-schemas'
 import { HomePage } from '~platform/features/home/HomePage'
 
-export const Route = createFileRoute('/(public)/_layout/')({
+export const Route = createFileRoute('/(public)/_layout/_notauthenticated/')({
   component: HomePage,
   head: () => ({
     meta: seo({

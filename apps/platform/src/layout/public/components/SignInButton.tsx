@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 export const SignInButton = () => (
   <Link
     to="/logowanie"
-    className={buttonVariants({ className: 'rounded-full!' })}
+    className={buttonVariants()}
   >
     Zaloguj się
   </Link>

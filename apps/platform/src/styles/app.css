@@ -8,7 +8,7 @@
     @apply flex min-h-0 w-full max-w-7xl flex-col self-center px-10 py-20 max-md:px-8 max-sm:px-6;
   }
   .app-layout-section {
-    @apply flex scroll-mt-28 flex-col px-10 py-8 max-md:px-8 max-sm:px-6;
+    @apply flex min-w-0 scroll-mt-28 flex-col px-10 py-8 max-md:px-8 max-sm:px-6;
   }
   .slider-wrapper {
     @apply grid snap-x grid-flow-col overflow-x-auto;

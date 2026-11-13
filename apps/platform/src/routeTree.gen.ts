@@ -9,199 +9,256 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as MaybeauthenticatedRouteImport } from './routes/_maybeauthenticated'
 import { Route as HealthCheckRouteImport } from './routes/health-check'
+import { Route as appAuthenticatedRouteImport } from './routes/(app)/_authenticated'
 import { Route as publicLayoutRouteImport } from './routes/(public)/_layout'
-import { Route as publicLayoutIndexRouteImport } from './routes/(public)/_layout/index'
-import { Route as MaybeauthenticatedappAuthenticatedRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated'
-import { Route as MaybeauthenticatedpublicLayoutRouteImport } from './routes/_maybeauthenticated/(public)/_layout'
-import { Route as MaybeauthenticatedappAuthenticatedNaukaRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/nauka'
-import { Route as MaybeauthenticatedappAuthenticatedProfilRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/profil'
-import { Route as MaybeauthenticatedappAuthenticatedStartRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/start'
-import { Route as MaybeauthenticatedappAuthenticatedUstnyRouteImport } from './routes/_maybeauthenticated/(app)/_authenticated/ustny'
-import { Route as MaybeauthenticatedpublicLayoutNotauthenticatedRouteImport } from './routes/_maybeauthenticated/(public)/_layout/_notauthenticated'
-import { Route as MaybeauthenticatedpublicLayoutZacznijRouteImport } from './routes/_maybeauthenticated/(public)/_layout/zacznij'
-import { Route as MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRouteImport } from './routes/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie'
-import { Route as MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+import { Route as appAuthenticatedOnboardedRouteImport } from './routes/(app)/_authenticated/_onboarded'
+import { Route as appAuthenticatedPierwszeKrokiRouteImport } from './routes/(app)/_authenticated/pierwsze-kroki'
+import { Route as appAuthenticatedProfilRouteImport } from './routes/(app)/_authenticated/profil'
+import { Route as publicLayoutNotauthenticatedRouteImport } from './routes/(public)/_layout/_notauthenticated'
+import { Route as publicLayoutZacznijRouteImport } from './routes/(public)/_layout/zacznij'
+import { Route as appAuthenticatedOnboardedOralValidRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid'
+import { Route as appAuthenticatedOnboardedWrittenValidRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid'
+import { Route as appAuthenticatedOnboardedRozszerzDostepRouteImport } from './routes/(app)/_authenticated/_onboarded/rozszerz-dostep'
+import { Route as appAuthenticatedOnboardedStartRouteImport } from './routes/(app)/_authenticated/_onboarded/start'
+import { Route as publicLayoutNotauthenticatedIndexRouteImport } from './routes/(public)/_layout/_notauthenticated/index'
+import { Route as publicLayoutNotauthenticatedLogowanieRouteImport } from './routes/(public)/_layout/_notauthenticated/logowanie'
+import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+import { Route as appAuthenticatedOnboardedOralValidUstnyRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny'
+import { Route as appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/index'
+import { Route as appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
+import { Route as appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria.$id'
 
-const MaybeauthenticatedRoute = MaybeauthenticatedRouteImport.update({
-  id: '/_maybeauthenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HealthCheckRoute = HealthCheckRouteImport.update({
   id: '/health-check',
   path: '/health-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const appAuthenticatedRoute = appAuthenticatedRouteImport.update({
+  id: '/(app)/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const publicLayoutRoute = publicLayoutRouteImport.update({
   id: '/(public)/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const publicLayoutIndexRoute = publicLayoutIndexRouteImport.update({
-  id: '/',
-  path: '/',
+const appAuthenticatedOnboardedRoute =
+  appAuthenticatedOnboardedRouteImport.update({
+    id: '/_onboarded',
+    getParentRoute: () => appAuthenticatedRoute,
+  } as any)
+const appAuthenticatedPierwszeKrokiRoute =
+  appAuthenticatedPierwszeKrokiRouteImport.update({
+    id: '/pierwsze-kroki',
+    path: '/pierwsze-kroki',
+    getParentRoute: () => appAuthenticatedRoute,
+  } as any)
+const appAuthenticatedProfilRoute = appAuthenticatedProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => appAuthenticatedRoute,
+} as any)
+const publicLayoutNotauthenticatedRoute =
+  publicLayoutNotauthenticatedRouteImport.update({
+    id: '/_notauthenticated',
+    getParentRoute: () => publicLayoutRoute,
+  } as any)
+const publicLayoutZacznijRoute = publicLayoutZacznijRouteImport.update({
+  id: '/zacznij',
+  path: '/zacznij',
   getParentRoute: () => publicLayoutRoute,
 } as any)
-const MaybeauthenticatedappAuthenticatedRoute =
-  MaybeauthenticatedappAuthenticatedRouteImport.update({
-    id: '/(app)/_authenticated',
-    getParentRoute: () => MaybeauthenticatedRoute,
+const appAuthenticatedOnboardedOralValidRoute =
+  appAuthenticatedOnboardedOralValidRouteImport.update({
+    id: '/_oralValid',
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
   } as any)
-const MaybeauthenticatedpublicLayoutRoute =
-  MaybeauthenticatedpublicLayoutRouteImport.update({
-    id: '/(public)/_layout',
-    getParentRoute: () => MaybeauthenticatedRoute,
+const appAuthenticatedOnboardedWrittenValidRoute =
+  appAuthenticatedOnboardedWrittenValidRouteImport.update({
+    id: '/_writtenValid',
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
   } as any)
-const MaybeauthenticatedappAuthenticatedNaukaRoute =
-  MaybeauthenticatedappAuthenticatedNaukaRouteImport.update({
-    id: '/nauka',
-    path: '/nauka',
-    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
+const appAuthenticatedOnboardedRozszerzDostepRoute =
+  appAuthenticatedOnboardedRozszerzDostepRouteImport.update({
+    id: '/rozszerz-dostep',
+    path: '/rozszerz-dostep',
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
   } as any)
-const MaybeauthenticatedappAuthenticatedProfilRoute =
-  MaybeauthenticatedappAuthenticatedProfilRouteImport.update({
-    id: '/profil',
-    path: '/profil',
-    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
-  } as any)
-const MaybeauthenticatedappAuthenticatedStartRoute =
-  MaybeauthenticatedappAuthenticatedStartRouteImport.update({
+const appAuthenticatedOnboardedStartRoute =
+  appAuthenticatedOnboardedStartRouteImport.update({
     id: '/start',
     path: '/start',
-    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
   } as any)
-const MaybeauthenticatedappAuthenticatedUstnyRoute =
-  MaybeauthenticatedappAuthenticatedUstnyRouteImport.update({
-    id: '/ustny',
-    path: '/ustny',
-    getParentRoute: () => MaybeauthenticatedappAuthenticatedRoute,
+const publicLayoutNotauthenticatedIndexRoute =
+  publicLayoutNotauthenticatedIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => publicLayoutNotauthenticatedRoute,
   } as any)
-const MaybeauthenticatedpublicLayoutNotauthenticatedRoute =
-  MaybeauthenticatedpublicLayoutNotauthenticatedRouteImport.update({
-    id: '/_notauthenticated',
-    getParentRoute: () => MaybeauthenticatedpublicLayoutRoute,
-  } as any)
-const MaybeauthenticatedpublicLayoutZacznijRoute =
-  MaybeauthenticatedpublicLayoutZacznijRouteImport.update({
-    id: '/zacznij',
-    path: '/zacznij',
-    getParentRoute: () => MaybeauthenticatedpublicLayoutRoute,
-  } as any)
-const MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute =
-  MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRouteImport.update({
+const publicLayoutNotauthenticatedLogowanieRoute =
+  publicLayoutNotauthenticatedLogowanieRouteImport.update({
     id: '/logowanie',
     path: '/logowanie',
-    getParentRoute: () => MaybeauthenticatedpublicLayoutNotauthenticatedRoute,
+    getParentRoute: () => publicLayoutNotauthenticatedRoute,
   } as any)
-const MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute =
-  MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRouteImport.update(
-    {
-      id: '/zweryfikuj-otp',
-      path: '/zweryfikuj-otp',
-      getParentRoute: () => MaybeauthenticatedpublicLayoutNotauthenticatedRoute,
-    } as any,
-  )
+const publicLayoutNotauthenticatedZweryfikujOtpRoute =
+  publicLayoutNotauthenticatedZweryfikujOtpRouteImport.update({
+    id: '/zweryfikuj-otp',
+    path: '/zweryfikuj-otp',
+    getParentRoute: () => publicLayoutNotauthenticatedRoute,
+  } as any)
+const appAuthenticatedOnboardedOralValidUstnyRoute =
+  appAuthenticatedOnboardedOralValidUstnyRouteImport.update({
+    id: '/ustny',
+    path: '/ustny',
+    getParentRoute: () => appAuthenticatedOnboardedOralValidRoute,
+  } as any)
+const appAuthenticatedOnboardedWrittenValidNaukaIndexRoute =
+  appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport.update({
+    id: '/nauka/',
+    path: '/nauka/',
+    getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
+  } as any)
+const appAuthenticatedOnboardedWrittenValidNaukaStartRoute =
+  appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport.update({
+    id: '/nauka/start',
+    path: '/nauka/start',
+    getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
+  } as any)
+const appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute =
+  appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRouteImport.update({
+    id: '/nauka/kategoria/$id',
+    path: '/nauka/kategoria/$id',
+    getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof publicLayoutIndexRoute
   '/health-check': typeof HealthCheckRoute
-  '/nauka': typeof MaybeauthenticatedappAuthenticatedNaukaRoute
-  '/profil': typeof MaybeauthenticatedappAuthenticatedProfilRoute
-  '/start': typeof MaybeauthenticatedappAuthenticatedStartRoute
-  '/ustny': typeof MaybeauthenticatedappAuthenticatedUstnyRoute
-  '/zacznij': typeof MaybeauthenticatedpublicLayoutZacznijRoute
-  '/logowanie': typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
-  '/zweryfikuj-otp': typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/pierwsze-kroki': typeof appAuthenticatedPierwszeKrokiRoute
+  '/profil': typeof appAuthenticatedProfilRoute
+  '/zacznij': typeof publicLayoutZacznijRoute
+  '/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
+  '/start': typeof appAuthenticatedOnboardedStartRoute
+  '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
+  '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
+  '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
+  '/nauka/': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
+  '/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof publicLayoutIndexRoute
   '/health-check': typeof HealthCheckRoute
-  '/nauka': typeof MaybeauthenticatedappAuthenticatedNaukaRoute
-  '/profil': typeof MaybeauthenticatedappAuthenticatedProfilRoute
-  '/start': typeof MaybeauthenticatedappAuthenticatedStartRoute
-  '/ustny': typeof MaybeauthenticatedappAuthenticatedUstnyRoute
-  '/zacznij': typeof MaybeauthenticatedpublicLayoutZacznijRoute
-  '/logowanie': typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
-  '/zweryfikuj-otp': typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/pierwsze-kroki': typeof appAuthenticatedPierwszeKrokiRoute
+  '/profil': typeof appAuthenticatedProfilRoute
+  '/zacznij': typeof publicLayoutZacznijRoute
+  '/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
+  '/start': typeof appAuthenticatedOnboardedStartRoute
+  '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
+  '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
+  '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
+  '/nauka': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
+  '/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_maybeauthenticated': typeof MaybeauthenticatedRouteWithChildren
   '/health-check': typeof HealthCheckRoute
+  '/(app)/_authenticated': typeof appAuthenticatedRouteWithChildren
   '/(public)/_layout': typeof publicLayoutRouteWithChildren
-  '/_maybeauthenticated/(app)/_authenticated': typeof MaybeauthenticatedappAuthenticatedRouteWithChildren
-  '/_maybeauthenticated/(public)/_layout': typeof MaybeauthenticatedpublicLayoutRouteWithChildren
-  '/(public)/_layout/': typeof publicLayoutIndexRoute
-  '/_maybeauthenticated/(app)/_authenticated/nauka': typeof MaybeauthenticatedappAuthenticatedNaukaRoute
-  '/_maybeauthenticated/(app)/_authenticated/profil': typeof MaybeauthenticatedappAuthenticatedProfilRoute
-  '/_maybeauthenticated/(app)/_authenticated/start': typeof MaybeauthenticatedappAuthenticatedStartRoute
-  '/_maybeauthenticated/(app)/_authenticated/ustny': typeof MaybeauthenticatedappAuthenticatedUstnyRoute
-  '/_maybeauthenticated/(public)/_layout/_notauthenticated': typeof MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren
-  '/_maybeauthenticated/(public)/_layout/zacznij': typeof MaybeauthenticatedpublicLayoutZacznijRoute
-  '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie': typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
-  '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/(app)/_authenticated/_onboarded': typeof appAuthenticatedOnboardedRouteWithChildren
+  '/(app)/_authenticated/pierwsze-kroki': typeof appAuthenticatedPierwszeKrokiRoute
+  '/(app)/_authenticated/profil': typeof appAuthenticatedProfilRoute
+  '/(public)/_layout/_notauthenticated': typeof publicLayoutNotauthenticatedRouteWithChildren
+  '/(public)/_layout/zacznij': typeof publicLayoutZacznijRoute
+  '/(app)/_authenticated/_onboarded/_oralValid': typeof appAuthenticatedOnboardedOralValidRouteWithChildren
+  '/(app)/_authenticated/_onboarded/_writtenValid': typeof appAuthenticatedOnboardedWrittenValidRouteWithChildren
+  '/(app)/_authenticated/_onboarded/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
+  '/(app)/_authenticated/_onboarded/start': typeof appAuthenticatedOnboardedStartRoute
+  '/(public)/_layout/_notauthenticated/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
+  '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/(app)/_authenticated/_onboarded/_oralValid/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
+  '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
+  '/(app)/_authenticated/_onboarded/_writtenValid/nauka/': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
+  '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/health-check'
-    | '/nauka'
+    | '/pierwsze-kroki'
     | '/profil'
-    | '/start'
-    | '/ustny'
     | '/zacznij'
+    | '/rozszerz-dostep'
+    | '/start'
     | '/logowanie'
     | '/zweryfikuj-otp'
+    | '/'
+    | '/ustny'
+    | '/nauka/start'
+    | '/nauka/'
+    | '/nauka/kategoria/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/health-check'
-    | '/nauka'
+    | '/pierwsze-kroki'
     | '/profil'
-    | '/start'
-    | '/ustny'
     | '/zacznij'
+    | '/rozszerz-dostep'
+    | '/start'
     | '/logowanie'
     | '/zweryfikuj-otp'
+    | '/'
+    | '/ustny'
+    | '/nauka/start'
+    | '/nauka'
+    | '/nauka/kategoria/$id'
   id:
     | '__root__'
-    | '/_maybeauthenticated'
     | '/health-check'
+    | '/(app)/_authenticated'
     | '/(public)/_layout'
-    | '/_maybeauthenticated/(app)/_authenticated'
-    | '/_maybeauthenticated/(public)/_layout'
-    | '/(public)/_layout/'
-    | '/_maybeauthenticated/(app)/_authenticated/nauka'
-    | '/_maybeauthenticated/(app)/_authenticated/profil'
-    | '/_maybeauthenticated/(app)/_authenticated/start'
-    | '/_maybeauthenticated/(app)/_authenticated/ustny'
-    | '/_maybeauthenticated/(public)/_layout/_notauthenticated'
-    | '/_maybeauthenticated/(public)/_layout/zacznij'
-    | '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie'
-    | '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+    | '/(app)/_authenticated/_onboarded'
+    | '/(app)/_authenticated/pierwsze-kroki'
+    | '/(app)/_authenticated/profil'
+    | '/(public)/_layout/_notauthenticated'
+    | '/(public)/_layout/zacznij'
+    | '/(app)/_authenticated/_onboarded/_oralValid'
+    | '/(app)/_authenticated/_onboarded/_writtenValid'
+    | '/(app)/_authenticated/_onboarded/rozszerz-dostep'
+    | '/(app)/_authenticated/_onboarded/start'
+    | '/(public)/_layout/_notauthenticated/logowanie'
+    | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+    | '/(public)/_layout/_notauthenticated/'
+    | '/(app)/_authenticated/_onboarded/_oralValid/ustny'
+    | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
+    | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/'
+    | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  MaybeauthenticatedRoute: typeof MaybeauthenticatedRouteWithChildren
   HealthCheckRoute: typeof HealthCheckRoute
+  appAuthenticatedRoute: typeof appAuthenticatedRouteWithChildren
   publicLayoutRoute: typeof publicLayoutRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_maybeauthenticated': {
-      id: '/_maybeauthenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof MaybeauthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/health-check': {
       id: '/health-check'
       path: '/health-check'
       fullPath: '/health-check'
       preLoaderRoute: typeof HealthCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(app)/_authenticated': {
+      id: '/(app)/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof appAuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(public)/_layout': {
@@ -211,167 +268,225 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(public)/_layout/': {
-      id: '/(public)/_layout/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof publicLayoutIndexRouteImport
-      parentRoute: typeof publicLayoutRoute
-    }
-    '/_maybeauthenticated/(app)/_authenticated': {
-      id: '/_maybeauthenticated/(app)/_authenticated'
+    '/(app)/_authenticated/_onboarded': {
+      id: '/(app)/_authenticated/_onboarded'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedRouteImport
-      parentRoute: typeof MaybeauthenticatedRoute
+      preLoaderRoute: typeof appAuthenticatedOnboardedRouteImport
+      parentRoute: typeof appAuthenticatedRoute
     }
-    '/_maybeauthenticated/(public)/_layout': {
-      id: '/_maybeauthenticated/(public)/_layout'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutRouteImport
-      parentRoute: typeof MaybeauthenticatedRoute
+    '/(app)/_authenticated/pierwsze-kroki': {
+      id: '/(app)/_authenticated/pierwsze-kroki'
+      path: '/pierwsze-kroki'
+      fullPath: '/pierwsze-kroki'
+      preLoaderRoute: typeof appAuthenticatedPierwszeKrokiRouteImport
+      parentRoute: typeof appAuthenticatedRoute
     }
-    '/_maybeauthenticated/(app)/_authenticated/nauka': {
-      id: '/_maybeauthenticated/(app)/_authenticated/nauka'
-      path: '/nauka'
-      fullPath: '/nauka'
-      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedNaukaRouteImport
-      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
-    }
-    '/_maybeauthenticated/(app)/_authenticated/profil': {
-      id: '/_maybeauthenticated/(app)/_authenticated/profil'
+    '/(app)/_authenticated/profil': {
+      id: '/(app)/_authenticated/profil'
       path: '/profil'
       fullPath: '/profil'
-      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedProfilRouteImport
-      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
+      preLoaderRoute: typeof appAuthenticatedProfilRouteImport
+      parentRoute: typeof appAuthenticatedRoute
     }
-    '/_maybeauthenticated/(app)/_authenticated/start': {
-      id: '/_maybeauthenticated/(app)/_authenticated/start'
-      path: '/start'
-      fullPath: '/start'
-      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedStartRouteImport
-      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
-    }
-    '/_maybeauthenticated/(app)/_authenticated/ustny': {
-      id: '/_maybeauthenticated/(app)/_authenticated/ustny'
-      path: '/ustny'
-      fullPath: '/ustny'
-      preLoaderRoute: typeof MaybeauthenticatedappAuthenticatedUstnyRouteImport
-      parentRoute: typeof MaybeauthenticatedappAuthenticatedRoute
-    }
-    '/_maybeauthenticated/(public)/_layout/_notauthenticated': {
-      id: '/_maybeauthenticated/(public)/_layout/_notauthenticated'
+    '/(public)/_layout/_notauthenticated': {
+      id: '/(public)/_layout/_notauthenticated'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRouteImport
-      parentRoute: typeof MaybeauthenticatedpublicLayoutRoute
+      preLoaderRoute: typeof publicLayoutNotauthenticatedRouteImport
+      parentRoute: typeof publicLayoutRoute
     }
-    '/_maybeauthenticated/(public)/_layout/zacznij': {
-      id: '/_maybeauthenticated/(public)/_layout/zacznij'
+    '/(public)/_layout/zacznij': {
+      id: '/(public)/_layout/zacznij'
       path: '/zacznij'
       fullPath: '/zacznij'
-      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutZacznijRouteImport
-      parentRoute: typeof MaybeauthenticatedpublicLayoutRoute
+      preLoaderRoute: typeof publicLayoutZacznijRouteImport
+      parentRoute: typeof publicLayoutRoute
     }
-    '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie': {
-      id: '/_maybeauthenticated/(public)/_layout/_notauthenticated/logowanie'
+    '/(app)/_authenticated/_onboarded/_oralValid': {
+      id: '/(app)/_authenticated/_onboarded/_oralValid'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof appAuthenticatedOnboardedOralValidRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(app)/_authenticated/_onboarded/_writtenValid': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(app)/_authenticated/_onboarded/rozszerz-dostep': {
+      id: '/(app)/_authenticated/_onboarded/rozszerz-dostep'
+      path: '/rozszerz-dostep'
+      fullPath: '/rozszerz-dostep'
+      preLoaderRoute: typeof appAuthenticatedOnboardedRozszerzDostepRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(app)/_authenticated/_onboarded/start': {
+      id: '/(app)/_authenticated/_onboarded/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof appAuthenticatedOnboardedStartRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(public)/_layout/_notauthenticated/': {
+      id: '/(public)/_layout/_notauthenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof publicLayoutNotauthenticatedIndexRouteImport
+      parentRoute: typeof publicLayoutNotauthenticatedRoute
+    }
+    '/(public)/_layout/_notauthenticated/logowanie': {
+      id: '/(public)/_layout/_notauthenticated/logowanie'
       path: '/logowanie'
       fullPath: '/logowanie'
-      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRouteImport
-      parentRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRoute
+      preLoaderRoute: typeof publicLayoutNotauthenticatedLogowanieRouteImport
+      parentRoute: typeof publicLayoutNotauthenticatedRoute
     }
-    '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp': {
-      id: '/_maybeauthenticated/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+    '/(public)/_layout/_notauthenticated/zweryfikuj-otp': {
+      id: '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
       path: '/zweryfikuj-otp'
       fullPath: '/zweryfikuj-otp'
-      preLoaderRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRouteImport
-      parentRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRoute
+      preLoaderRoute: typeof publicLayoutNotauthenticatedZweryfikujOtpRouteImport
+      parentRoute: typeof publicLayoutNotauthenticatedRoute
+    }
+    '/(app)/_authenticated/_onboarded/_oralValid/ustny': {
+      id: '/(app)/_authenticated/_onboarded/_oralValid/ustny'
+      path: '/ustny'
+      fullPath: '/ustny'
+      preLoaderRoute: typeof appAuthenticatedOnboardedOralValidUstnyRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedOralValidRoute
+    }
+    '/(app)/_authenticated/_onboarded/_writtenValid/nauka/': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/'
+      path: '/nauka'
+      fullPath: '/nauka/'
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
+    }
+    '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
+      path: '/nauka/start'
+      fullPath: '/nauka/start'
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
+    }
+    '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id'
+      path: '/nauka/kategoria/$id'
+      fullPath: '/nauka/kategoria/$id'
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
     }
   }
 }
 
-interface MaybeauthenticatedappAuthenticatedRouteChildren {
-  MaybeauthenticatedappAuthenticatedNaukaRoute: typeof MaybeauthenticatedappAuthenticatedNaukaRoute
-  MaybeauthenticatedappAuthenticatedProfilRoute: typeof MaybeauthenticatedappAuthenticatedProfilRoute
-  MaybeauthenticatedappAuthenticatedStartRoute: typeof MaybeauthenticatedappAuthenticatedStartRoute
-  MaybeauthenticatedappAuthenticatedUstnyRoute: typeof MaybeauthenticatedappAuthenticatedUstnyRoute
+interface appAuthenticatedOnboardedOralValidRouteChildren {
+  appAuthenticatedOnboardedOralValidUstnyRoute: typeof appAuthenticatedOnboardedOralValidUstnyRoute
 }
 
-const MaybeauthenticatedappAuthenticatedRouteChildren: MaybeauthenticatedappAuthenticatedRouteChildren =
+const appAuthenticatedOnboardedOralValidRouteChildren: appAuthenticatedOnboardedOralValidRouteChildren =
   {
-    MaybeauthenticatedappAuthenticatedNaukaRoute:
-      MaybeauthenticatedappAuthenticatedNaukaRoute,
-    MaybeauthenticatedappAuthenticatedProfilRoute:
-      MaybeauthenticatedappAuthenticatedProfilRoute,
-    MaybeauthenticatedappAuthenticatedStartRoute:
-      MaybeauthenticatedappAuthenticatedStartRoute,
-    MaybeauthenticatedappAuthenticatedUstnyRoute:
-      MaybeauthenticatedappAuthenticatedUstnyRoute,
+    appAuthenticatedOnboardedOralValidUstnyRoute:
+      appAuthenticatedOnboardedOralValidUstnyRoute,
   }
 
-const MaybeauthenticatedappAuthenticatedRouteWithChildren =
-  MaybeauthenticatedappAuthenticatedRoute._addFileChildren(
-    MaybeauthenticatedappAuthenticatedRouteChildren,
+const appAuthenticatedOnboardedOralValidRouteWithChildren =
+  appAuthenticatedOnboardedOralValidRoute._addFileChildren(
+    appAuthenticatedOnboardedOralValidRouteChildren,
   )
 
-interface MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren {
-  MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute
-  MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute
+interface appAuthenticatedOnboardedWrittenValidRouteChildren {
+  appAuthenticatedOnboardedWrittenValidNaukaStartRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
+  appAuthenticatedOnboardedWrittenValidNaukaIndexRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
+  appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
 }
 
-const MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren: MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren =
+const appAuthenticatedOnboardedWrittenValidRouteChildren: appAuthenticatedOnboardedWrittenValidRouteChildren =
   {
-    MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute:
-      MaybeauthenticatedpublicLayoutNotauthenticatedLogowanieRoute,
-    MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute:
-      MaybeauthenticatedpublicLayoutNotauthenticatedZweryfikujOtpRoute,
+    appAuthenticatedOnboardedWrittenValidNaukaStartRoute:
+      appAuthenticatedOnboardedWrittenValidNaukaStartRoute,
+    appAuthenticatedOnboardedWrittenValidNaukaIndexRoute:
+      appAuthenticatedOnboardedWrittenValidNaukaIndexRoute,
+    appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute:
+      appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute,
   }
 
-const MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren =
-  MaybeauthenticatedpublicLayoutNotauthenticatedRoute._addFileChildren(
-    MaybeauthenticatedpublicLayoutNotauthenticatedRouteChildren,
+const appAuthenticatedOnboardedWrittenValidRouteWithChildren =
+  appAuthenticatedOnboardedWrittenValidRoute._addFileChildren(
+    appAuthenticatedOnboardedWrittenValidRouteChildren,
   )
 
-interface MaybeauthenticatedpublicLayoutRouteChildren {
-  MaybeauthenticatedpublicLayoutNotauthenticatedRoute: typeof MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren
-  MaybeauthenticatedpublicLayoutZacznijRoute: typeof MaybeauthenticatedpublicLayoutZacznijRoute
+interface appAuthenticatedOnboardedRouteChildren {
+  appAuthenticatedOnboardedOralValidRoute: typeof appAuthenticatedOnboardedOralValidRouteWithChildren
+  appAuthenticatedOnboardedWrittenValidRoute: typeof appAuthenticatedOnboardedWrittenValidRouteWithChildren
+  appAuthenticatedOnboardedRozszerzDostepRoute: typeof appAuthenticatedOnboardedRozszerzDostepRoute
+  appAuthenticatedOnboardedStartRoute: typeof appAuthenticatedOnboardedStartRoute
 }
 
-const MaybeauthenticatedpublicLayoutRouteChildren: MaybeauthenticatedpublicLayoutRouteChildren =
+const appAuthenticatedOnboardedRouteChildren: appAuthenticatedOnboardedRouteChildren =
   {
-    MaybeauthenticatedpublicLayoutNotauthenticatedRoute:
-      MaybeauthenticatedpublicLayoutNotauthenticatedRouteWithChildren,
-    MaybeauthenticatedpublicLayoutZacznijRoute:
-      MaybeauthenticatedpublicLayoutZacznijRoute,
+    appAuthenticatedOnboardedOralValidRoute:
+      appAuthenticatedOnboardedOralValidRouteWithChildren,
+    appAuthenticatedOnboardedWrittenValidRoute:
+      appAuthenticatedOnboardedWrittenValidRouteWithChildren,
+    appAuthenticatedOnboardedRozszerzDostepRoute:
+      appAuthenticatedOnboardedRozszerzDostepRoute,
+    appAuthenticatedOnboardedStartRoute: appAuthenticatedOnboardedStartRoute,
   }
 
-const MaybeauthenticatedpublicLayoutRouteWithChildren =
-  MaybeauthenticatedpublicLayoutRoute._addFileChildren(
-    MaybeauthenticatedpublicLayoutRouteChildren,
+const appAuthenticatedOnboardedRouteWithChildren =
+  appAuthenticatedOnboardedRoute._addFileChildren(
+    appAuthenticatedOnboardedRouteChildren,
   )
 
-interface MaybeauthenticatedRouteChildren {
-  MaybeauthenticatedappAuthenticatedRoute: typeof MaybeauthenticatedappAuthenticatedRouteWithChildren
-  MaybeauthenticatedpublicLayoutRoute: typeof MaybeauthenticatedpublicLayoutRouteWithChildren
+interface appAuthenticatedRouteChildren {
+  appAuthenticatedOnboardedRoute: typeof appAuthenticatedOnboardedRouteWithChildren
+  appAuthenticatedPierwszeKrokiRoute: typeof appAuthenticatedPierwszeKrokiRoute
+  appAuthenticatedProfilRoute: typeof appAuthenticatedProfilRoute
 }
 
-const MaybeauthenticatedRouteChildren: MaybeauthenticatedRouteChildren = {
-  MaybeauthenticatedappAuthenticatedRoute:
-    MaybeauthenticatedappAuthenticatedRouteWithChildren,
-  MaybeauthenticatedpublicLayoutRoute:
-    MaybeauthenticatedpublicLayoutRouteWithChildren,
+const appAuthenticatedRouteChildren: appAuthenticatedRouteChildren = {
+  appAuthenticatedOnboardedRoute: appAuthenticatedOnboardedRouteWithChildren,
+  appAuthenticatedPierwszeKrokiRoute: appAuthenticatedPierwszeKrokiRoute,
+  appAuthenticatedProfilRoute: appAuthenticatedProfilRoute,
 }
 
-const MaybeauthenticatedRouteWithChildren =
-  MaybeauthenticatedRoute._addFileChildren(MaybeauthenticatedRouteChildren)
+const appAuthenticatedRouteWithChildren =
+  appAuthenticatedRoute._addFileChildren(appAuthenticatedRouteChildren)
+
+interface publicLayoutNotauthenticatedRouteChildren {
+  publicLayoutNotauthenticatedLogowanieRoute: typeof publicLayoutNotauthenticatedLogowanieRoute
+  publicLayoutNotauthenticatedZweryfikujOtpRoute: typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  publicLayoutNotauthenticatedIndexRoute: typeof publicLayoutNotauthenticatedIndexRoute
+}
+
+const publicLayoutNotauthenticatedRouteChildren: publicLayoutNotauthenticatedRouteChildren =
+  {
+    publicLayoutNotauthenticatedLogowanieRoute:
+      publicLayoutNotauthenticatedLogowanieRoute,
+    publicLayoutNotauthenticatedZweryfikujOtpRoute:
+      publicLayoutNotauthenticatedZweryfikujOtpRoute,
+    publicLayoutNotauthenticatedIndexRoute:
+      publicLayoutNotauthenticatedIndexRoute,
+  }
+
+const publicLayoutNotauthenticatedRouteWithChildren =
+  publicLayoutNotauthenticatedRoute._addFileChildren(
+    publicLayoutNotauthenticatedRouteChildren,
+  )
 
 interface publicLayoutRouteChildren {
-  publicLayoutIndexRoute: typeof publicLayoutIndexRoute
+  publicLayoutNotauthenticatedRoute: typeof publicLayoutNotauthenticatedRouteWithChildren
+  publicLayoutZacznijRoute: typeof publicLayoutZacznijRoute
 }
 
 const publicLayoutRouteChildren: publicLayoutRouteChildren = {
-  publicLayoutIndexRoute: publicLayoutIndexRoute,
+  publicLayoutNotauthenticatedRoute:
+    publicLayoutNotauthenticatedRouteWithChildren,
+  publicLayoutZacznijRoute: publicLayoutZacznijRoute,
 }
 
 const publicLayoutRouteWithChildren = publicLayoutRoute._addFileChildren(
@@ -379,8 +494,8 @@ const publicLayoutRouteWithChildren = publicLayoutRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  MaybeauthenticatedRoute: MaybeauthenticatedRouteWithChildren,
   HealthCheckRoute: HealthCheckRoute,
+  appAuthenticatedRoute: appAuthenticatedRouteWithChildren,
   publicLayoutRoute: publicLayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport

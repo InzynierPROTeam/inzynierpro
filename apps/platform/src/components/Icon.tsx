@@ -2,12 +2,11 @@ import type { SVGProps } from 'react'
 import sprite from '~platform/styles/sprite.svg'
 import type { IconName } from '~platform/types/icons'
 
-export function Icon({
-  name,
-  ...props
-}: SVGProps<SVGSVGElement> & {
+type IconProps = SVGProps<SVGSVGElement> & {
   name: IconName
-}) {
+}
+
+export function Icon({ name, ...props }: IconProps) {
   return (
     <svg {...props}>
       <defs>

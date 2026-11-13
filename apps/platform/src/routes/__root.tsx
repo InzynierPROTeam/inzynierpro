@@ -32,7 +32,9 @@ function syncTrackingConsent(consent: TrackingConsent) {
   setMetaPixelConsent(env.VITE_META_PIXEL_ID, consent.advertising)
 }
 
-const RootDocument = ({ children }: { children: React.ReactNode }) => (
+type RootDocumentProps = { children: React.ReactNode }
+
+const RootDocument = ({ children }: RootDocumentProps) => (
   <html
     lang={POLISH_LANGUAGE}
     suppressHydrationWarning

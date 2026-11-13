@@ -1,10 +1,10 @@
 import { Unauthenticated } from '@inzpro/api-contracts/middleware/authentication/errors'
 import { currentSessionQueryOptions } from '@inzpro/queries/modules/identity'
-import { createFileRoute } from '@tanstack/react-router'
-import { Effect, Option, Schema } from 'effect'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { Effect, Schema, Option } from 'effect'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-export const Route = createFileRoute('/_maybeauthenticated')({
+export const Route = createFileRoute('/(public)/_layout/_notauthenticated')({
   beforeLoad: async ({ context: { queryClient } }) => {
     const session = await Effect.runPromise(
       Effect.tryPromise(() => queryClient.query(currentSessionQueryOptions(apiHttpClient))).pipe(
@@ -16,6 +16,15 @@ export const Route = createFileRoute('/_maybeauthenticated')({
       ),
     )
 
-    return { user: Option.getOrUndefined(Option.map(session, value => value.user)) }
+    if (Option.isSome(session)) {
+      throw redirect({
+        replace: true,
+        to: '/start',
+      })
+    }
+
+    return {
+      session: session.valueOrUndefined,
+    }
   },
 })
