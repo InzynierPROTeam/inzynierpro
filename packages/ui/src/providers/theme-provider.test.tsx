@@ -8,21 +8,6 @@ import { ThemeSwitchButton } from '~ui/components/theme-switch.js'
 
 import { ThemeProvider } from './theme-provider.js'
 
-Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', { value: true, configurable: true })
-
-window.matchMedia = query => ({
-  matches: false,
-  media: query,
-  onchange: null,
-  // oxlint-disable-next-line typescript/no-deprecated -- Required legacy member of the MediaQueryList test double.
-  addListener() {},
-  // oxlint-disable-next-line typescript/no-deprecated -- Required legacy member of the MediaQueryList test double.
-  removeListener() {},
-  addEventListener() {},
-  removeEventListener() {},
-  dispatchEvent: () => true,
-})
-
 afterEach(() => {
   document.cookie = 'theme=; Max-Age=0; path=/'
   document.documentElement.className = ''

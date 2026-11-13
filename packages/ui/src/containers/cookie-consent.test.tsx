@@ -10,21 +10,6 @@ import { loadGoogleTagManager } from '../side-effects/google-tag-manager.js'
 import { setMetaPixelConsent } from '../side-effects/meta-pixel.js'
 import { CookieConsent, type TrackingConsent } from './cookie-consent.js'
 
-Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', { value: true, configurable: true })
-
-window.matchMedia = query => ({
-  matches: false,
-  media: query,
-  onchange: null,
-  // oxlint-disable-next-line typescript/no-deprecated -- Required legacy member of the MediaQueryList test double.
-  addListener() {},
-  // oxlint-disable-next-line typescript/no-deprecated -- Required legacy member of the MediaQueryList test double.
-  removeListener() {},
-  addEventListener() {},
-  removeEventListener() {},
-  dispatchEvent: () => true,
-})
-
 let root: Root | undefined
 
 beforeEach(() => vi.useFakeTimers())

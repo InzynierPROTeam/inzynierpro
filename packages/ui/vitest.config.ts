@@ -2,5 +2,10 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
-  test: { environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'], passWithNoTests: true },
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['./src/test/setup.ts'],
+    passWithNoTests: true,
+  },
 })
