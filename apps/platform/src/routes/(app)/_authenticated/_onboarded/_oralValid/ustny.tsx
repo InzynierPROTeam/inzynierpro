@@ -16,6 +16,7 @@ export const Route = createFileRoute('/(app)/_authenticated/_onboarded/_oralVali
       )
       .catch(constVoid)
   },
+  staticData: { backLabel: 'Egzamin ustny' },
   component: OralStudyPage,
   head: () => ({
     meta: seo({ title: 'Przygotowanie do egzaminu ustnego' }),

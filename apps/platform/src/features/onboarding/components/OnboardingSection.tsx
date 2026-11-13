@@ -1,3 +1,5 @@
+import { BackLink } from '~platform/components/BackLink'
+
 import { onboardingRouteApi } from '../utils/route-api'
 import { updateOnboardingSearch } from '../utils/search'
 import { AppSessionStep } from './AppSessionStep'
@@ -15,6 +17,8 @@ export const OnboardingSection = () => {
 
   return (
     <section className="app-layout-section @container max-md:pb-40!">
+      {/* No fallback: a first assignment after sign-in has nowhere to return to. */}
+      <BackLink />
       <OnboardingWizard>
         <Steps
           current={step}

@@ -22,6 +22,7 @@ export const Route = createFileRoute(
       )
       .catch(constVoid)
   },
+  staticData: { backLabel: 'Kategoria' },
   component: LearningCategoryPage,
   head: () => ({
     meta: seo({ title: 'Kategoria nauki' }),

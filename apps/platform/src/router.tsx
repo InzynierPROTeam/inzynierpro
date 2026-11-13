@@ -3,6 +3,7 @@ import { DefaultCatchBoundary } from '@inzpro/ui/components/default-catch-bounda
 import { NotFoundPage } from '@inzpro/ui/components/not-found-page'
 import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+import { trackBackNavigation } from '~platform/lib/back-navigation'
 import { getQueryClient } from '~platform/lib/reactQuery'
 
 import { routeTree } from './routeTree.gen'
@@ -42,11 +43,20 @@ export function getRouter() {
 
   setupRouterSsrQueryIntegration({ router, queryClient })
 
+  if (!router.isServer) {
+    trackBackNavigation(router.history)
+  }
+
   return router
 }
 
 declare module '@tanstack/react-router' {
   interface Register {
     router: ReturnType<typeof getRouter>
+  }
+
+  interface StaticDataRouteOption {
+    /** The page name shown on a BackLink that returns to this page. */
+    backLabel?: string
   }
 }

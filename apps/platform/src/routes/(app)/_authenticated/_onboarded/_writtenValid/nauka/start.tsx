@@ -23,6 +23,7 @@ export const Route = createFileRoute('/(app)/_authenticated/_onboarded/_writtenV
       )
       .catch(constVoid)
   },
+  staticData: { backLabel: 'Sesja nauki' },
   component: StartLearningSessionPage,
   head: () => ({ meta: seo({ title: 'Zacznij sesję nauki' }) }),
 })

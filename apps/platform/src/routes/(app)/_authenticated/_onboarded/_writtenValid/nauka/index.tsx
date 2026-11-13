@@ -16,6 +16,7 @@ export const Route = createFileRoute('/(app)/_authenticated/_onboarded/_writtenV
       )
       .catch(constVoid)
   },
+  staticData: { backLabel: 'Nauka' },
   component: WrittenStudyPage,
   head: () => ({ meta: seo({ title: 'Nauka' }) }),
 })

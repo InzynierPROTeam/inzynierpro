@@ -15,7 +15,7 @@ import {
   EmptyContent,
 } from '@inzpro/ui/components/empty'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft } from 'lucide-react'
+import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
@@ -34,23 +34,7 @@ export const StartLearningSessionSection = () => {
 
   return (
     <section className="app-layout-section @container gap-8">
-      <Button
-        variant="ghost"
-        nativeButton={false}
-        render={
-          categoryId ? (
-            <Link
-              to="/nauka/kategoria/$id"
-              params={{ id: categoryId }}
-            />
-          ) : (
-            <Link to="/nauka" />
-          )
-        }
-        className="-ml-3 self-start"
-      >
-        <ChevronLeft /> {categoryId ? 'Wróć do kategorii' : 'Nauka'}
-      </Button>
+      <BackLink fallback={{ to: '/nauka' }} />
       <SuspenseQueryWrapper fallback={<SessionPreviewCardSkeleton />}>
         <SuspenseQuery
           options={sessionPreviewQueryOptions(apiHttpClient, user.id, {

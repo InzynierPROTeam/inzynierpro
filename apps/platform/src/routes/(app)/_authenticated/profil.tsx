@@ -17,6 +17,7 @@ export const Route = createFileRoute('/(app)/_authenticated/profil')({
       )
       .catch(constVoid)
   },
+  staticData: { backLabel: 'Konto' },
   component: ProfilePage,
   head: () => ({
     meta: seo({ title: 'Profil' }),
