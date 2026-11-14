@@ -5,7 +5,11 @@ import {
 } from '@inzpro/domain/modules/learning-content/reference-document'
 import { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
+import {
+  SessionQuestionPosition,
+  SessionQuestionSelection,
+  StudySessionId,
+} from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
 import { CursorPagination } from '~api-contracts/utils/pagination.js'
 
@@ -18,15 +22,20 @@ export const GetDocumentParams = Schema.Struct({
 
 export const DocumentsQuery = CursorPagination
 export const OralMaterialsQuery = CursorPagination
+export const SessionResultsQuery = CursorPagination
 
 export const SessionPreviewQuery = Schema.Struct({
   documentId: Schema.optional(ReferenceDocumentId),
-  afterDocumentId: Schema.optional(ReferenceDocumentId),
+  // Without a document, study continues from this one: it, or the next in order, with questions
+  // not yet answered; when the whole path was answered, the next one in order.
+  fromDocumentId: Schema.optional(ReferenceDocumentId),
 })
 
 export const StartSessionPayload = Schema.Struct({
   documentId: ReferenceDocumentId,
   questionCount: QuestionCount,
+  // The selection the confirmed preview showed, so repeating answered questions is deliberate.
+  questionSelection: SessionQuestionSelection,
 })
 
 export type StartSessionPayload = typeof StartSessionPayload.Type

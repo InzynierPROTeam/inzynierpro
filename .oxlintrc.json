@@ -59,6 +59,7 @@
     "conventions/prefer-duration": "error",
     "conventions/hooks-in-hooks-folder": "error",
     "conventions/no-feature-prefix": "error",
+    "conventions/no-module-defects": "error",
     "conventions/no-spread-route-hooks": "error",
     "conventions/no-try-catch": "error",
     "conventions/queries-wrap-actions": "error",

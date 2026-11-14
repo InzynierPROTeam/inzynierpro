@@ -3,6 +3,7 @@ import type {
   QuestionCount,
   ReferenceDocumentId,
 } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { SessionQuestionSelection } from '@inzpro/domain/modules/study/study-session'
 import { Button } from '@inzpro/ui/components/button'
 import { toast } from '@inzpro/ui/components/toast'
 import { useNavigate } from '@tanstack/react-router'
@@ -15,12 +16,14 @@ import { useStartSession } from '../hooks/useStartSession'
 type StartSessionButtonProps = {
   documentId: ReferenceDocumentId
   questionCount: QuestionCount
+  questionSelection: SessionQuestionSelection
   disabled: boolean
 }
 
 export const StartSessionButton: React.FC<StartSessionButtonProps> = ({
   documentId,
   questionCount,
+  questionSelection,
   disabled,
 }) => {
   const {
@@ -38,7 +41,7 @@ export const StartSessionButton: React.FC<StartSessionButtonProps> = ({
         toast.promise(
           mutation.mutateAsync({
             params: { qualificationPathId: selectedPath.id },
-            payload: { documentId, questionCount },
+            payload: { documentId, questionCount, questionSelection },
           }),
           {
             loading: { title: 'Rozpoczynanie sesji…' },

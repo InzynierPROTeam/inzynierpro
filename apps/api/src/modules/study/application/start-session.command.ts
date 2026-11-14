@@ -5,6 +5,7 @@ import type {
 } from '@inzpro/domain/modules/learning-content/reference-document'
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { SessionQuestionSelection } from '@inzpro/domain/modules/study/study-session'
 import { Effect, Option, Random } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
@@ -15,6 +16,7 @@ import {
 } from '~api/modules/study/domain/errors.js'
 import {
   isAllowedQuestionCount,
+  sessionQuestionPool,
   writtenStudySettings,
 } from '~api/modules/study/domain/session-preview.rules.js'
 
@@ -24,14 +26,17 @@ import { StudyRepository } from './study.repository.js'
 /**
  * Starts the document's written study session after confirming its preview. An unfinished session
  * of the document refuses the start and is reported so the client can continue it; restarting is a
- * separate action. The account lock serializes concurrent starts with each other and with
- * assignment changes, so access and settings are checked against committed state.
+ * separate action. The session draws the questions the preview selected: unanswered ones, or all
+ * again once every one was answered, so a repeat is never started by a stale preview. The account
+ * lock serializes concurrent starts with each other, with answers and with assignment changes, so
+ * access, coverage and settings are checked against committed state.
  */
 export const startSession = Effect.fn('Study.startSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,
   documentId: ReferenceDocumentId,
   questionCount: QuestionCount,
+  questionSelection: SessionQuestionSelection,
 ) {
   const studyReader = yield* StudyReader
   const studyRepository = yield* StudyRepository
@@ -57,16 +62,22 @@ export const startSession = Effect.fn('Study.startSession')(function* (
         return yield* new StudyDocumentNotFound()
       }
 
+      const pool = sessionQuestionPool(document.value)
+
       if (
-        !isAllowedQuestionCount(
-          writtenStudySettings(document.value.availableQuestionCount),
-          questionCount,
-        )
+        pool.selection !== questionSelection ||
+        !isAllowedQuestionCount(writtenStudySettings(pool.questionCount), questionCount)
       ) {
         return yield* new StaleSessionScope()
       }
 
-      const candidates = yield* studyReader.sessionCandidates(pathId, documentId, questionCount)
+      const candidates = yield* studyReader.sessionCandidates(
+        userId,
+        pathId,
+        documentId,
+        questionSelection,
+        questionCount,
+      )
 
       // Each statement sees newly committed rows, so a withdrawal between the two reads could shrink the set.
       if (candidates.length !== questionCount) {

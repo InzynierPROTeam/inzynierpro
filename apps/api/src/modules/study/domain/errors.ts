@@ -15,6 +15,9 @@ export class UnfinishedSessionExists extends Data.TaggedError('UnfinishedSession
   readonly currentPosition: SessionQuestionPosition
 }> {}
 
+/** The session does not exist for this user and path. */
+export class StudySessionMissing extends Data.TaggedError('StudySessionMissing') {}
+
 /** The session or its question does not exist for this user and path. */
 export class SessionQuestionMissing extends Data.TaggedError('SessionQuestionMissing') {}
 

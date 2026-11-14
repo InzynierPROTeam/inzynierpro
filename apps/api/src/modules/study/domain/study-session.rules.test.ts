@@ -2,7 +2,7 @@ import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference
 import { DateTime, Option, Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { answeredPercent, studySessionStatus } from './study-session.rules.js'
+import { answeredPercent, correctPercent, studySessionStatus } from './study-session.rules.js'
 
 const count = Schema.decodeSync(QuestionCount)
 
@@ -23,5 +23,19 @@ describe('answered percent', () => {
     expect(answeredPercent({ answeredCount: count(answered), questionCount: count(3) })).toBe(
       percent,
     ),
+  )
+})
+
+describe('correct percent', () => {
+  it.each([
+    [0, 5, 0],
+    [1, 1, 100],
+    [1, 3, 33],
+    [2, 3, 67],
+    [5, 5, 100],
+  ])(
+    '%i correct answers in a session of %i questions are %i%%',
+    (correct, questionCount, percent) =>
+      expect(correctPercent({ correct: count(correct) }, count(questionCount))).toBe(percent),
   )
 })

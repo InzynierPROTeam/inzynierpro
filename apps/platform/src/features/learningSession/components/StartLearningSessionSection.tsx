@@ -48,7 +48,7 @@ export const StartLearningSessionSection = () => {
         <SuspenseQuery
           options={sessionPreviewQueryOptions(apiHttpClient, user.id, {
             params: { qualificationPathId: selectedPath.id },
-            query: { documentId: categoryId, afterDocumentId: search['obecny-akt-prawny'] },
+            query: { documentId: categoryId, fromDocumentId: search['obecny-akt-prawny'] },
           })}
           isDataEmpty={preview => preview === null}
           noDataFallback={<EmptySessionPreview />}

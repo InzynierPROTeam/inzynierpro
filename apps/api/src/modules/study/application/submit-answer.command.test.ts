@@ -67,7 +67,13 @@ test('a failure inside the answer transaction keeps no answer or progress, and a
     learningRequest(api, visitor, `/paths/${fixture.pathId}${path}`, body)
 
   const session = Schema.decodeUnknownSync(StudySession)(
-    await (await request('/sessions', { documentId: fixture.documentId, questionCount: 2 })).json(),
+    await (
+      await request('/sessions', {
+        documentId: fixture.documentId,
+        questionCount: 2,
+        questionSelection: 'unanswered',
+      })
+    ).json(),
   )
 
   const readQuestion = async () =>

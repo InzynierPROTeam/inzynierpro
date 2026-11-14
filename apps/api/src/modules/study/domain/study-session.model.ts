@@ -92,3 +92,19 @@ export type NewStudySession = {
   readonly goalVersion: UserExamGoalVersion
   readonly questions: ReadonlyArray<SessionCandidate>
 }
+
+/** The answers of a session counted by result; assisted answers also count as correct or incorrect. */
+export const StudySessionResultCounts = Schema.Struct({
+  correct: QuestionCount,
+  incorrect: QuestionCount,
+  assisted: QuestionCount,
+})
+
+export type StudySessionResultCounts = typeof StudySessionResultCounts.Type
+
+/** One question of a session in the summary details. */
+export type SessionQuestionResult = {
+  readonly position: SessionQuestionPosition
+  readonly answer: Option.Option<{ readonly isCorrect: boolean; readonly isAssisted: boolean }>
+  readonly isWithdrawn: boolean
+}

@@ -1,6 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env*", ".oxlintrc.json", ".oxfmtrc.json"],
+  "globalDependencies": [
+    "**/.env*",
+    ".oxlintrc.json",
+    ".oxfmtrc.json",
+    "packages/tools/tsconfig/*.json"
+  ],
   "envMode": "loose",
   "tasks": {
     "dev": {

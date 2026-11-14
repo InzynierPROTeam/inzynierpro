@@ -7,6 +7,7 @@ import {
   StaleSessionPreview,
   StudySessionAlreadyStarted,
   StudySessionEnded,
+  StudySessionNotFound,
 } from '@inzpro/api-contracts/modules/study/errors'
 import { Effect } from 'effect'
 import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
@@ -39,6 +40,13 @@ export const studySessionAlreadyStarted = (error: UnfinishedSessionExists) =>
       currentPosition: error.currentPosition,
     }),
   )
+
+export const studySessionNotFound = Effect.fail(
+  new StudySessionNotFound({
+    type: 'study_session_not_found',
+    message: 'The study session was not found.',
+  }),
+)
 
 export const sessionQuestionNotFound = Effect.fail(
   new SessionQuestionNotFound({

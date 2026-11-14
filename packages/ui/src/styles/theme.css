@@ -62,6 +62,9 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
+  /* Strong ease-out for entrances; built-in CSS curves are too weak for deliberate motion. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+
   --container-4xs: 14rem;
   --container-5xs: 12rem;
   --container-6xs: 10rem;

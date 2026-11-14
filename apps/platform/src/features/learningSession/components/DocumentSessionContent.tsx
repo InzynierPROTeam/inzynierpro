@@ -16,6 +16,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { ContinueSessionButton } from './ContinueSessionButton'
 import { SessionTileContentSkeleton } from './LatestSessionContent'
 import { SessionProgress } from './SessionProgress'
+import { SessionSummaryLink } from './SessionSummaryLink'
 
 type DocumentSessionContentProps = {
   documentId: ReferenceDocumentId
@@ -111,7 +112,10 @@ const EndedDocumentSessionContent: React.FC<EndedDocumentSessionContentProps> = 
 }) => (
   <>
     <CardContent className="flex flex-col gap-2">
-      <CardDescription>Sesja zakończona</CardDescription>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <CardDescription>Sesja zakończona</CardDescription>
+        <SessionSummaryLink sessionId={session.id} />
+      </div>
       <SessionProgress progress={session.progress} />
     </CardContent>
     <CardFooter className="mt-auto">

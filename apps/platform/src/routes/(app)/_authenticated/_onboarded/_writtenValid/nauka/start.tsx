@@ -14,7 +14,7 @@ export const Route = createFileRoute('/(app)/_authenticated/_onboarded/_writtenV
   validateSearch: Schema.toStandardSchemaV1(LearningPreviewSearch),
   loaderDeps: ({ search }) => ({
     documentId: search['akt-prawny'],
-    afterDocumentId: search['obecny-akt-prawny'],
+    fromDocumentId: search['obecny-akt-prawny'],
   }),
   loader: ({ context: { queryClient, session, selectedPath }, deps }) => {
     void queryClient

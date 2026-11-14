@@ -27,3 +27,15 @@ export const nextQuestionPosition = (
   answered: SessionQuestionPosition,
   questionCount: QuestionCount,
 ): SessionQuestionPosition => SessionQuestionPosition.make(Math.min(answered + 1, questionCount))
+
+export const unansweredQuestions = 'unanswered'
+export const repeatedQuestions = 'repeat'
+export const sessionQuestionSelectionValues = [unansweredQuestions, repeatedQuestions] as const
+
+/**
+ * Which questions a new regular-study session draws: those not yet answered in the scope, or,
+ * once every one was answered, all of them again. Full LearningRound tracking is a later scope.
+ */
+export const SessionQuestionSelection = Schema.Literals(sessionQuestionSelectionValues)
+
+export type SessionQuestionSelection = typeof SessionQuestionSelection.Type

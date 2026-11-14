@@ -13,6 +13,10 @@ import {
   type GetSessionRequest,
   getSessionQuestion,
   type GetSessionQuestionRequest,
+  getSessionSummary,
+  type GetSessionSummaryRequest,
+  getSessionResults,
+  type GetSessionResultsRequest,
 } from '@inzpro/api-client/modules/study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -27,22 +31,45 @@ export const studyKeys = {
   all: ['study'] as const,
   path: (userId: UserId, id: QualificationPathId) =>
     [...studyKeys.all, 'path', userId, id] as const,
+  // Reads that show the learner's progress on the path, which every answer changes.
+  progress: (userId: UserId, pathId: QualificationPathId) =>
+    [...studyKeys.path(userId, pathId), 'progress'] as const,
   getDocuments: (userId: UserId, req: GetDocumentsRequest) =>
-    [...studyKeys.path(userId, req.params.qualificationPathId), 'getDocuments', req] as const,
+    [...studyKeys.progress(userId, req.params.qualificationPathId), 'getDocuments', req] as const,
   getDocument: (userId: UserId, req: GetDocumentRequest) =>
-    [...studyKeys.path(userId, req.params.qualificationPathId), 'getDocument', req] as const,
+    [...studyKeys.progress(userId, req.params.qualificationPathId), 'getDocument', req] as const,
   getSessionPreview: (userId: UserId, req: GetSessionPreviewRequest) =>
-    [...studyKeys.path(userId, req.params.qualificationPathId), 'getSessionPreview', req] as const,
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getSessionPreview',
+      req,
+    ] as const,
   getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
     [...studyKeys.path(userId, req.params.qualificationPathId), 'getOralMaterials', req] as const,
   getLatestSession: (userId: UserId, req: GetLatestSessionRequest) =>
-    [...studyKeys.path(userId, req.params.qualificationPathId), 'getLatestSession', req] as const,
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getLatestSession',
+      req,
+    ] as const,
   session: (userId: UserId, pathId: QualificationPathId, id: StudySessionId) =>
     [...studyKeys.path(userId, pathId), 'session', id] as const,
   getSession: (userId: UserId, req: GetSessionRequest) =>
     [
       ...studyKeys.session(userId, req.params.qualificationPathId, req.params.sessionId),
       'getSession',
+      req,
+    ] as const,
+  getSessionSummary: (userId: UserId, req: GetSessionSummaryRequest) =>
+    [
+      ...studyKeys.session(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getSessionSummary',
+      req,
+    ] as const,
+  getSessionResultsInfinite: (userId: UserId, req: GetSessionResultsRequest) =>
+    [
+      ...studyKeys.session(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getSessionResultsInfinite',
       req,
     ] as const,
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
@@ -108,3 +135,22 @@ export const sessionQuestionQueryOptions = (
   req: GetSessionQuestionRequest,
 ) =>
   effectQueryOptions(studyKeys.getSessionQuestion(userId, req), getSessionQuestion(req), httpClient)
+
+export const sessionSummaryQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetSessionSummaryRequest,
+) =>
+  effectQueryOptions(studyKeys.getSessionSummary(userId, req), getSessionSummary(req), httpClient)
+
+export const sessionResultsInfiniteQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetSessionResultsRequest,
+) =>
+  effectInfiniteQueryOptions(
+    studyKeys.getSessionResultsInfinite(userId, req),
+    cursor => getSessionResults({ ...req, query: { ...req.query, cursor } }),
+    httpClient,
+    req.query.cursor,
+  )

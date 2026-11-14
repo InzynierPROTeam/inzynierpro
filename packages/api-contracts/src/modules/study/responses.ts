@@ -13,6 +13,7 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
   SessionQuestionPosition,
+  SessionQuestionSelection,
   StudySessionId,
   StudySessionStatus,
 } from '@inzpro/domain/modules/study/study-session'
@@ -43,6 +44,9 @@ export const SessionPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
   document: DocumentQuestionPool,
   mode: Schema.Literal('written-study'),
+  // Unanswered questions first; once all were answered, the session repeats them.
+  questionSelection: SessionQuestionSelection,
+  // The questions the selection draws from.
   availableQuestionCount: QuestionCount,
   settings: Schema.Struct({
     defaultQuestionCount: QuestionCount,
@@ -92,6 +96,41 @@ export const LatestStudySession = Schema.Struct({
 export type LatestStudySession = typeof LatestStudySession.Type
 
 export const LatestStudySessionResponse = Schema.NullOr(LatestStudySession)
+
+export const EndSessionResponse = StudySession
+
+/** How the session went, over the questions it answered. */
+export const StudySessionResult = Schema.Struct({
+  correct: QuestionCount,
+  incorrect: QuestionCount,
+  // Answers given after opening the explanation; they still count as correct or incorrect.
+  assisted: QuestionCount,
+  // The score: correct answers among all of the session's questions.
+  correctPercent: Percent,
+})
+
+export type StudySessionResult = typeof StudySessionResult.Type
+
+/** A session with its material and result, for the summary after it ends. */
+export const StudySessionSummary = Schema.Struct({
+  ...LatestStudySession.fields,
+  result: StudySessionResult,
+})
+
+export type StudySessionSummary = typeof StudySessionSummary.Type
+
+export const StudySessionSummaryResponse = Schema.NullOr(StudySessionSummary)
+
+/** One question of a session in the summary details: its result, or why it has none. */
+export const SessionQuestionResult = Schema.Struct({
+  position: SessionQuestionPosition,
+  answer: Schema.NullOr(Schema.Struct({ isCorrect: Schema.Boolean, isAssisted: Schema.Boolean })),
+  isWithdrawn: Schema.Boolean,
+})
+
+export type SessionQuestionResult = typeof SessionQuestionResult.Type
+
+export const SessionResultsResponse = CursorPaginatedResponse(SessionQuestionResult)
 
 /** One option of a session question in the session's stored order. */
 export const SessionAnswerOption = Schema.Struct({
