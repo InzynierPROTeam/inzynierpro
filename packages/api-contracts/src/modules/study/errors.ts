@@ -31,6 +31,11 @@ export class StudySessionAlreadyStarted extends Schema.TaggedError<
   ConflictAnnotations(),
 ) {}
 
+export class StudySessionNotFound extends Schema.TaggedError<
+  StudySessionNotFound,
+  { readonly brand: unique symbol }
+>()('StudySessionNotFound', errorFields('study_session_not_found'), NotFoundAnnotations()) {}
+
 export class SessionQuestionNotFound extends Schema.TaggedError<
   SessionQuestionNotFound,
   { readonly brand: unique symbol }

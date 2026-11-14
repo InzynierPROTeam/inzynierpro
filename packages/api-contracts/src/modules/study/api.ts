@@ -16,6 +16,7 @@ import {
   StaleSessionPreview,
   StudySessionAlreadyStarted,
   StudySessionEnded,
+  StudySessionNotFound,
 } from './errors.js'
 import {
   DocumentsQuery,
@@ -26,17 +27,21 @@ import {
   OralMaterialsQuery,
   SessionParams,
   SessionQuestionParams,
+  SessionResultsQuery,
   StartSessionPayload,
   SubmitSessionAnswerPayload,
 } from './requests.js'
 import {
   DocumentResponse,
   DocumentsResponse,
+  EndSessionResponse,
   LatestStudySessionResponse,
   OralMaterialsResponse,
   SessionPreviewResponse,
   SessionQuestionResponse,
+  SessionResultsResponse,
   StartSessionResponse,
+  StudySessionSummaryResponse,
   StudySessionResponse,
   RecordSessionAssistanceResponse,
   SubmitSessionAnswerResponse,
@@ -136,6 +141,40 @@ export const GetSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
+// Only an ended session has a summary; an unfinished one reads as null.
+export const GetSessionSummaryEndpoint = HttpApiEndpoint.get(
+  'GetSessionSummary',
+  '/paths/:qualificationPathId/sessions/:sessionId/summary',
+  {
+    params: SessionParams,
+    success: StudySessionSummaryResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// The per-question details of an ended session's summary, in session order.
+export const GetSessionResultsEndpoint = HttpApiEndpoint.get(
+  'GetSessionResults',
+  '/paths/:qualificationPathId/sessions/:sessionId/results',
+  {
+    params: SessionParams,
+    query: SessionResultsQuery,
+    success: SessionResultsResponse,
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest, PathAccessDenied],
+  },
+)
+
+// Ends a session before its summary; it keeps its answers and accepts no more. Ending an ended one changes nothing.
+export const EndSessionEndpoint = HttpApiEndpoint.post(
+  'EndSession',
+  '/paths/:qualificationPathId/sessions/:sessionId/end',
+  {
+    params: SessionParams,
+    success: EndSessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, StudySessionNotFound],
+  },
+)
+
 export const GetSessionQuestionEndpoint = HttpApiEndpoint.get(
   'GetSessionQuestion',
   '/paths/:qualificationPathId/sessions/:sessionId/questions/:position',
@@ -186,6 +225,9 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(StartSessionEndpoint)
   .add(GetLatestSessionEndpoint)
   .add(GetSessionEndpoint)
+  .add(GetSessionSummaryEndpoint)
+  .add(GetSessionResultsEndpoint)
+  .add(EndSessionEndpoint)
   .add(GetSessionQuestionEndpoint)
   .add(RecordSessionAssistanceEndpoint)
   .add(SubmitSessionAnswerEndpoint)
