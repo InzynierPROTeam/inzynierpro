@@ -10,6 +10,7 @@ import { infiniteQueryNamesRule } from './rules/infinite-query-names.ts'
 import { moduleLayersRule } from './rules/module-layers.ts'
 import { namedComponentPropsRule } from './rules/named-component-props.ts'
 import { noFeaturePrefixRule } from './rules/no-feature-prefix.ts'
+import { noModuleDefectsRule } from './rules/no-module-defects.ts'
 import { noSpreadRouteHooksRule } from './rules/no-spread-route-hooks.ts'
 import { noTryCatchRule } from './rules/no-try-catch.ts'
 import { pageSectionsRule } from './rules/page-sections.ts'
@@ -42,6 +43,7 @@ const conventionsPlugin = eslintCompatPlugin({
     'prefer-duration': preferDurationRule,
     'hooks-in-hooks-folder': hooksInHooksFolderRule,
     'no-feature-prefix': noFeaturePrefixRule,
+    'no-module-defects': noModuleDefectsRule,
     'no-spread-route-hooks': noSpreadRouteHooksRule,
     'no-try-catch': noTryCatchRule,
     'queries-wrap-actions': queriesWrapActionsRule,

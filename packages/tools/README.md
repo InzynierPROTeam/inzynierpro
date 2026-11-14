@@ -26,4 +26,6 @@ Schema ownership (ADR-0027) uses `conventions/module-layers` and `conventions/do
 
 Date enforcement uses `conventions/date-boundaries` for public ISO/null DTOs, shared client date helpers, private backend models and the absence of custom client serialization adapters. `conventions/prefer-duration` rejects common manual unit-conversion chains and raw numeric cache/timeout lifetimes. Tests are exempt from these two rules so they can exercise invalid representations and clock boundaries. The existing Effect DateTime rule still applies. Syntax checks complement response types and timezone/contract tests; they do not prove arbitrary nested JSON compatibility.
 
+`conventions/no-module-defects` rejects `Effect.die`, `dieMessage`, `orDie` and `orDieWith` in API module `domain/`, `application/` and `http/` files, so expected outcomes such as a missing row become typed errors. Infrastructure keeps defects for broken invariants, and tests are exempt.
+
 `conventions/prefer-cx` rejects ternaries directly inside JSX `className`, including ternaries nested in class-composition calls and template strings. Use `cx` with object conditions. Function-valued component props may still adapt a className callback without this rule inspecting its implementation.
