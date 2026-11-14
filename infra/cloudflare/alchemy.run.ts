@@ -3,6 +3,7 @@ import * as Alchemy from 'alchemy'
 import { Effect } from 'effect'
 
 import { readDeploymentConfig } from './config.ts'
+import { existingStateOnly } from './state.ts'
 
 const config = Effect.runSync(readDeploymentConfig(process.env))
 const stage = process.env.ALCHEMY_STAGE
@@ -15,7 +16,9 @@ export default Alchemy.Stack(
   'inzpro-platform',
   {
     providers: Cloudflare.providers(),
-    state: Cloudflare.state({ accountId: config.accountId, workerName: 'inzpro-state' }),
+    state: Cloudflare.state({ accountId: config.accountId, workerName: 'inzpro-state' }).pipe(
+      existingStateOnly,
+    ),
   },
   Effect.gen(function* () {
     if ((yield* Alchemy.Stage) !== stage) {

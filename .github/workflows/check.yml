@@ -85,5 +85,17 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Skip superseded revisions
+        id: revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          head_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$GITHUB_REF_NAME" --jq '.object.sha')
+          if [ "$head_sha" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Skipping a revision superseded by a newer push.'
+          fi
       - name: Deploy checked revision
+        if: steps.revision.outputs.current == 'true'
         run: pnpm cloudflare deploy "${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}"
