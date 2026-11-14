@@ -16,7 +16,8 @@ describe('study session status', () => {
 describe('answered percent', () => {
   it.each([
     [0, 0],
-    [2, 66],
+    [1, 33],
+    [2, 67],
     [3, 100],
   ])('%i of 3 answered questions is %i%%', (answered, percent) =>
     expect(answeredPercent({ answeredCount: count(answered), questionCount: count(3) })).toBe(

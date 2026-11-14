@@ -1,4 +1,5 @@
-import { Percent } from '@inzpro/domain/common/percent'
+import { type Percent, ratioToPercent } from '@inzpro/domain/common/percent'
+import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
 import {
   activeStudySession,
   endedStudySession,
@@ -11,7 +12,7 @@ import type { StudySession } from './study-session.model.js'
 export const studySessionStatus = (session: Pick<StudySession, 'endedAt'>): StudySessionStatus =>
   Option.isSome(session.endedAt) ? endedStudySession : activeStudySession
 
-/** The share of the session's questions already answered, rounded down so 100 means all of them. */
+/** The share of the session's questions already answered, rounded like V1. */
 export const answeredPercent = (
   session: Pick<StudySession, 'answeredCount' | 'questionCount'>,
-): Percent => Percent.make(Math.floor((session.answeredCount / session.questionCount) * 100))
+): Percent => ratioToPercent(calculateCompletionRatio(session.answeredCount, session.questionCount))
