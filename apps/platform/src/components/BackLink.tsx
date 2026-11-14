@@ -63,7 +63,8 @@ const BackLinkButton: React.FC<BackLinkButtonProps> = ({ link, label }) => (
   <Button
     variant="ghost"
     nativeButton={false}
-    className="-ml-3 self-start"
+    // On mobile the back link sits in the page's top padding, close to the header.
+    className="-ml-3 self-start max-lg:-mt-8"
     render={link}
   >
     <ChevronLeft /> {label}
