@@ -7,6 +7,8 @@ import type {
   GetLatestSessionEndpoint,
   GetSessionEndpoint,
   GetSessionQuestionEndpoint,
+  RecordSessionAssistanceEndpoint,
+  SubmitSessionAnswerEndpoint,
 } from '@inzpro/api-contracts/modules/study/api'
 import type { Effect } from 'effect'
 import { apiAction } from '~api-client/lib/api-action.js'
@@ -81,3 +83,23 @@ export type GetSessionQuestionRequest = InferEndpointRequest<typeof GetSessionQu
 export type GetSessionQuestionRes = Effect.Success<ReturnType<typeof getSessionQuestion>>
 
 export type GetSessionQuestionError = Effect.Error<ReturnType<typeof getSessionQuestion>>
+
+export const recordSessionAssistance = (req: RecordSessionAssistanceRequest) =>
+  apiAction(api => api.Study.RecordSessionAssistance(req))
+
+export type RecordSessionAssistanceRequest = InferEndpointRequest<
+  typeof RecordSessionAssistanceEndpoint
+>
+
+export type RecordSessionAssistanceRes = Effect.Success<ReturnType<typeof recordSessionAssistance>>
+
+export type RecordSessionAssistanceError = Effect.Error<ReturnType<typeof recordSessionAssistance>>
+
+export const submitSessionAnswer = (req: SubmitSessionAnswerRequest) =>
+  apiAction(api => api.Study.SubmitSessionAnswer(req))
+
+export type SubmitSessionAnswerRequest = InferEndpointRequest<typeof SubmitSessionAnswerEndpoint>
+
+export type SubmitSessionAnswerRes = Effect.Success<ReturnType<typeof submitSessionAnswer>>
+
+export type SubmitSessionAnswerError = Effect.Error<ReturnType<typeof submitSessionAnswer>>
