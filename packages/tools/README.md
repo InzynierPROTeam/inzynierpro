@@ -14,6 +14,10 @@ From the repository root:
 pnpm lint
 ```
 
+## TypeScript configs
+
+`tsconfig/` holds the shared compiler settings every workspace extends: `library.json` (Node packages and the API), `library-dom.json` (React and browser packages) and `effect.json` (the Effect language service and ES2024 target, also used by the Vite and Playwright apps). Workspaces extend them as `@inzpro/tools/tsconfig/<name>.json`, resolved through the root `devDependency`. A workspace's own `tsconfig.json` adds only its `paths`, `types` and app-specific options. `${configDir}` keeps `outDir`, `rootDir` and `include` relative to the extending workspace.
+
 ## Dependencies
 
 Follow the workspace dependency directions in [policy.ts](../tools/src/oxlint/architecture-policy.ts). The [architecture guide](../../docs/architecture.md) explains package placement, test exceptions, wildcard exports, and verification.

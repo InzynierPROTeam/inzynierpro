@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2024",
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": true,
+        "refactors": true,
+        "quickinfo": true,
+        "completions": true,
+        "noExternal": true,
+        "ignoreEffectWarningsInTscExitCode": true,
+        // The workspace deliberately builds on effect/http and effect/http-api, as in .oxlintrc.json.
+        "diagnosticSeverity": { "unstableApiUsage": "off" }
+      }
+    ]
+  }
+}

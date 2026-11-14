@@ -1,5 +1,5 @@
 {
-  "extends": "@total-typescript/tsconfig/bundler/dom",
+  "extends": ["@total-typescript/tsconfig/bundler/dom", "@inzpro/tools/tsconfig/effect.json"],
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -8,21 +8,9 @@
       "~platform/*": ["./src/*"]
     },
     "noEmit": true,
-    "target": "ES2024",
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
-    "allowImportingTsExtensions": true,
-    "plugins": [
-      {
-        "name": "@effect/language-service",
-        "diagnostics": true,
-        "refactors": true,
-        "quickinfo": true,
-        "completions": true,
-        "noExternal": true,
-        "ignoreEffectWarningsInTscExitCode": true
-      }
-    ]
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "vitest.config.ts"]
 }
