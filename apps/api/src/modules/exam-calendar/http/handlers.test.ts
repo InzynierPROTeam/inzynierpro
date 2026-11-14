@@ -1,11 +1,9 @@
 import { ExamSessionsResponse } from '@inzpro/api-contracts/modules/exam-calendar/responses'
 import { GoalOptionsResponse } from '@inzpro/api-contracts/modules/preparation/responses'
-import { databaseLayerFromConfig } from '@inzpro/db'
 import { DateTime, Effect, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { CalendarSession } from '~api/modules/exam-calendar/domain/exam-session.model.js'
-import { seedTechnicalCatalogue } from '~api/seed/technical-catalogue.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import { runFixture } from '~api/test/learning-fixtures.js'
 import {
@@ -37,9 +35,6 @@ const cases = [
 let api: TestApi
 
 beforeAll(async () => {
-  await Effect.runPromise(
-    seedTechnicalCatalogue.pipe(Effect.provide(databaseLayerFromConfig), Effect.scoped),
-  )
   await runFixture(
     Effect.gen(function* () {
       const examCalendarRepository = yield* ExamCalendarRepository
