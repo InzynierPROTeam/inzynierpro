@@ -16,7 +16,7 @@ The quiz is created only when the user chooses "Check your knowledge". A finishe
 
 ## Answering and scoring
 
-In every format the user selects an answer and confirms it with "Check". Selections are saved as drafts; the check, result and explanation appear only after confirmation, and the answer cannot change afterwards. This matches written study.
+In every format the user selects an answer and confirms it with "Check". Selections are saved as drafts; the check, result and explanation appear only after confirmation, and the answer cannot change afterwards. This matches the select-and-check flow of written study, except that the quiz offers no explanation before checking, while written study allows it as assistance (ADR-0002).
 
 Multiple choice is scored binary: correct means every correct option selected and no wrong one. Feedback shows missed correct options and wrong selections. The full answer set is kept for analytics and future SRS strategies. How the quiz affects SRS is in ADR-0005.
 

@@ -28,6 +28,8 @@ QuestionAnswer has no global position. Written study, mock exams and reviews shu
 
 Viewing the explanation or the user's own notes before submitting is allowed. It marks the attempt as an assisted answer: the result stays correct or wrong but is not evidence of independent mastery. SRS rules are in ADR-0005 and XP rules in ADR-0010.
 
+Study question reads include each option's correctness and the explanation, as in V1, so clients can show feedback immediately. A learner who reads the answer key early only skips their own study; scoring, history and SRS still come from the backend by answer ID and revision, never from a result sent by the client. Because the explanation is already on the client, opening it before submitting is reported as a separate event that the backend records for the question; the submitted answer is marked as assisted from that record, never from a client flag. Mock exams keep hiding correct answers (ADR-0004).
+
 ## Conflicts between devices
 
 The backend resolves conflicts between devices using the same session. The first submitted answer wins, and retrying the same request does not award SRS or XP again.
