@@ -15,3 +15,7 @@ export const getSessionQuestionCount = (
   requested <= settings.maximumQuestionCount
     ? requested
     : settings.defaultQuestionCount
+
+export const sessionQuestionRouteApi = getRouteApi(
+  '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber',
+)
