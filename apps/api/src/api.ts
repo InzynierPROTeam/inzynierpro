@@ -16,7 +16,7 @@ import {
   QualificationPathsLive,
   QualificationPathsRequestServices,
 } from '~api/modules/qualification-paths/http/handlers.js'
-import { StudyLive } from '~api/modules/study/http/handlers.js'
+import { StudyLive, StudyRequestServices } from '~api/modules/study/http/handlers.js'
 
 // Handlers read module services per request. They must be provided here, on the layer that
 // registers routes: provided on a group layer they would type-check but never reach a handler.
@@ -35,6 +35,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
     Layer.mergeAll(
       HealthRequestServices,
       PreparationRequestServices,
+      StudyRequestServices,
       QualificationPathsRequestServices,
       ExamCalendarRequestServices,
     ),

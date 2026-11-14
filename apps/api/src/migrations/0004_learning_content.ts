@@ -56,7 +56,8 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     text text NOT NULL CHECK (length(text)>0),
     is_correct boolean NOT NULL,
     created_at timestamptz(3) NOT NULL DEFAULT now(),
-    updated_at timestamptz(3) NOT NULL DEFAULT now()
+    updated_at timestamptz(3) NOT NULL DEFAULT now(),
+    UNIQUE (question_revision_id, id)
   )`
   yield* sql`CREATE INDEX question_answers_revision_created_at_id_idx ON question_answers (question_revision_id,created_at,id)`
   yield* sql`CREATE UNIQUE INDEX question_answers_one_correct_per_revision ON question_answers (question_revision_id) WHERE is_correct`

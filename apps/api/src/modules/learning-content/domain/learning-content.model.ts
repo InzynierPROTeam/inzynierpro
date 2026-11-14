@@ -21,6 +21,17 @@ const NewQuestionAnswer = Schema.Struct({
   isCorrect: Schema.Boolean,
 })
 
+const hasValidAnswers = (revision: {
+  readonly revisionId: QuestionRevisionId
+  readonly answers: ReadonlyArray<typeof NewQuestionAnswer.Type>
+}) =>
+  new Set(revision.answers.map(answer => answer.id)).size === 3 &&
+  revision.answers.filter(answer => answer.isCorrect).length === 1 &&
+  revision.answers.every(answer => answer.questionRevisionId === revision.revisionId)
+
+const validAnswersMessage =
+  'A question needs three distinct answers for its revision, with exactly one correct answer.'
+
 export const NewQuestion = Schema.Struct({
   id: WrittenQuestionId,
   revisionId: QuestionRevisionId,
@@ -30,22 +41,17 @@ export const NewQuestion = Schema.Struct({
   answers: Schema.Array(NewQuestionAnswer).check(Schema.isMinLength(3), Schema.isMaxLength(3)),
   explanation: Schema.NonEmptyString,
   published: Schema.Boolean,
-}).check(
-  Schema.makeFilter(
-    question => {
-      const ids = new Set(question.answers.map(answer => answer.id))
-
-      return (
-        ids.size === 3 &&
-        question.answers.filter(answer => answer.isCorrect).length === 1 &&
-        question.answers.every(answer => answer.questionRevisionId === question.revisionId)
-      )
-    },
-    {
-      message:
-        'A question needs three distinct answers for its revision, with exactly one correct answer.',
-    },
-  ),
-)
+}).check(Schema.makeFilter(hasValidAnswers, { message: validAnswersMessage }))
 
 export type NewQuestion = typeof NewQuestion.Type
+
+/** A newer published revision of an existing question; earlier revisions stay unchanged. */
+export const NewQuestionRevision = Schema.Struct({
+  questionId: WrittenQuestionId,
+  revisionId: QuestionRevisionId,
+  body: Schema.NonEmptyString,
+  answers: Schema.Array(NewQuestionAnswer).check(Schema.isMinLength(3), Schema.isMaxLength(3)),
+  explanation: Schema.NonEmptyString,
+}).check(Schema.makeFilter(hasValidAnswers, { message: validAnswersMessage }))
+
+export type NewQuestionRevision = typeof NewQuestionRevision.Type

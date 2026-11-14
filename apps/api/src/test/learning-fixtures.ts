@@ -1,12 +1,16 @@
 import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { databaseLayerFromConfig } from '@inzpro/db'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Layer, Schema, Option } from 'effect'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
-import { NewQuestion } from '~api/modules/learning-content/domain/learning-content.model.js'
+import {
+  NewQuestion,
+  NewQuestionRevision,
+} from '~api/modules/learning-content/domain/learning-content.model.js'
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
@@ -103,5 +107,31 @@ export const addFixtureQuestion = (
       yield* learningContentRepository.createQuestion(question)
 
       return question
+    }),
+  )
+
+// Publishes a newer revision with its own answer IDs, as an editor's substantive change would.
+export const publishFixtureRevision = (questionId: WrittenQuestionId) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+      const revisionId = crypto.randomUUID()
+
+      const revision = yield* Schema.decodeEffect(NewQuestionRevision)({
+        questionId,
+        revisionId,
+        body: 'Test-only revised question',
+        answers: ['D', 'E', 'F'].map((text, index) => ({
+          id: crypto.randomUUID(),
+          questionRevisionId: revisionId,
+          text,
+          isCorrect: index === 0,
+        })),
+        explanation: 'Revised fixture',
+      })
+
+      yield* learningContentRepository.publishRevision(revision)
+
+      return revision
     }),
   )

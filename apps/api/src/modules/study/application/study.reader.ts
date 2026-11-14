@@ -1,9 +1,21 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import type {
+  QuestionCount,
+  ReferenceDocumentId,
+} from '@inzpro/domain/modules/learning-content/reference-document'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type {
+  SessionQuestionPosition,
+  StudySessionId,
+} from '@inzpro/domain/modules/study/study-session'
 import { Context, type Effect, type Option } from 'effect'
 import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
 import type { DocumentQuestionPool } from '~api/modules/study/domain/study-document.model.js'
+import type {
+  SessionCandidate,
+  SessionQuestion,
+  StudySession,
+} from '~api/modules/study/domain/study-session.model.js'
 
 import type { StudyReadError } from './errors.js'
 
@@ -25,5 +37,34 @@ export class StudyReader extends Context.Service<
       pathId: QualificationPathId,
       documentId: ReferenceDocumentId,
     ) => Effect.Effect<Option.Option<DocumentQuestionPool>, StudyReadError>
+    /** The user's unfinished written study session on a document, if any. */
+    readonly unfinishedSession: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: ReferenceDocumentId,
+    ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
+    /** Newest first by start; with a document, only that document's sessions count. */
+    readonly latestSession: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: Option.Option<ReferenceDocumentId>,
+    ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
+    readonly session: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      sessionId: StudySessionId,
+    ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
+    readonly sessionQuestion: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      sessionId: StudySessionId,
+      position: SessionQuestionPosition,
+    ) => Effect.Effect<Option.Option<SessionQuestion>, StudyReadError>
+    /** Published, non-withdrawn current revisions of a document's questions on a path, in catalogue order. */
+    readonly sessionCandidates: (
+      pathId: QualificationPathId,
+      documentId: ReferenceDocumentId,
+      limit: QuestionCount,
+    ) => Effect.Effect<ReadonlyArray<SessionCandidate>, StudyReadError>
   }
 >()('api/modules/study/StudyReader') {}

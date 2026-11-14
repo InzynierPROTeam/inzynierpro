@@ -2,7 +2,7 @@ import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference
 import { Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { writtenStudySettings } from './session-preview.rules.js'
+import { isAllowedQuestionCount, writtenStudySettings } from './session-preview.rules.js'
 
 const count = Schema.decodeSync(QuestionCount)
 
@@ -26,4 +26,24 @@ describe('written study settings', () => {
         maximumQuestionCount: available,
       }),
   )
+})
+
+describe('starting a written study session', () => {
+  it('refuses a document without published questions', () =>
+    expect(isAllowedQuestionCount(writtenStudySettings(count(0)), count(0))).toBe(false))
+
+  it('accepts only every question when the count cannot change', () => {
+    const settings = writtenStudySettings(count(25))
+
+    expect(isAllowedQuestionCount(settings, count(25))).toBe(true)
+    expect(isAllowedQuestionCount(settings, count(10))).toBe(false)
+  })
+
+  it('accepts a chosen count from one to all above the threshold', () => {
+    const settings = writtenStudySettings(count(26))
+
+    expect(isAllowedQuestionCount(settings, count(1))).toBe(true)
+    expect(isAllowedQuestionCount(settings, count(26))).toBe(true)
+    expect(isAllowedQuestionCount(settings, count(27))).toBe(false)
+  })
 })
