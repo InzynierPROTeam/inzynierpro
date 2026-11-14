@@ -7,7 +7,6 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "wrangler deploy",
     "test": "vitest run",
     "type-check": "effect-tsgo tsc --noEmit"
   },

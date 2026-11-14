@@ -64,6 +64,8 @@ Stop applications with Ctrl+C. Stop development services with `pnpm --filter @in
 
 ## API image
 
+Cloudflare platform build/preview, Alchemy state bootstrap, environment/auth configuration and staging/production CI/CD are documented in [infra/cloudflare/README.md](infra/cloudflare/README.md).
+
 `apps/api/Dockerfile` builds the production API image from the repository root:
 
 ```sh

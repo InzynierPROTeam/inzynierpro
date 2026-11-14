@@ -85,3 +85,8 @@ apps/video/build
 apps/e2e/.outbox/
 apps/e2e/test-results/
 apps/e2e/playwright-report/
+
+# infrastructure state and local deployment configuration
+.alchemy/
+.env.staging
+.env.prod
