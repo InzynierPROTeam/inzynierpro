@@ -72,6 +72,7 @@ test('starting a session from the preview shows its first question and restores 
   const started = await request('/sessions', {
     documentId: fixture.documentId,
     questionCount: 2,
+    questionSelection: 'unanswered',
   })
 
   expect(started.status).toBe(200)
@@ -107,7 +108,11 @@ test('concurrent starts of one document create a single unfinished session and p
 
   const responses = await Promise.all(
     Array.from({ length: 5 }, () =>
-      request('/sessions', { documentId: fixture.documentId, questionCount: 3 }),
+      request('/sessions', {
+        documentId: fixture.documentId,
+        questionCount: 3,
+        questionSelection: 'unanswered',
+      }),
     ),
   )
 
@@ -134,7 +139,7 @@ test('concurrent starts of one document create a single unfinished session and p
 
 test('starting again is refused and leaves the unfinished session, its settings and answer order intact', async () => {
   const { fixture, request } = await learnerWithDocument(26)
-  const body = { documentId: fixture.documentId, questionCount: 3 }
+  const body = { documentId: fixture.documentId, questionCount: 3, questionSelection: 'unanswered' }
   const session = await decodeSession(await request('/sessions', body))
 
   const before = await Promise.all(
@@ -143,7 +148,11 @@ test('starting again is refused and leaves the unfinished session, its settings 
     ),
   )
 
-  const again = await request('/sessions', { documentId: fixture.documentId, questionCount: 26 })
+  const again = await request('/sessions', {
+    documentId: fixture.documentId,
+    questionCount: 26,
+    questionSelection: 'unanswered',
+  })
 
   expect(again.status).toBe(409)
   expect(await again.json()).toMatchObject({
@@ -168,7 +177,11 @@ test('a newer publication does not change a started session', async () => {
   const [original] = questions
 
   const session = await decodeSession(
-    await request('/sessions', { documentId: fixture.documentId, questionCount: 1 }),
+    await request('/sessions', {
+      documentId: fixture.documentId,
+      questionCount: 1,
+      questionSelection: 'unanswered',
+    }),
   )
 
   await publishFixtureRevision(original!.id)
@@ -185,7 +198,11 @@ test('a new session uses the currently published revision', async () => {
   const revised = await publishFixtureRevision(questions[0]!.id)
 
   const session = await decodeSession(
-    await request('/sessions', { documentId: fixture.documentId, questionCount: 1 }),
+    await request('/sessions', {
+      documentId: fixture.documentId,
+      questionCount: 1,
+      questionSelection: 'unanswered',
+    }),
   )
 
   const question = await decodeQuestion(await request(`/sessions/${session.id}/questions/1`))
@@ -202,11 +219,19 @@ test('a session on a second document leaves the first one unfinished', async () 
   await addFixtureQuestion(second.pathId, second.documentId)
 
   const first = await decodeSession(
-    await request('/sessions', { documentId: fixture.documentId, questionCount: 1 }),
+    await request('/sessions', {
+      documentId: fixture.documentId,
+      questionCount: 1,
+      questionSelection: 'unanswered',
+    }),
   )
 
   const other = await decodeSession(
-    await request('/sessions', { documentId: second.documentId, questionCount: 1 }),
+    await request('/sessions', {
+      documentId: second.documentId,
+      questionCount: 1,
+      questionSelection: 'unanswered',
+    }),
   )
 
   const latestOf = async (documentId?: string) =>
@@ -230,7 +255,11 @@ test('a session keeps the goal version it started under when the goal changes', 
   await addFixtureQuestion(second.pathId, second.documentId)
 
   const before = await decodeSession(
-    await request('/sessions', { documentId: fixture.documentId, questionCount: 1 }),
+    await request('/sessions', {
+      documentId: fixture.documentId,
+      questionCount: 1,
+      questionSelection: 'unanswered',
+    }),
   )
 
   const changed = await request('/goal', {
@@ -242,7 +271,11 @@ test('a session keeps the goal version it started under when the goal changes', 
   expect(changed.status).toBe(200)
 
   const after = await decodeSession(
-    await request('/sessions', { documentId: second.documentId, questionCount: 1 }),
+    await request('/sessions', {
+      documentId: second.documentId,
+      questionCount: 1,
+      questionSelection: 'unanswered',
+    }),
   )
 
   const goalVersionOf = (sessionId: typeof before.id) =>
@@ -257,7 +290,7 @@ test('starting refuses empty, disallowed and outdated session scopes', async () 
   const { fixture, questions, request } = await learnerWithDocument(2)
 
   const start = (questionCount: number, documentId: string = fixture.documentId) =>
-    request('/sessions', { documentId, questionCount })
+    request('/sessions', { documentId, questionCount, questionSelection: 'unanswered' })
 
   const refused = await start(1)
 
@@ -288,7 +321,11 @@ test('sessions are private to their owner and require written access', async () 
   const { fixture, request } = await learnerWithDocument(1)
 
   const session = await decodeSession(
-    await request('/sessions', { documentId: fixture.documentId, questionCount: 1 }),
+    await request('/sessions', {
+      documentId: fixture.documentId,
+      questionCount: 1,
+      questionSelection: 'unanswered',
+    }),
   )
 
   const other = await loginForPreparation(api)
@@ -319,6 +356,7 @@ test('sessions are private to their owner and require written access', async () 
       await learningRequest(api, oralOnly, `/paths/${fixture.pathId}/sessions`, {
         documentId: fixture.documentId,
         questionCount: 1,
+        questionSelection: 'unanswered',
       })
     ).status,
   ).toBe(403)
@@ -337,6 +375,12 @@ test('sessions are private to their owner and require written access', async () 
 
   expect((await request(`/sessions/${session.id}`)).status).toBe(403)
   expect(
-    (await request('/sessions', { documentId: fixture.documentId, questionCount: 1 })).status,
+    (
+      await request('/sessions', {
+        documentId: fixture.documentId,
+        questionCount: 1,
+        questionSelection: 'unanswered',
+      })
+    ).status,
   ).toBe(403)
 })

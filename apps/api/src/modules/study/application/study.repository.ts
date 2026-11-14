@@ -1,3 +1,4 @@
+import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type {
   WrittenQuestionId,
@@ -12,6 +13,7 @@ import { Context, type Effect } from 'effect'
 import type {
   NewSessionAnswer,
   NewStudySession,
+  SessionAnswer,
   StudySession,
 } from '~api/modules/study/domain/study-session.model.js'
 
@@ -27,19 +29,30 @@ export class StudyRepository extends Context.Service<
     readonly createSession: (
       session: NewStudySession,
     ) => Effect.Effect<StudySession, StudyWriteError>
-    /** Keeps the first time the explanation was opened; later openings change nothing. */
+    /**
+     * Records when the explanation was first opened and returns it. The caller checks under the
+     * account lock that it was not recorded yet.
+     */
     readonly recordAssistance: (
       sessionId: StudySessionId,
       position: SessionQuestionPosition,
-    ) => Effect.Effect<void, StudyWriteError>
-    /** Stores the session's one answer to the question; a second insert violates its key. */
-    readonly recordAnswer: (answer: NewSessionAnswer) => Effect.Effect<void, StudyWriteError>
+    ) => Effect.Effect<DateTimeUtc, StudyWriteError>
+    /** Stores the session's one answer to the question and returns it; a second insert violates its key. */
+    readonly recordAnswer: (
+      answer: NewSessionAnswer,
+    ) => Effect.Effect<SessionAnswer, StudyWriteError>
     /** Appends the answer's LearningEvent with the result, revision, path, mode and assistance. */
     readonly recordLearningEvent: (answer: NewSessionAnswer) => Effect.Effect<void, StudyWriteError>
+    /** Moves the continue point after an answer, which also makes the session the most recently used; returns the session. */
     readonly moveSession: (
       sessionId: StudySessionId,
       currentPosition: SessionQuestionPosition,
-    ) => Effect.Effect<void, StudyWriteError>
+    ) => Effect.Effect<StudySession, StudyWriteError>
+    /**
+     * Ends an unfinished session and returns it as stored; its answers and LearningEvents stay.
+     * The caller checks under the account lock that it is still unfinished.
+     */
+    readonly endSession: (sessionId: StudySessionId) => Effect.Effect<StudySession, StudyWriteError>
     // The answer command owns validation and calls this projection write in its evidence transaction.
     readonly recordCoverage: (
       userId: UserId,

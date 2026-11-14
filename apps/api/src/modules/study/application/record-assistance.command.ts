@@ -51,16 +51,9 @@ export const recordAssistance = Effect.fn('Study.recordAssistance')(function* (
         return question.value
       }
 
-      yield* studyRepository.recordAssistance(sessionId, position)
+      const openedAt = yield* studyRepository.recordAssistance(sessionId, position)
 
-      return yield* studyReader.sessionQuestion(userId, pathId, sessionId, position).pipe(
-        Effect.flatMap(
-          Option.match({
-            onNone: () => Effect.die(new Error('The assisted session question was not read back')),
-            onSome: Effect.succeed,
-          }),
-        ),
-      )
+      return { ...question.value, explanationOpenedAt: Option.some(openedAt) }
     }),
   )
 })

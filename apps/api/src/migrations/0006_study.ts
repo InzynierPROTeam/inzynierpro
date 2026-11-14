@@ -22,6 +22,9 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     question_count integer NOT NULL CHECK (question_count > 0),
     current_position integer NOT NULL DEFAULT 1 CHECK (current_position BETWEEN 1 AND question_count),
     ended_at timestamptz(3),
+    -- The main "Continue learning" opens the most recently used session (ADR-0002): starting a
+    -- session and answering in it count as use; reading a question does not.
+    last_activity_at timestamptz(3) NOT NULL DEFAULT now(),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now(),
     FOREIGN KEY (user_id, qualification_path_id) REFERENCES user_qualification_paths(user_id, qualification_path_id) ON DELETE CASCADE,
@@ -32,6 +35,7 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
   yield* sql`CREATE TRIGGER written_study_sessions_updated_at BEFORE UPDATE ON written_study_sessions FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   // At most one unfinished session per user, path and document (ADR-0002).
   yield* sql`CREATE UNIQUE INDEX written_study_sessions_one_unfinished ON written_study_sessions (user_id, qualification_path_id, document_id) WHERE ended_at IS NULL`
+  yield* sql`CREATE INDEX written_study_sessions_last_activity ON written_study_sessions (user_id, qualification_path_id, last_activity_at DESC, id DESC)`
   yield* sql`CREATE TABLE written_study_session_questions (
     study_session_id uuid NOT NULL REFERENCES written_study_sessions(id) ON DELETE CASCADE,
     position integer NOT NULL CHECK (position > 0),

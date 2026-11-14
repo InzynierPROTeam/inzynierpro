@@ -45,7 +45,13 @@ const learnerInSession = async (questionCount: number, accessScope: ExamAccessSc
     learningRequest(api, visitor, `/paths/${fixture.pathId}${path}`, body)
 
   const session = Schema.decodeUnknownSync(StudySession)(
-    await (await request('/sessions', { documentId: fixture.documentId, questionCount })).json(),
+    await (
+      await request('/sessions', {
+        documentId: fixture.documentId,
+        questionCount,
+        questionSelection: 'unanswered',
+      })
+    ).json(),
   )
 
   const sessionPath = `/sessions/${session.id}`

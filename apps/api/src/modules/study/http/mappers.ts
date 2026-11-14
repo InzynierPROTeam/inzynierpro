@@ -1,16 +1,21 @@
 import type {
   LatestStudySession,
   SessionQuestion as SessionQuestionDto,
+  SessionQuestionResult as SessionQuestionResultDto,
   StudySession as StudySessionDto,
+  StudySessionSummary,
 } from '@inzpro/api-contracts/modules/study/responses'
 import { dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { Option } from 'effect'
 import type {
   SessionQuestion,
+  SessionQuestionResult,
   StudySession,
+  StudySessionResultCounts,
 } from '~api/modules/study/domain/study-session.model.js'
 import {
   answeredPercent,
+  correctPercent,
   studySessionStatus,
 } from '~api/modules/study/domain/study-session.rules.js'
 
@@ -52,4 +57,23 @@ export const toSessionQuestionDto = ({
       answeredAt: dateTimeUtcToUtcIsoDateTime(answeredAt),
     }),
   }),
+})
+
+export const toStudySessionSummaryDto = ({
+  session,
+  result,
+}: {
+  session: StudySession
+  result: StudySessionResultCounts
+}): StudySessionSummary => ({
+  ...toLatestStudySessionDto(session),
+  result: { ...result, correctPercent: correctPercent(result, session.questionCount) },
+})
+
+export const toSessionQuestionResultDto = ({
+  answer,
+  ...question
+}: SessionQuestionResult): SessionQuestionResultDto => ({
+  ...question,
+  answer: Option.getOrNull(answer),
 })
