@@ -1,5 +1,5 @@
 import { Api } from '@inzpro/api-contracts/api'
-import { Effect, Option, Layer } from 'effect'
+import { Effect, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
@@ -11,60 +11,49 @@ import { failQualificationPathsRead } from './errors.js'
 import { toSpecializationDto } from './mappers.js'
 
 export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPaths', handlers =>
-  Effect.gen(function* () {
-    const qualificationPathsReader = yield* QualificationPathsReader
+  handlers
+    .handle('ListSpecializations', ({ query }) =>
+      limitByClient(publicReadLimit).pipe(
+        Effect.andThen(QualificationPathsReader.use(reader => reader.specializations(query))),
+        Effect.map(page => mapCursorPage(page, toSpecializationDto)),
+        Effect.catchTags({
+          QualificationPathsReadError: failQualificationPathsRead,
+          InvalidCursor: () => invalidCursor,
+        }),
+      ),
+    )
+    .handle('ListQualificationKinds', ({ query }) =>
+      limitByClient(publicReadLimit).pipe(
+        Effect.andThen(
+          QualificationPathsReader.use(reader => reader.kinds(query.specializationId, query)),
+        ),
+        Effect.catchTags({
+          QualificationPathsReadError: failQualificationPathsRead,
+          InvalidCursor: () => invalidCursor,
+        }),
+      ),
+    )
+    .handle('ListQualificationScopes', ({ query }) =>
+      limitByClient(publicReadLimit).pipe(
+        Effect.andThen(
+          QualificationPathsReader.use(reader =>
+            reader.scopes(query.specializationId, query.qualificationKindId, query),
+          ),
+        ),
+        Effect.catchTags({
+          QualificationPathsReadError: failQualificationPathsRead,
+          InvalidCursor: () => invalidCursor,
+        }),
+      ),
+    )
+    .handle('ResolveQualificationPath', ({ query }) =>
+      limitByClient(publicReadLimit).pipe(
+        Effect.andThen(QualificationPathsReader.use(reader => reader.resolve(query))),
+        Effect.map(path => ({ path: Option.getOrNull(path) })),
+        Effect.catchTags({ QualificationPathsReadError: failQualificationPathsRead }),
+      ),
+    ),
+)
 
-    return handlers
-      .handle('ListSpecializations', ({ query }) =>
-        limitByClient(publicReadLimit).pipe(
-          Effect.andThen(
-            qualificationPathsReader.specializations(query).pipe(
-              Effect.map(page => mapCursorPage(page, toSpecializationDto)),
-              Effect.catchTags({
-                QualificationPathsReadError: failQualificationPathsRead,
-                InvalidCursor: () => invalidCursor,
-              }),
-            ),
-          ),
-        ),
-      )
-      .handle('ListQualificationKinds', ({ query }) =>
-        limitByClient(publicReadLimit).pipe(
-          Effect.andThen(
-            qualificationPathsReader.kinds(query.specializationId, query).pipe(
-              Effect.catchTags({
-                QualificationPathsReadError: failQualificationPathsRead,
-                InvalidCursor: () => invalidCursor,
-              }),
-            ),
-          ),
-        ),
-      )
-      .handle('ListQualificationScopes', ({ query }) =>
-        limitByClient(publicReadLimit).pipe(
-          Effect.andThen(
-            qualificationPathsReader
-              .scopes(query.specializationId, query.qualificationKindId, query)
-              .pipe(
-                Effect.catchTags({
-                  QualificationPathsReadError: failQualificationPathsRead,
-                  InvalidCursor: () => invalidCursor,
-                }),
-              ),
-          ),
-        ),
-      )
-      .handle('ResolveQualificationPath', ({ query }) =>
-        limitByClient(publicReadLimit).pipe(
-          Effect.andThen(
-            qualificationPathsReader.resolve(query).pipe(
-              Effect.map(path => ({ path: Option.getOrNull(path) })),
-              Effect.catchTags({
-                QualificationPathsReadError: failQualificationPathsRead,
-              }),
-            ),
-          ),
-        ),
-      )
-  }),
-).pipe(Layer.provide(QualificationPathsReaderLive))
+/** Services the qualification path handlers need per request; the API layer provides them where routes are registered. */
+export const QualificationPathsRequestServices = QualificationPathsReaderLive
