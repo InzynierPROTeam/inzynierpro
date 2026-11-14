@@ -1,5 +1,9 @@
-import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import {
+  QuestionCount,
+  ReferenceDocumentId,
+} from '@inzpro/domain/modules/learning-content/reference-document'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
 import { CursorPagination } from '~api-contracts/utils/pagination.js'
 
@@ -16,4 +20,28 @@ export const OralMaterialsQuery = CursorPagination
 export const SessionPreviewQuery = Schema.Struct({
   documentId: Schema.optional(ReferenceDocumentId),
   afterDocumentId: Schema.optional(ReferenceDocumentId),
+})
+
+export const StartSessionPayload = Schema.Struct({
+  documentId: ReferenceDocumentId,
+  questionCount: QuestionCount,
+})
+
+export type StartSessionPayload = typeof StartSessionPayload.Type
+
+export const LatestSessionQuery = Schema.Struct({
+  // Without a document the latest session of the whole path is returned.
+  documentId: Schema.optional(ReferenceDocumentId),
+})
+
+export const SessionParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  sessionId: StudySessionId,
+})
+
+export const SessionQuestionParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  sessionId: StudySessionId,
+  // URL params arrive as strings.
+  position: Schema.FiniteFromString.pipe(Schema.decodeTo(SessionQuestionPosition)),
 })

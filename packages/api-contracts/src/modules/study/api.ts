@@ -7,19 +7,27 @@ import {
   RateLimitExceeded,
 } from '~api-contracts/utils/api-error.js'
 
-import { DocumentNotFound } from './errors.js'
+import { DocumentNotFound, StaleSessionPreview, StudySessionAlreadyStarted } from './errors.js'
 import {
   DocumentsQuery,
   GetDocumentsParams,
   GetDocumentParams,
+  LatestSessionQuery,
   SessionPreviewQuery,
   OralMaterialsQuery,
+  SessionParams,
+  SessionQuestionParams,
+  StartSessionPayload,
 } from './requests.js'
 import {
   DocumentResponse,
   DocumentsResponse,
+  LatestStudySessionResponse,
   OralMaterialsResponse,
   SessionPreviewResponse,
+  SessionQuestionResponse,
+  StartSessionResponse,
+  StudySessionResponse,
 } from './responses.js'
 
 export const GetDocumentsEndpoint = HttpApiEndpoint.get(
@@ -77,10 +85,63 @@ export const GetOralMaterialsEndpoint = HttpApiEndpoint.get(
   },
 )
 
+export const StartSessionEndpoint = HttpApiEndpoint.post(
+  'StartSession',
+  '/paths/:qualificationPathId/sessions',
+  {
+    params: GetDocumentsParams,
+    payload: StartSessionPayload,
+    success: StartSessionResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      DocumentNotFound,
+      StaleSessionPreview,
+      StudySessionAlreadyStarted,
+    ],
+  },
+)
+
+export const GetLatestSessionEndpoint = HttpApiEndpoint.get(
+  'GetLatestSession',
+  '/paths/:qualificationPathId/latest-session',
+  {
+    params: GetDocumentsParams,
+    query: LatestSessionQuery,
+    success: LatestStudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+export const GetSessionEndpoint = HttpApiEndpoint.get(
+  'GetSession',
+  '/paths/:qualificationPathId/sessions/:sessionId',
+  {
+    params: SessionParams,
+    success: StudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+export const GetSessionQuestionEndpoint = HttpApiEndpoint.get(
+  'GetSessionQuestion',
+  '/paths/:qualificationPathId/sessions/:sessionId/questions/:position',
+  {
+    params: SessionQuestionParams,
+    success: SessionQuestionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
 export const StudyApi = HttpApiGroup.make('Study')
   .add(GetDocumentsEndpoint)
   .add(GetDocumentEndpoint)
   .add(GetSessionPreviewEndpoint)
   .add(GetOralMaterialsEndpoint)
+  .add(StartSessionEndpoint)
+  .add(GetLatestSessionEndpoint)
+  .add(GetSessionEndpoint)
+  .add(GetSessionQuestionEndpoint)
   .middleware(Authentication)
   .prefix('/study')
