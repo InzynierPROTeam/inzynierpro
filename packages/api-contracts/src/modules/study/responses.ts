@@ -97,9 +97,20 @@ export const LatestStudySessionResponse = Schema.NullOr(LatestStudySession)
 export const SessionAnswerOption = Schema.Struct({
   id: QuestionAnswerId,
   text: Schema.NonEmptyString,
-  // Clients use correctness for optimistic answer feedback; the backend still scores by answer ID.
+  // Clients mark the correct option in feedback; the backend scores by answer ID, never a client result.
   isCorrect: Schema.Boolean,
 })
+
+/** The learner's single submitted answer to a session question, scored by the backend. */
+export const SessionAnswer = Schema.Struct({
+  answerId: QuestionAnswerId,
+  isCorrect: Schema.Boolean,
+  // The explanation was opened before submitting, so the result is not independent mastery.
+  isAssisted: Schema.Boolean,
+  answeredAt: UtcIsoDateTime,
+})
+
+export type SessionAnswer = typeof SessionAnswer.Type
 
 export const SessionQuestion = Schema.Struct({
   sessionId: StudySessionId,
@@ -109,8 +120,23 @@ export const SessionQuestion = Schema.Struct({
   body: Schema.NonEmptyString,
   explanation: Schema.NonEmptyString,
   answers: Schema.Array(SessionAnswerOption),
+  // A withdrawn revision accepts no answer, even in a started session (ADR-0003).
+  isWithdrawn: Schema.Boolean,
+  // When the backend recorded opening the explanation; before submitting it marks the answer assisted.
+  explanationOpenedAt: Schema.NullOr(UtcIsoDateTime),
+  answer: Schema.NullOr(SessionAnswer),
 })
 
 export type SessionQuestion = typeof SessionQuestion.Type
 
 export const SessionQuestionResponse = Schema.NullOr(SessionQuestion)
+
+/** The question with its stored answer and the session progress after answering. */
+export const SubmitSessionAnswerResponse = Schema.Struct({
+  question: SessionQuestion,
+  session: StudySession,
+})
+
+export type SubmitSessionAnswerResponse = typeof SubmitSessionAnswerResponse.Type
+
+export const RecordSessionAssistanceResponse = SessionQuestion

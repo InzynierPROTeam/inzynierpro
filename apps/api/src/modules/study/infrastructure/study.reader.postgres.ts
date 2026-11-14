@@ -1,3 +1,4 @@
+import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { Uuid } from '@inzpro/domain/common/id'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
@@ -37,6 +38,13 @@ const SessionQuestionRow = Schema.Struct({
   answerId: QuestionAnswerId,
   answerText: Schema.NonEmptyString,
   answerIsCorrect: Schema.Boolean,
+  isWithdrawn: Schema.Boolean,
+  explanationOpenedAt: Schema.OptionFromNullOr(DateTimeUtc),
+  // The submitted answer's columns are all null until the question is answered.
+  submittedAnswerId: Schema.NullOr(QuestionAnswerId),
+  submittedIsCorrect: Schema.NullOr(Schema.Boolean),
+  submittedIsAssisted: Schema.NullOr(Schema.Boolean),
+  submittedAt: Schema.NullOr(DateTimeUtc),
 })
 
 const toSessionQuestion = (
@@ -54,6 +62,20 @@ const toSessionQuestion = (
       text: row.answerText,
       isCorrect: row.answerIsCorrect,
     })),
+    isWithdrawn: first.isWithdrawn,
+    explanationOpenedAt: first.explanationOpenedAt,
+    answer:
+      first.submittedAnswerId === null ||
+      first.submittedIsCorrect === null ||
+      first.submittedIsAssisted === null ||
+      first.submittedAt === null
+        ? Option.none()
+        : Option.some({
+            answerId: first.submittedAnswerId,
+            isCorrect: first.submittedIsCorrect,
+            isAssisted: first.submittedIsAssisted,
+            answeredAt: first.submittedAt,
+          }),
   }))
 
 const toCandidates = (
@@ -82,13 +104,12 @@ export const StudyReaderLive = Layer.effect(
     const columns = sql`d.id,d.title,count(r.id)::integer AS available_question_count,count(c.question_id)::integer AS completed_question_count`
 
     // The most recently started of the user's sessions on the path that meet the conditions.
-    // Answers are not recorded yet (#8), so no session has answered questions.
     const findLatestSession = (
       userId: UserId,
       pathId: QualificationPathId,
       conditions: ReadonlyArray<Statement.Fragment>,
     ) =>
-      sql`SELECT s.id,s.document_id,d.title AS document_title,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,0 AS answered_count,s.created_at,s.ended_at
+      sql`SELECT s.id,s.document_id,d.title AS document_title,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,(SELECT count(*)::integer FROM written_study_answers a WHERE a.study_session_id=s.id) AS answered_count,s.created_at,s.ended_at
  FROM written_study_sessions s JOIN reference_documents d ON d.id=s.document_id
  WHERE ${sql.and([sql`s.user_id=${userId}`, sql`s.qualification_path_id=${pathId}`, ...conditions])}
  ORDER BY s.created_at DESC,s.id DESC LIMIT 1`.pipe(
@@ -179,11 +200,14 @@ export const StudyReaderLive = Layer.effect(
       sessionQuestion: Effect.fn('StudyReader.sessionQuestion')(
         function* (userId, pathId, sessionId, position) {
           const rows =
-            yield* sql`SELECT s.id AS session_id,sq.position,sq.question_id,sq.question_revision_id,r.body,r.explanation,a.id AS answer_id,a.text AS answer_text,a.is_correct AS answer_is_correct
+            yield* sql`SELECT s.id AS session_id,sq.position,sq.question_id,sq.question_revision_id,r.body,r.explanation,a.id AS answer_id,a.text AS answer_text,a.is_correct AS answer_is_correct,
+ r.withdrawn_at IS NOT NULL AS is_withdrawn,sq.explanation_opened_at,
+ sa.question_answer_id AS submitted_answer_id,sa.is_correct AS submitted_is_correct,sa.is_assisted AS submitted_is_assisted,sa.created_at AS submitted_at
  FROM written_study_sessions s JOIN written_study_session_questions sq ON sq.study_session_id=s.id
  JOIN question_revisions r ON r.id=sq.question_revision_id
  JOIN written_study_session_answer_options o ON o.study_session_id=sq.study_session_id AND o.position=sq.position
  JOIN question_answers a ON a.id=o.question_answer_id
+ LEFT JOIN written_study_answers sa ON sa.study_session_id=sq.study_session_id AND sa.position=sq.position
  WHERE s.id=${sessionId} AND s.user_id=${userId} AND s.qualification_path_id=${pathId} AND sq.position=${position}
  ORDER BY o.option_position LIMIT 3`
 

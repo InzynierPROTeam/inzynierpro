@@ -43,6 +43,10 @@ export const runFixture = <A, E>(
   >,
 ) => Effect.runPromise(operation.pipe(Effect.provide(fixturesLayer), Effect.scoped))
 
+// A seeded path the session and answer tests give their own fresh documents. They never read its
+// first-document preview, so the documents they add cannot disturb one another.
+export const studySessionSpecialization = '60000000-0000-4000-8000-000000000011'
+
 export const createStudyFixture = (specializationId = '60000000-0000-4000-8000-000000000003') =>
   runFixture(
     Effect.gen(function* () {

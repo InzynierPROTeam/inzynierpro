@@ -14,3 +14,16 @@ export class UnfinishedSessionExists extends Data.TaggedError('UnfinishedSession
   readonly sessionId: StudySessionId
   readonly currentPosition: SessionQuestionPosition
 }> {}
+
+/** The session or its question does not exist for this user and path. */
+export class SessionQuestionMissing extends Data.TaggedError('SessionQuestionMissing') {}
+
+export class SessionAlreadyEnded extends Data.TaggedError('SessionAlreadyEnded') {}
+
+export class QuestionRevisionWithdrawn extends Data.TaggedError('QuestionRevisionWithdrawn') {}
+
+/** The answer is not an option of the revision the session pinned for the question. */
+export class AnswerNotInQuestion extends Data.TaggedError('AnswerNotInQuestion') {}
+
+/** The question already has a different answer in this session; the first one stays. */
+export class QuestionAlreadyAnswered extends Data.TaggedError('QuestionAlreadyAnswered') {}
