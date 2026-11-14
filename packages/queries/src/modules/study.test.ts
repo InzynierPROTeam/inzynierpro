@@ -63,6 +63,7 @@ test('a path parent key invalidates its documents and preview while preserving o
           qualificationPathId: pathA,
           document,
           mode: 'written-study',
+          questionSelection: 'unanswered',
           availableQuestionCount: 2,
           settings: {
             defaultQuestionCount: 2,
