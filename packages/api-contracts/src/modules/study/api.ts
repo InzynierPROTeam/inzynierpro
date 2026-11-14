@@ -7,7 +7,16 @@ import {
   RateLimitExceeded,
 } from '~api-contracts/utils/api-error.js'
 
-import { DocumentNotFound, StaleSessionPreview, StudySessionAlreadyStarted } from './errors.js'
+import {
+  DocumentNotFound,
+  InvalidSessionAnswer,
+  SessionAnswerAlreadySubmitted,
+  SessionQuestionNotFound,
+  SessionQuestionWithdrawn,
+  StaleSessionPreview,
+  StudySessionAlreadyStarted,
+  StudySessionEnded,
+} from './errors.js'
 import {
   DocumentsQuery,
   GetDocumentsParams,
@@ -18,6 +27,7 @@ import {
   SessionParams,
   SessionQuestionParams,
   StartSessionPayload,
+  SubmitSessionAnswerPayload,
 } from './requests.js'
 import {
   DocumentResponse,
@@ -28,6 +38,8 @@ import {
   SessionQuestionResponse,
   StartSessionResponse,
   StudySessionResponse,
+  RecordSessionAssistanceResponse,
+  SubmitSessionAnswerResponse,
 } from './responses.js'
 
 export const GetDocumentsEndpoint = HttpApiEndpoint.get(
@@ -134,6 +146,38 @@ export const GetSessionQuestionEndpoint = HttpApiEndpoint.get(
   },
 )
 
+// Opening the explanation before submitting is recorded once; the answer is then assisted (ADR-0002).
+export const RecordSessionAssistanceEndpoint = HttpApiEndpoint.post(
+  'RecordSessionAssistance',
+  '/paths/:qualificationPathId/sessions/:sessionId/questions/:position/assistance',
+  {
+    params: SessionQuestionParams,
+    success: RecordSessionAssistanceResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, SessionQuestionNotFound],
+  },
+)
+
+// Retrying the same answer returns the stored result; a different answer after it is refused.
+export const SubmitSessionAnswerEndpoint = HttpApiEndpoint.post(
+  'SubmitSessionAnswer',
+  '/paths/:qualificationPathId/sessions/:sessionId/questions/:position/answer',
+  {
+    params: SessionQuestionParams,
+    payload: SubmitSessionAnswerPayload,
+    success: SubmitSessionAnswerResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      SessionQuestionNotFound,
+      StudySessionEnded,
+      SessionQuestionWithdrawn,
+      InvalidSessionAnswer,
+      SessionAnswerAlreadySubmitted,
+    ],
+  },
+)
+
 export const StudyApi = HttpApiGroup.make('Study')
   .add(GetDocumentsEndpoint)
   .add(GetDocumentEndpoint)
@@ -143,5 +187,7 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(GetLatestSessionEndpoint)
   .add(GetSessionEndpoint)
   .add(GetSessionQuestionEndpoint)
+  .add(RecordSessionAssistanceEndpoint)
+  .add(SubmitSessionAnswerEndpoint)
   .middleware(Authentication)
   .prefix('/study')
