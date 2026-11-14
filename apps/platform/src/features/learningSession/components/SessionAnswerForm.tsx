@@ -1,10 +1,11 @@
-import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
+import type { SessionAnswer, SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import {
   AnswerOption,
   AnswerOptionIndicator,
   AnswerOptionSkeleton,
   AnswerOptionText,
+  type AnswerOptionTone,
 } from '@inzpro/ui/components/answer-option'
 import { Button } from '@inzpro/ui/components/button'
 import { Field, FieldError, FieldTitle } from '@inzpro/ui/components/field'
@@ -12,8 +13,15 @@ import { RadioGroup } from '@inzpro/ui/components/radio-group'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { withAnswerLetters } from '@inzpro/utils/answer'
 import { revalidateLogic, useForm } from '@tanstack/react-form'
-import { Schema } from 'effect'
+import { Match, Schema } from 'effect'
+import { CheckIcon, XIcon } from 'lucide-react'
 import type React from 'react'
+import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+
+import { useSubmitSessionAnswer } from '../hooks/useSubmitSessionAnswer'
+import { SessionAnswerActions } from './SessionAnswerActions'
+import { SessionAnswerExplanation } from './SessionAnswerExplanation'
+import { SessionQuestionWithdrawn } from './SessionQuestionWithdrawn'
 
 const answerSchema = Schema.Struct({
   answerId: QuestionAnswerId.annotate({ message: 'Wybierz odpowiedź.' }),
@@ -22,24 +30,56 @@ const answerSchema = Schema.Struct({
 type AnswerSchema = typeof answerSchema.Encoded
 
 // No answer is selected until the user picks one; the schema rejects the empty value.
+// The selection is a draft kept only in the form: it is not an attempt, and a reload clears it.
 const noSelection: AnswerSchema = { answerId: '' }
 
 const answerLabelId = 'session-answer-label'
 
-type SessionAnswerFormProps = { answers: SessionQuestion['answers'] }
+// Once answered, the correct option and a wrong choice show their result; before that all are neutral.
+const answerTone = (
+  answer: SessionQuestion['answers'][number],
+  submitted: SessionAnswer | null,
+): AnswerOptionTone =>
+  submitted === null
+    ? 'neutral'
+    : answer.isCorrect
+      ? 'correct'
+      : answer.id === submitted.answerId
+        ? 'incorrect'
+        : 'neutral'
 
-export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ answers }) => {
+type SessionAnswerFormProps = { question: SessionQuestion }
+
+/** Choose an option and check it once; an answered question shows the stored answer and its result. */
+export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }) => {
+  const {
+    selectedPath,
+    session: { user },
+  } = onboardedRouteApi.useRouteContext()
+
+  const submission = useSubmitSessionAnswer(user.id)
+
+  const params = {
+    qualificationPathId: selectedPath.id,
+    sessionId: question.sessionId,
+    position: question.position,
+  }
+
   const form = useForm({
     defaultValues: noSelection,
     validationLogic: revalidateLogic(),
     validators: { onDynamic: Schema.toStandardSchemaV1(answerSchema) },
-    onSubmit: ({ value }) => {
-      const answer = answers.find(({ id }) => id === value.answerId)
-
-      // TODO(#8): Record the attempt and reveal the correct answer instead of an alert.
-      window.alert(`Wybrana odpowiedź: ${answer?.text ?? value.answerId}`)
-    },
+    onSubmit: ({ value }) =>
+      submission.mutate({
+        params,
+        payload: {
+          questionRevisionId: question.questionRevisionId,
+          answerId: QuestionAnswerId.make(value.answerId),
+        },
+      }),
   })
+
+  const submitted = question.answer
 
   return (
     <form
@@ -62,27 +102,47 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ answers })
               <RadioGroup
                 aria-labelledby={answerLabelId}
                 aria-invalid={isInvalid}
-                value={field.state.value}
+                value={submitted?.answerId ?? field.state.value}
                 onValueChange={(value: string) => field.handleChange(value)}
+                disabled={submitted !== null || question.isWithdrawn}
                 // Options keep the order stored when the session started; letters follow that order.
                 className="@container flex flex-col gap-4"
               >
-                {withAnswerLetters(answers).map(([answer, letter]) => (
-                  <AnswerOption
-                    key={answer.id}
-                    value={answer.id}
-                  >
-                    <AnswerOptionIndicator>{letter}</AnswerOptionIndicator>
-                    <AnswerOptionText>{answer.text}</AnswerOptionText>
-                  </AnswerOption>
-                ))}
+                {withAnswerLetters(question.answers).map(([answer, letter]) => {
+                  const tone = answerTone(answer, submitted)
+
+                  return (
+                    <AnswerOption
+                      key={answer.id}
+                      value={answer.id}
+                      tone={tone}
+                    >
+                      <AnswerOptionIndicator>
+                        {Match.value(tone).pipe(
+                          Match.when('correct', () => <CheckIcon aria-hidden />),
+                          Match.when('incorrect', () => <XIcon aria-hidden />),
+                          Match.orElse(() => letter),
+                        )}
+                      </AnswerOptionIndicator>
+                      <AnswerOptionText>{answer.text}</AnswerOptionText>
+                    </AnswerOption>
+                  )
+                })}
               </RadioGroup>
               {isInvalid && <FieldError errors={field.state.meta.errors} />}
             </Field>
           )
         }}
       </form.Field>
-      <Button type="submit">Sprawdź</Button>
+
+      {submitted !== null && <SessionAnswerExplanation explanation={question.explanation} />}
+
+      {submitted === null && question.isWithdrawn && <SessionQuestionWithdrawn />}
+
+      <SessionAnswerActions
+        question={question}
+        isSubmitting={submission.isPending}
+      />
     </form>
   )
 }
