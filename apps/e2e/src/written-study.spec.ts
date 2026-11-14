@@ -11,7 +11,7 @@ test('the written categories show the path documents and their progress', async 
   const categories = page.getByRole('main').getByRole('list')
   await expect(categories.getByRole('link')).toHaveCount(2)
   await expect(categories.getByRole('link', { name: new RegExp(buildingLaw) })).toContainText(
-    'Ukończone: 0 / 2 pytań',
+    'Ukończone: 0 / 5 pytań',
   )
 })
 
@@ -63,7 +63,7 @@ test('a started session keeps its question and answer order and every entry poin
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
 
   await expect(page).toHaveURL(/\/nauka\/sesja\/[^/]+\/1\/?$/)
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 2' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
 
   const answers = page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
   await expect(answers).toHaveCount(3)
@@ -81,7 +81,7 @@ test('a started session keeps its question and answer order and every entry poin
 
   await page.reload()
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 2' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
   await expect(answers).toHaveText(order)
   // An unchecked selection is only a draft in the form, so a reload clears it.
   await expect(answers.first()).not.toBeChecked()
@@ -116,7 +116,7 @@ const startBuildingLawSession = async (page: Page) => {
   await page.getByRole('link', { name: new RegExp(buildingLaw) }).click()
   await page.getByRole('button', { name: 'Zacznij naukę' }).click()
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 2' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
 
   return page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
 }
@@ -160,7 +160,7 @@ test('checking an answer locks it and shows its result and explanation, also aft
   await expect(page.getByRole('main').getByText(hint, { exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: 'Następne pytanie' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 2 z 2' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 2 z 5' })).toBeVisible()
   await expect(answers.first()).not.toBeChecked()
   await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeVisible()
 })
