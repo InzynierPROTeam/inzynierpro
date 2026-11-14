@@ -1,5 +1,7 @@
 import type { SessionAnswer, SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
+import { endedStudySession } from '@inzpro/domain/modules/study/study-session'
+import { sessionQueryOptions } from '@inzpro/queries/modules/study'
 import {
   AnswerOption,
   AnswerOptionIndicator,
@@ -13,10 +15,12 @@ import { RadioGroup } from '@inzpro/ui/components/radio-group'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { withAnswerLetters } from '@inzpro/utils/answer'
 import { revalidateLogic, useForm } from '@tanstack/react-form'
+import { useQuery } from '@tanstack/react-query'
 import { Match, Schema } from 'effect'
 import { CheckIcon, XIcon } from 'lucide-react'
 import type React from 'react'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useSubmitSessionAnswer } from '../hooks/useSubmitSessionAnswer'
 import { SessionAnswerActions } from './SessionAnswerActions'
@@ -81,6 +85,16 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
 
   const submitted = question.answer
 
+  const { data: session } = useQuery(
+    sessionQueryOptions(apiHttpClient, user.id, {
+      params: { qualificationPathId: selectedPath.id, sessionId: question.sessionId },
+    }),
+  )
+
+  // An ended session keeps its answers but accepts no new ones.
+  const isClosed =
+    submitted !== null || question.isWithdrawn || session?.status === endedStudySession
+
   return (
     <form
       className="flex flex-col gap-6"
@@ -104,7 +118,7 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
                 aria-invalid={isInvalid}
                 value={submitted?.answerId ?? field.state.value}
                 onValueChange={(value: string) => field.handleChange(value)}
-                disabled={submitted !== null || question.isWithdrawn}
+                disabled={isClosed}
                 // Options keep the order stored when the session started; letters follow that order.
                 className="@container flex flex-col gap-4"
               >
@@ -141,6 +155,7 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
 
       <SessionAnswerActions
         question={question}
+        isClosed={isClosed}
         isSubmitting={submission.isPending}
       />
     </form>

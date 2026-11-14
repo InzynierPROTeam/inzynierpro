@@ -1,4 +1,5 @@
 import type { GetSessionPreviewRes } from '@inzpro/api-client/modules/study'
+import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
   CardHeader,
@@ -83,6 +84,7 @@ export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview 
         <StartSessionButton
           documentId={preview.document.id}
           questionCount={count}
+          questionSelection={preview.questionSelection}
           disabled={preview.availableQuestionCount === 0}
         />
         {preview.availableQuestionCount === 0 && (
@@ -114,7 +116,7 @@ export const SessionPreviewCardSkeleton = () => (
       <DetailSkeleton className="max-w-32" />
     </CardContent>
     <CardFooter className="flex-col items-start gap-2">
-      <Skeleton className="h-9 w-32 rounded-4xl" />
+      <Button disabled>Zacznij sesję</Button>
       <TextSkeleton
         size="xs"
         className="w-64"

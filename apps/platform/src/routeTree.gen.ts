@@ -29,6 +29,7 @@ import { Route as appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport } f
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria.$id'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja.$sessionId.$questionNumber'
+import { Route as appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja.$sessionId.podsumowanie'
 
 const HealthCheckRoute = HealthCheckRouteImport.update({
   id: '/health-check',
@@ -141,6 +142,14 @@ const appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRout
       getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
     } as any,
   )
+const appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute =
+  appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRouteImport.update(
+    {
+      id: '/nauka/sesja/$sessionId/podsumowanie',
+      path: '/nauka/sesja/$sessionId/podsumowanie',
+      getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/health-check': typeof HealthCheckRoute
@@ -157,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/nauka/': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   '/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
   '/nauka/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
+  '/nauka/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
 export interface FileRoutesByTo {
   '/health-check': typeof HealthCheckRoute
@@ -173,6 +183,7 @@ export interface FileRoutesByTo {
   '/nauka': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   '/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
   '/nauka/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
+  '/nauka/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -196,6 +207,7 @@ export interface FileRoutesById {
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
+  '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -214,6 +226,7 @@ export interface FileRouteTypes {
     | '/nauka/'
     | '/nauka/kategoria/$id'
     | '/nauka/sesja/$sessionId/$questionNumber'
+    | '/nauka/sesja/$sessionId/podsumowanie'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/health-check'
@@ -230,6 +243,7 @@ export interface FileRouteTypes {
     | '/nauka'
     | '/nauka/kategoria/$id'
     | '/nauka/sesja/$sessionId/$questionNumber'
+    | '/nauka/sesja/$sessionId/podsumowanie'
   id:
     | '__root__'
     | '/health-check'
@@ -252,6 +266,7 @@ export interface FileRouteTypes {
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber'
+    | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -402,6 +417,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRouteImport
       parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
     }
+    '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie'
+      path: '/nauka/sesja/$sessionId/podsumowanie'
+      fullPath: '/nauka/sesja/$sessionId/podsumowanie'
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
+    }
   }
 }
 
@@ -425,6 +447,7 @@ interface appAuthenticatedOnboardedWrittenValidRouteChildren {
   appAuthenticatedOnboardedWrittenValidNaukaIndexRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
   appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
+  appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
 
 const appAuthenticatedOnboardedWrittenValidRouteChildren: appAuthenticatedOnboardedWrittenValidRouteChildren =
@@ -437,6 +460,8 @@ const appAuthenticatedOnboardedWrittenValidRouteChildren: appAuthenticatedOnboar
       appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute,
     appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute:
       appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute,
+    appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute:
+      appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute,
   }
 
 const appAuthenticatedOnboardedWrittenValidRouteWithChildren =

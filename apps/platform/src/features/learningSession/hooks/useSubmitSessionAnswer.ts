@@ -95,14 +95,11 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
       toast.add({ type: 'error', title: submitErrorMessage(error) })
       await Promise.all([client.invalidateQueries(question), client.invalidateQueries(session)])
     },
-    // Category progress and the latest-session tiles count the answer; this session's reads are set above.
-    onSettled: async (_result, _error, { params }) => {
-      const sessionKey = studyKeys.session(userId, params.qualificationPathId, params.sessionId)
-
-      await client.invalidateQueries({
-        queryKey: studyKeys.path(userId, params.qualificationPathId),
-        predicate: query => !sessionKey.every((part, index) => query.queryKey[index] === part),
-      })
-    },
+    // Category progress, the preview and the latest-session tiles count the answer; this
+    // session's reads are set above.
+    onSettled: (_result, _error, { params }) =>
+      client.invalidateQueries({
+        queryKey: studyKeys.progress(userId, params.qualificationPathId),
+      }),
   })
 }

@@ -13,3 +13,5 @@ export const SessionQuestionRouteParams = Schema.Struct({
   sessionId: StudySessionId,
   questionNumber: SessionQuestionParams.fields.position,
 })
+
+export const SessionSummaryRouteParams = Schema.Struct({ sessionId: StudySessionId })

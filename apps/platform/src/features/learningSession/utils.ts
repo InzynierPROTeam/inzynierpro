@@ -20,3 +20,7 @@ export const getSessionQuestionCount = (
 export const sessionQuestionRouteApi = getRouteApi(
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber',
 )
+
+export const sessionSummaryRouteApi = getRouteApi(
+  '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie',
+)

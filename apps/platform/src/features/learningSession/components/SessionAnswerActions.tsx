@@ -1,5 +1,5 @@
 import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
-import { nextQuestionPosition } from '@inzpro/domain/modules/study/study-session'
+import { endedStudySession, nextQuestionPosition } from '@inzpro/domain/modules/study/study-session'
 import { sessionQueryOptions } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
 import { useIsMutating, useQuery } from '@tanstack/react-query'
@@ -9,13 +9,20 @@ import type React from 'react'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
+import { useEndSession } from '../hooks/useEndSession'
 import { recordAssistanceMutationKey } from '../hooks/useRecordSessionAssistance'
 
-type SessionAnswerActionsProps = { question: SessionQuestion; isSubmitting: boolean }
+type SessionAnswerActionsProps = {
+  question: SessionQuestion
+  // Answered, withdrawn or in an ended session: nothing to check, only to move on.
+  isClosed: boolean
+  isSubmitting: boolean
+}
 
-/** Checks an unanswered question; once answered or withdrawn, moves on to the next one. */
+/** Checks an unanswered question; once answered or withdrawn, moves on to the next one or the summary. */
 export const SessionAnswerActions: React.FC<SessionAnswerActionsProps> = ({
   question,
+  isClosed,
   isSubmitting,
 }) => {
   const { selectedPath } = onboardedRouteApi.useRouteContext()
@@ -33,7 +40,7 @@ export const SessionAnswerActions: React.FC<SessionAnswerActionsProps> = ({
     }) > 0
 
   // A withdrawn question is skipped rather than answered.
-  if (question.answer !== null || question.isWithdrawn) {
+  if (isClosed) {
     return <NextQuestionButton question={question} />
   }
 
@@ -66,18 +73,26 @@ const NextQuestionButton: React.FC<NextQuestionButtonProps> = ({ question }) => 
     return null
   }
 
-  // Completing a session belongs to a later ticket; after the last question the user goes back.
-  const next = nextQuestionPosition(question.position, session.progress.total)
-
-  if (next === question.position) {
+  if (session.status === endedStudySession) {
     return (
       <Button
         nativeButton={false}
-        render={<Link to="/nauka" />}
+        render={
+          <Link
+            to="/nauka/sesja/$sessionId/podsumowanie"
+            params={{ sessionId: question.sessionId }}
+            replace
+          />
+        }
       >
-        Wróć do kategorii
+        Zobacz podsumowanie
       </Button>
     )
+  }
+
+  // As in V1, the last question ends the session on the way to its summary.
+  if (question.position >= session.progress.total) {
+    return <EndSessionButton sessionId={question.sessionId} />
   }
 
   return (
@@ -88,7 +103,7 @@ const NextQuestionButton: React.FC<NextQuestionButtonProps> = ({ question }) => 
           to="/nauka/sesja/$sessionId/$questionNumber"
           params={{
             sessionId: question.sessionId,
-            questionNumber: next,
+            questionNumber: nextQuestionPosition(question.position, session.progress.total),
           }}
           resetScroll={false}
           // Moving between questions does not add history entries to step through on the way back.
@@ -97,6 +112,30 @@ const NextQuestionButton: React.FC<NextQuestionButtonProps> = ({ question }) => 
       }
     >
       Następne pytanie
+    </Button>
+  )
+}
+
+type EndSessionButtonProps = { sessionId: SessionQuestion['sessionId'] }
+
+const EndSessionButton: React.FC<EndSessionButtonProps> = ({ sessionId }) => {
+  const {
+    selectedPath,
+    session: { user },
+  } = onboardedRouteApi.useRouteContext()
+
+  const mutation = useEndSession(user.id)
+
+  return (
+    <Button
+      type="button"
+      disabled={mutation.isPending}
+      onClick={() =>
+        mutation.mutate({ params: { qualificationPathId: selectedPath.id, sessionId } })
+      }
+    >
+      {mutation.isPending && <LoaderCircle className="animate-spin" />}
+      Zobacz podsumowanie
     </Button>
   )
 }

@@ -1,5 +1,7 @@
 import { runApi } from '@inzpro/api-client/lib/run-api'
 import {
+  endSession,
+  type EndSessionRequest,
   recordSessionAssistance,
   type RecordSessionAssistanceRequest,
   startSession,
@@ -17,3 +19,5 @@ export const recordStudySessionAssistance = (req: RecordSessionAssistanceRequest
 
 export const submitStudySessionAnswer = (req: SubmitSessionAnswerRequest) =>
   runApi(submitSessionAnswer(req), apiHttpClient)
+
+export const endStudySession = (req: EndSessionRequest) => runApi(endSession(req), apiHttpClient)
