@@ -1,4 +1,5 @@
 import type { SessionPreview } from '@inzpro/api-contracts/modules/study/responses'
+import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { getRouteApi } from '@tanstack/react-router'
 
 export const sessionPreviewRouteApi = getRouteApi(
@@ -8,12 +9,12 @@ export const sessionPreviewRouteApi = getRouteApi(
 export const getSessionQuestionCount = (
   settings: SessionPreview['settings'],
   requested: number | undefined,
-): number =>
+): QuestionCount =>
   settings.canChangeQuestionCount &&
   requested !== undefined &&
   requested >= settings.minimumQuestionCount &&
   requested <= settings.maximumQuestionCount
-    ? requested
+    ? QuestionCount.make(requested)
     : settings.defaultQuestionCount
 
 export const sessionQuestionRouteApi = getRouteApi(

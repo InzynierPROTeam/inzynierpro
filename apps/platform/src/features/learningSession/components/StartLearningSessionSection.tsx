@@ -59,11 +59,12 @@ export const StartLearningSessionSection = () => {
                 params: { qualificationPathId: selectedPath.id },
                 query: { documentId: preview.document.id },
               })}
+              isDataEmpty={session => session === null}
               // Without an active session of this category the preview offers to start one.
-              isDataEmpty={() => false}
+              noDataFallback={<SessionPreviewCard preview={preview} />}
             >
               {session =>
-                session?.status === activeStudySession ? (
+                session.status === activeStudySession ? (
                   <ActiveSessionNotice session={session} />
                 ) : (
                   <SessionPreviewCard preview={preview} />

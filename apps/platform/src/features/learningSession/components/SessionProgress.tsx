@@ -10,7 +10,7 @@ export const SessionProgress: React.FC<SessionProgressProps> = ({ progress }) =>
     size="sm"
   >
     <ProgressLabel>
-      {progress.answered} / {progress.total}
+      Odpowiedziano {progress.answered} / {progress.total}
     </ProgressLabel>
     <ProgressValue />
   </Progress>

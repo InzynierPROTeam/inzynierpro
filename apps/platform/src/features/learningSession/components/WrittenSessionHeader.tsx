@@ -1,7 +1,6 @@
 import type { GetSessionRes } from '@inzpro/api-client/modules/study'
 import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
 import { sessionQueryOptions } from '@inzpro/queries/modules/study'
-import { Progress, ProgressLabel, ProgressValue } from '@inzpro/ui/components/progress'
 import type React from 'react'
 import {
   SessionHeader,
@@ -17,6 +16,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { sessionQuestionRouteApi } from '../utils'
+import { SessionProgress } from './SessionProgress'
 
 export const WrittenSessionHeader = () => {
   const {
@@ -46,7 +46,7 @@ type WrittenSessionHeaderContentProps = { session: NonNullable<GetSessionRes> }
 
 const WrittenSessionHeaderContent: React.FC<WrittenSessionHeaderContentProps> = ({ session }) => {
   const { questionNumber } = sessionQuestionRouteApi.useParams()
-  const { total, answered, percent } = session.progress
+  const { total } = session.progress
 
   return (
     <SessionHeader>
@@ -59,7 +59,7 @@ const WrittenSessionHeaderContent: React.FC<WrittenSessionHeaderContentProps> = 
             <QuestionTraverseLink
               direction="previous"
               sessionId={session.id}
-              questionNumber={questionNumber - 1}
+              questionNumber={SessionQuestionPosition.make(questionNumber - 1)}
             />
           )}
         </SessionHeaderPrevious>
@@ -68,20 +68,12 @@ const WrittenSessionHeaderContent: React.FC<WrittenSessionHeaderContentProps> = 
             <QuestionTraverseLink
               direction="next"
               sessionId={session.id}
-              questionNumber={questionNumber + 1}
+              questionNumber={SessionQuestionPosition.make(questionNumber + 1)}
             />
           )}
         </SessionHeaderNext>
       </SessionHeaderNav>
-      <Progress
-        value={percent}
-        size="sm"
-      >
-        <ProgressLabel>
-          Odpowiedziano {answered} / {total}
-        </ProgressLabel>
-        <ProgressValue />
-      </Progress>
+      <SessionProgress progress={session.progress} />
     </SessionHeader>
   )
 }
@@ -89,7 +81,7 @@ const WrittenSessionHeaderContent: React.FC<WrittenSessionHeaderContentProps> = 
 type QuestionTraverseLinkProps = {
   direction: 'previous' | 'next'
   sessionId: NonNullable<GetSessionRes>['id']
-  questionNumber: number
+  questionNumber: SessionQuestionPosition
 }
 
 const QuestionTraverseLink: React.FC<QuestionTraverseLinkProps> = ({
@@ -100,7 +92,7 @@ const QuestionTraverseLink: React.FC<QuestionTraverseLinkProps> = ({
   <SessionTraverseLink
     direction={direction}
     to="/nauka/sesja/$sessionId/$questionNumber"
-    params={{ sessionId, questionNumber: SessionQuestionPosition.make(questionNumber) }}
+    params={{ sessionId, questionNumber }}
     resetScroll={false}
     // Moving between questions does not add history entries to step through on the way back.
     replace
