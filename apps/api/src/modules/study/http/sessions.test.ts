@@ -14,13 +14,11 @@ import {
   publishFixtureRevision,
   runFixture,
   sessionGoalVersion,
+  studySessionSpecialization,
 } from '~api/test/learning-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
 let api: TestApi
-
-// A seeded path no other test file adds documents to, so first-document previews elsewhere stay stable.
-const sessionSpecialization = '60000000-0000-4000-8000-000000000011'
 
 beforeAll(async () => {
   api = await startTestApi()
@@ -31,7 +29,7 @@ afterAll(() => api.close())
 // A signed-in learner on a fresh test-only document with the given number of published questions.
 const learnerWithDocument = async (questionCount: number) => {
   const visitor = await loginForPreparation(api)
-  const fixture = await createStudyFixture(sessionSpecialization)
+  const fixture = await createStudyFixture(studySessionSpecialization)
   const questions: Array<Awaited<ReturnType<typeof addFixtureQuestion>>> = []
 
   for (let index = 0; index < questionCount; index++) {
@@ -200,7 +198,7 @@ test('a new session uses the currently published revision', async () => {
 
 test('a session on a second document leaves the first one unfinished', async () => {
   const { fixture, request } = await learnerWithDocument(1)
-  const second = await createStudyFixture(sessionSpecialization)
+  const second = await createStudyFixture(studySessionSpecialization)
   await addFixtureQuestion(second.pathId, second.documentId)
 
   const first = await decodeSession(
@@ -228,7 +226,7 @@ test('a session on a second document leaves the first one unfinished', async () 
 
 test('a session keeps the goal version it started under when the goal changes', async () => {
   const { visitor, fixture, request } = await learnerWithDocument(1)
-  const second = await createStudyFixture(sessionSpecialization)
+  const second = await createStudyFixture(studySessionSpecialization)
   await addFixtureQuestion(second.pathId, second.documentId)
 
   const before = await decodeSession(
@@ -281,7 +279,7 @@ test('starting refuses empty, disallowed and outdated session scopes', async () 
     await (await request(`/latest-session?documentId=${fixture.documentId}`)).json(),
   ).toBeNull()
 
-  const empty = await createStudyFixture(sessionSpecialization)
+  const empty = await createStudyFixture(studySessionSpecialization)
 
   expect((await start(0, empty.documentId)).status).toBe(409)
 })

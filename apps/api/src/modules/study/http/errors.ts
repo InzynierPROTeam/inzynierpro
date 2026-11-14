@@ -1,7 +1,12 @@
 import {
   DocumentNotFound,
+  InvalidSessionAnswer,
+  SessionAnswerAlreadySubmitted,
+  SessionQuestionNotFound,
+  SessionQuestionWithdrawn,
   StaleSessionPreview,
   StudySessionAlreadyStarted,
+  StudySessionEnded,
 } from '@inzpro/api-contracts/modules/study/errors'
 import { Effect } from 'effect'
 import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
@@ -34,3 +39,38 @@ export const studySessionAlreadyStarted = (error: UnfinishedSessionExists) =>
       currentPosition: error.currentPosition,
     }),
   )
+
+export const sessionQuestionNotFound = Effect.fail(
+  new SessionQuestionNotFound({
+    type: 'session_question_not_found',
+    message: 'The study session question was not found.',
+  }),
+)
+
+export const studySessionEnded = Effect.fail(
+  new StudySessionEnded({
+    type: 'study_session_ended',
+    message: 'This study session has ended and accepts no more answers.',
+  }),
+)
+
+export const sessionQuestionWithdrawn = Effect.fail(
+  new SessionQuestionWithdrawn({
+    type: 'session_question_withdrawn',
+    message: 'This question was withdrawn and accepts no more answers.',
+  }),
+)
+
+export const invalidSessionAnswer = Effect.fail(
+  new InvalidSessionAnswer({
+    type: 'invalid_session_answer',
+    message: 'The answer does not belong to this session question.',
+  }),
+)
+
+export const sessionAnswerAlreadySubmitted = Effect.fail(
+  new SessionAnswerAlreadySubmitted({
+    type: 'session_answer_already_submitted',
+    message: 'This question already has a submitted answer in this session.',
+  }),
+)

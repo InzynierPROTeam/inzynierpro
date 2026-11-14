@@ -16,10 +16,12 @@ import { getDocument } from '~api/modules/study/application/document.query.js'
 import { getDocuments } from '~api/modules/study/application/documents.query.js'
 import { getLatestSession } from '~api/modules/study/application/latest-session.query.js'
 import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
+import { recordAssistance } from '~api/modules/study/application/record-assistance.command.js'
 import { getSessionPreview } from '~api/modules/study/application/session-preview.query.js'
 import { getSessionQuestion } from '~api/modules/study/application/session-question.query.js'
 import { getSession } from '~api/modules/study/application/session.query.js'
 import { startSession } from '~api/modules/study/application/start-session.command.js'
+import { submitAnswer } from '~api/modules/study/application/submit-answer.command.js'
 import { StudyReaderLive } from '~api/modules/study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
@@ -27,10 +29,15 @@ import {
   documentNotFound,
   failStudyRead,
   failStudyWrite,
+  invalidSessionAnswer,
+  sessionAnswerAlreadySubmitted,
+  sessionQuestionNotFound,
+  sessionQuestionWithdrawn,
   staleSessionPreview,
   studySessionAlreadyStarted,
+  studySessionEnded,
 } from './errors.js'
-import { toLatestStudySessionDto, toStudySessionDto } from './mappers.js'
+import { toLatestStudySessionDto, toSessionQuestionDto, toStudySessionDto } from './mappers.js'
 
 export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
   handlers
@@ -171,11 +178,67 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
             ),
           ),
         ),
+        Effect.map(Option.map(toSessionQuestionDto)),
         Effect.map(Option.getOrNull),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('RecordSessionAssistance', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            recordAssistance(
+              user.id,
+              params.qualificationPathId,
+              params.sessionId,
+              params.position,
+            ),
+          ),
+        ),
+        Effect.map(toSessionQuestionDto),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          SessionQuestionMissing: () => sessionQuestionNotFound,
+        }),
+      ),
+    )
+    .handle('SubmitSessionAnswer', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            submitAnswer(
+              user.id,
+              params.qualificationPathId,
+              params.sessionId,
+              params.position,
+              payload.questionRevisionId,
+              payload.answerId,
+            ),
+          ),
+        ),
+        Effect.map(({ question, session }) => ({
+          question: toSessionQuestionDto(question),
+          session: toStudySessionDto(session),
+        })),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          SessionQuestionMissing: () => sessionQuestionNotFound,
+          SessionAlreadyEnded: () => studySessionEnded,
+          QuestionRevisionWithdrawn: () => sessionQuestionWithdrawn,
+          AnswerNotInQuestion: () => invalidSessionAnswer,
+          QuestionAlreadyAnswered: () => sessionAnswerAlreadySubmitted,
         }),
       ),
     ),

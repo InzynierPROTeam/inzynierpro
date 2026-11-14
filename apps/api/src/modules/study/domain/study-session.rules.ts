@@ -16,3 +16,6 @@ export const studySessionStatus = (session: Pick<StudySession, 'endedAt'>): Stud
 export const answeredPercent = (
   session: Pick<StudySession, 'answeredCount' | 'questionCount'>,
 ): Percent => ratioToPercent(calculateCompletionRatio(session.answeredCount, session.questionCount))
+
+// The mode recorded on a regular-study LearningEvent; reviews and favourites will add their own (ADR-0005).
+export const studyLearningMode = 'study'
