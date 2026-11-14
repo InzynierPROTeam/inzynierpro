@@ -13,6 +13,7 @@ import {
   createStudyFixture,
   publishFixtureRevision,
   runFixture,
+  sessionGoalVersion,
 } from '~api/test/learning-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
@@ -59,6 +60,14 @@ const decodeLatest = async (response: Response) =>
 const decodeQuestion = async (response: Response) =>
   Schema.decodeUnknownSync(SessionQuestion)(await response.json())
 
+type AnswerIdentity = { readonly id: string; readonly text: string; readonly isCorrect: boolean }
+
+// The options' identity and correctness, independent of the order they are shown in.
+const answerIdentities = (answers: ReadonlyArray<AnswerIdentity>) =>
+  answers
+    .map(({ id, text, isCorrect }) => ({ id, text, isCorrect }))
+    .toSorted((a, b) => a.id.localeCompare(b.id))
+
 test('starting a session from the preview shows its first question and restores it after reload', async () => {
   const { fixture, questions, request } = await learnerWithDocument(2)
 
@@ -84,15 +93,7 @@ test('starting a session from the preview shows its first question and restores 
   expect(first.questionRevisionId).toBe(pinned?.revisionId)
   expect(first.explanation).toBe(pinned?.explanation)
   // Shuffling changes only the order: every option keeps its revision's identity and correctness.
-  expect(
-    first.answers
-      .map(answer => ({ id: answer.id, text: answer.text, isCorrect: answer.isCorrect }))
-      .toSorted((a, b) => a.id.localeCompare(b.id)),
-  ).toEqual(
-    pinned?.answers
-      .map(answer => ({ id: answer.id, text: answer.text, isCorrect: answer.isCorrect }))
-      .toSorted((a, b) => a.id.localeCompare(b.id)),
-  )
+  expect(answerIdentities(first.answers)).toEqual(answerIdentities(pinned?.answers ?? []))
   expect(await decodeQuestion(await request(`/sessions/${session.id}/questions/1`))).toEqual(first)
   expect(await decodeSession(await request(`/sessions/${session.id}`))).toEqual(session)
   const latest = { ...session, document: { id: fixture.documentId, title: expect.any(String) } }
@@ -223,6 +224,35 @@ test('a session on a second document leaves the first one unfinished', async () 
   expect(await latestOf(fixture.documentId)).toBe(first.id)
   expect(await latestOf(second.documentId)).toBe(other.id)
   expect(await latestOf()).toBe(other.id)
+})
+
+test('a session keeps the goal version it started under when the goal changes', async () => {
+  const { visitor, fixture, request } = await learnerWithDocument(1)
+  const second = await createStudyFixture(sessionSpecialization)
+  await addFixtureQuestion(second.pathId, second.documentId)
+
+  const before = await decodeSession(
+    await request('/sessions', { documentId: fixture.documentId, questionCount: 1 }),
+  )
+
+  const changed = await request('/goal', {
+    expectedVersion: 1,
+    examSessionId: fixture.config.examSessionId,
+    oralExamDate: '2028-02-20T12:34:56.789Z',
+  })
+
+  expect(changed.status).toBe(200)
+
+  const after = await decodeSession(
+    await request('/sessions', { documentId: second.documentId, questionCount: 1 }),
+  )
+
+  const goalVersionOf = (sessionId: typeof before.id) =>
+    sessionGoalVersion(visitor.userId, fixture.pathId, sessionId)
+
+  expect(await goalVersionOf(before.id)).toBe(1)
+  expect(await goalVersionOf(after.id)).toBe(2)
+  expect(await decodeSession(await request(`/sessions/${before.id}`))).toEqual(before)
 })
 
 test('starting refuses empty, disallowed and outdated session scopes', async () => {

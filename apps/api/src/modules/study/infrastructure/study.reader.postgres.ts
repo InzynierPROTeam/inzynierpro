@@ -1,12 +1,14 @@
 import { Uuid } from '@inzpro/domain/common/id'
+import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
+import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { Array as Arr, Effect, Layer, Option, Schema } from 'effect'
-import { SqlClient } from 'effect/sql'
+import { SqlClient, type Statement } from 'effect/sql'
 import { makeCursorPaginator } from '~api/lib/cursor-pagination.js'
 import { StudyReadError } from '~api/modules/study/application/errors.js'
 import { StudyReader } from '~api/modules/study/application/study.reader.js'
@@ -79,8 +81,21 @@ export const StudyReaderLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
     const columns = sql`d.id,d.title,count(r.id)::integer AS available_question_count,count(c.question_id)::integer AS completed_question_count`
 
+    // The most recently started of the user's sessions on the path that meet the conditions.
     // Answers are not recorded yet (#8), so no session has answered questions.
-    const sessionColumns = sql`s.id,s.document_id,d.title AS document_title,s.question_count,s.current_position,0 AS answered_count,s.created_at,s.ended_at`
+    const findLatestSession = (
+      userId: UserId,
+      pathId: QualificationPathId,
+      conditions: ReadonlyArray<Statement.Fragment>,
+    ) =>
+      sql`SELECT s.id,s.document_id,d.title AS document_title,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,0 AS answered_count,s.created_at,s.ended_at
+ FROM written_study_sessions s JOIN reference_documents d ON d.id=s.document_id
+ WHERE ${sql.and([sql`s.user_id=${userId}`, sql`s.qualification_path_id=${pathId}`, ...conditions])}
+ ORDER BY s.created_at DESC,s.id DESC LIMIT 1`.pipe(
+        Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(StudySession))),
+        Effect.map(Arr.head),
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      )
 
     const documentsPage = makeCursorPaginator(sql, Schema.Struct({ id: Uuid }), [
       ['id', sql`d.id`, 'asc'],
@@ -145,39 +160,21 @@ export const StudyReaderLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
-      unfinishedSession: Effect.fn('StudyReader.unfinishedSession')(
-        function* (userId, pathId, documentId) {
-          const rows =
-            yield* sql`SELECT ${sessionColumns} FROM written_study_sessions s JOIN reference_documents d ON d.id=s.document_id
- WHERE s.user_id=${userId} AND s.qualification_path_id=${pathId} AND s.document_id=${documentId} AND s.ended_at IS NULL LIMIT 1`
-
-          return Arr.head(yield* Schema.decodeUnknownEffect(Schema.Array(StudySession))(rows))
-        },
-        Effect.mapError(cause => new StudyReadError({ cause })),
+      unfinishedSession: Effect.fn('StudyReader.unfinishedSession')((userId, pathId, documentId) =>
+        findLatestSession(userId, pathId, [
+          sql`s.document_id=${documentId}`,
+          sql`s.ended_at IS NULL`,
+        ]),
       ),
-      latestSession: Effect.fn('StudyReader.latestSession')(
-        function* (userId, pathId, documentId) {
-          const rows =
-            yield* sql`SELECT ${sessionColumns} FROM written_study_sessions s JOIN reference_documents d ON d.id=s.document_id
- WHERE ${sql.and([
-   sql`s.user_id=${userId}`,
-   sql`s.qualification_path_id=${pathId}`,
-   ...Option.match(documentId, { onNone: () => [], onSome: id => [sql`s.document_id=${id}`] }),
- ])} ORDER BY s.created_at DESC,s.id DESC LIMIT 1`
-
-          return Arr.head(yield* Schema.decodeUnknownEffect(Schema.Array(StudySession))(rows))
-        },
-        Effect.mapError(cause => new StudyReadError({ cause })),
+      latestSession: Effect.fn('StudyReader.latestSession')((userId, pathId, documentId) =>
+        findLatestSession(
+          userId,
+          pathId,
+          Option.match(documentId, { onNone: () => [], onSome: id => [sql`s.document_id=${id}`] }),
+        ),
       ),
-      session: Effect.fn('StudyReader.session')(
-        function* (userId, pathId, sessionId) {
-          const rows =
-            yield* sql`SELECT ${sessionColumns} FROM written_study_sessions s JOIN reference_documents d ON d.id=s.document_id
- WHERE s.id=${sessionId} AND s.user_id=${userId} AND s.qualification_path_id=${pathId} LIMIT 1`
-
-          return Arr.head(yield* Schema.decodeUnknownEffect(Schema.Array(StudySession))(rows))
-        },
-        Effect.mapError(cause => new StudyReadError({ cause })),
+      session: Effect.fn('StudyReader.session')((userId, pathId, sessionId) =>
+        findLatestSession(userId, pathId, [sql`s.id=${sessionId}`]),
       ),
       sessionQuestion: Effect.fn('StudyReader.sessionQuestion')(
         function* (userId, pathId, sessionId, position) {

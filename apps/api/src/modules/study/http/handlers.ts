@@ -134,7 +134,8 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
             ),
           ),
         ),
-        Effect.map(session => Option.getOrNull(Option.map(session, toLatestStudySessionDto))),
+        Effect.map(Option.map(toLatestStudySessionDto)),
+        Effect.map(Option.getOrNull),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
@@ -149,7 +150,8 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
             getSession(user.id, params.qualificationPathId, params.sessionId),
           ),
         ),
-        Effect.map(session => Option.getOrNull(Option.map(session, toStudySessionDto))),
+        Effect.map(Option.map(toStudySessionDto)),
+        Effect.map(Option.getOrNull),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,

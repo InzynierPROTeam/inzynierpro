@@ -9,7 +9,7 @@ import {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
-import type { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
+import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
@@ -19,6 +19,8 @@ export const StudySession = Schema.Struct({
   id: StudySessionId,
   documentId: ReferenceDocumentId,
   documentTitle: Schema.NonEmptyString,
+  // The goal version active at the start; later goal changes never reattribute this session.
+  goalVersion: UserExamGoalVersion,
   questionCount: QuestionCount,
   // The question to continue from; answering moves it forward.
   currentPosition: SessionQuestionPosition,

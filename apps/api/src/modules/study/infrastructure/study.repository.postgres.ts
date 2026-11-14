@@ -54,12 +54,12 @@ export const StudyRepositoryLive = Layer.effect(
           const inserted =
             yield* sql`WITH s AS (INSERT INTO written_study_sessions (user_id,qualification_path_id,document_id,user_exam_goal_version,question_count)
  VALUES (${session.userId},${session.qualificationPathId},${session.documentId},${session.goalVersion},${session.questions.length})
- RETURNING id,document_id,question_count,current_position,created_at,ended_at)
+ RETURNING id,document_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
  SELECT s.*,d.title AS document_title,0 AS answered_count FROM s JOIN reference_documents d ON d.id=s.document_id`
 
           const [created] = yield* Schema.decodeUnknownEffect(Schema.Tuple([StudySession]))(
             inserted,
-          ).pipe(Effect.orDie)
+          )
 
           const id = created.id
 

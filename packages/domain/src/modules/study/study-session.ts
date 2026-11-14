@@ -14,8 +14,9 @@ export type SessionQuestionPosition = typeof SessionQuestionPosition.Type
 
 export const activeStudySession = 'active'
 export const endedStudySession = 'ended'
+export const studySessionStatusValues = [activeStudySession, endedStudySession] as const
 
 /** An active session can be continued; an ended one only keeps its results. */
-export const StudySessionStatus = Schema.Literals([activeStudySession, endedStudySession])
+export const StudySessionStatus = Schema.Literals(studySessionStatusValues)
 
 export type StudySessionStatus = typeof StudySessionStatus.Type

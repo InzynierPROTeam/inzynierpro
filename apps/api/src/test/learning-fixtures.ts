@@ -1,8 +1,10 @@
 import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { databaseLayerFromConfig } from '@inzpro/db'
+import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { Effect, Layer, Schema, Option } from 'effect'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
@@ -14,7 +16,9 @@ import {
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
+import { StudyReader } from '~api/modules/study/application/study.reader.js'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
+import { StudyReaderLive } from '~api/modules/study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
 import { technicalConfiguration } from './preparation.js'
@@ -24,13 +28,18 @@ const fixturesLayer = Layer.mergeAll(
   QualificationPathsReaderLive,
   ExamCalendarRepositoryLive,
   StudyRepositoryLive,
+  StudyReaderLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
 export const runFixture = <A, E>(
   operation: Effect.Effect<
     A,
     E,
-    LearningContentRepository | QualificationPathsReader | ExamCalendarRepository | StudyRepository
+    | LearningContentRepository
+    | QualificationPathsReader
+    | ExamCalendarRepository
+    | StudyRepository
+    | StudyReader
   >,
 ) => Effect.runPromise(operation.pipe(Effect.provide(fixturesLayer), Effect.scoped))
 
@@ -133,5 +142,20 @@ export const publishFixtureRevision = (questionId: WrittenQuestionId) =>
       yield* learningContentRepository.publishRevision(revision)
 
       return revision
+    }),
+  )
+
+// The goal version a session was started under, which the API does not expose.
+export const sessionGoalVersion = (
+  userId: UserId,
+  pathId: QualificationPathId,
+  sessionId: StudySessionId,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const studyReader = yield* StudyReader
+      const session = yield* studyReader.session(userId, pathId, sessionId)
+
+      return Option.map(session, ({ goalVersion }) => goalVersion).pipe(Option.getOrUndefined)
     }),
   )
