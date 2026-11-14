@@ -4,7 +4,6 @@ import {
   DocumentResponse,
   DocumentsResponse,
 } from '@inzpro/api-contracts/modules/study/responses'
-import { databaseLayerFromConfig } from '@inzpro/db'
 import {
   WrittenQuestionId,
   QuestionRevisionId,
@@ -14,7 +13,6 @@ import { Effect, Schema } from 'effect'
 import { beforeAll, afterAll, expect, test } from 'vitest'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
-import { seedTechnicalCatalogue } from '~api/seed/technical-catalogue.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import { createStudyFixture, addFixtureQuestion, runFixture } from '~api/test/learning-fixtures.js'
 import {
@@ -30,9 +28,6 @@ import {
 let api: TestApi
 
 beforeAll(async () => {
-  await Effect.runPromise(
-    seedTechnicalCatalogue.pipe(Effect.provide(databaseLayerFromConfig), Effect.scoped),
-  )
   api = await startTestApi()
 })
 

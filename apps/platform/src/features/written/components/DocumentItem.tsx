@@ -1,4 +1,6 @@
 import type { GetDocumentsRes } from '@inzpro/api-client/modules/study'
+import { ratioToPercent } from '@inzpro/domain/common/percent'
+import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
 import {
   Item,
   ItemActions,
@@ -35,14 +37,12 @@ export const DocumentItem: React.FC<DocumentItemProps> = ({ document }) => (
         variant="primary"
         size="sm"
         aria-label={`Postęp nauki: ${document.title}`}
-        value={
-          document.availableQuestionCount === 0
-            ? 0
-            : Math.min(
-                100,
-                (document.completedQuestionCount / document.availableQuestionCount) * 100,
-              )
-        }
+        value={ratioToPercent(
+          calculateCompletionRatio(
+            document.completedQuestionCount,
+            document.availableQuestionCount,
+          ),
+        )}
       />
     </ItemContent>
     <ItemActions>

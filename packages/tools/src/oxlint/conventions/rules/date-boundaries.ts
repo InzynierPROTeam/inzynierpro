@@ -1,4 +1,4 @@
-import { defineRule } from '@oxlint/plugins'
+import { defineRule, type ESTree } from '@oxlint/plugins'
 
 import { normalizedPath } from './path.ts'
 
@@ -13,6 +13,28 @@ const richSchemas = new Set([
   'OptionFromOptional',
   'Class',
 ])
+
+// URL params and query strings are text, so request schemas may decode a number from them.
+const decodesNumberFromString = (node: ESTree.MemberExpression) => {
+  const decodeTo = node.parent
+
+  if (decodeTo?.type !== 'CallExpression' || decodeTo.callee !== node) {
+    return false
+  }
+
+  const pipe = decodeTo.parent
+
+  return (
+    pipe?.type === 'CallExpression' &&
+    pipe.arguments.includes(decodeTo) &&
+    pipe.callee.type === 'MemberExpression' &&
+    pipe.callee.property.type === 'Identifier' &&
+    pipe.callee.property.name === 'pipe' &&
+    pipe.callee.object.type === 'MemberExpression' &&
+    pipe.callee.object.property.type === 'Identifier' &&
+    pipe.callee.object.property.name === 'FiniteFromString'
+  )
+}
 
 /** Transport schemas preserve JSON; backend operations use their module's rich models. */
 export const dateBoundariesRule = defineRule({
@@ -36,12 +58,14 @@ export const dateBoundariesRule = defineRule({
       return {}
     }
 
-    // Query-string pagination decodes numbers; every other contract schema keeps JSON values.
     const transport =
       filename.includes('/packages/domain/src/modules/') ||
-      (filename.includes('/packages/api-contracts/src/') &&
-        !filename.endsWith('/errors.ts') &&
-        !filename.endsWith('/utils/pagination.ts'))
+      (filename.includes('/packages/api-contracts/src/') && !filename.endsWith('/errors.ts'))
+
+    // Request params and pagination queries arrive as strings; responses keep JSON values.
+    const requestSchemas =
+      filename.includes('/packages/api-contracts/src/') &&
+      (filename.endsWith('/requests.ts') || filename.endsWith('/utils/pagination.ts'))
 
     const client = /\/apps\/(platform|web|admin|mobile)\/src\//.test(filename)
 
@@ -133,7 +157,8 @@ export const dateBoundariesRule = defineRule({
           transport &&
           node.object.type === 'Identifier' &&
           schemaNamespaces.has(node.object.name) &&
-          (richSchemas.has(name) || ['decodeTo', 'encodeTo'].includes(name))
+          (richSchemas.has(name) || ['decodeTo', 'encodeTo'].includes(name)) &&
+          !(requestSchemas && name === 'decodeTo' && decodesNumberFromString(node))
         ) {
           context.report({ node, messageId: 'json' })
         }

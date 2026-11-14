@@ -31,15 +31,27 @@ export function SuspenseQueryWrapper({ errorFallback, ...props }: SuspenseQueryW
   )
 }
 
+/** The data children receive: without the narrowed-out type when `isDataEmpty` is a type predicate. */
+export type NonEmptyData<TData, TIsDataEmpty> = TIsDataEmpty extends ((
+  data: TData,
+) => data is infer TEmpty extends TData)
+  ? Exclude<TData, TEmpty>
+  : TData
+
 export type SuspenseQueryProps<
   TQueryFnData,
   TError = DefaultError,
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey,
+  TIsDataEmpty extends (data: TData) => boolean = (data: TData) => boolean,
 > = {
   options: UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>
-  children: (data: TData) => ReactNode
-  isDataEmpty: (data: TData) => boolean
+  /**
+   * A check like `data => data === null` is inferred as a type predicate, so children get the data
+   * without `null` and need no guard of their own.
+   */
+  isDataEmpty: TIsDataEmpty
+  children: (data: NonEmptyData<TData, TIsDataEmpty>) => ReactNode
   noDataFallback?: ReactNode
 }
 
@@ -48,19 +60,21 @@ export function SuspenseQuery<
   TError = DefaultError,
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey,
+  TIsDataEmpty extends (data: TData) => boolean = (data: TData) => boolean,
 >({
   options,
   children,
   isDataEmpty,
   noDataFallback,
-}: SuspenseQueryProps<TQueryFnData, TError, TData, TQueryKey>) {
+}: SuspenseQueryProps<TQueryFnData, TError, TData, TQueryKey, TIsDataEmpty>) {
   const query = useSuspenseQuery(options)
 
   if (isDataEmpty(query.data)) {
     return noDataFallback ?? null
   }
 
-  return children(query.data)
+  // SAFETY: `isDataEmpty` returned false, so the data is not of the type its predicate names.
+  return children(query.data as NonEmptyData<TData, TIsDataEmpty>)
 }
 
 export type WithSuspenseQueryProps<

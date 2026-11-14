@@ -1,4 +1,9 @@
-import { sessionPreviewQueryOptions } from '@inzpro/queries/modules/study'
+import type { StudySession } from '@inzpro/api-contracts/modules/study/responses'
+import { activeStudySession } from '@inzpro/domain/modules/study/study-session'
+import {
+  latestSessionQueryOptions,
+  sessionPreviewQueryOptions,
+} from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
@@ -10,11 +15,15 @@ import {
 import {
   Empty,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
   EmptyDescription,
   EmptyContent,
 } from '@inzpro/ui/components/empty'
+import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Link } from '@tanstack/react-router'
+import { BookOpenCheck } from 'lucide-react'
+import type React from 'react'
 import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
@@ -44,12 +53,73 @@ export const StartLearningSessionSection = () => {
           isDataEmpty={preview => preview === null}
           noDataFallback={<EmptySessionPreview />}
         >
-          {preview => preview !== null && <SessionPreviewCard preview={preview} />}
+          {preview => (
+            <SuspenseQuery
+              options={latestSessionQueryOptions(apiHttpClient, user.id, {
+                params: { qualificationPathId: selectedPath.id },
+                query: { documentId: preview.document.id },
+              })}
+              isDataEmpty={session => session === null}
+              // Without an active session of this category the preview offers to start one.
+              noDataFallback={<SessionPreviewCard preview={preview} />}
+            >
+              {session =>
+                session.status === activeStudySession ? (
+                  <ActiveSessionNotice session={session} />
+                ) : (
+                  <SessionPreviewCard preview={preview} />
+                )
+              }
+            </SuspenseQuery>
+          )}
         </SuspenseQuery>
       </SuspenseQueryWrapper>
     </section>
   )
 }
+
+type ActiveSessionNoticeProps = { session: StudySession }
+
+// Reached only by typing the URL: the app links an active session straight to its question.
+const ActiveSessionNotice: React.FC<ActiveSessionNoticeProps> = ({ session }) => (
+  <Card>
+    <CardContent>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <IconWrapper>
+              <BookOpenCheck />
+            </IconWrapper>
+          </EmptyMedia>
+          <EmptyTitle>
+            <h1>Masz trwającą sesję</h1>
+          </EmptyTitle>
+          <EmptyDescription>
+            Sesja z tej kategorii jest w toku. Wróć do niej, aby kontynuować od pytania{' '}
+            {session.progress.currentQuestion} z {session.progress.total}.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button
+            nativeButton={false}
+            render={
+              <Link
+                to="/nauka/sesja/$sessionId/$questionNumber"
+                params={{
+                  sessionId: session.id,
+                  questionNumber: session.progress.currentQuestion,
+                }}
+                replace
+              />
+            }
+          >
+            Przejdź do sesji
+          </Button>
+        </EmptyContent>
+      </Empty>
+    </CardContent>
+  </Card>
+)
 
 const EmptySessionPreview = () => (
   <Card>

@@ -46,6 +46,7 @@ export const MobileAppBanner = () => {
           render={<ExternalLink href={ExternalLinks.mobileApp} />}
           variant="outline"
           size="sm"
+          className="text-foreground"
         >
           Pobierz aplikację
         </Button>

@@ -1,4 +1,7 @@
-import { sessionPreviewQueryOptions } from '@inzpro/queries/modules/study'
+import {
+  latestSessionQueryOptions,
+  sessionPreviewQueryOptions,
+} from '@inzpro/queries/modules/study'
 import { createFileRoute } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { constVoid } from 'effect/Function'
@@ -20,6 +23,16 @@ export const Route = createFileRoute('/(app)/_authenticated/_onboarded/_writtenV
           params: { qualificationPathId: selectedPath.id },
           query: deps,
         }),
+      )
+      .then(preview =>
+        preview === null
+          ? undefined
+          : queryClient.query(
+              latestSessionQueryOptions(apiHttpClient, session.user.id, {
+                params: { qualificationPathId: selectedPath.id },
+                query: { documentId: preview.document.id },
+              }),
+            ),
       )
       .catch(constVoid)
   },

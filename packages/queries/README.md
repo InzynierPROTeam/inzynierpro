@@ -17,6 +17,7 @@ A key object is flat: `all`, named domain groups, and concrete operations. Each 
 - `all` identifies the whole module.
 - `paths()` groups queries about the set of paths, for example `getPaths(req)`.
 - `path(id)` groups queries about one path: its details, statistics, documents and preview.
+- `session(userId, pathId, id)` groups the reads of one study session inside its path group, so starting or answering can refresh one session without touching others.
 - The full request goes into the concrete query key, so every param, query, payload and header that affects the result is part of it. Query contracts use only explicit, serializable data; authentication stays in the HTTP adapter.
 
 ```ts

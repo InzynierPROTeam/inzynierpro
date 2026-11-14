@@ -29,9 +29,28 @@ tester.run('conventions/date-boundaries', dateBoundariesRule, {
       filename: '/repo/packages/api-contracts/src/utils/pagination.ts',
       code: "import {Schema} from 'effect'; const limit = Schema.FiniteFromString.pipe(Schema.decodeTo(PageLimit))",
     },
+    {
+      filename: '/repo/packages/api-contracts/src/modules/study/requests.ts',
+      code: "import {Schema} from 'effect'; const position = Schema.FiniteFromString.pipe(Schema.decodeTo(SessionQuestionPosition))",
+    },
     { filename: client.replace('.ts', '.test.ts'), code: "import {DateTime} from 'effect'" },
   ],
   invalid: [
+    {
+      filename: '/repo/packages/api-contracts/src/modules/study/responses.ts',
+      code: "import {Schema} from 'effect'; const position = Schema.FiniteFromString.pipe(Schema.decodeTo(SessionQuestionPosition))",
+      errors: [{ messageId: 'json' }],
+    },
+    {
+      filename: '/repo/packages/api-contracts/src/modules/study/requests.ts',
+      code: "import {Schema} from 'effect'; const at = Schema.String.pipe(Schema.decodeTo(Schema.DateTimeUtcFromString))",
+      errors: [{ messageId: 'json' }, { messageId: 'json' }],
+    },
+    {
+      filename: '/repo/packages/api-contracts/src/utils/pagination.ts',
+      code: "import {Schema} from 'effect'; const at = Schema.String.pipe(Schema.decodeTo(Schema.DateTimeUtcFromString))",
+      errors: [{ messageId: 'json' }, { messageId: 'json' }],
+    },
     {
       filename: backend,
       code: 'interface Goal {writtenAt: string}',

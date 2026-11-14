@@ -1,5 +1,6 @@
 import { SessionPreview } from '@inzpro/api-contracts/modules/study/responses'
 import { UserId } from '@inzpro/domain/modules/identity/user'
+import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { withHttpServer } from '@inzpro/testing/http'
 import { Schema } from 'effect'
 import { HttpRouter, HttpServerResponse } from 'effect/http'
@@ -131,3 +132,35 @@ test('a path parent key invalidates its documents and preview while preserving o
         expect(client.getQueryState(paths.queryKey)?.isInvalidated).toBe(true)
       }),
   ))
+
+test('a session group invalidates its own questions while the path group covers every session', () => {
+  const sessionA = Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000001')
+  const sessionB = Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000002')
+  const position = Schema.decodeSync(SessionQuestionPosition)(1)
+
+  const questionKey = (sessionId: StudySessionId) =>
+    studyKeys.getSessionQuestion(userId, {
+      params: { qualificationPathId: pathA, sessionId, position },
+    })
+
+  const startsWith = (key: ReadonlyArray<unknown>, parent: ReadonlyArray<unknown>) =>
+    parent.every((part, index) => key[index] === part)
+
+  expect(startsWith(questionKey(sessionA), studyKeys.session(userId, pathA, sessionA))).toBe(true)
+  expect(startsWith(questionKey(sessionB), studyKeys.session(userId, pathA, sessionA))).toBe(false)
+  expect(
+    startsWith(
+      studyKeys.getSession(userId, { params: { qualificationPathId: pathA, sessionId: sessionB } }),
+      studyKeys.path(userId, pathA),
+    ),
+  ).toBe(true)
+  expect(
+    startsWith(
+      studyKeys.getLatestSession(userId, {
+        params: { qualificationPathId: pathA },
+        query: { documentId },
+      }),
+      studyKeys.path(userId, pathA),
+    ),
+  ).toBe(true)
+})

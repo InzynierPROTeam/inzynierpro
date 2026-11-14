@@ -1,5 +1,5 @@
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
-import { documentQueryOptions } from '@inzpro/queries/modules/study'
+import { documentQueryOptions, latestSessionQueryOptions } from '@inzpro/queries/modules/study'
 import { createFileRoute } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { constVoid } from 'effect/Function'
@@ -14,13 +14,19 @@ export const Route = createFileRoute(
     parse: params => ({ id: Schema.decodeSync(ReferenceDocumentId)(params.id) }),
   },
   loader: ({ context: { queryClient, session, selectedPath }, params }) => {
-    void queryClient
-      .query(
+    void Promise.all([
+      queryClient.query(
         documentQueryOptions(apiHttpClient, session.user.id, {
           params: { qualificationPathId: selectedPath.id, documentId: params.id },
         }),
-      )
-      .catch(constVoid)
+      ),
+      queryClient.query(
+        latestSessionQueryOptions(apiHttpClient, session.user.id, {
+          params: { qualificationPathId: selectedPath.id },
+          query: { documentId: params.id },
+        }),
+      ),
+    ]).catch(constVoid)
   },
   staticData: { backLabel: 'Kategoria' },
   component: LearningCategoryPage,

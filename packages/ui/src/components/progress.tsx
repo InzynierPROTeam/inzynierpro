@@ -1,11 +1,11 @@
 import { Progress as ProgressPrimitive } from '@base-ui/react/progress'
-import { createContext, useContext } from 'react'
 import { cn, tv, type VariantProps } from 'tailwind-variants'
 
 import { Skeleton } from './skeleton.js'
 
 const progressVariants = tv({
   slots: {
+    root: 'group/progress flex flex-wrap',
     track: 'relative flex w-full items-center overflow-x-hidden rounded-full',
     indicator: 'h-full transition-all',
   },
@@ -28,10 +28,10 @@ const progressVariants = tv({
       },
     },
     size: {
-      xs: { track: 'h-1' },
-      sm: { track: 'h-2' },
-      md: { track: 'h-3' },
-      lg: { track: 'h-4' },
+      xs: { root: 'gap-1.5', track: 'h-1' },
+      sm: { root: 'gap-2', track: 'h-2' },
+      md: { root: 'gap-2.5', track: 'h-3' },
+      lg: { root: 'gap-3', track: 'h-4' },
     },
   },
   defaultVariants: { variant: 'muted', size: 'md' },
@@ -39,56 +39,41 @@ const progressVariants = tv({
 
 type ProgressVariants = VariantProps<typeof progressVariants>
 
-const ProgressStylesContext = createContext(progressVariants())
+type ProgressProps = Omit<ProgressPrimitive.Root.Props, 'className'> &
+  ProgressVariants & { className?: string }
 
-type ProgressProps = ProgressPrimitive.Root.Props & ProgressVariants
+// Label and value read the size from `data-size`, so they scale with the track.
+function Progress({ className, children, variant, size = 'md', ...props }: ProgressProps) {
+  const styles = progressVariants({ variant, size })
 
-function Progress({ className, children, value, variant, size, ...props }: ProgressProps) {
   return (
-    <ProgressStylesContext value={progressVariants({ variant, size })}>
-      <ProgressPrimitive.Root
-        value={value}
-        data-slot="progress"
-        className={cn('flex flex-wrap gap-3', className)}
-        {...props}
+    <ProgressPrimitive.Root
+      data-slot="progress"
+      data-size={size}
+      className={styles.root({ className })}
+      {...props}
+    >
+      {children}
+      <ProgressPrimitive.Track
+        data-slot="progress-track"
+        className={styles.track()}
       >
-        {children}
-        <ProgressTrack>
-          <ProgressIndicator />
-        </ProgressTrack>
-      </ProgressPrimitive.Root>
-    </ProgressStylesContext>
+        <ProgressPrimitive.Indicator
+          data-slot="progress-indicator"
+          className={styles.indicator()}
+        />
+      </ProgressPrimitive.Track>
+    </ProgressPrimitive.Root>
   )
 }
 
-function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
-  const styles = useContext(ProgressStylesContext)
-
-  return (
-    <ProgressPrimitive.Track
-      className={cn(styles.track(), className)}
-      data-slot="progress-track"
-      {...props}
-    />
-  )
-}
-
-function ProgressIndicator({ className, ...props }: ProgressPrimitive.Indicator.Props) {
-  const styles = useContext(ProgressStylesContext)
-
-  return (
-    <ProgressPrimitive.Indicator
-      data-slot="progress-indicator"
-      className={cn(styles.indicator(), className)}
-      {...props}
-    />
-  )
-}
+const progressTextSizes =
+  'text-sm group-data-[size=lg]/progress:text-base group-data-[size=xs]/progress:text-xs'
 
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   return (
     <ProgressPrimitive.Label
-      className={cn('text-sm font-medium', className)}
+      className={cn('font-medium', progressTextSizes, className)}
       data-slot="progress-label"
       {...props}
     />
@@ -98,7 +83,7 @@ function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
 function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (
     <ProgressPrimitive.Value
-      className={cn('text-muted-foreground ms-auto text-sm tabular-nums', className)}
+      className={cn('text-muted-foreground ms-auto tabular-nums', progressTextSizes, className)}
       data-slot="progress-value"
       {...props}
     />
@@ -118,12 +103,4 @@ function ProgressSkeleton({ className, size, ...props }: ProgressSkeletonProps) 
   )
 }
 
-export {
-  Progress,
-  ProgressTrack,
-  ProgressIndicator,
-  ProgressLabel,
-  ProgressValue,
-  ProgressSkeleton,
-  progressVariants,
-}
+export { Progress, ProgressLabel, ProgressValue, ProgressSkeleton, progressVariants }

@@ -2,7 +2,7 @@
 
 ## Separate written and oral models
 
-Written and oral study have separate rounds, study sessions, review sessions and SRS state. Written progress never moves the oral round and vice versa. Global reviews cover every category of one study kind on the current path and never mix written and oral practice in one session. The separation is reflected in separate tables for sessions, answers, rounds and SRS state, with foreign keys and constraints that prevent attaching a question, attempt or SRS state to the wrong study kind. Truly identical technical mechanisms are shared; separate models allow different evaluation sources and review strategies.
+Written and oral study have separate rounds, study sessions, review sessions and SRS state. Written progress never moves the oral round and vice versa. Global reviews cover every category of one study kind on the current path and never mix written and oral practice in one session. The separation is reflected in separate tables for sessions, answers, rounds and SRS state, with foreign keys and constraints that prevent attaching a question, attempt or SRS state to the wrong study kind. Truly identical technical mechanisms are shared; separate models allow different evaluation sources and review strategies. The study kind is therefore implied by the table: `written_study_sessions` keeps one unfinished session per user, path and document without a mode column. If written review or favourite sessions later share that table, its uniqueness constraint must add the session kind.
 
 ## What feeds SRS and what moves the round
 

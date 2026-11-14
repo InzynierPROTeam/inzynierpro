@@ -37,7 +37,7 @@ export const learningRequest = <Body>(
 ) =>
   visitor.jar.fetch(
     new URL(
-      `/api/v1/${/\/(documents|oral|preview)(\/|\?|$)/.test(path) ? 'study' : 'preparation'}${path}`,
+      `/api/v1/${/\/(documents|oral|preview|sessions|latest-session)(\/|\?|$)/.test(path) ? 'study' : 'preparation'}${path}`,
       api.baseUrl,
     ),
     body === undefined

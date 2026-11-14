@@ -1,5 +1,4 @@
 import type { GetSessionPreviewRes } from '@inzpro/api-client/modules/study'
-import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
   CardHeader,
@@ -17,12 +16,14 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 
 import { getSessionQuestionCount, sessionPreviewRouteApi } from '../utils'
 import { QuestionCountDialog } from './QuestionCountDialog'
+import { StartSessionButton } from './StartSessionButton'
 
 type SessionPreviewCardProps = { preview: NonNullable<GetSessionPreviewRes> }
 
 export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview }) => {
   const { selectedPath } = onboardedRouteApi.useRouteContext()
   const search = sessionPreviewRouteApi.useSearch()
+
   const count = getSessionQuestionCount(preview.settings, search['liczba-pytan'])
 
   return (
@@ -79,13 +80,16 @@ export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview 
         </dl>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2">
-        {/* TODO: Wire the start mutation when the backend can create study sessions. */}
-        <Button disabled>Zacznij sesję</Button>
-        <p className="text-muted-foreground text-xs">
-          {preview.availableQuestionCount === 0
-            ? 'Pytania dla tej kategorii nie są jeszcze dostępne.'
-            : 'Rozpoczynanie sesji jest obecnie niedostępne.'}
-        </p>
+        <StartSessionButton
+          documentId={preview.document.id}
+          questionCount={count}
+          disabled={preview.availableQuestionCount === 0}
+        />
+        {preview.availableQuestionCount === 0 && (
+          <p className="text-muted-foreground text-xs">
+            Pytania dla tej kategorii nie są jeszcze dostępne.
+          </p>
+        )}
       </CardFooter>
     </Card>
   )

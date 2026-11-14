@@ -1,14 +1,10 @@
 import { Api } from '@inzpro/api-contracts/api'
-import { Effect, Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { HealthCheckService } from '~api/modules/health/application/health-check.service.js'
 
-export const HealthLive = HttpApiBuilder.group(
-  Api,
-  'HealthCheck',
-  Effect.fn(function* (handlers) {
-    const healthCheckService = yield* HealthCheckService
+export const HealthLive = HttpApiBuilder.group(Api, 'HealthCheck', handlers =>
+  handlers.handle('CheckHealth', () => HealthCheckService.use(service => service.check)),
+)
 
-    return handlers.handle('CheckHealth', () => healthCheckService.check)
-  }),
-).pipe(Layer.provide(HealthCheckService.layer))
+/** Services the health handlers need per request; the API layer provides them where routes are registered. */
+export const HealthRequestServices = HealthCheckService.layer

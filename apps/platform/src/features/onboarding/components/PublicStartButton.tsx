@@ -38,24 +38,18 @@ export const PublicStartButton: React.FC<PublicStartButtonProps> = ({
       isDataEmpty={session => session === null}
       noDataFallback={<SignInStartButton sessionId={sessionId} />}
     >
-      {session => {
-        if (session === null) {
-          return null
-        }
-
-        return (
-          <Button
-            type="submit"
-            disabled={pending}
-            onClick={event => {
-              event.preventDefault()
-              void submit(selection => onStart(selection, session.user.id))
-            }}
-          >
-            Rozpocznij
-          </Button>
-        )
-      }}
+      {session => (
+        <Button
+          type="submit"
+          disabled={pending}
+          onClick={event => {
+            event.preventDefault()
+            void submit(selection => onStart(selection, session.user.id))
+          }}
+        >
+          Rozpocznij
+        </Button>
+      )}
     </SuspenseQuery>
   </SuspenseQueryWrapper>
 )

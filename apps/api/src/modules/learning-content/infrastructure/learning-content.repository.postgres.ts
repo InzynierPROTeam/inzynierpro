@@ -44,6 +44,22 @@ export const LearningContentRepositoryLive = Layer.effect(
           )
           .pipe(Effect.mapError(cause => new LearningContentWriteError({ cause })))
       }),
+      publishRevision: Effect.fn('LearningContentRepository.publishRevision')(function* (revision) {
+        return yield* sql
+          .withTransaction(
+            Effect.gen(function* () {
+              yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation) VALUES (${revision.revisionId},${revision.questionId},${revision.body},${revision.explanation})`
+
+              for (const answer of revision.answers) {
+                yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answer.id},${answer.questionRevisionId},${answer.text},${answer.isCorrect})`
+              }
+
+              yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revision.revisionId}`
+              yield* sql`UPDATE written_questions SET current_revision_id=${revision.revisionId} WHERE id=${revision.questionId}`
+            }),
+          )
+          .pipe(Effect.mapError(cause => new LearningContentWriteError({ cause })))
+      }),
       withdrawRevision: Effect.fn('LearningContentRepository.withdrawRevision')(function* (id) {
         return yield* sql`UPDATE question_revisions SET withdrawn_at=clock_timestamp() WHERE id=${id}`.pipe(
           Effect.asVoid,

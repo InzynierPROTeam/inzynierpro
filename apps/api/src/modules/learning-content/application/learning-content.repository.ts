@@ -4,6 +4,7 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { Context, type Effect } from 'effect'
 import type {
   NewQuestion,
+  NewQuestionRevision,
   ReferenceDocument,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
@@ -21,6 +22,9 @@ export class LearningContentRepository extends Context.Service<
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly createQuestion: (
       question: NewQuestion,
+    ) => Effect.Effect<void, LearningContentWriteError>
+    readonly publishRevision: (
+      revision: NewQuestionRevision,
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly withdrawRevision: (
       id: QuestionRevisionId,

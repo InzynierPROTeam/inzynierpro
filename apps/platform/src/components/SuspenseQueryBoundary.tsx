@@ -75,7 +75,11 @@ export function SuspenseQuery<
   TError = DefaultError,
   TData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey,
->({ noDataFallback, ...props }: SuspenseQueryProps<TQueryFnData, TError, TData, TQueryKey>) {
+  TIsDataEmpty extends (data: TData) => boolean = (data: TData) => boolean,
+>({
+  noDataFallback,
+  ...props
+}: SuspenseQueryProps<TQueryFnData, TError, TData, TQueryKey, TIsDataEmpty>) {
   return (
     <SuspenseQueryBase
       noDataFallback={noDataFallback === undefined ? <DefaultNoDataFallback /> : noDataFallback}

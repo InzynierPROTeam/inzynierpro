@@ -1,4 +1,6 @@
 import type { GetDocumentRes } from '@inzpro/api-client/modules/study'
+import { ratioToPercent } from '@inzpro/domain/common/percent'
+import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
 import {
   Card,
   CardHeader,
@@ -32,11 +34,12 @@ export const CategorySummaryCard: React.FC<CategorySummaryCardProps> = ({ docume
         <div className="flex flex-col gap-1">
           <dt className="text-muted-foreground text-sm">Postęp</dt>
           <dd className="text-2xl font-semibold">
-            {document.availableQuestionCount === 0
-              ? 0
-              : Math.round(
-                  (document.completedQuestionCount / document.availableQuestionCount) * 100,
-                )}
+            {ratioToPercent(
+              calculateCompletionRatio(
+                document.completedQuestionCount,
+                document.availableQuestionCount,
+              ),
+            )}
             %
           </dd>
         </div>

@@ -10,7 +10,6 @@ import {
   QualificationKindsResponse,
   QualificationScopesResponse,
 } from '@inzpro/api-contracts/modules/qualification-paths/responses'
-import { databaseLayerFromConfig } from '@inzpro/db'
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { Cursor } from '@inzpro/domain/common/pagination'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
@@ -23,7 +22,6 @@ import { Effect, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { CalendarSession } from '~api/modules/exam-calendar/domain/exam-session.model.js'
-import { seedTechnicalCatalogue } from '~api/seed/technical-catalogue.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import { createStudyFixture, runFixture } from '~api/test/learning-fixtures.js'
 import {
@@ -37,9 +35,6 @@ import {
 let api: TestApi
 
 beforeAll(async () => {
-  await Effect.runPromise(
-    seedTechnicalCatalogue.pipe(Effect.provide(databaseLayerFromConfig), Effect.scoped),
-  )
   api = await startTestApi()
 })
 
