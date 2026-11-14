@@ -7,9 +7,16 @@ import {
   type GetSessionPreviewRequest,
   getOralMaterials,
   type GetOralMaterialsRequest,
+  getLatestSession,
+  type GetLatestSessionRequest,
+  getSession,
+  type GetSessionRequest,
+  getSessionQuestion,
+  type GetSessionQuestionRequest,
 } from '@inzpro/api-client/modules/study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import type { HttpClient } from 'effect/http'
 import {
   effectInfiniteQueryOptions,
@@ -28,6 +35,22 @@ export const studyKeys = {
     [...studyKeys.path(userId, req.params.qualificationPathId), 'getSessionPreview', req] as const,
   getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
     [...studyKeys.path(userId, req.params.qualificationPathId), 'getOralMaterials', req] as const,
+  getLatestSession: (userId: UserId, req: GetLatestSessionRequest) =>
+    [...studyKeys.path(userId, req.params.qualificationPathId), 'getLatestSession', req] as const,
+  session: (userId: UserId, pathId: QualificationPathId, id: StudySessionId) =>
+    [...studyKeys.path(userId, pathId), 'session', id] as const,
+  getSession: (userId: UserId, req: GetSessionRequest) =>
+    [
+      ...studyKeys.session(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getSession',
+      req,
+    ] as const,
+  getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
+    [
+      ...studyKeys.session(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getSessionQuestion',
+      req,
+    ] as const,
 }
 
 export const documentsInfiniteQueryOptions = (
@@ -66,3 +89,22 @@ export const documentQueryOptions = (
   userId: UserId,
   req: GetDocumentRequest,
 ) => effectQueryOptions(studyKeys.getDocument(userId, req), getDocument(req), httpClient)
+
+export const latestSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetLatestSessionRequest,
+) => effectQueryOptions(studyKeys.getLatestSession(userId, req), getLatestSession(req), httpClient)
+
+export const sessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetSessionRequest,
+) => effectQueryOptions(studyKeys.getSession(userId, req), getSession(req), httpClient)
+
+export const sessionQuestionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetSessionQuestionRequest,
+) =>
+  effectQueryOptions(studyKeys.getSessionQuestion(userId, req), getSessionQuestion(req), httpClient)
