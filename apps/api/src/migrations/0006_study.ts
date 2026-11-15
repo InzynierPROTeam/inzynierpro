@@ -3,8 +3,20 @@ import { SqlClient } from 'effect/sql'
 
 export default Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
+
+  yield* sql`CREATE TABLE written_learning_rounds (
+    user_id uuid NOT NULL,
+    qualification_path_id uuid NOT NULL,
+    round_number integer NOT NULL CHECK (round_number > 0),
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    updated_at timestamptz(3) NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, qualification_path_id),
+    FOREIGN KEY (user_id, qualification_path_id) REFERENCES user_qualification_paths(user_id, qualification_path_id) ON DELETE CASCADE
+  )`
+  yield* sql`CREATE TRIGGER written_learning_rounds_updated_at BEFORE UPDATE ON written_learning_rounds FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`CREATE TABLE written_question_coverage (
     user_id uuid NOT NULL, qualification_path_id uuid NOT NULL, question_id uuid NOT NULL, question_revision_id uuid NOT NULL,
+    round_number integer NOT NULL CHECK (round_number > 0),
     covered_at timestamptz(3) NOT NULL DEFAULT now(), PRIMARY KEY (user_id, qualification_path_id, question_id),
     FOREIGN KEY (user_id, qualification_path_id) REFERENCES user_qualification_paths(user_id, qualification_path_id) ON DELETE CASCADE,
     FOREIGN KEY (qualification_path_id, question_id) REFERENCES path_questions(qualification_path_id, question_id),
@@ -22,8 +34,6 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     question_count integer NOT NULL CHECK (question_count > 0),
     current_position integer NOT NULL DEFAULT 1 CHECK (current_position BETWEEN 1 AND question_count),
     ended_at timestamptz(3),
-    -- The main "Continue learning" opens the most recently used session (ADR-0002): starting a
-    -- session and answering in it count as use; reading a question does not.
     last_activity_at timestamptz(3) NOT NULL DEFAULT now(),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now(),

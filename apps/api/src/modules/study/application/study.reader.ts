@@ -11,6 +11,10 @@ import type {
 } from '@inzpro/domain/modules/study/study-session'
 import { Context, type Effect, type Option } from 'effect'
 import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
+import type {
+  LearningRoundNumber,
+  LearningRoundProgress,
+} from '~api/modules/study/domain/learning-round.model.js'
 import type { DocumentQuestionPool } from '~api/modules/study/domain/study-document.model.js'
 import type {
   SessionCandidate,
@@ -25,25 +29,40 @@ import type { StudyReadError } from './errors.js'
 export class StudyReader extends Context.Service<
   StudyReader,
   {
+    /**
+     * The learner's stored LearningRound with the path's published, non-withdrawn questions and
+     * those covered in that round. A question is covered in a round when a regular-study answer in
+     * it covered a revision carrying the question's current substantive content.
+     */
+    readonly learningRound: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<LearningRoundProgress, StudyReadError>
     readonly documents: (
       userId: UserId,
       pathId: QualificationPathId,
+      round: LearningRoundNumber,
       page: CursorPageRequest,
     ) => Effect.Effect<CursorPage<DocumentQuestionPool>, StudyReadError | InvalidCursor>
     /**
      * The document to continue regular study with: the first one in catalogue order, starting from
-     * `fromDocumentId` and wrapping around, that still has questions the user has not answered.
-     * When every question of the path was answered, the document after the starting one, so study
-     * goes through the categories in order again.
+     * `fromDocumentId` and wrapping around, that still has questions uncovered in the round. With
+     * `skipsStartDocument` the starting document comes last, so a new round continues with the
+     * category after the one that completed the previous round.
      */
     readonly nextDocument: (
       userId: UserId,
       pathId: QualificationPathId,
-      fromDocumentId: Option.Option<ReferenceDocumentId>,
+      continuation: {
+        readonly round: LearningRoundNumber
+        readonly fromDocumentId: Option.Option<ReferenceDocumentId>
+        readonly skipsStartDocument: boolean
+      },
     ) => Effect.Effect<Option.Option<DocumentQuestionPool>, StudyReadError>
     readonly document: (
       userId: UserId,
       pathId: QualificationPathId,
+      round: LearningRoundNumber,
       documentId: ReferenceDocumentId,
     ) => Effect.Effect<Option.Option<DocumentQuestionPool>, StudyReadError>
     /** The user's unfinished written study session on a document, if any. */
@@ -71,11 +90,12 @@ export class StudyReader extends Context.Service<
     ) => Effect.Effect<Option.Option<SessionQuestion>, StudyReadError>
     /**
      * Published, non-withdrawn current revisions of a document's questions on a path, in catalogue
-     * order; for unanswered selection only those the user has not answered in regular study.
+     * order; for uncovered selection only those not covered in the round.
      */
     readonly sessionCandidates: (
       userId: UserId,
       pathId: QualificationPathId,
+      round: LearningRoundNumber,
       documentId: ReferenceDocumentId,
       selection: SessionQuestionSelection,
       limit: QuestionCount,

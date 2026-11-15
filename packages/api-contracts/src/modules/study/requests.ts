@@ -34,7 +34,7 @@ export const SessionPreviewQuery = Schema.Struct({
 export const StartSessionPayload = Schema.Struct({
   documentId: ReferenceDocumentId,
   questionCount: QuestionCount,
-  // The selection the confirmed preview showed, so repeating answered questions is deliberate.
+  // The selection the confirmed preview showed, so going over a covered scope again is deliberate.
   questionSelection: SessionQuestionSelection,
 })
 

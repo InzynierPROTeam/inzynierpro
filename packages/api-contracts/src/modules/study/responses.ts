@@ -24,6 +24,7 @@ export const DocumentQuestionPool = Schema.Struct({
   id: ReferenceDocumentId,
   title: Schema.NonEmptyString,
   availableQuestionCount: QuestionCount,
+  // Questions covered in the learner's current LearningRound.
   completedQuestionCount: QuestionCount,
 })
 
@@ -44,7 +45,7 @@ export const SessionPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
   document: DocumentQuestionPool,
   mode: Schema.Literal('written-study'),
-  // Unanswered questions first; once all were answered, the session repeats them.
+  // Questions uncovered in the current round; a scope covered in this round offers all of them again.
   questionSelection: SessionQuestionSelection,
   // The questions the selection draws from.
   availableQuestionCount: QuestionCount,

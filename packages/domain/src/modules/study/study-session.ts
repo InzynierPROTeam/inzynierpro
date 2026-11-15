@@ -44,13 +44,14 @@ export const hasOpenQuestions = (progress: {
   readonly skipped: QuestionCount
 }): boolean => progress.answered < scoredQuestionCount(progress)
 
-export const unansweredQuestions = 'unanswered'
-export const repeatedQuestions = 'repeat'
-export const sessionQuestionSelectionValues = [unansweredQuestions, repeatedQuestions] as const
+export const uncoveredQuestions = 'uncovered'
+export const coveredQuestions = 'covered'
+export const sessionQuestionSelectionValues = [uncoveredQuestions, coveredQuestions] as const
 
 /**
- * Which questions a new regular-study session draws: those not yet answered in the scope, or,
- * once every one was answered, all of them again. Full LearningRound tracking is a later scope.
+ * Which questions a new regular-study session draws, by the current LearningRound: those of the
+ * scope not yet covered in it, or, for a scope already covered in this round, all of them again.
+ * Covering the whole path starts the next round, where every question is uncovered (ADR-0002).
  */
 export const SessionQuestionSelection = Schema.Literals(sessionQuestionSelectionValues)
 

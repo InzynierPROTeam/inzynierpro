@@ -10,6 +10,7 @@ import type {
   StudySessionId,
 } from '@inzpro/domain/modules/study/study-session'
 import { Context, type Effect } from 'effect'
+import type { LearningRoundNumber } from '~api/modules/study/domain/learning-round.model.js'
 import type {
   NewSessionAnswer,
   NewStudySession,
@@ -53,12 +54,20 @@ export class StudyRepository extends Context.Service<
      * The caller checks under the account lock that it is still unfinished.
      */
     readonly endSession: (sessionId: StudySessionId) => Effect.Effect<StudySession, StudyWriteError>
-    // The answer command owns validation and calls this projection write in its evidence transaction.
+    // The answer command owns validation and calls these projection writes in its evidence transaction.
+    /** Records that the question is covered in the round by the answered revision. */
     readonly recordCoverage: (
       userId: UserId,
       pathId: QualificationPathId,
       questionId: WrittenQuestionId,
       revisionId: QuestionRevisionId,
+      round: LearningRoundNumber,
+    ) => Effect.Effect<void, StudyWriteError>
+    /** Stores the learner's current LearningRound on the path. */
+    readonly storeLearningRound: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      round: LearningRoundNumber,
     ) => Effect.Effect<void, StudyWriteError>
   }
 >()('api/modules/study/StudyRepository') {}

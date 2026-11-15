@@ -191,3 +191,14 @@ export const sessionGoalVersion = (
       return Option.map(session, ({ goalVersion }) => goalVersion).pipe(Option.getOrUndefined)
     }),
   )
+
+// The learner's stored LearningRound on a path, which the API does not expose.
+export const storedLearningRound = (userId: UserId, pathId: QualificationPathId) =>
+  runFixture(
+    Effect.gen(function* () {
+      const studyReader = yield* StudyReader
+      const progress = yield* studyReader.learningRound(userId, pathId)
+
+      return progress.round
+    }),
+  )

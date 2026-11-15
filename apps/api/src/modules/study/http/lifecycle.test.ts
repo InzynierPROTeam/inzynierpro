@@ -253,7 +253,7 @@ test('ending a session keeps its answers, refuses new ones and lets a new sessio
 
   // The new session draws only the questions the learner has not answered yet.
   expect(await preview()).toMatchObject({
-    questionSelection: 'unanswered',
+    questionSelection: 'uncovered',
     availableQuestionCount: 2,
   })
 
@@ -262,7 +262,7 @@ test('ending a session keeps its answers, refuses new ones and lets a new sessio
   expect((await session(second.id)).progress.total).toBe(2)
 })
 
-test('the next session draws unanswered questions, then deliberately repeats an answered document', async () => {
+test('the next session draws uncovered questions, then deliberately goes over a document covered in the round', async () => {
   const { fixture, start, answer, question, preview, request } = await learnerWithDocument(3)
   const first = await start()
 
@@ -284,26 +284,26 @@ test('the next session draws unanswered questions, then deliberately repeats an 
   await request(`/sessions/${second.id}/end`, {})
 
   expect(await preview()).toMatchObject({
-    questionSelection: 'repeat',
+    questionSelection: 'covered',
     availableQuestionCount: 3,
     settings: { defaultQuestionCount: 3 },
   })
-  // A client that still shows unanswered questions cannot start a repeat by accident.
+  // A client that still shows uncovered questions cannot go over covered ones by accident.
   expect(
     (
       await request('/sessions', {
         documentId: fixture.documentId,
         questionCount: 3,
-        questionSelection: 'unanswered',
+        questionSelection: 'uncovered',
       })
     ).status,
   ).toBe(409)
 
-  const repeated = await start()
+  const again = await start()
 
-  expect(repeated.progress.total).toBe(3)
-  // A repeated question accepts a new attempt.
-  expect((await answer(repeated.id, 1)).question.answer).not.toBeNull()
+  expect(again.progress.total).toBe(3)
+  // A covered question accepts a new attempt.
+  expect((await answer(again.id, 1)).question.answer).not.toBeNull()
 })
 
 test('continuing points to the most recently used session of the path and each document keeps its own', async () => {
@@ -330,7 +330,7 @@ test('continuing points to the most recently used session of the path and each d
       await learningRequest(api, visitor, `/paths/${fixture.pathId}/sessions`, {
         documentId: otherDocument,
         questionCount: 1,
-        questionSelection: 'unanswered',
+        questionSelection: 'uncovered',
       })
     ).json(),
   )

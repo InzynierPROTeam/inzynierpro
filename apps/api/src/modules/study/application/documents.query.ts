@@ -3,6 +3,7 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { Effect } from 'effect'
 import type { CursorPageRequest } from '~api/lib/cursor-pagination.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
+import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
 
 import { StudyReader } from './study.reader.js'
 
@@ -15,5 +16,7 @@ export const getDocuments = Effect.fn('Study.getDocuments')(function* (
 
   const studyReader = yield* StudyReader
 
-  return yield* studyReader.documents(userId, pathId, page)
+  const round = currentLearningRound(yield* studyReader.learningRound(userId, pathId))
+
+  return yield* studyReader.documents(userId, pathId, round, page)
 })

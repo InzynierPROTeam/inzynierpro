@@ -14,6 +14,7 @@ import {
   StudyDocumentNotFound,
   UnfinishedSessionExists,
 } from '~api/modules/study/domain/errors.js'
+import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
 import {
   isAllowedQuestionCount,
   sessionQuestionPool,
@@ -26,8 +27,9 @@ import { StudyRepository } from './study.repository.js'
 /**
  * Starts the document's written study session after confirming its preview. An unfinished session
  * of the document refuses the start and is reported so the client can continue it; restarting is a
- * separate action. The session draws the questions the preview selected: unanswered ones, or all
- * again once every one was answered, so a repeat is never started by a stale preview. The account
+ * separate action. The session draws the questions the preview selected in the current
+ * LearningRound: uncovered ones, or all of a document already covered in it, so going over covered
+ * questions is never started by a stale preview. The account
  * lock serializes concurrent starts with each other, with answers and with assignment changes, so
  * access, coverage and settings are checked against committed state.
  */
@@ -56,7 +58,8 @@ export const startSession = Effect.fn('Study.startSession')(function* (
         })
       }
 
-      const document = yield* studyReader.document(userId, pathId, documentId)
+      const round = currentLearningRound(yield* studyReader.learningRound(userId, pathId))
+      const document = yield* studyReader.document(userId, pathId, round, documentId)
 
       if (Option.isNone(document)) {
         return yield* new StudyDocumentNotFound()
@@ -74,6 +77,7 @@ export const startSession = Effect.fn('Study.startSession')(function* (
       const candidates = yield* studyReader.sessionCandidates(
         userId,
         pathId,
+        round,
         documentId,
         questionSelection,
         questionCount,

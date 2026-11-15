@@ -53,18 +53,18 @@ describe('starting a written study session', () => {
 })
 
 describe('choosing the questions of the next session', () => {
-  it('draws the questions not yet answered in regular study', () =>
+  it('draws the questions not yet covered in the current round', () =>
     expect(
       sessionQuestionPool({ availableQuestionCount: count(5), completedQuestionCount: count(2) }),
-    ).toEqual({ selection: 'unanswered', questionCount: 3 }))
+    ).toEqual({ selection: 'uncovered', questionCount: 3 }))
 
-  it('repeats every question once all of them were answered', () =>
+  it('goes over every question of a document already covered in the current round', () =>
     expect(
       sessionQuestionPool({ availableQuestionCount: count(5), completedQuestionCount: count(5) }),
-    ).toEqual({ selection: 'repeat', questionCount: 5 }))
+    ).toEqual({ selection: 'covered', questionCount: 5 }))
 
   it('offers nothing for a document without published questions', () =>
     expect(
       sessionQuestionPool({ availableQuestionCount: count(0), completedQuestionCount: count(0) }),
-    ).toEqual({ selection: 'unanswered', questionCount: 0 }))
+    ).toEqual({ selection: 'uncovered', questionCount: 0 }))
 })

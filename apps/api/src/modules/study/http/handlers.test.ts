@@ -14,6 +14,7 @@ import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/
 import { Effect, Schema } from 'effect'
 import { beforeAll, afterAll, expect, test } from 'vitest'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
+import { LearningRoundNumber } from '~api/modules/study/domain/learning-round.model.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import {
   createStudyFixture,
@@ -66,6 +67,7 @@ test('documents return one cursor page of private coverage and archive preserves
         yield* Schema.decodeEffect(QualificationPathId)(technicalPathA),
         yield* Schema.decodeEffect(WrittenQuestionId)('30000000-0000-4000-8000-000000000001'),
         yield* Schema.decodeEffect(QuestionRevisionId)('43000000-0000-4000-8000-000000000001'),
+        yield* Schema.decodeEffect(LearningRoundNumber)(1),
       )
     }),
   )
@@ -103,7 +105,7 @@ test('documents return one cursor page of private coverage and archive preserves
   )
 
   // One of the five questions is answered, so the next session offers the other four.
-  expect(preview).toMatchObject({ questionSelection: 'unanswered', availableQuestionCount: 4 })
+  expect(preview).toMatchObject({ questionSelection: 'uncovered', availableQuestionCount: 4 })
   expect(preview.settings).toEqual({
     defaultQuestionCount: 4,
     canChangeQuestionCount: false,
@@ -239,7 +241,7 @@ test('preview continues from a category until its questions are answered, then m
 
   expect(await (await preview()).json()).toMatchObject({
     document: { id: technicalDocumentA },
-    questionSelection: 'unanswered',
+    questionSelection: 'uncovered',
   })
   expect(await (await preview(`?fromDocumentId=${technicalDocumentA}`)).json()).toMatchObject({
     document: { id: technicalDocumentA },
@@ -254,7 +256,7 @@ test('preview continues from a category until its questions are answered, then m
       await learningRequest(api, visitor, `/paths/${technicalPathA}/sessions`, {
         documentId: technicalDocumentA,
         questionCount: 5,
-        questionSelection: 'unanswered',
+        questionSelection: 'uncovered',
       })
     ).json(),
   )
@@ -280,13 +282,13 @@ test('preview continues from a category until its questions are answered, then m
 
   expect(await (await preview(`?fromDocumentId=${technicalDocumentA}`)).json()).toMatchObject({
     document: { id: technicalDocumentB },
-    questionSelection: 'unanswered',
+    questionSelection: 'uncovered',
   })
   expect(await (await preview()).json()).toMatchObject({ document: { id: technicalDocumentB } })
-  // The answered category itself offers to repeat its questions.
+  // The category covered in this round offers all its questions again when chosen.
   expect(await (await preview(`?documentId=${technicalDocumentA}`)).json()).toMatchObject({
     document: { id: technicalDocumentA },
-    questionSelection: 'repeat',
+    questionSelection: 'covered',
     availableQuestionCount: 5,
   })
   expect((await preview('?documentId=invalid')).status).toBe(400)
@@ -298,7 +300,7 @@ test('preview continues from a category until its questions are answered, then m
   ).toMatchObject({ document: { id: technicalDocumentA } })
 })
 
-test('once every category is answered, study continues in order from the category after', async () => {
+test('covering the whole path starts a new round that continues from the category after', async () => {
   const visitor = await loginForPreparation(api)
   await learningRequest(api, visitor, '/onboarding', technicalConfiguration)
 
@@ -339,14 +341,22 @@ test('once every category is answered, study continues in order from the categor
   await answerCategory(technicalDocumentA)
   await answerCategory(technicalDocumentB)
 
-  // Every question of the path is answered: after the last category study starts from the first.
+  // Every question of the path is covered, so the next round starts with all of them uncovered:
+  // after the last category study starts from the first.
   expect(await preview(`?fromDocumentId=${technicalDocumentB}`)).toMatchObject({
     document: { id: technicalDocumentA },
-    questionSelection: 'repeat',
+    questionSelection: 'uncovered',
+    availableQuestionCount: 5,
   })
   expect(await preview(`?fromDocumentId=${technicalDocumentA}`)).toMatchObject({
     document: { id: technicalDocumentB },
-    questionSelection: 'repeat',
+    questionSelection: 'uncovered',
   })
   expect(await preview()).toMatchObject({ document: { id: technicalDocumentA } })
+  expect(await (await request('/documents')).json()).toMatchObject({
+    data: [
+      { availableQuestionCount: 5, completedQuestionCount: 0 },
+      { availableQuestionCount: 5, completedQuestionCount: 0 },
+    ],
+  })
 })

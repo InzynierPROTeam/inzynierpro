@@ -5,6 +5,7 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { StudyDocumentNotFound } from '~api/modules/study/domain/errors.js'
+import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
 
 import { StudyReader } from './study.reader.js'
 
@@ -15,7 +16,8 @@ export const getDocument = Effect.fn('Study.getDocument')(function* (
 ) {
   yield* requirePathAccess(userId, pathId, writtenExamAccess)
   const studyReader = yield* StudyReader
-  const document = yield* studyReader.document(userId, pathId, documentId)
+  const round = currentLearningRound(yield* studyReader.learningRound(userId, pathId))
+  const document = yield* studyReader.document(userId, pathId, round, documentId)
 
   if (Option.isNone(document)) {
     return yield* new StudyDocumentNotFound()
