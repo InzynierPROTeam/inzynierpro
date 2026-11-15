@@ -87,9 +87,12 @@ test('initializes the saved theme through a server-rendered one-time script', ()
 test('hydrating a system theme on a dark device never switches the page to light', async () => {
   const lightMatchMedia = window.matchMedia
 
-  const matchMedia = vi
-    .spyOn(window, 'matchMedia')
-    .mockImplementation(query => ({ ...lightMatchMedia(query), matches: true }))
+  const matchMedia = vi.spyOn(window, 'matchMedia').mockImplementation(query => {
+    const media = lightMatchMedia(query)
+    Object.defineProperty(media, 'matches', { value: true })
+
+    return media
+  })
 
   document.cookie = 'theme=system; path=/'
   // The inline script has already applied the dark scheme before React hydrates.

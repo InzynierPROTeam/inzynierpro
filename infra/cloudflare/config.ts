@@ -1,4 +1,8 @@
-import { Config, ConfigProvider, Effect } from 'effect'
+import { Config, ConfigProvider, Data, Effect } from 'effect'
+
+class InvalidDeploymentConfig extends Data.TaggedError('InvalidDeploymentConfig')<{
+  message: string
+}> {}
 
 export const readDeploymentConfig = (values: NodeJS.ProcessEnv) =>
   Effect.gen(function* () {
@@ -11,9 +15,9 @@ export const readDeploymentConfig = (values: NodeJS.ProcessEnv) =>
     }).parse(ConfigProvider.fromUnknown(values))
 
     if (!/^[a-f0-9]{32}$/.test(config.accountId)) {
-      return yield* Effect.fail(
-        new Error('CLOUDFLARE_ACCOUNT_ID must be a 32-character account ID'),
-      )
+      return yield* new InvalidDeploymentConfig({
+        message: 'CLOUDFLARE_ACCOUNT_ID must be a 32-character account ID',
+      })
     }
 
     for (const url of [config.platform, config.api, config.website]) {
@@ -26,7 +30,9 @@ export const readDeploymentConfig = (values: NodeJS.ProcessEnv) =>
         url.search ||
         url.hash
       ) {
-        return yield* Effect.fail(new Error('Deployment URLs must be HTTPS origins'))
+        return yield* new InvalidDeploymentConfig({
+          message: 'Deployment URLs must be HTTPS origins',
+        })
       }
     }
 
@@ -38,7 +44,9 @@ export const readDeploymentConfig = (values: NodeJS.ProcessEnv) =>
       config.api.hostname.split('.').slice(1).join('.') !== cookiesDomain ||
       config.platform.origin === config.api.origin
     ) {
-      return yield* Effect.fail(new Error('API and platform must be siblings under COOKIES_DOMAIN'))
+      return yield* new InvalidDeploymentConfig({
+        message: 'API and platform must be siblings under COOKIES_DOMAIN',
+      })
     }
 
     return config

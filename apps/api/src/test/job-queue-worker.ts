@@ -7,7 +7,7 @@ import { Greeting, makeTestStoreLayer } from '~api/test/job-queue.js'
 
 const [name = ''] = process.argv.slice(2)
 
-Effect.gen(function* () {
+await Effect.gen(function* () {
   const queue = yield* makeJobQueue({
     name,
     schema: Greeting,
