@@ -58,7 +58,7 @@ test('an infrastructure failure exports a failed span and an error log without s
   const exit = await Effect.runPromise(
     Effect.provide(
       program,
-      observabilityLayer([]).pipe(
+      observabilityLayer('inzpro-api', []).pipe(
         Layer.provide(
           ConfigProvider.layer(
             ConfigProvider.fromUnknown({
