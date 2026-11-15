@@ -3,7 +3,11 @@ import { unrestrictedQualificationScopeCode } from '@inzpro/domain/modules/quali
 import { demolitionSpecializationCode } from '@inzpro/domain/modules/qualification-paths/specialization'
 import { DateTime, Effect } from 'effect'
 import { SqlClient } from 'effect/sql'
-import { initialRevision } from '~api/modules/learning-content/domain/learning-content.model.js'
+import {
+  cosmeticChange,
+  initialRevision,
+  substantiveChange,
+} from '~api/modules/learning-content/domain/learning-content.model.js'
 
 // Local development catalogue with Polish display names and authored example questions.
 // Published chamber dates and explicitly unconfirmed planning estimates live in catalogue.ts.
@@ -219,10 +223,66 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         VALUES ('10000000-0000-4000-8000-000000000001', ${documentId}, ${questionId}) ON CONFLICT DO NOTHING`
       }
 
-      // Both paths share the first question and its published revision.
-      yield* sql`INSERT INTO path_questions (qualification_path_id, document_id, question_id)
-      VALUES ('10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001',
-      '30000000-0000-4000-8000-000000000001') ON CONFLICT DO NOTHING`
+      // Later revisions show how a change kind affects coverage (ADR-0003): a cosmetic comma fix
+      // keeps the question covered in the current round, a changed question uncovers it. Source for
+      // the substantive one: art. 37 ust. 1 Prawa budowlanego. The first option is correct.
+      const laterRevisions = [
+        {
+          questionNumber: 6,
+          changeKind: cosmeticChange,
+          body: 'Który organ jest, co do zasady, organem administracji architektoniczno-budowlanej pierwszej instancji?',
+          answers: ['Starosta', 'Wojewoda', 'Wójt gminy'],
+          explanation:
+            'Art. 82 ust. 2 Prawa budowlanego powierza zadania organu administracji architektoniczno-budowlanej pierwszej instancji staroście.',
+        },
+        {
+          questionNumber: 5,
+          changeKind: substantiveChange,
+          body: 'Kiedy wygasa decyzja o pozwoleniu na budowę, jeżeli rozpoczętą budowę przerwano?',
+          answers: [
+            'Gdy budowa została przerwana na czas dłuższy niż 3 lata.',
+            'Gdy budowa została przerwana na czas dłuższy niż 2 lata.',
+            'Przerwa w budowie nie powoduje wygaśnięcia decyzji.',
+          ],
+          explanation:
+            'Art. 37 ust. 1 Prawa budowlanego: decyzja wygasa również wtedy, gdy budowa została przerwana na czas dłuższy niż 3 lata.',
+        },
+      ] as const
+
+      for (const revision of laterRevisions) {
+        const n = revision.questionNumber
+        const questionId = catalogueId('30', n)
+        const previousId = catalogueId('43', n)
+        const revisionId = catalogueId('45', n)
+
+        const substantiveRevisionId =
+          revision.changeKind === cosmeticChange ? previousId : revisionId
+
+        yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id)
+        VALUES (${revisionId},${questionId},${revision.body},${revision.explanation},${revision.changeKind},${substantiveRevisionId}) ON CONFLICT DO NOTHING`
+
+        const revisions =
+          yield* sql`SELECT published_at FROM question_revisions WHERE id=${revisionId} LIMIT 1`
+
+        if (revisions[0]?.publishedAt === null) {
+          for (const [index, text] of revision.answers.entries()) {
+            const answerId = catalogueId('46', n * 10 + index + 1)
+            const isCorrect = index === 0
+            yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answerId},${revisionId},${text},${isCorrect}) ON CONFLICT DO NOTHING`
+          }
+
+          yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
+        }
+
+        yield* sql`UPDATE written_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id=${previousId}`
+      }
+
+      // The second path is small enough to finish its learning round by hand in a few minutes. It
+      // shares its Building Law questions and their revisions with the first path.
+      for (const n of [1, 2, 4]) {
+        yield* sql`INSERT INTO path_questions (qualification_path_id, document_id, question_id)
+        VALUES ('10000000-0000-4000-8000-000000000002', ${buildingLaw}, ${catalogueId('30', n)}) ON CONFLICT DO NOTHING`
+      }
 
       for (const pathId of cataloguePathIds) {
         if (pathId === catalogueId('10', 2)) {
