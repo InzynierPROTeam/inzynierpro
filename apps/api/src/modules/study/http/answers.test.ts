@@ -5,15 +5,14 @@ import {
   SubmitSessionAnswerResponse,
 } from '@inzpro/api-contracts/modules/study/responses'
 import type { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
-import { Effect, Schema } from 'effect'
+import { Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
-import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import {
   addFixtureQuestion,
   createStudyFixture,
-  runFixture,
   studySessionSpecialization,
+  withdrawFixtureRevision,
 } from '~api/test/learning-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
@@ -103,6 +102,7 @@ test('a correct answer is scored, moves the session on and is restored after rel
   expect(result.session.progress).toEqual({
     total: 2,
     answered: 1,
+    skipped: 0,
     percent: 50,
     currentQuestion: 2,
   })
@@ -276,12 +276,7 @@ test('a withdrawn question is shown as withdrawn and accepts neither an answer n
 
   expect(first.isWithdrawn).toBe(false)
 
-  await runFixture(
-    Effect.gen(function* () {
-      const learningContentRepository = yield* LearningContentRepository
-      yield* learningContentRepository.withdrawRevision(first.questionRevisionId)
-    }),
-  )
+  await withdrawFixtureRevision(first.questionRevisionId)
 
   const refused = await submit(1, {
     questionRevisionId: first.questionRevisionId,

@@ -66,6 +66,8 @@ export const OralMaterialsResponse = CursorPaginatedResponse(OralQuestionCategor
 export const StudySessionProgress = Schema.Struct({
   total: QuestionCount,
   answered: QuestionCount,
+  // Questions withdrawn before an answer: skipped without penalty and left out of the percent and score (ADR-0003).
+  skipped: QuestionCount,
   percent: Percent,
   // The question to continue from.
   currentQuestion: SessionQuestionPosition,
@@ -105,7 +107,7 @@ export const StudySessionResult = Schema.Struct({
   incorrect: QuestionCount,
   // Answers given after opening the explanation; they still count as correct or incorrect.
   assisted: QuestionCount,
-  // The score: correct answers among all of the session's questions.
+  // The score: correct answers among the session's questions that were not skipped.
   correctPercent: Percent,
 })
 

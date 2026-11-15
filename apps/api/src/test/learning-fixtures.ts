@@ -2,7 +2,10 @@ import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/prepara
 import { databaseLayerFromConfig } from '@inzpro/db'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
-import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
+import type {
+  QuestionRevisionId,
+  WrittenQuestionId,
+} from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { Effect, Layer, Schema, Option } from 'effect'
@@ -12,6 +15,7 @@ import { LearningContentRepository } from '~api/modules/learning-content/applica
 import {
   NewQuestion,
   NewQuestionRevision,
+  QuestionRevisionWithdrawal,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
@@ -146,6 +150,24 @@ export const publishFixtureRevision = (questionId: WrittenQuestionId) =>
       yield* learningContentRepository.publishRevision(revision)
 
       return revision
+    }),
+  )
+
+// Withdraws a faulty revision, as an editor's emergency decision would, even in started sessions.
+export const withdrawFixtureRevision = (
+  revisionId: QuestionRevisionId,
+  reason = 'Test-only fault in the answer key',
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const withdrawal = yield* Schema.decodeEffect(QuestionRevisionWithdrawal)({
+        revisionId,
+        reason,
+      })
+
+      yield* learningContentRepository.withdrawRevision(withdrawal)
     }),
   )
 

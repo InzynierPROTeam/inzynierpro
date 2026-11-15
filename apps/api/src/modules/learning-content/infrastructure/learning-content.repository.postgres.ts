@@ -60,12 +60,15 @@ export const LearningContentRepositoryLive = Layer.effect(
           )
           .pipe(Effect.mapError(cause => new LearningContentWriteError({ cause })))
       }),
-      withdrawRevision: Effect.fn('LearningContentRepository.withdrawRevision')(function* (id) {
-        return yield* sql`UPDATE question_revisions SET withdrawn_at=clock_timestamp() WHERE id=${id}`.pipe(
-          Effect.asVoid,
-          Effect.mapError(cause => new LearningContentWriteError({ cause })),
-        )
-      }),
+      withdrawRevision: Effect.fn('LearningContentRepository.withdrawRevision')(
+        function* (withdrawal) {
+          return yield* sql`UPDATE question_revisions SET withdrawn_at=clock_timestamp(),withdrawal_reason=${withdrawal.reason}
+ WHERE id=${withdrawal.revisionId} AND published_at IS NOT NULL AND withdrawn_at IS NULL`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
     })
   }),
 )

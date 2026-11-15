@@ -6,7 +6,10 @@ import { ratioToPercent } from '@inzpro/domain/common/percent'
 import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
-import { nextQuestionPosition } from '@inzpro/domain/modules/study/study-session'
+import {
+  nextQuestionPosition,
+  scoredQuestionCount,
+} from '@inzpro/domain/modules/study/study-session'
 import {
   sessionQueryOptions,
   sessionQuestionQueryOptions,
@@ -19,6 +22,7 @@ import { Predicate } from 'effect'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { submitStudySessionAnswer } from '../actions'
+import { withdrawnQuestion } from '../utils'
 
 const sessionQueries = (userId: UserId, { params }: SubmitSessionAnswerRequest) => ({
   question: sessionQuestionQueryOptions(apiHttpClient, userId, { params }),
@@ -30,14 +34,13 @@ const sessionQueries = (userId: UserId, { params }: SubmitSessionAnswerRequest) 
 const submitErrorMessage = (error: SubmitSessionAnswerError | Error) =>
   Predicate.isTagged(error, 'SessionAnswerAlreadySubmitted')
     ? 'Odpowiedź na to pytanie została już zapisana.'
-    : Predicate.isTagged(error, 'SessionQuestionWithdrawn')
-      ? 'To pytanie zostało wycofane i nie przyjmuje już odpowiedzi.'
-      : 'Nie udało się zapisać odpowiedzi. Spróbuj ponownie.'
+    : 'Nie udało się zapisać odpowiedzi. Spróbuj ponownie.'
 
 /**
  * Submits the selected answer and shows its result at once, scored from the options the question
  * read already holds. The backend's stored result then replaces the optimistic one; on failure the
  * question and session are refetched, so the screen returns to what the backend actually stored.
+ * A refusal because the question was withdrawn meanwhile is no error: it is shown as withdrawn.
  */
 export const useSubmitSessionAnswer = (userId: UserId) => {
   const client = useQueryClient()
@@ -70,14 +73,15 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
         }
 
         const { total } = current.progress
-        const answered = QuestionCount.make(Math.min(current.progress.answered + 1, total))
+        const scored = scoredQuestionCount(current.progress)
+        const answered = QuestionCount.make(Math.min(current.progress.answered + 1, scored))
 
         return {
           ...current,
           progress: {
-            total,
+            ...current.progress,
             answered,
-            percent: ratioToPercent(calculateCompletionRatio(answered, total)),
+            percent: ratioToPercent(calculateCompletionRatio(answered, scored)),
             currentQuestion: nextQuestionPosition(req.params.position, total),
           },
         }
@@ -92,7 +96,16 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
     onError: async (error, req) => {
       const { question, session } = sessionQueries(userId, req)
 
-      toast.add({ type: 'error', title: submitErrorMessage(error) })
+      // A question withdrawn while it was open is skipped, not failed: the screen shows it as
+      // withdrawn at once, without the optimistic result, an error or a way to answer again (ADR-0003).
+      if (Predicate.isTagged(error, 'SessionQuestionWithdrawn')) {
+        client.setQueryData(question.queryKey, current =>
+          current === undefined || current === null ? current : withdrawnQuestion(current),
+        )
+      } else {
+        toast.add({ type: 'error', title: submitErrorMessage(error) })
+      }
+
       await Promise.all([client.invalidateQueries(question), client.invalidateQueries(session)])
     },
     // Category progress, the preview and the latest-session tiles count the answer; this

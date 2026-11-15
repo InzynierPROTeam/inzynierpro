@@ -134,7 +134,8 @@ export const StudyReaderLive = Layer.effect(
       pathId: QualificationPathId,
       conditions: ReadonlyArray<Statement.Fragment>,
     ) =>
-      sql`SELECT s.id,s.document_id,d.title AS document_title,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,(SELECT count(*)::integer FROM written_study_answers a WHERE a.study_session_id=s.id) AS answered_count,s.created_at,s.ended_at
+      sql`SELECT s.id,s.document_id,d.title AS document_title,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,(SELECT count(*)::integer FROM written_study_answers a WHERE a.study_session_id=s.id) AS answered_count,
+ (SELECT count(*)::integer FROM written_study_session_questions sq JOIN question_revisions r ON r.id=sq.question_revision_id WHERE sq.study_session_id=s.id AND r.withdrawn_at<coalesce(s.ended_at,'infinity') AND NOT EXISTS (SELECT 1 FROM written_study_answers a WHERE a.study_session_id=sq.study_session_id AND a.position=sq.position)) AS skipped_count,s.created_at,s.ended_at
  FROM written_study_sessions s JOIN reference_documents d ON d.id=s.document_id
  WHERE ${sql.and([sql`s.user_id=${userId}`, sql`s.qualification_path_id=${pathId}`, ...conditions])}
  ORDER BY s.last_activity_at DESC,s.id DESC LIMIT 1`.pipe(

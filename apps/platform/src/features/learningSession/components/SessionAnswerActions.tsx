@@ -1,5 +1,5 @@
 import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
-import { endedStudySession, nextQuestionPosition } from '@inzpro/domain/modules/study/study-session'
+import { nextQuestionPosition } from '@inzpro/domain/modules/study/study-session'
 import { sessionQueryOptions } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
 import { useIsMutating, useQuery } from '@tanstack/react-query'
@@ -11,6 +11,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useEndSession } from '../hooks/useEndSession'
 import { recordAssistanceMutationKey } from '../hooks/useRecordSessionAssistance'
+import { sessionNextStep } from '../utils'
 
 type SessionAnswerActionsProps = {
   question: SessionQuestion
@@ -73,7 +74,9 @@ const NextQuestionButton: React.FC<NextQuestionButtonProps> = ({ question }) => 
     return null
   }
 
-  if (session.status === endedStudySession) {
+  const step = sessionNextStep(question.position, session)
+
+  if (step === 'summary') {
     return (
       <Button
         nativeButton={false}
@@ -90,8 +93,9 @@ const NextQuestionButton: React.FC<NextQuestionButtonProps> = ({ question }) => 
     )
   }
 
-  // As in V1, the last question ends the session on the way to its summary.
-  if (question.position >= session.progress.total) {
+  // As in V1, the last question ends the session on the way to its summary; so does a session whose
+  // remaining questions were all withdrawn.
+  if (step === 'end') {
     return <EndSessionButton sessionId={question.sessionId} />
   }
 

@@ -18,6 +18,7 @@ import {
   createStudyFixture,
   runFixture,
   studySessionSpecialization,
+  withdrawFixtureRevision,
 } from '~api/test/learning-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
@@ -163,13 +164,7 @@ test('the continue point skips a withdrawn question', async () => {
   const started = await start()
   const second = await question(started.id, 2)
 
-  await runFixture(
-    Effect.gen(function* () {
-      const learningContentRepository = yield* LearningContentRepository
-
-      yield* learningContentRepository.withdrawRevision(second.questionRevisionId)
-    }),
-  )
+  await withdrawFixtureRevision(second.questionRevisionId)
 
   expect((await answer(started.id, 1)).session.progress).toMatchObject({
     answered: 1,
