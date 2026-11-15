@@ -33,7 +33,8 @@
     "@inzpro/email": "workspace:*",
     "@inzpro/redis": "workspace:*",
     "dotenv": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "ts-fsrs": "catalog:"
   },
   "devDependencies": {
     "@inzpro/auth-client": "workspace:*",

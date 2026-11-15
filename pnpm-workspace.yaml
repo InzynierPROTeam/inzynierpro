@@ -58,12 +58,12 @@ catalog:
   'lucide-react': 1.71.0
   'react-cookie-manager': 5.4.1
   'js-cookie': 3.0.8
-  better-auth: 1.7.19
+  better-auth: 1.7.20
   pg: 8.23.1
   redis: 6.3.1
   input-otp: 1.5.0
   '@tanstack/react-form': 1.33.5
-  '@better-auth/core': 1.7.19
+  '@better-auth/core': 1.7.20
   zod: 4.6.7
   '@opencoredev/email-sdk': 3.0.1
   react-email: 6.11.11
@@ -71,6 +71,7 @@ catalog:
   tailwind-variants: 4.0.2
   '@alchemy.run/cloudflare': 2.0.0-beta.85
   alchemy: 2.0.0-beta.85
+  ts-fsrs: 6.0.0
 catalogMode: prefer
 dedupePeers: true
 saveExact: true
