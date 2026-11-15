@@ -8,6 +8,7 @@ Application behaviour has its own documents:
 
 - [platform.md](platform.md): the web platform's authentication, route guards, assignment selection, back navigation and data loading.
 - [written-study.md](written-study.md): written study sessions from preview to summary, including withdrawn questions.
+- [background-jobs.md](background-jobs.md): durable background jobs, the worker process and its diagnosis.
 
 ## Packages
 
@@ -65,9 +66,9 @@ Static checks cannot judge whether a model is declared independently of its DTO,
 
 ## API modules
 
-The API has five business modules: `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material) and `study` (personal learning). Each keeps its files in `domain/`, `application/`, `infrastructure/` and `http/` folders, as CODING_STANDARDS.md describes.
+The API has five business modules: `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material) and `study` (personal learning). The technical `background-jobs` module owns job diagnostics; the generic queue lives in `src/lib/job-queue.ts`. Each keeps its files in `domain/`, `application/`, `infrastructure/` and `http/` folders, as CODING_STANDARDS.md describes.
 
-Module migrations create their final tables directly, so a schema change edits the module's migration and local databases are recreated. The first migration owns the shared `set_updated_at` trigger function.
+Module migrations create their final tables directly, so a schema change edits the module's migration and local databases are recreated. The job table is the exception: Effect's queue store creates and migrates it itself ([background-jobs.md](background-jobs.md)). The first migration owns the shared `set_updated_at` trigger function.
 
 ## URLs and dates
 
