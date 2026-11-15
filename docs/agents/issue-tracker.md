@@ -5,6 +5,7 @@ Use the gh CLI from this repo.
 
 ## Conventions
 
+- Write issue titles, bodies and comments in English, like all documentation outside ADRs.
 - Before creating issues, verify the target with
   `gh repo view --json nameWithOwner`.
 - Create issues with `gh issue create --title "..." --body-file <file>`.
