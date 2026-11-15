@@ -13,10 +13,14 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Schema } from 'effect'
 import { beforeAll, afterAll, expect, test } from 'vitest'
-import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
-import { createStudyFixture, addFixtureQuestion, runFixture } from '~api/test/learning-fixtures.js'
+import {
+  createStudyFixture,
+  addFixtureQuestion,
+  runFixture,
+  withdrawFixtureRevision,
+} from '~api/test/learning-fixtures.js'
 import {
   loginForPreparation,
   learningRequest,
@@ -175,15 +179,11 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
     minimumQuestionCount: 1,
     maximumQuestionCount: 26,
   })
-  await runFixture(
-    Effect.gen(function* () {
-      const learningContentRepository = yield* LearningContentRepository
 
-      for (const question of questions) {
-        yield* learningContentRepository.withdrawRevision(question.revisionId)
-      }
-    }),
-  )
+  for (const question of questions) {
+    await withdrawFixtureRevision(question.revisionId)
+  }
+
   expect((await preview()).availableQuestionCount).toBe(0)
   expect(
     await (await learningRequest(api, visitor, `/paths/${fixture.pathId}/preview`)).json(),

@@ -25,6 +25,7 @@ export const toStudySessionDto = (session: StudySession): StudySessionDto => ({
   progress: {
     total: session.questionCount,
     answered: session.answeredCount,
+    skipped: session.skippedCount,
     percent: answeredPercent(session),
     currentQuestion: session.currentPosition,
   },
@@ -67,7 +68,7 @@ export const toStudySessionSummaryDto = ({
   result: StudySessionResultCounts
 }): StudySessionSummary => ({
   ...toLatestStudySessionDto(session),
-  result: { ...result, correctPercent: correctPercent(result, session.questionCount) },
+  result: { ...result, correctPercent: correctPercent(result, session) },
 })
 
 export const toSessionQuestionResultDto = ({

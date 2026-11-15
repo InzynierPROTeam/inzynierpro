@@ -4,17 +4,16 @@ import {
   SessionQuestion,
   StudySession,
 } from '@inzpro/api-contracts/modules/study/responses'
-import { Effect, Schema } from 'effect'
+import { Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
-import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import {
   addFixtureQuestion,
   createStudyFixture,
   publishFixtureRevision,
-  runFixture,
   sessionGoalVersion,
   studySessionSpecialization,
+  withdrawFixtureRevision,
 } from '~api/test/learning-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
@@ -300,12 +299,7 @@ test('starting refuses empty, disallowed and outdated session scopes', async () 
   expect((await start(0)).status).toBe(409)
   expect((await start(1, '20000000-0000-4000-8000-000000000099')).status).toBe(404)
 
-  await runFixture(
-    Effect.gen(function* () {
-      const learningContentRepository = yield* LearningContentRepository
-      yield* learningContentRepository.withdrawRevision(questions[0]!.revisionId)
-    }),
-  )
+  await withdrawFixtureRevision(questions[0]!.revisionId)
 
   expect((await start(2)).status).toBe(409)
   expect(

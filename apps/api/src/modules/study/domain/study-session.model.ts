@@ -25,6 +25,8 @@ export const StudySession = Schema.Struct({
   // The question to continue from; answering moves it forward.
   currentPosition: SessionQuestionPosition,
   answeredCount: QuestionCount,
+  // Questions whose revision was withdrawn before they were answered and before the session ended (ADR-0003).
+  skippedCount: QuestionCount,
   createdAt: DateTimeUtc,
   endedAt: Schema.OptionFromNullOr(DateTimeUtc),
 })
