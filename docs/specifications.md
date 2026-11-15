@@ -6,7 +6,7 @@ GitHub Issues for InzynierPROTeam/inzynierpro own delivery scope and acceptance 
 - [Foundation specification](https://github.com/InzynierPROTeam/inzynierpro/issues/2)
 - [Onboarding, assignments and preview](https://github.com/InzynierPROTeam/inzynierpro/issues/6)
 
-Before implementation read the applicable issue, glossary and ADRs. [platform.md](platform.md) describes how the web platform guards routes and loads data, and [written-study.md](written-study.md) how written study sessions work. Treat V1 at `../inzynier-pro` as read-only reference, not an implicit V2 specification or permission to access production data. Leave changes uncommitted unless publication is explicitly requested.
+Before implementation read the applicable issue, glossary and ADRs. [platform.md](platform.md) describes how the web platform guards routes and loads data, [written-study.md](written-study.md) how written study sessions work, and [background-jobs.md](background-jobs.md) how the worker runs durable jobs. Treat V1 at `../inzynier-pro` as read-only reference, not an implicit V2 specification or permission to access production data. Leave changes uncommitted unless publication is explicitly requested.
 
 ## Decision map
 
