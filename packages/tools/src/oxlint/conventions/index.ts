@@ -3,6 +3,7 @@ import { eslintCompatPlugin } from '@oxlint/plugins'
 import { apiClientContractsRule } from './rules/api-client-contracts.ts'
 import { backendBoundariesRule } from './rules/backend-boundaries.ts'
 import { dateBoundariesRule } from './rules/date-boundaries.ts'
+import { directoryNamesRule } from './rules/directory-names.ts'
 import { domainIdentifiersRule } from './rules/domain-identifiers.ts'
 import { domainVocabularyRule } from './rules/domain-vocabulary.ts'
 import { hooksInHooksFolderRule } from './rules/hooks-in-hooks-folder.ts'
@@ -37,6 +38,7 @@ const conventionsPlugin = eslintCompatPlugin({
     'api-client-contracts': apiClientContractsRule,
     'backend-boundaries': backendBoundariesRule,
     'domain-identifiers': domainIdentifiersRule,
+    'directory-names': directoryNamesRule,
     'domain-vocabulary': domainVocabularyRule,
     'module-layers': moduleLayersRule,
     'date-boundaries': dateBoundariesRule,

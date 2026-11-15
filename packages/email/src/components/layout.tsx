@@ -1,8 +1,8 @@
 import { POLISH_LANGUAGE } from '@inzpro/config/localization'
 import type { ReactNode } from 'react'
 import { Body, Container, Font, Head, Html, Preview, Tailwind } from 'react-email'
-import { Footer } from '~email/components/Footer.js'
-import { Header } from '~email/components/Header.js'
+import { Footer } from '~email/components/footer.js'
+import { Header } from '~email/components/header.js'
 import { themeCss } from '~email/lib/theme.js'
 
 // Nunito Sans, the platform font (variable, latin and latin-ext for Polish characters).
