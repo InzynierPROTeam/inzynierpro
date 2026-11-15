@@ -14,6 +14,10 @@ Shared development dependencies live in the root package. Run `pnpm check` to ap
 
 Leave implementation changes uncommitted for review in the editor. Commit, push, or open a pull request only when explicitly requested.
 
+A pre-commit hook lints and formats only the staged files; it is not the quality gate. CI runs `pnpm check:ci` (format check, lint with the architecture and naming rules, types, tests with coverage against real PostgreSQL and Redis, build), fails when the checks change the working tree, and runs the E2E suite as a separate job.
+
+Every change gets two separate reviews before it merges to `dev`: **standards** (CODING_STANDARDS.md and the ADRs it links) and **spec** (the originating issue and its parent specification). The `code-review` agent skill runs both side by side against a base branch; reviewers read the issue itself rather than a copy of it.
+
 ## Local development
 
 Requires Node 26, pnpm 12.16.1, and Docker with Compose. From a fresh checkout:

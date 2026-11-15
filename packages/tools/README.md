@@ -28,6 +28,10 @@ The Oxlint conventions plugin checks infinite-query factory names, named compone
 
 Schema ownership (ADR-0027) uses `conventions/module-layers` and `conventions/domain-vocabulary`. The first requires API module files to sit in `domain/`, `application/`, `infrastructure/` or `http/` with that folder's file roles. It also rejects imports that point outward: only `http/` uses `@inzpro/api-contracts` and transport, only `infrastructure/` runs SQL (application may name `SqlError` types), and another module's `infrastructure/` is wired only from `http/`. The second rejects object schemas in `@inzpro/domain`. Tests may sit in any layer and are exempt from the import checks.
 
+`conventions/module-layers` also permits imports from another API module only along `apiModuleDependencies` in the architecture policy, and `architecture-policy.test.ts` keeps the package and module graphs acyclic and the module list equal to the real module folders.
+
+Names combine Oxlint's `unicorn/filename-case` (configured per path in `.oxlintrc.json`) with `conventions/directory-names` for folders, which Oxlint does not check. Its test cases cover kebab-case folders, camelCase feature folders and TanStack route folders.
+
 Date enforcement uses `conventions/date-boundaries` for public ISO/null DTOs, shared client date helpers, private backend models and the absence of custom client serialization adapters. `conventions/prefer-duration` rejects common manual unit-conversion chains and raw numeric cache/timeout lifetimes. Tests are exempt from these two rules so they can exercise invalid representations and clock boundaries. The existing Effect DateTime rule still applies. Syntax checks complement response types and timezone/contract tests; they do not prove arbitrary nested JSON compatibility.
 
 `conventions/no-module-defects` rejects `Effect.die`, `dieMessage`, `orDie` and `orDieWith` in API module `domain/`, `application/` and `http/` files, so expected outcomes such as a missing row become typed errors. Infrastructure keeps defects for broken invariants, and tests are exempt.
