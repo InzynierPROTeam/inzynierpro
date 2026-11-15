@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom'
 import { act } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import { ThemeSwitchButton } from '~ui/components/theme-switch.js'
 
 import { ThemeProvider } from './theme-provider.js'
@@ -77,8 +77,60 @@ test('initializes the saved theme through a server-rendered one-time script', ()
 
   try {
     expect(dom.window.document.documentElement.classList.contains('dark')).toBe(true)
+    expect(dom.window.document.documentElement.dataset.theme).toBe('dark')
     expect(dom.window.document.querySelectorAll('script:not([src])')).toHaveLength(0)
   } finally {
     dom.window.close()
+  }
+})
+
+test('hydrating a system theme on a dark device never switches the page to light', async () => {
+  const lightMatchMedia = window.matchMedia
+
+  const matchMedia = vi
+    .spyOn(window, 'matchMedia')
+    .mockImplementation(query => ({ ...lightMatchMedia(query), matches: true }))
+
+  document.cookie = 'theme=system; path=/'
+  // The inline script has already applied the dark scheme before React hydrates.
+  document.documentElement.classList.add('dark')
+  document.documentElement.dataset.theme = 'system'
+
+  const router = createRouter({ routeTree: createRootRoute(), isServer: false })
+
+  const app = (
+    <RouterContextProvider router={router}>
+      <ThemeProvider>
+        <span>Content</span>
+      </ThemeProvider>
+    </RouterContextProvider>
+  )
+
+  const container = document.createElement('div')
+  container.innerHTML = renderToString(app)
+  document.body.append(container)
+  const records: MutationRecord[] = []
+  const observer = new MutationObserver(batch => records.push(...batch))
+
+  observer.observe(document.documentElement, { attributes: true, attributeOldValue: true })
+  const root = hydrateRoot(container, app)
+
+  try {
+    await act(async () => {})
+    records.push(...observer.takeRecords())
+
+    // Every intermediate class value, plus the final one.
+    const classes = [
+      ...records.flatMap(record => (record.attributeName === 'class' ? [record.oldValue] : [])),
+      document.documentElement.className,
+    ]
+
+    expect(classes.filter(value => value?.includes('light'))).toEqual([])
+    expect(document.documentElement.dataset.theme).toBe('system')
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
+  } finally {
+    observer.disconnect()
+    matchMedia.mockRestore()
+    await act(async () => root.unmount())
   }
 })

@@ -24,14 +24,19 @@ import { useSignInWithGoogle } from '../hooks/useSignInWithGoogle'
 import { signInPageRouteApi } from '../utils'
 import { SignInForm } from './SignInForm'
 
-// The user agent is constant for the page lifetime; the server snapshot keeps hydration stable.
+// The user agent is constant for the page lifetime, so there is nothing to subscribe to.
 const subscribeToBrowser = () => () => undefined
 
 export const SignInSection = () => {
   const { redirect, error, intent } = signInPageRouteApi.useSearch()
   const navigate = useNavigate()
   const signInWithGoogleMutation = useSignInWithGoogle()
-  const isInAppBrowser = useSyncExternalStore(subscribeToBrowser, getIsInAppBrowser, () => false)
+
+  const isInAppBrowser = useSyncExternalStore(
+    subscribeToBrowser,
+    getIsInAppBrowser,
+    getIsInAppBrowser,
+  )
 
   const sendSignInVerificationOtpMutation = useSendOTPMutation({
     onSuccess: email => {

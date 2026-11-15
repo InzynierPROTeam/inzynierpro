@@ -4,6 +4,7 @@ import {
   createThemeStore,
   THEME_KEY,
   type Theme,
+  type ThemeCookies,
   type ResolvedTheme,
 } from '@inzpro/react-utils/theme'
 import { createContext, use, useEffect, useMemo, type PropsWithChildren } from 'react'
@@ -20,21 +21,32 @@ const ThemeContext = createContext<ThemeContext | null>(null)
 type ThemeProviderProps = PropsWithChildren<{
   defaultTheme?: Theme
   storageKey?: string
+  cookies?: ThemeCookies
 }>
 
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = THEME_KEY,
+  cookies,
 }: ThemeProviderProps) {
-  const store = useMemo(() => createThemeStore(storageKey), [storageKey])
+  const store = useMemo(() => createThemeStore(storageKey, cookies), [storageKey, cookies])
   const theme = useSyncTheme(store, defaultTheme)
   const resolvedTheme = useSyncResolvedTheme(theme)
 
   useEffect(() => {
+    // The server cannot know the system scheme, so `resolvedTheme` is light during hydration.
+    // Resolve it from the media query here so hydration does not switch a dark page to light.
+    const resolved =
+      theme === 'system'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        : theme
+
     const root = document.documentElement
     root.classList.remove('light', 'dark')
-    root.classList.add(resolvedTheme)
+    root.classList.add(resolved)
     root.dataset.theme = theme
   }, [theme, resolvedTheme])
 
@@ -61,15 +73,20 @@ export function ThemeProvider({
             return null
           }
 
-          const theme = getCookieValue(storageKey)
+          const saved = getCookieValue(storageKey)
+          const theme = saved === 'light' || saved === 'dark' ? saved : 'system'
 
-          if (
-            theme === 'dark' ||
-            ((theme === null || theme === 'system') &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches)
-          ) {
-            document.documentElement.classList.add('dark')
-          }
+          const resolved =
+            theme === 'system'
+              ? window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : theme
+
+          const root = document.documentElement
+
+          root.classList.add(resolved)
+          root.setAttribute('data-theme', theme)
         }}
       </FunctionOnce>
       {children}

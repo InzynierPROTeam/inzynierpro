@@ -1,6 +1,8 @@
 import { POLISH_LANGUAGE } from '@inzpro/config/localization'
 import { mobileAppStoreId } from '@inzpro/config/mobile'
 import { TWITTER_HANDLE } from '@inzpro/config/social'
+import { getCookie, setCookie } from '@inzpro/react-utils/tanstack-start/cookies'
+import type { ThemeCookies } from '@inzpro/react-utils/theme'
 import { DefaultCatchBoundary } from '@inzpro/ui/components/default-catch-boundary'
 import { NotFoundPage } from '@inzpro/ui/components/not-found-page'
 import { Toaster } from '@inzpro/ui/components/toast'
@@ -32,6 +34,9 @@ function syncTrackingConsent(consent: TrackingConsent) {
   setMetaPixelConsent(env.VITE_META_PIXEL_ID, consent.advertising)
 }
 
+// Reads the request cookie during SSR, so the server renders the saved theme.
+const themeCookies: ThemeCookies = { get: getCookie, set: setCookie }
+
 type RootDocumentProps = { children: React.ReactNode }
 
 const RootDocument = ({ children }: RootDocumentProps) => (
@@ -43,7 +48,7 @@ const RootDocument = ({ children }: RootDocumentProps) => (
       <HeadContent />
     </head>
     <body className="font-main bg-background text-foreground gradient-page relative flex min-h-dvh w-full flex-col overflow-auto bg-linear-to-br antialiased">
-      <ThemeProvider>
+      <ThemeProvider cookies={themeCookies}>
         <CookieConsent
           privacyPolicyUrl={ExternalLinks.privacyPolicy}
           onConsentChange={syncTrackingConsent}

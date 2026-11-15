@@ -9,4 +9,4 @@ const subscribe = (callback: () => void) => {
 }
 
 export const useMobileAppBannerDismissed = () =>
-  useSyncExternalStore(subscribe, mobileAppBannerStore.get, () => false)
+  useSyncExternalStore(subscribe, mobileAppBannerStore.get, mobileAppBannerStore.get)
