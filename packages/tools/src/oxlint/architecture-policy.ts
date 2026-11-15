@@ -52,6 +52,21 @@ export const applicationDependencies = {
   mobile: [...clientDependencies, 'mobile-ui'],
 } as const
 
+/**
+ * API modules (apps/api/src/modules/<module>) each module may import. Edges point from personal
+ * learning towards shared catalogue data and stay acyclic; every module folder must be listed.
+ */
+export const apiModuleDependencies = {
+  'background-jobs': [],
+  'exam-calendar': [],
+  health: [],
+  identity: [],
+  'learning-content': [],
+  preparation: ['exam-calendar', 'qualification-paths'],
+  'qualification-paths': [],
+  study: ['preparation', 'learning-content'],
+} as const satisfies Record<string, ReadonlyArray<string>>
+
 export const universalPackages = [
   'utils',
   'config',

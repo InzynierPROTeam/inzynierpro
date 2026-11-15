@@ -91,7 +91,7 @@ An API module keeps its files in layer folders and creates only the ones it need
 | `infrastructure/` | `<concept>.reader.postgres.ts`, `<concept>.repository.postgres.ts`                                            | its module's `application/` and `domain/`, `effect/sql`           |
 | `http/`           | `handlers.ts` (`<group>.handlers.ts` when a module serves several contract groups), `mappers.ts`, `errors.ts` | everything above, `@inzpro/api-contracts`, other modules' `http/` |
 
-Tests sit beside the code they cover. The `conventions/module-layers` and `conventions/domain-vocabulary` lint rules enforce placement and direction.
+Tests sit beside the code they cover. Another module is importable only when `apiModuleDependencies` in the architecture policy permits it. The `conventions/module-layers` and `conventions/domain-vocabulary` lint rules enforce placement and direction.
 
 ## Backend responsibilities
 

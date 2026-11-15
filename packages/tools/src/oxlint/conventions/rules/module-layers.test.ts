@@ -52,6 +52,18 @@ tester.run('conventions/module-layers', moduleLayersRule, {
       code: "import { UserExamGoal } from '@inzpro/api-contracts/modules/preparation/responses'",
     },
     { filename: '/repo/apps/api/src/lib/cursor-pagination.ts', code: "import 'effect/sql'" },
+    {
+      filename: '/repo/apps/api/src/modules/study/application/start-session.command.ts',
+      code: "import { PreparationPolicy } from '~api/modules/preparation/application/preparation.policy.js'",
+    },
+    {
+      filename: '/repo/apps/api/src/modules/study/http/handlers.ts',
+      code: "import { PreparationReaderLive } from '../../preparation/infrastructure/preparation.reader.postgres.js'",
+    },
+    {
+      filename: '/repo/apps/api/src/modules/exam-calendar/http/handlers.test.ts',
+      code: "import { startTestApi } from '~api/modules/study/http/handlers.js'",
+    },
   ],
   invalid: [
     { filename: file('preparation.model.ts'), code: '', errors: [{ messageId: 'layer' }] },
@@ -129,6 +141,27 @@ tester.run('conventions/module-layers', moduleLayersRule, {
       filename: file('application/archive-path.command.ts'),
       code: "import { AuthenticationLive } from '~api/middleware/authentication.js'",
       errors: [{ messageId: 'transport' }],
+    },
+    // Modules depend only on the modules apiModuleDependencies permits, so module cycles cannot form.
+    {
+      filename: file('application/archive-path.command.ts'),
+      code: "import { StudyReader } from '~api/modules/study/application/study.reader.js'",
+      errors: [{ messageId: 'module', data: { module: 'preparation', target: 'study' } }],
+    },
+    {
+      filename: file('domain/preparation.model.ts'),
+      code: "import type { SessionId } from '../../study/domain/study-session.model.js'",
+      errors: [{ messageId: 'module', data: { module: 'preparation', target: 'study' } }],
+    },
+    {
+      filename: '/repo/apps/api/src/modules/exam-calendar/http/handlers.ts',
+      code: "import { pathAccessDenied } from '~api/modules/preparation/http/errors.js'",
+      errors: [{ messageId: 'module', data: { module: 'exam-calendar', target: 'preparation' } }],
+    },
+    {
+      filename: '/repo/apps/api/src/modules/billing/domain/errors.ts',
+      code: '',
+      errors: [{ messageId: 'undeclared', data: { module: 'billing' } }],
     },
   ],
 })
