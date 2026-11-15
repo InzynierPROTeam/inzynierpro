@@ -14,6 +14,10 @@ Shared development dependencies live in the root package. Run `pnpm check` to ap
 
 Leave implementation changes uncommitted for review in the editor. Commit, push, or open a pull request only when explicitly requested.
 
+A pre-commit hook lints and formats only the staged files; it is not the quality gate. CI runs `pnpm check:ci` (format check, lint with the architecture and naming rules, types, tests with coverage against real PostgreSQL and Redis, build), fails when the checks change the working tree, and runs the E2E suite as a separate job.
+
+Every change gets two separate reviews before it merges to `dev`: **standards** (CODING_STANDARDS.md and the ADRs it links) and **spec** (the originating issue and its parent specification). The `code-review` agent skill runs both side by side against a base branch; reviewers read the issue itself rather than a copy of it.
+
 ## Local development
 
 Requires Node 26, pnpm 12.16.1, and Docker with Compose. From a fresh checkout:
@@ -62,17 +66,24 @@ scripts/with-test-services.sh pnpm --filter @inzpro/api exec vitest run src/modu
 
 Stop applications with Ctrl+C. Stop development services with `pnpm --filter @inzpro/api services:down`; it preserves volumes.
 
-## API image
+## Background jobs
 
-Cloudflare platform build/preview, Alchemy state bootstrap, environment/auth configuration and staging/production CI/CD are documented in [infra/cloudflare/README.md](infra/cloudflare/README.md).
+The worker is a separate process of the same backend: `pnpm --filter @inzpro/api dev:worker`. Jobs are durable in PostgreSQL. [docs/background-jobs.md](docs/background-jobs.md) describes how to add a queue, deployment and diagnosis.
 
-`apps/api/Dockerfile` builds the production API image from the repository root:
+## Deployment and images
+
+Cloudflare build/preview and state bootstrap are documented in [infra/cloudflare/README.md](infra/cloudflare/README.md). The coordinated API/worker/platform release and readiness gate are in [docs/deployment.md](docs/deployment.md).
+
+`apps/api/Dockerfile` builds the production API image from the repository root; `--target worker` builds the worker from the same sources:
 
 ```sh
 docker build -f apps/api/Dockerfile -t inzpro-api .
+docker build -f apps/api/Dockerfile --target worker -t inzpro-worker .
 ```
 
-`turbo prune` keeps only the API and its workspace packages, and `apps/api/Dockerfile.dockerignore` limits the build context. After the build, `apps/api/scripts/trace-runtime.ts` traces the files node can load from `dist/main.js` and the migrations, so the image ships those files instead of every production dependency. Files read at runtime through package exports, such as the email theme CSS, are listed in that script; add new ones there. The image runs as the `node` user without npm, applies migrations before the server starts and reports health from `/api/v1/health-check`. Configure it with the variables from `apps/api/.env.example`.
+`turbo prune` keeps only the API and its workspace packages, and `apps/api/Dockerfile.dockerignore` limits the build context. After the build, `apps/api/scripts/trace-runtime.ts` traces the files node can load from `dist/main.js`, the worker entry points and the migrations, so the image ships those files instead of every production dependency. Files read at runtime through package exports, such as the email theme CSS, are listed in that script; add new ones there. The image runs as the `node` user without npm, applies migrations before the server starts and reports health from `/api/v1/health-check`. Configure it with the variables from `apps/api/.env.example`.
+
+A merge to `dev` deploys staging and a merge to `main` production through Docker Hub and Dokploy; [docs/deployment.md](docs/deployment.md) describes the flow, the operator setup, rollback and the backup plan.
 
 ## Onboarding, paths and session preview
 

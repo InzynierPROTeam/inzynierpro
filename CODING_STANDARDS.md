@@ -22,6 +22,8 @@ A helper with nothing feature-specific in it belongs in `src/utils/<name>.ts`.
 
 Components read route state (search params, route context) through the feature's route API constant at the place that uses it. Props carry component inputs, not route state passed down the tree.
 
+A query or mutation hook runs in the lowest component that renders its data or triggers it, and that component owns the branches the data decides (an ended session's menu item, a footer action). A parent renders such a child without props when the child can read its inputs from the route itself.
+
 Compose conditional classes inside `cx`. Within `cx`, prefer ternaries or logical expressions (`condition && className`, `!condition && className`); this argument style is a review preference, and other supported forms, including objects, remain allowed by lint.
 
 ## Forms
@@ -89,7 +91,7 @@ An API module keeps its files in layer folders and creates only the ones it need
 | `infrastructure/` | `<concept>.reader.postgres.ts`, `<concept>.repository.postgres.ts`                                            | its module's `application/` and `domain/`, `effect/sql`           |
 | `http/`           | `handlers.ts` (`<group>.handlers.ts` when a module serves several contract groups), `mappers.ts`, `errors.ts` | everything above, `@inzpro/api-contracts`, other modules' `http/` |
 
-Tests sit beside the code they cover. The `conventions/module-layers` and `conventions/domain-vocabulary` lint rules enforce placement and direction.
+Tests sit beside the code they cover. Another module is importable only when `apiModuleDependencies` in the architecture policy permits it. The `conventions/module-layers` and `conventions/domain-vocabulary` lint rules enforce placement and direction.
 
 ## Backend responsibilities
 

@@ -3,6 +3,8 @@ import {
   SessionPreview,
   DocumentResponse,
   DocumentsResponse,
+  SessionQuestion,
+  StudySession,
 } from '@inzpro/api-contracts/modules/study/responses'
 import {
   WrittenQuestionId,
@@ -11,10 +13,14 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Schema } from 'effect'
 import { beforeAll, afterAll, expect, test } from 'vitest'
-import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
-import { createStudyFixture, addFixtureQuestion, runFixture } from '~api/test/learning-fixtures.js'
+import {
+  createStudyFixture,
+  addFixtureQuestion,
+  runFixture,
+  withdrawFixtureRevision,
+} from '~api/test/learning-fixtures.js'
 import {
   loginForPreparation,
   learningRequest,
@@ -69,7 +75,7 @@ test('documents return one cursor page of private coverage and archive preserves
   )
 
   expect(first.data).toMatchObject([
-    { id: technicalDocumentA, availableQuestionCount: 2, completedQuestionCount: 1 },
+    { id: technicalDocumentA, availableQuestionCount: 5, completedQuestionCount: 1 },
   ])
   expect(first.meta.hasMore).toBe(true)
   expect(first.meta.nextCursor).toEqual(expect.any(String))
@@ -81,7 +87,7 @@ test('documents return one cursor page of private coverage and archive preserves
   ).json()
 
   expect(second).toMatchObject({
-    data: [{ id: technicalDocumentB, availableQuestionCount: 1, completedQuestionCount: 0 }],
+    data: [{ id: technicalDocumentB, availableQuestionCount: 5, completedQuestionCount: 0 }],
     meta: { hasMore: false },
   })
   expect(
@@ -96,11 +102,13 @@ test('documents return one cursor page of private coverage and archive preserves
     ).json(),
   )
 
+  // One of the five questions is answered, so the next session offers the other four.
+  expect(preview).toMatchObject({ questionSelection: 'unanswered', availableQuestionCount: 4 })
   expect(preview.settings).toEqual({
-    defaultQuestionCount: 2,
+    defaultQuestionCount: 4,
     canChangeQuestionCount: false,
-    minimumQuestionCount: 2,
-    maximumQuestionCount: 2,
+    minimumQuestionCount: 4,
+    maximumQuestionCount: 4,
   })
   expect(
     (await request(`/paths/${technicalPathB}/preview?documentId=${technicalDocumentB}`)).status,
@@ -149,7 +157,7 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
   })
   expect(
     await (await learningRequest(api, visitor, `/paths/${fixture.pathId}/preview`)).json(),
-  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 2 })
+  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 5 })
 
   const questions: Array<Awaited<ReturnType<typeof addFixtureQuestion>>> = []
 
@@ -171,19 +179,15 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
     minimumQuestionCount: 1,
     maximumQuestionCount: 26,
   })
-  await runFixture(
-    Effect.gen(function* () {
-      const learningContentRepository = yield* LearningContentRepository
 
-      for (const question of questions) {
-        yield* learningContentRepository.withdrawRevision(question.revisionId)
-      }
-    }),
-  )
+  for (const question of questions) {
+    await withdrawFixtureRevision(question.revisionId)
+  }
+
   expect((await preview()).availableQuestionCount).toBe(0)
   expect(
     await (await learningRequest(api, visitor, `/paths/${fixture.pathId}/preview`)).json(),
-  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 2 })
+  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 5 })
 })
 
 test('category details are a private point lookup without preview settings', async () => {
@@ -196,7 +200,7 @@ test('category details are a private point lookup without preview settings', asy
   const detail = Schema.decodeUnknownSync(DocumentResponse)(await response.json())
   expect(detail.document).toMatchObject({
     id: technicalDocumentA,
-    availableQuestionCount: 2,
+    availableQuestionCount: 5,
     completedQuestionCount: 0,
   })
   expect(Object.keys(detail)).toEqual(['document'])
@@ -226,23 +230,123 @@ test('category details are a private point lookup without preview settings', asy
   expect((await learningRequest(api, visitor, url)).status).toBe(403)
 })
 
-test('preview chooses the first or next available category on the selected path', async () => {
+test('preview continues from a category until its questions are answered, then moves to the next', async () => {
   const visitor = await loginForPreparation(api)
   await learningRequest(api, visitor, '/onboarding', technicalConfiguration)
 
   const preview = async (query = '') =>
     learningRequest(api, visitor, `/paths/${technicalPathA}/preview${query}`)
 
-  expect(await (await preview()).json()).toMatchObject({ document: { id: technicalDocumentA } })
-  expect(await (await preview(`?afterDocumentId=${technicalDocumentA}`)).json()).toMatchObject({
+  expect(await (await preview()).json()).toMatchObject({
+    document: { id: technicalDocumentA },
+    questionSelection: 'unanswered',
+  })
+  expect(await (await preview(`?fromDocumentId=${technicalDocumentA}`)).json()).toMatchObject({
+    document: { id: technicalDocumentA },
+  })
+  expect(await (await preview(`?fromDocumentId=${technicalDocumentB}`)).json()).toMatchObject({
     document: { id: technicalDocumentB },
   })
-  expect(await (await preview(`?afterDocumentId=${technicalDocumentB}`)).json()).toBeNull()
+
+  // Answering every question of the first category moves study on to the next one.
+  const session = Schema.decodeUnknownSync(StudySession)(
+    await (
+      await learningRequest(api, visitor, `/paths/${technicalPathA}/sessions`, {
+        documentId: technicalDocumentA,
+        questionCount: 5,
+        questionSelection: 'unanswered',
+      })
+    ).json(),
+  )
+
+  for (const position of [1, 2, 3, 4, 5]) {
+    const question = Schema.decodeUnknownSync(SessionQuestion)(
+      await (
+        await learningRequest(
+          api,
+          visitor,
+          `/paths/${technicalPathA}/sessions/${session.id}/questions/${position}`,
+        )
+      ).json(),
+    )
+
+    await learningRequest(
+      api,
+      visitor,
+      `/paths/${technicalPathA}/sessions/${session.id}/questions/${position}/answer`,
+      { questionRevisionId: question.questionRevisionId, answerId: question.answers[0]!.id },
+    )
+  }
+
+  expect(await (await preview(`?fromDocumentId=${technicalDocumentA}`)).json()).toMatchObject({
+    document: { id: technicalDocumentB },
+    questionSelection: 'unanswered',
+  })
+  expect(await (await preview()).json()).toMatchObject({ document: { id: technicalDocumentB } })
+  // The answered category itself offers to repeat its questions.
+  expect(await (await preview(`?documentId=${technicalDocumentA}`)).json()).toMatchObject({
+    document: { id: technicalDocumentA },
+    questionSelection: 'repeat',
+    availableQuestionCount: 5,
+  })
   expect((await preview('?documentId=invalid')).status).toBe(400)
-  expect((await preview('?afterDocumentId=invalid')).status).toBe(400)
+  expect((await preview('?fromDocumentId=invalid')).status).toBe(400)
   expect(
     await (
-      await preview(`?documentId=${technicalDocumentA}&afterDocumentId=${technicalDocumentB}`)
+      await preview(`?documentId=${technicalDocumentA}&fromDocumentId=${technicalDocumentB}`)
     ).json(),
   ).toMatchObject({ document: { id: technicalDocumentA } })
+})
+
+test('once every category is answered, study continues in order from the category after', async () => {
+  const visitor = await loginForPreparation(api)
+  await learningRequest(api, visitor, '/onboarding', technicalConfiguration)
+
+  const request = <Body>(path: string, body?: Body) =>
+    learningRequest(api, visitor, `/paths/${technicalPathA}${path}`, body)
+
+  const preview = async (query = '') =>
+    Schema.decodeUnknownSync(SessionPreview)(await (await request(`/preview${query}`)).json())
+
+  // Answers every question of a category in one session and ends it.
+  const answerCategory = async (documentId: string) => {
+    const offered = await preview(`?documentId=${documentId}`)
+
+    const session = Schema.decodeUnknownSync(StudySession)(
+      await (
+        await request('/sessions', {
+          documentId,
+          questionCount: offered.settings.defaultQuestionCount,
+          questionSelection: offered.questionSelection,
+        })
+      ).json(),
+    )
+
+    for (let position = 1; position <= session.progress.total; position++) {
+      const question = Schema.decodeUnknownSync(SessionQuestion)(
+        await (await request(`/sessions/${session.id}/questions/${position}`)).json(),
+      )
+
+      await request(`/sessions/${session.id}/questions/${position}/answer`, {
+        questionRevisionId: question.questionRevisionId,
+        answerId: question.answers[0]!.id,
+      })
+    }
+
+    await request(`/sessions/${session.id}/end`, {})
+  }
+
+  await answerCategory(technicalDocumentA)
+  await answerCategory(technicalDocumentB)
+
+  // Every question of the path is answered: after the last category study starts from the first.
+  expect(await preview(`?fromDocumentId=${technicalDocumentB}`)).toMatchObject({
+    document: { id: technicalDocumentA },
+    questionSelection: 'repeat',
+  })
+  expect(await preview(`?fromDocumentId=${technicalDocumentA}`)).toMatchObject({
+    document: { id: technicalDocumentB },
+    questionSelection: 'repeat',
+  })
+  expect(await preview()).toMatchObject({ document: { id: technicalDocumentA } })
 })

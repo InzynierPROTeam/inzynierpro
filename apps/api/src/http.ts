@@ -7,12 +7,12 @@ import { pgPoolLayer } from '@inzpro/db/pool'
 import { layerResend as EmailResendLayer } from '@inzpro/email/email-service'
 import { layer as RedisLayer } from '@inzpro/redis'
 import { layer as RateLimiterLayer } from '@inzpro/redis/rate-limiter'
-import { Effect, Layer, Logger, References } from 'effect'
+import { Effect, Layer } from 'effect'
 import { Digest, SecureRandom } from 'effect/crypto'
-import { HttpRouter } from 'effect/http'
+import { HttpEffect, HttpRouter, HttpServerResponse } from 'effect/http'
 import { ApiLive } from '~api/api.js'
 import { env, type Env } from '~api/lib/env.js'
-import { observabilityLayer, untracedRequestsLayer } from '~api/lib/observability.js'
+import { processTelemetryLayer, untracedRequestsLayer } from '~api/lib/observability.js'
 import { RateLimitHeadersMiddleware, TrustedClientIpHeader } from '~api/lib/rate-limit.js'
 import { ApiErrorMiddleware } from '~api/middleware/api-error.js'
 import { RequestIdMiddleware } from '~api/middleware/request-id.js'
@@ -46,6 +46,16 @@ export const httpServerLayer = (config: Env) =>
             RateLimitHeadersMiddleware,
             RequestIdMiddleware,
             SecureHeadersMiddleware,
+            HttpEffect.withPreResponseHandler((request, response) =>
+              Effect.succeed(
+                request.url.split('?')[0] === '/api/v1/health-check'
+                  ? HttpServerResponse.setHeaders(response, {
+                      'x-release-sha': config.RELEASE_SHA,
+                      'cache-control': 'no-store',
+                    })
+                  : response,
+              ),
+            ),
           ),
         { global: true },
       ),
@@ -86,9 +96,7 @@ export const HttpLive = Layer.unwrap(
         Layer.mergeAll(
           EmailResendLayer({ apiKey: config.RESEND_API_KEY }),
           NodeHttpServer.layer(createServer, { port: config.PORT }),
-          // Production stdout logs are JSON lines; development keeps the readable default.
-          observabilityLayer(config.NODE_ENV === 'production' ? [Logger.consoleJson] : []),
-          Layer.succeed(References.MinimumLogLevel, config.LOG_LEVEL),
+          processTelemetryLayer('inzpro-api', config),
         ),
       ),
     ),

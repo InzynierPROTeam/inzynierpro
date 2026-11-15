@@ -1,6 +1,6 @@
 import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
-import { Card, CardContent, CardHeader } from '@inzpro/ui/components/card'
+import { Card, CardAction, CardContent, CardHeader } from '@inzpro/ui/components/card'
 import {
   Empty,
   EmptyContent,
@@ -19,6 +19,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { sessionQuestionRouteApi } from '../utils'
 import { SessionAnswerForm, SessionAnswerFormSkeleton } from './SessionAnswerForm'
+import { SessionHintDialog } from './SessionHintDialog'
 
 export const SessionQuestionCard = () => {
   const {
@@ -42,12 +43,15 @@ export const SessionQuestionCard = () => {
             <>
               <CardHeader>
                 <h2 className="text-base leading-relaxed font-medium">{question.body}</h2>
+                <CardAction>
+                  <SessionHintDialog question={question} />
+                </CardAction>
               </CardHeader>
               <CardContent>
                 <SessionAnswerForm
                   // A new question starts without a selection.
                   key={question.position}
-                  answers={question.answers}
+                  question={question}
                 />
               </CardContent>
             </>

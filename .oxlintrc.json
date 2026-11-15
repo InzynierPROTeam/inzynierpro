@@ -53,12 +53,14 @@
     "conventions/api-client-contracts": "error",
     "conventions/backend-boundaries": "error",
     "conventions/domain-identifiers": "error",
+    "conventions/directory-names": "error",
     "conventions/domain-vocabulary": "error",
     "conventions/module-layers": "error",
     "conventions/date-boundaries": "error",
     "conventions/prefer-duration": "error",
     "conventions/hooks-in-hooks-folder": "error",
     "conventions/no-feature-prefix": "error",
+    "conventions/no-module-defects": "error",
     "conventions/no-spread-route-hooks": "error",
     "conventions/no-try-catch": "error",
     "conventions/queries-wrap-actions": "error",
@@ -200,6 +202,8 @@
     "unicorn/prefer-set-size": "warn",
     "unicorn/prefer-string-starts-ends-with": "warn",
 
+    // Files are kebab-case; overrides cover app components, hooks and framework-owned names.
+    "unicorn/filename-case": ["error", { "case": "kebabCase" }],
     "typescript/no-explicit-any": "error",
     "no-restricted-imports": [
       "error",
@@ -234,13 +238,44 @@
       }
     },
     {
+      // Components keep acronyms (VerifyOTPPage.tsx); TanStack Start requires src/router.tsx.
+      "files": ["apps/*/src/**/*.tsx"],
+      "rules": {
+        "unicorn/filename-case": [
+          "error",
+          {
+            "case": "pascalCase",
+            "ignore": ["^[A-Z][A-Za-z0-9]*(\\.[a-z]+)*\\.tsx$", "^router\\.tsx$"]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/use[A-Z]*.ts", "**/use[A-Z]*.tsx"],
+      "rules": {
+        "unicorn/filename-case": [
+          "error",
+          { "case": "camelCase", "ignore": ["^use[A-Z][A-Za-z0-9]*(\\.[a-z]+)*\\.tsx?$"] }
+        ]
+      }
+    },
+    {
+      // TanStack Router derives routes from file names; Effect's migrator loads <id>_<name> files.
+      "files": ["apps/*/src/routes/**", "apps/api/src/migrations/**"],
+      "rules": { "unicorn/filename-case": "off" }
+    },
+    {
       // Lint tooling runs outside Effect programs.
       "files": ["packages/tools/**/*.ts"],
       "rules": { "no-restricted-imports": "off" }
     },
     {
       "files": ["**/*.gen.ts"],
-      "rules": { "import/no-cycle": "off", "architecture/workspace-imports": "off" }
+      "rules": {
+        "import/no-cycle": "off",
+        "architecture/workspace-imports": "off",
+        "unicorn/filename-case": "off"
+      }
     }
   ],
   "settings": {

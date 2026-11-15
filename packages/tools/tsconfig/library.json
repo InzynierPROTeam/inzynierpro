@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": ["@total-typescript/tsconfig/tsc/no-dom/library-monorepo", "./effect.json"],
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "outDir": "${configDir}/dist",
+    "rootDir": "${configDir}/src"
+  },
+  "include": ["${configDir}/src/**/*"],
+  "tsc-alias": {
+    "resolveFullPaths": true
+  }
+}

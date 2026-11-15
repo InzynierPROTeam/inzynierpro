@@ -1,5 +1,5 @@
-import { getCookie, setCookie } from '@inzpro/browser-utils/cookie'
 import { appNameKebabCase } from '@inzpro/config/app'
+import { getCookie, setCookie } from '@inzpro/react-utils/tanstack-start/cookies'
 import { Duration } from 'effect'
 
 const dismissedKey = `${appNameKebabCase}.mobile-app-banner-dismissed`

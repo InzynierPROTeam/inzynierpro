@@ -30,15 +30,25 @@ RUN --mount=type=cache,id=inzpro-api-turbo,target=/repo/.turbo \
   turbo build --filter=@inzpro/api \
   && node apps/api/scripts/trace-runtime.ts /repo /app
 
-FROM node:${NODE_VERSION}-alpine AS runner
+FROM node:${NODE_VERSION}-alpine AS runtime
+ARG RELEASE_SHA=development
 # The runtime needs only node: drop npm and npx with their dependencies.
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 ENV NODE_ENV=production \
-  PORT=4000
+  RELEASE_SHA=${RELEASE_SHA}
 # Owned by root and run as node, so the process cannot change its own code.
 COPY --from=builder /app /app
 WORKDIR /app/apps/api
 USER node
+
+# The worker process of the same backend: docker build --target worker -f apps/api/Dockerfile .
+# SIGTERM releases the job it holds.
+FROM runtime AS worker
+CMD ["node", "dist/worker/main.js"]
+
+# The HTTP API, the default target.
+FROM runtime AS runner
+ENV PORT=4000
 EXPOSE 4000
 # The start period covers migrations, which run before the server listens.
 HEALTHCHECK --interval=10s --timeout=3s --start-period=60s --start-interval=2s --retries=3 \

@@ -17,6 +17,14 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Turbo replays unchanged tasks; integration tests against PostgreSQL and Redis never cache.
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+      # Only committed example values: no repository secret reaches the checks or their artifacts.
       - name: Configure local environments
         run: |
           cp apps/api/.env.example apps/api/.env
@@ -27,8 +35,10 @@ jobs:
       - name: Publish test coverage
         if: always()
         run: pnpm exec tsx scripts/coverage-summary.ts >> "$GITHUB_STEP_SUMMARY"
-      - name: Verify checks did not modify tracked sources
-        run: git diff --exit-code
+      - name: Verify checks left the working tree unchanged
+        run: |
+          git status --porcelain
+          test -z "$(git status --porcelain)"
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -57,20 +67,44 @@ jobs:
             apps/e2e/playwright-report/
             apps/e2e/test-results/
           retention-days: 14
-
-  deploy-platform:
-    needs: [check, e2e]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
+  # Builds never change a live environment and run alongside the quality gates.
+  build-images:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-    concurrency:
-      group: deploy-platform-${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
-      cancel-in-progress: false
+    strategy:
+      matrix:
+        include:
+          - image: api
+            target: runner
+          - image: worker
+            target: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          target: ${{ matrix.target }}
+          platforms: linux/amd64
+          build-args: RELEASE_SHA=${{ github.sha }}
+          tags: inzpro-${{ matrix.image }}:${{ github.sha }}
+          outputs: type=docker,dest=${{ runner.temp }}/${{ matrix.image }}.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.image }}-${{ github.sha }}
+          path: ${{ runner.temp }}/${{ matrix.image }}.tar
+          compression-level: 0
+          retention-days: 2
+
+  build-platform:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     env:
-      CI: 'true'
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       VITE_APP_BASE_URL: ${{ vars.VITE_APP_BASE_URL }}
       VITE_API_URL: ${{ vars.VITE_API_URL }}
       VITE_MAIN_PAGE_BASE_URL: ${{ vars.VITE_MAIN_PAGE_BASE_URL }}
@@ -85,17 +119,105 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm cloudflare build "${{ github.ref_name == 'main' && 'prod' || 'staging' }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: platform-${{ github.sha }}
+          path: |
+            apps/platform/dist/**
+            !apps/platform/dist/server/.dev.vars
+          include-hidden-files: true
+          retention-days: 2
+
+  # One release owns API, worker and platform until the matching API is ready
+  # and the prebuilt platform is deployed. New pushes never cancel a release.
+  deploy:
+    if: github.event_name == 'push'
+    needs: [check, e2e, build-images, build-platform]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    concurrency:
+      group: deploy-${{ github.ref_name }}
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      VITE_APP_BASE_URL: ${{ vars.VITE_APP_BASE_URL }}
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
+      VITE_MAIN_PAGE_BASE_URL: ${{ vars.VITE_MAIN_PAGE_BASE_URL }}
+      COOKIES_DOMAIN: ${{ vars.COOKIES_DOMAIN }}
+      VITE_GOOGLE_TAG_MANAGER_ID: ${{ vars.VITE_GOOGLE_TAG_MANAGER_ID }}
+      VITE_META_PIXEL_ID: ${{ vars.VITE_META_PIXEL_ID }}
+      API_IMAGE: ${{ vars.API_IMAGE }}
+      WORKER_IMAGE: ${{ vars.WORKER_IMAGE }}
+    steps:
+      - uses: actions/checkout@v4
       - name: Skip superseded revisions
-        id: revision
-        env:
-          GH_TOKEN: ${{ github.token }}
+        id: head
         run: |
-          head_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$GITHUB_REF_NAME" --jq '.object.sha')
-          if [ "$head_sha" = "$GITHUB_SHA" ]; then
+          head="$(git ls-remote origin "refs/heads/${GITHUB_REF_NAME}" | cut -f1)"
+          if [ "$head" = "$GITHUB_SHA" ]; then
             echo 'current=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'Skipping a revision superseded by a newer push.'
+            echo 'Skipping the superseded revision; its successor has its own release.'
           fi
-      - name: Deploy checked revision
-        if: steps.revision.outputs.current == 'true'
-        run: pnpm cloudflare deploy "${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}"
+      - if: steps.head.outputs.current == 'true'
+        uses: pnpm/action-setup@v4
+      - if: steps.head.outputs.current == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.head.outputs.current == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.head.outputs.current == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: image-*-${{ github.sha }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/images
+      - if: steps.head.outputs.current == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: platform-${{ github.sha }}
+          path: apps/platform/dist
+      - name: Verify platform artifact and load images
+        if: steps.head.outputs.current == 'true'
+        run: |
+          pnpm cloudflare validate-artifact "${{ github.ref_name == 'main' && 'prod' || 'staging' }}"
+          docker load --input "$RUNNER_TEMP/images/api.tar"
+          docker load --input "$RUNNER_TEMP/images/worker.tar"
+      - name: Log in to the API registry
+        if: steps.head.outputs.current == 'true'
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.API_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.API_DOCKERHUB_TOKEN }}
+      - name: Publish API image and trigger Dokploy
+        if: steps.head.outputs.current == 'true'
+        run: |
+          docker tag "inzpro-api:${GITHUB_SHA}" "${API_IMAGE}:${GITHUB_SHA}"
+          docker push "${API_IMAGE}:${GITHUB_SHA}"
+          docker tag "inzpro-api:${GITHUB_SHA}" "${API_IMAGE}:latest"
+          docker push "${API_IMAGE}:latest"
+      - name: Log in to the worker registry
+        if: steps.head.outputs.current == 'true'
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.WORKER_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.WORKER_DOCKERHUB_TOKEN }}
+      - name: Publish worker image and trigger Dokploy
+        if: steps.head.outputs.current == 'true'
+        run: |
+          docker tag "inzpro-worker:${GITHUB_SHA}" "${WORKER_IMAGE}:${GITHUB_SHA}"
+          docker push "${WORKER_IMAGE}:${GITHUB_SHA}"
+          docker tag "inzpro-worker:${GITHUB_SHA}" "${WORKER_IMAGE}:latest"
+          docker push "${WORKER_IMAGE}:latest"
+      - name: Wait for the API revision after migrations
+        if: steps.head.outputs.current == 'true'
+        run: bash scripts/wait-for-api.sh "$VITE_API_URL" "$GITHUB_SHA"
+      - name: Deploy the prebuilt platform immediately after API readiness
+        if: steps.head.outputs.current == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm cloudflare deploy "${{ github.ref_name == 'main' && 'prod' || 'staging' }}"

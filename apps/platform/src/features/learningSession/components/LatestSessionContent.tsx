@@ -4,7 +4,6 @@ import { latestSessionQueryOptions } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
 import { CardContent, CardDescription, CardFooter } from '@inzpro/ui/components/card'
 import { ProgressSkeleton } from '@inzpro/ui/components/progress'
-import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { Link } from '@tanstack/react-router'
 import type React from 'react'
@@ -14,6 +13,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { ContinueSessionButton } from './ContinueSessionButton'
 import { SessionProgress } from './SessionProgress'
+import { SessionSummaryLink } from './SessionSummaryLink'
 
 /** Card body for the learner's latest written session on the path; the card and its title belong to the caller. */
 export const LatestSessionContent = () => {
@@ -77,7 +77,10 @@ const ActiveSessionContent: React.FC<SessionContentProps> = ({ session }) => (
 const EndedSessionContent: React.FC<SessionContentProps> = ({ session }) => (
   <>
     <CardContent className="flex flex-col gap-2">
-      <h3 className="font-medium">Sesja zakończona</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-medium">Sesja zakończona</h3>
+        <SessionSummaryLink sessionId={session.id} />
+      </div>
       <CardDescription className="line-clamp-2">{session.document.title}</CardDescription>
       <SessionProgress progress={session.progress} />
     </CardContent>
@@ -119,7 +122,7 @@ export const SessionTileContentSkeleton = () => (
       </div>
     </CardContent>
     <CardFooter className="mt-auto">
-      <Skeleton className="h-9 w-28 rounded-4xl" />
+      <Button disabled>Kontynuuj</Button>
     </CardFooter>
   </>
 )

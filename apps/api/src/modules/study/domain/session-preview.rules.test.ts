@@ -2,7 +2,11 @@ import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference
 import { Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { isAllowedQuestionCount, writtenStudySettings } from './session-preview.rules.js'
+import {
+  isAllowedQuestionCount,
+  sessionQuestionPool,
+  writtenStudySettings,
+} from './session-preview.rules.js'
 
 const count = Schema.decodeSync(QuestionCount)
 
@@ -46,4 +50,21 @@ describe('starting a written study session', () => {
     expect(isAllowedQuestionCount(settings, count(26))).toBe(true)
     expect(isAllowedQuestionCount(settings, count(27))).toBe(false)
   })
+})
+
+describe('choosing the questions of the next session', () => {
+  it('draws the questions not yet answered in regular study', () =>
+    expect(
+      sessionQuestionPool({ availableQuestionCount: count(5), completedQuestionCount: count(2) }),
+    ).toEqual({ selection: 'unanswered', questionCount: 3 }))
+
+  it('repeats every question once all of them were answered', () =>
+    expect(
+      sessionQuestionPool({ availableQuestionCount: count(5), completedQuestionCount: count(5) }),
+    ).toEqual({ selection: 'repeat', questionCount: 5 }))
+
+  it('offers nothing for a document without published questions', () =>
+    expect(
+      sessionQuestionPool({ availableQuestionCount: count(0), completedQuestionCount: count(0) }),
+    ).toEqual({ selection: 'unanswered', questionCount: 0 }))
 })

@@ -4,7 +4,7 @@ import { NotFoundPage } from '@inzpro/ui/components/not-found-page'
 import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { trackBackNavigation } from '~platform/lib/back-navigation'
-import { getQueryClient } from '~platform/lib/reactQuery'
+import { getQueryClient } from '~platform/lib/react-query'
 
 import { routeTree } from './routeTree.gen'
 

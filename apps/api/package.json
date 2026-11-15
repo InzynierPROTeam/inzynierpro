@@ -7,7 +7,9 @@
     "build": "tsc && tsc-alias",
     "type-check": "effect-tsgo tsc --noEmit",
     "dev": "tsx watch src/main.ts",
+    "dev:worker": "tsx watch src/worker/main.ts",
     "start": "node dist/main.js",
+    "start:worker": "node dist/worker/main.js",
     "test": "vitest run",
     "migrate:test": "turbo build --filter=@inzpro/api^... && NODE_ENV=test tsx src/lib/migrate.ts",
     "migrate:latest": "turbo build --filter=@inzpro/api^... && tsx src/lib/migrate.ts",
@@ -18,7 +20,8 @@
     "services:test:down": "docker compose --env-file .env.test -p inzpro-test -f ../../docker-compose.test.yml down --volumes --remove-orphans",
     "seed:technical": "turbo build --filter=@inzpro/api^... && tsx src/seed/main.ts",
     "seed:technical:test": "turbo build --filter=@inzpro/api^... && NODE_ENV=test tsx src/seed/main.ts",
-    "e2e:serve": "turbo build --filter=@inzpro/api^... && NODE_ENV=test tsx src/test/e2e-server.ts"
+    "e2e:serve": "turbo build --filter=@inzpro/api^... && NODE_ENV=test tsx src/test/e2e-server.ts",
+    "worker:status": "turbo build --filter=@inzpro/api^... && tsx src/worker/status.ts"
   },
   "dependencies": {
     "@effect/platform-node": "catalog:",

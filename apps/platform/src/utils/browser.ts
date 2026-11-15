@@ -1,15 +1,15 @@
+import { createIsomorphicFn } from '@tanstack/react-start'
+import { getRequestHeader } from '@tanstack/react-start/server'
 import { UAParser } from 'ua-parser-js'
 
 const inAppBrowserTokens =
   /(FBAN|FBAV|FB_IAB|Instagram|Line\/|Line|MicroMessenger|Twitter|TikTok|Snapchat|wv)/i
 
-export const getIsInAppBrowser = () => {
-  if (!('navigator' in globalThis)) {
-    return false
-  }
+const isInAppUserAgent = (userAgent: string | undefined) =>
+  userAgent !== undefined &&
+  (UAParser(userAgent).browser.type === 'inapp' || inAppBrowserTokens.test(userAgent))
 
-  const userAgent = globalThis.navigator.userAgent
-  const parser = UAParser(userAgent)
-
-  return parser.browser.type === 'inapp' || inAppBrowserTokens.test(userAgent)
-}
+// The server reads the request's user agent, so SSR renders the same state the browser hydrates.
+export const getIsInAppBrowser = createIsomorphicFn()
+  .server(() => isInAppUserAgent(getRequestHeader('user-agent')))
+  .client(() => isInAppUserAgent(globalThis.navigator.userAgent))

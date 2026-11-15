@@ -45,7 +45,10 @@ export const NewQuestion = Schema.Struct({
 
 export type NewQuestion = typeof NewQuestion.Type
 
-/** A newer published revision of an existing question; earlier revisions stay unchanged. */
+/**
+ * A newer published revision of an existing question; earlier revisions stay unchanged and started
+ * sessions keep answering the revision they pinned (ADR-0003).
+ */
 export const NewQuestionRevision = Schema.Struct({
   questionId: WrittenQuestionId,
   revisionId: QuestionRevisionId,
@@ -55,3 +58,14 @@ export const NewQuestionRevision = Schema.Struct({
 }).check(Schema.makeFilter(hasValidAnswers, { message: validAnswersMessage }))
 
 export type NewQuestionRevision = typeof NewQuestionRevision.Type
+
+/**
+ * An emergency withdrawal of a faulty published revision. Unlike publishing a newer revision, it
+ * blocks further answers even in started sessions; history and the reason are kept (ADR-0003).
+ */
+export const QuestionRevisionWithdrawal = Schema.Struct({
+  revisionId: QuestionRevisionId,
+  reason: Schema.NonEmptyString,
+})
+
+export type QuestionRevisionWithdrawal = typeof QuestionRevisionWithdrawal.Type

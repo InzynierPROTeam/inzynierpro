@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 import { test } from '~e2e/test/fixtures'
 
 const buildingLaw = 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'
@@ -11,7 +11,7 @@ test('the written categories show the path documents and their progress', async 
   const categories = page.getByRole('main').getByRole('list')
   await expect(categories.getByRole('link')).toHaveCount(2)
   await expect(categories.getByRole('link', { name: new RegExp(buildingLaw) })).toContainText(
-    'Ukończone: 0 / 2 pytań',
+    'Ukończone: 0 / 5 pytań',
   )
 })
 
@@ -63,7 +63,7 @@ test('a started session keeps its question and answer order and every entry poin
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
 
   await expect(page).toHaveURL(/\/nauka\/sesja\/[^/]+\/1\/?$/)
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 2' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
 
   const answers = page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
   await expect(answers).toHaveCount(3)
@@ -76,27 +76,15 @@ test('a started session keeps its question and answer order and every entry poin
   await expect(answers.first()).toBeChecked()
   await expect(page.getByRole('alert')).toBeHidden()
 
-  // Until answers are recorded, checking only confirms the selection.
-  let confirmation = ''
-  // The click resolves only once the alert is closed, so it is handled before clicking.
-  page.once('dialog', dialog => {
-    confirmation = dialog.message()
-    void dialog.dismiss()
-  })
-  await page.getByRole('button', { name: 'Sprawdź' }).click()
-  // The option's accessible text also holds its letter, so only the answer text is compared.
-  expect(await answers.first().textContent()).toContain(
-    confirmation.replace('Wybrana odpowiedź: ', ''),
-  )
-  expect(confirmation).toMatch(/^Wybrana odpowiedź: \S/)
-
   const order = await answers.allTextContents()
   const sessionUrl = page.url()
 
   await page.reload()
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 2' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
   await expect(answers).toHaveText(order)
+  // An unchecked selection is only a draft in the form, so a reload clears it.
+  await expect(answers.first()).not.toBeChecked()
 
   // The session replaced the preview, so going back returns to the category.
   await page.getByRole('button', { name: 'Kategoria' }).click()
@@ -120,4 +108,74 @@ test('a started session keeps its question and answer order and every entry poin
     .getByRole('button', { name: 'Kontynuuj' })
     .click()
   await expect(page).toHaveURL(sessionUrl)
+})
+
+// Starts a session over the Building Law category and returns the first question's options.
+const startBuildingLawSession = async (page: Page) => {
+  await page.goto('/nauka')
+  await page.getByRole('link', { name: new RegExp(buildingLaw) }).click()
+  await page.getByRole('button', { name: 'Zacznij naukę' }).click()
+  await page.getByRole('button', { name: 'Zacznij sesję' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
+
+  return page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
+}
+
+// The hint's text, read from its dialog, is the explanation shown after answering.
+const readHint = async (page: Page) => {
+  await page.getByRole('button', { name: 'Podpowiedź' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Podpowiedź' })
+  await expect(dialog).toBeVisible()
+  const hint = (await dialog.getByRole('paragraph').first().textContent()) ?? ''
+  await dialog.getByRole('button', { name: 'Zamknij' }).first().click()
+  await expect(dialog).toBeHidden()
+
+  return hint
+}
+
+test('checking an answer locks it and shows its result and explanation, also after reload', async ({
+  onboarded: { page },
+}) => {
+  const answers = await startBuildingLawSession(page)
+
+  await answers.nth(1).click()
+  await page.getByRole('button', { name: 'Sprawdź' }).click()
+
+  // The chosen option is marked correct or incorrect, and the correct one is always marked.
+  await expect(answers.nth(1)).toHaveAttribute('data-tone', /^(correct|incorrect)$/)
+  await expect(answers.and(page.locator('[data-tone="correct"]'))).toHaveCount(1)
+  const tone = await answers.nth(1).getAttribute('data-tone')
+  await expect(answers.nth(1)).toBeChecked()
+  await expect(answers.nth(1)).toBeDisabled()
+  // The question was answered once, so it cannot be checked again.
+  await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeHidden()
+
+  const hint = await readHint(page)
+  await expect(page.getByRole('main').getByText(hint, { exact: true })).toBeVisible()
+
+  await page.reload()
+
+  await expect(answers.nth(1)).toHaveAttribute('data-tone', tone ?? '')
+  await expect(answers.nth(1)).toBeChecked()
+  await expect(page.getByRole('main').getByText(hint, { exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Następne pytanie' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 2 z 5' })).toBeVisible()
+  await expect(answers.first()).not.toBeChecked()
+  await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeVisible()
+})
+
+test('the hint can be read before answering and the explanation is shown only after', async ({
+  onboarded: { page },
+}) => {
+  const answers = await startBuildingLawSession(page)
+
+  const hint = await readHint(page)
+  await expect(page.getByRole('main').getByText(hint, { exact: true })).toBeHidden()
+
+  await answers.first().click()
+  await page.getByRole('button', { name: 'Sprawdź' }).click()
+
+  await expect(answers.first()).toBeDisabled()
+  await expect(page.getByRole('main').getByText(hint, { exact: true })).toBeVisible()
 })

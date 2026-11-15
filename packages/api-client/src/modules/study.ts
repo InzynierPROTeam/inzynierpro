@@ -6,7 +6,12 @@ import type {
   StartSessionEndpoint,
   GetLatestSessionEndpoint,
   GetSessionEndpoint,
+  GetSessionSummaryEndpoint,
+  GetSessionResultsEndpoint,
+  EndSessionEndpoint,
   GetSessionQuestionEndpoint,
+  RecordSessionAssistanceEndpoint,
+  SubmitSessionAnswerEndpoint,
 } from '@inzpro/api-contracts/modules/study/api'
 import type { Effect } from 'effect'
 import { apiAction } from '~api-client/lib/api-action.js'
@@ -73,6 +78,32 @@ export type GetSessionRes = Effect.Success<ReturnType<typeof getSession>>
 
 export type GetSessionError = Effect.Error<ReturnType<typeof getSession>>
 
+export const getSessionSummary = (req: GetSessionSummaryRequest) =>
+  apiAction(api => api.Study.GetSessionSummary(req))
+
+export type GetSessionSummaryRequest = InferEndpointRequest<typeof GetSessionSummaryEndpoint>
+
+export type GetSessionSummaryRes = Effect.Success<ReturnType<typeof getSessionSummary>>
+
+export type GetSessionSummaryError = Effect.Error<ReturnType<typeof getSessionSummary>>
+
+export const getSessionResults = (req: GetSessionResultsRequest) =>
+  apiAction(api => api.Study.GetSessionResults(req))
+
+export type GetSessionResultsRequest = InferEndpointRequest<typeof GetSessionResultsEndpoint>
+
+export type GetSessionResultsRes = Effect.Success<ReturnType<typeof getSessionResults>>
+
+export type GetSessionResultsError = Effect.Error<ReturnType<typeof getSessionResults>>
+
+export const endSession = (req: EndSessionRequest) => apiAction(api => api.Study.EndSession(req))
+
+export type EndSessionRequest = InferEndpointRequest<typeof EndSessionEndpoint>
+
+export type EndSessionRes = Effect.Success<ReturnType<typeof endSession>>
+
+export type EndSessionError = Effect.Error<ReturnType<typeof endSession>>
+
 export const getSessionQuestion = (req: GetSessionQuestionRequest) =>
   apiAction(api => api.Study.GetSessionQuestion(req))
 
@@ -81,3 +112,23 @@ export type GetSessionQuestionRequest = InferEndpointRequest<typeof GetSessionQu
 export type GetSessionQuestionRes = Effect.Success<ReturnType<typeof getSessionQuestion>>
 
 export type GetSessionQuestionError = Effect.Error<ReturnType<typeof getSessionQuestion>>
+
+export const recordSessionAssistance = (req: RecordSessionAssistanceRequest) =>
+  apiAction(api => api.Study.RecordSessionAssistance(req))
+
+export type RecordSessionAssistanceRequest = InferEndpointRequest<
+  typeof RecordSessionAssistanceEndpoint
+>
+
+export type RecordSessionAssistanceRes = Effect.Success<ReturnType<typeof recordSessionAssistance>>
+
+export type RecordSessionAssistanceError = Effect.Error<ReturnType<typeof recordSessionAssistance>>
+
+export const submitSessionAnswer = (req: SubmitSessionAnswerRequest) =>
+  apiAction(api => api.Study.SubmitSessionAnswer(req))
+
+export type SubmitSessionAnswerRequest = InferEndpointRequest<typeof SubmitSessionAnswerEndpoint>
+
+export type SubmitSessionAnswerRes = Effect.Success<ReturnType<typeof submitSessionAnswer>>
+
+export type SubmitSessionAnswerError = Effect.Error<ReturnType<typeof submitSessionAnswer>>

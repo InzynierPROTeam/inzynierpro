@@ -31,6 +31,7 @@
     "@babel/preset-typescript": "catalog:",
     "@cloudflare/vite-plugin": "catalog:",
     "@effect/tsgo": "catalog:",
+    "@inzpro/tools": "workspace:*",
     "@oxlint/plugins": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-router-devtools": "catalog:",

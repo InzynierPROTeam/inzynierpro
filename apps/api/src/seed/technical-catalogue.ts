@@ -104,16 +104,22 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         }
       }
 
-      // Sources: https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 24)
-      // https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 298 ust. 2).
+      // Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 18,
+      // 24, 37, 82) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf
+      // (§ 62, 68, 72, 298). The first option of each question is correct.
+      const buildingLaw = catalogueId('20', 1)
+      const technicalConditions = catalogueId('20', 2)
+
       const questions = [
         {
+          documentId: buildingLaw,
           body: 'Która z wymienionych osób jest uczestnikiem procesu budowlanego w rozumieniu Prawa budowlanego?',
           answers: ['Projektant', 'Rzeczoznawca majątkowy', 'Pośrednik w obrocie nieruchomościami'],
           explanation:
             'Art. 17 Prawa budowlanego zalicza projektanta do uczestników procesu budowlanego.',
         },
         {
+          documentId: buildingLaw,
           body: 'Czy na tej samej budowie można łączyć funkcję kierownika budowy i inspektora nadzoru inwestorskiego?',
           answers: [
             'Nie, łączenie tych funkcji jest niedopuszczalne.',
@@ -124,18 +130,72 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
             'Art. 24 ust. 1 Prawa budowlanego zabrania łączenia funkcji kierownika budowy i inspektora nadzoru inwestorskiego.',
         },
         {
+          documentId: technicalConditions,
           body: 'Jaka jest minimalna wysokość balustrady, mierzona do wierzchu poręczy, w budynku jednorodzinnym?',
           answers: ['0,9 m', '0,7 m', '0,8 m'],
           explanation:
             'Zgodnie z tabelą w § 298 ust. 2 warunków technicznych minimalna wysokość balustrady w budynkach jednorodzinnych wynosi 0,9 m.',
         },
+        {
+          documentId: buildingLaw,
+          body: 'Kto zapewnia ustanowienie inspektora nadzoru inwestorskiego, jeżeli jest on wymagany?',
+          answers: ['Inwestor', 'Kierownik budowy', 'Projektant'],
+          explanation:
+            'Art. 18 ust. 1 Prawa budowlanego nakłada na inwestora obowiązek zapewnienia ustanowienia inspektora nadzoru inwestorskiego, jeżeli jest on wymagany.',
+        },
+        {
+          documentId: buildingLaw,
+          body: 'Kiedy wygasa decyzja o pozwoleniu na budowę, jeżeli budowy nie rozpoczęto?',
+          answers: [
+            'Po upływie 3 lat od dnia, w którym decyzja stała się ostateczna.',
+            'Po upływie 2 lat od dnia wydania decyzji.',
+            'Po upływie 5 lat od dnia, w którym decyzja stała się ostateczna.',
+          ],
+          explanation:
+            'Art. 37 ust. 1 Prawa budowlanego: decyzja wygasa, jeżeli budowa nie została rozpoczęta przed upływem 3 lat od dnia, w którym stała się ostateczna.',
+        },
+        {
+          documentId: buildingLaw,
+          body: 'Który organ jest co do zasady organem administracji architektoniczno-budowlanej pierwszej instancji?',
+          answers: ['Starosta', 'Wojewoda', 'Wójt gminy'],
+          explanation:
+            'Art. 82 ust. 2 Prawa budowlanego powierza zadania organu administracji architektoniczno-budowlanej pierwszej instancji staroście.',
+        },
+        {
+          documentId: technicalConditions,
+          body: 'Jaka jest minimalna szerokość drzwi wejściowych do budynku w świetle ościeżnicy?',
+          answers: ['0,9 m', '0,8 m', '1,2 m'],
+          explanation:
+            '§ 62 ust. 1 warunków technicznych wymaga, aby drzwi wejściowe do budynku miały w świetle ościeżnicy szerokość co najmniej 0,9 m.',
+        },
+        {
+          documentId: technicalConditions,
+          body: 'Jaka jest minimalna szerokość użytkowa biegu schodów w budynku mieszkalnym jednorodzinnym?',
+          answers: ['0,8 m', '0,9 m', '1,2 m'],
+          explanation:
+            'Tabela w § 68 ust. 1 warunków technicznych określa minimalną szerokość użytkową biegu w budynku jednorodzinnym na 0,8 m.',
+        },
+        {
+          documentId: technicalConditions,
+          body: 'Jaka jest maksymalna wysokość stopni schodów w budynku mieszkalnym jednorodzinnym?',
+          answers: ['0,19 m', '0,175 m', '0,22 m'],
+          explanation:
+            'Tabela w § 68 ust. 1 warunków technicznych dopuszcza w budynku jednorodzinnym stopnie o wysokości do 0,19 m.',
+        },
+        {
+          documentId: technicalConditions,
+          body: 'Jaka jest co do zasady minimalna wysokość w świetle pomieszczeń przeznaczonych na stały pobyt ludzi?',
+          answers: ['2,5 m', '2,2 m', '2,8 m'],
+          explanation:
+            '§ 72 ust. 1 warunków technicznych wymaga co do zasady wysokości w świetle co najmniej 2,5 m dla pomieszczeń przeznaczonych na stały pobyt ludzi.',
+        },
       ]
 
       for (const [questionIndex, question] of questions.entries()) {
         const n = questionIndex + 1
-        const questionId = `30000000-0000-4000-8000-00000000000${n}`
-        const revisionId = `43000000-0000-4000-8000-00000000000${n}`
-        const documentId = `20000000-0000-4000-8000-00000000000${n === 3 ? 2 : 1}`
+        const questionId = catalogueId('30', n)
+        const revisionId = catalogueId('43', n)
+        const { documentId } = question
         yield* sql`INSERT INTO written_questions (id, document_id) VALUES (${questionId}, ${documentId}) ON CONFLICT DO NOTHING`
         yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation)
         VALUES (${revisionId},${questionId},${question.body},${question.explanation}) ON CONFLICT DO NOTHING`
@@ -145,8 +205,7 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
 
         if (revisions[0]?.publishedAt === null) {
           for (const [index, text] of question.answers.entries()) {
-            const answerNumber = index + 1
-            const answerId = `44000000-0000-4000-8000-0000000000${n}${answerNumber}`
+            const answerId = catalogueId('44', n * 10 + index + 1)
             const isCorrect = index === 0
             yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answerId},${revisionId},${text},${isCorrect}) ON CONFLICT DO NOTHING`
           }
@@ -154,7 +213,7 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
           yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
         }
 
-        yield* sql`UPDATE written_questions SET current_revision_id = ${revisionId} WHERE id = ${questionId} AND (current_revision_id IS NULL OR current_revision_id = ${`41000000-0000-4000-8000-00000000000${n}`})`
+        yield* sql`UPDATE written_questions SET current_revision_id = ${revisionId} WHERE id = ${questionId} AND (current_revision_id IS NULL OR current_revision_id = ${catalogueId('41', n)})`
         yield* sql`INSERT INTO path_questions (qualification_path_id, document_id, question_id)
         VALUES ('10000000-0000-4000-8000-000000000001', ${documentId}, ${questionId}) ON CONFLICT DO NOTHING`
       }
@@ -169,7 +228,7 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
           continue
         }
 
-        yield* sql`INSERT INTO path_questions (qualification_path_id,document_id,question_id) SELECT ${pathId},q.document_id,q.id FROM written_questions q WHERE q.id IN (${catalogueId('30', 1)},${catalogueId('30', 2)},${catalogueId('30', 3)}) ON CONFLICT DO NOTHING`
+        yield* sql`INSERT INTO path_questions (qualification_path_id,document_id,question_id) SELECT ${pathId},q.document_id,q.id FROM written_questions q WHERE q.id IN ${sql.in(questions.map((_, index) => catalogueId('30', index + 1)))} ON CONFLICT DO NOTHING`
       }
     }),
   )

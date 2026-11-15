@@ -26,6 +26,6 @@ Telemetry may contain `user.id`. It never contains e-mail, full IP address, requ
 
 ## Sampling, metrics and alerts
 
-We keep every trace at first, and a child inherits its parent's decision from `traceparent`. Health checks and `OPTIONS` preflights are not traced. When the vendor limit is reached we move to tail sampling that keeps errors and slow requests. Grafana derives RED metrics from spans; custom metrics, including queue state, arrive with the worker. Browser telemetry needs a separate decision.
+We keep every trace at first, and a child inherits its parent's decision from `traceparent`. Health checks and `OPTIONS` preflights are not traced. When the vendor limit is reached we move to tail sampling that keeps errors and slow requests. Grafana derives RED metrics from spans; custom metrics are exported over OTLP, starting with the `app.background_jobs` gauge of jobs by queue and state reported by the worker. Browser telemetry needs a separate decision.
 
 Grafana alerts cover the 5xx rate, p95 latency, a failing health check and missing incoming spans, and notify Telegram. They are configured in the Grafana UI at first; alerts as code are decided together with IaC (ADR-0017).

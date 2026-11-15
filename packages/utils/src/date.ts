@@ -1,4 +1,5 @@
 import { POLAND_TIME_ZONE, POLISH_LANGUAGE } from '@inzpro/config/localization'
+import { dateTimeUtcToUtcIsoDateTime, type UtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { DateTime, Duration, Effect, Option } from 'effect'
 
 export type DateInput = DateTime.DateTime | Date | number | string
@@ -44,6 +45,10 @@ const parseTimeInputValue = (value: string): TimeParts | null => {
 const padTwoDigits = (value: number): string => String(value).padStart(2, '0')
 
 export const getCurrentDate = (): Date => Effect.runSync(DateTime.nowAsDate)
+
+/** The current instant as stored in query caches, e.g. for an optimistic update's timestamp. */
+export const getCurrentUtcIsoDateTime = (): UtcIsoDateTime =>
+  dateTimeUtcToUtcIsoDateTime(Effect.runSync(DateTime.now))
 
 export const getCurrentFullYear = (date: DateInput = getCurrentDate()): number =>
   toWarsawZoned(date).pipe(DateTime.toParts).year

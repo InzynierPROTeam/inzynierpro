@@ -1,3 +1,4 @@
+import { buttonVariants } from '@inzpro/ui/components/button'
 import { ProgressSkeleton } from '@inzpro/ui/components/progress'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { createLink } from '@tanstack/react-router'
@@ -22,10 +23,7 @@ export const SessionHeaderNav: React.FC<React.ComponentProps<'nav'>> = ({
   ...props
 }) => (
   <nav
-    className={cn(
-      'grid grid-cols-[100px_1fr_100px] items-center gap-4 max-md:grid-cols-[20px_1fr_20px]',
-      className,
-    )}
+    className={cn('grid grid-cols-[1fr_auto_1fr] items-center gap-6', className)}
     {...props}
   />
 )
@@ -43,14 +41,12 @@ export const SessionHeaderTitle: React.FC<React.ComponentProps<'h1'>> = ({
   />
 )
 
-// The slots keep their grid columns when there is no previous or next question.
-
 export const SessionHeaderPrevious: React.FC<React.ComponentProps<'div'>> = ({
   className,
   ...props
 }) => (
   <div
-    className={cn('col-start-1 row-start-1 justify-self-start', className)}
+    className={cn('col-start-1 row-start-1 justify-self-end', className)}
     {...props}
   />
 )
@@ -60,7 +56,7 @@ export const SessionHeaderNext: React.FC<React.ComponentProps<'div'>> = ({
   ...props
 }) => (
   <div
-    className={cn('col-start-3 row-start-1 justify-self-end', className)}
+    className={cn('col-start-3 row-start-1 justify-self-start', className)}
     {...props}
   />
 )
@@ -75,21 +71,18 @@ const SessionTraverseAnchor: React.FC<SessionTraverseAnchorProps> = ({
   ...props
 }) => (
   <a
-    className={cn(
-      'text-foreground/50 hover:text-foreground/70 flex items-center gap-1 text-sm transition-colors',
-      className,
-    )}
+    className={buttonVariants({ variant: 'ghost', size: 'icon-md', className })}
     {...props}
   >
     {direction === 'previous' ? (
       <>
-        <ChevronLeft className="size-5 shrink-0" />
-        <span className="max-md:sr-only">Poprzednie</span>
+        <ChevronLeft className="size-4 shrink-0" />
+        <span className="sr-only">Poprzednie</span>
       </>
     ) : (
       <>
-        <span className="max-md:sr-only">Następne</span>
-        <ChevronRight className="size-5 shrink-0" />
+        <span className="sr-only">Następne</span>
+        <ChevronRight className="size-4 shrink-0" />
       </>
     )}
   </a>

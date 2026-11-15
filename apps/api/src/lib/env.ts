@@ -3,16 +3,26 @@ import { Config, type Effect, Schema } from 'effect'
 
 config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env', quiet: true })
 
-export const env = Config.all({
+// Shared by every backend process: the HTTP server, the worker and operator scripts.
+const processVariables = {
   NODE_ENV: Config.Literals(['development', 'test', 'production'], 'NODE_ENV'),
-  PORT: Config.Port('PORT').pipe(Config.withDefault(4000)),
   LOG_LEVEL: Config.LogLevel('LOG_LEVEL').pipe(Config.withDefault('Info')),
+  DATABASE_URL: Config.Redacted('DATABASE_URL'),
+}
+
+export const processEnv = Config.all(processVariables)
+
+export type ProcessEnv = Effect.Success<typeof processEnv>
+
+export const env = Config.all({
+  ...processVariables,
+  PORT: Config.Port('PORT').pipe(Config.withDefault(4000)),
+  RELEASE_SHA: Config.NonEmptyString('RELEASE_SHA').pipe(Config.withDefault('development')),
   // Comma-separated client origins allowed by CORS and Better Auth, e.g. `http://localhost:8001`.
   TRUSTED_ORIGINS: Config.Array(
     Schema.Trim.pipe(Schema.decodeTo(Schema.NonEmptyString)),
     'TRUSTED_ORIGINS',
   ),
-  DATABASE_URL: Config.Redacted('DATABASE_URL'),
   REDIS_URL: Config.Redacted('REDIS_URL'),
   BETTER_AUTH_URL: Config.URL('BETTER_AUTH_URL'),
   BETTER_AUTH_SECRET: Config.Redacted('BETTER_AUTH_SECRET'),

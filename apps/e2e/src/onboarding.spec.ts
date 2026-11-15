@@ -1,26 +1,7 @@
 import { expect, type Page } from '@playwright/test'
 import { test, uniqueEmail } from '~e2e/test/fixtures'
+import { chooseTechnicalPath } from '~e2e/test/paths'
 import { signInThroughUi } from '~e2e/test/sign-in'
-
-// Answers the first four steps: building construction, site management, full scope, both exams.
-const chooseTechnicalPath = async (page: Page) => {
-  const choices = [
-    ['Wybierz specjalność', 'Konstrukcyjno-budowlana'],
-    ['Wybierz rodzaj uprawnień', 'Kierowania robotami'],
-    ['Wybierz zakres uprawnień', 'Bez ograniczeń'],
-    ['Wybierz rodzaj egzaminu', 'Pisemny i ustny'],
-  ] as const
-
-  for (const [step, choice] of choices) {
-    await page.getByRole('radiogroup', { name: step }).getByRole('radio', { name: choice }).click()
-    await page.getByRole('button', { name: 'Dalej' }).click()
-  }
-
-  await page
-    .getByRole('radiogroup', { name: 'Wybierz sesję' })
-    .getByRole('radio', { name: /Sesja Wiosenna/ })
-    .click()
-}
 
 const expectTechnicalPathOnStart = async (page: Page) => {
   await expect(page.getByRole('heading', { name: 'Konstrukcyjno-budowlana' })).toBeVisible()
