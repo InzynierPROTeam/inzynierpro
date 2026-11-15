@@ -24,6 +24,8 @@ Changes from `feat/*` branches go to `dev`. A merge to `dev` runs CI/CD and depl
 
 Migrations run as one controlled step before the new HTTP and worker versions start, and a failure stops the deployment. Auth and module migrations share one versioned process, and schema changes account for the running application version and data recovery. Each environment runs at most one deployment at a time: a newer version waits, and a later merge never cancels running migrations or infrastructure changes. Staging and production have separate deployment queues.
 
+As in V1, CI builds the API and worker images after the checks and pushes them to Docker Hub, whose webhook makes Dokploy pull them; CI holds no Dokploy credentials. The API container runs the migrations before the server starts; the worker does not migrate. With one API replica this is the one migration step; scaling the API to several replicas reopens this decision. [deployment.md](../deployment.md) describes the configuration.
+
 ## Backups
 
 Dokploy can manage services and backups, but the scope, retention and restore must be decided and tested explicitly; naming a tool does not prove data can be restored. Before the first public launch we require a backup plan and a successful restore test in a separate environment, covering PostgreSQL, IaC state and R2 files. Database backups never stay only on the same VPS, and the restore test checks that files referenced by restored metadata exist. Retention, acceptable data loss and restore time match the product stage. Deployment permissions are still open.
