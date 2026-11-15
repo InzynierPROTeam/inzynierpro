@@ -45,6 +45,21 @@ export const NewQuestion = Schema.Struct({
 
 export type NewQuestion = typeof NewQuestion.Type
 
+// The change kind of a question's first revision, which has no earlier content to compare with.
+export const initialRevision = 'initial'
+export const cosmeticChange = 'cosmetic'
+export const substantiveChange = 'substantive'
+export const revisionChangeKindValues = [cosmeticChange, substantiveChange] as const
+
+/**
+ * How a newer revision changes its question, decided by meaning (ADR-0003). A substantive change
+ * makes the question uncovered in the current LearningRound on every path; a cosmetic one keeps
+ * learning state. The first revision has nothing to compare with and counts as initial.
+ */
+export const RevisionChangeKind = Schema.Literals(revisionChangeKindValues)
+
+export type RevisionChangeKind = typeof RevisionChangeKind.Type
+
 /**
  * A newer published revision of an existing question; earlier revisions stay unchanged and started
  * sessions keep answering the revision they pinned (ADR-0003).
@@ -52,6 +67,7 @@ export type NewQuestion = typeof NewQuestion.Type
 export const NewQuestionRevision = Schema.Struct({
   questionId: WrittenQuestionId,
   revisionId: QuestionRevisionId,
+  changeKind: RevisionChangeKind,
   body: Schema.NonEmptyString,
   answers: Schema.Array(NewQuestionAnswer).check(Schema.isMinLength(3), Schema.isMaxLength(3)),
   explanation: Schema.NonEmptyString,

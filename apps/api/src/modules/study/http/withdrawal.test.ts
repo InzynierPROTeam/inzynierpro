@@ -50,7 +50,7 @@ const learnerInSession = async (questionCount: number) => {
       await request('/sessions', {
         documentId: fixture.documentId,
         questionCount,
-        questionSelection: 'unanswered',
+        questionSelection: 'uncovered',
       })
     ).json(),
   )

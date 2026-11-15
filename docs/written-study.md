@@ -8,7 +8,7 @@ A read that finds nothing for the learner returns HTTP 200 with `null`: preview,
 
 | Endpoint                                  | Returns                                                                                                      |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `GET /documents/:documentId`              | One category with the learner's progress, independent of the preview.                                        |
+| `GET /documents/:documentId`              | One category with the learner's progress in the current round, independent of the preview.                   |
 | `GET /preview`                            | The proposed document, its `questionSelection` and the count settings.                                       |
 | `GET /latest-session[?documentId=]`       | The most recently used session of the path or document, with status, progress and document.                  |
 | `GET /sessions/:sessionId`                | Status and progress: `total`, `answered`, `skipped`, `percent` and `currentQuestion` to continue from.       |
@@ -18,17 +18,28 @@ A read that finds nothing for the learner returns HTTP 200 with `null`: preview,
 
 "Most recently used" is `last_activity_at`: starting or answering, never reading. A document's unfinished session is always its latest.
 
+## Learning rounds
+
+Regular study moves through repeated LearningRounds ([ADR-0002](adr/0002-study-session-lifecycle.md#rounds)). There is no round UI and no completion message; the round only decides what previews offer and what progress counts.
+
+- The learner starts in round 1. A question is **covered** in a round when a regular-study answer in that round covered a revision carrying the question's current substantive content. Any submitted answer covers, even a wrong or assisted one.
+- A round is complete when every published, non-withdrawn question of the path is covered in it. A withdrawn question leaves the round, a question added during it is uncovered, and a path without questions never completes one.
+- The answer that covers the last question stores the next round in the answer transaction, under the account lock, so concurrent answers to the last two questions advance it once. When a withdrawal completes the stored round, reads already treat the next round as current and the next answer stores it.
+- Each published revision records its `change_kind` ([ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md#cosmetic-and-substantive-changes)): the first is `initial`, later ones `cosmetic` or `substantive`. A substantive revision makes the question uncovered in the current round on every path; a cosmetic one carries the substantive content of the revision before it and changes nothing. History is never changed.
+
+Document progress (`completedQuestionCount`), previews and session candidates all count the current round.
+
 ## Preview and start
 
 The preview picks a document:
 
 - `documentId` asks for that document.
-- `fromDocumentId` continues regular study: the first document in catalogue order from that one, wrapping around, with published, non-withdrawn questions the learner has not answered. When the whole path is answered, the document after it, so study goes through the categories again.
-- Neither: the first document with unanswered questions, or the first document.
+- `fromDocumentId` continues regular study: the first document in catalogue order from that one, wrapping around, with questions uncovered in the current round. In a new round, before anything is covered in it, the document after it comes first, so study goes on through the categories after the one that completed the round.
+- Neither: the first document with uncovered questions.
 
-`questionSelection` is `unanswered` while the document has questions the learner has not answered, and `repeat` once all were answered. Full LearningRound tracking is a later scope.
+`questionSelection` is `uncovered` while the document has questions uncovered in the current round. A document already covered in this round, chosen with `documentId`, offers all its questions again as `covered`; answering them keeps it covered.
 
-`POST /sessions` confirms a preview under the account lock. It revalidates access, the document, the selection and the count against the current settings, then stores the current published revision of each selected question (unanswered first, in catalogue order) with a shuffled option order.
+`POST /sessions` confirms a preview under the account lock. It revalidates access, the document, the selection and the count against the current settings, then stores the current published revision of each selected question (in catalogue order) with a shuffled option order.
 
 - `StudySessionAlreadyStarted` (409, with the session ID and position): the document already has an unfinished session. The client offers to open it.
 - `StaleSessionPreview` (409): the count or scope changed since the preview. The client refreshes the path's study queries.
@@ -41,7 +52,9 @@ Written study has its own tables, separate from future oral study (ADR-0005).
 - `written_study_session_questions` and `written_study_session_answer_options`: references to revisions and answer IDs in session order, never content copies.
 - `written_study_answers`: one answer per session question.
 - `written_learning_events`: one LearningEvent per answer, with result, revision, path, the session's goal version, `study` mode and assistance. There is no read yet.
-- `written_question_coverage`: which questions the learner has answered on the path, for previews and progress.
+- `written_learning_rounds`: the learner's stored round per path; without a row it is round 1.
+- `written_question_coverage`: per learner, path and question, the revision and round of the latest regular-study answer, for rounds, previews and progress.
+- `question_revisions.change_kind` and `substantive_revision_id`: the revision whose substantive content a revision carries, its own unless the change is cosmetic. Coverage compares these instead of publication times.
 
 Extending access, changing the goal, archiving and restoring an assignment keep all of these.
 
@@ -49,7 +62,7 @@ Extending access, changing the goal, archiving and restoring an assignment keep 
 
 Selecting an option is a draft kept in the form: it is no attempt and a reload clears it.
 
-`POST .../questions/:pos/answer` takes the revision the client showed and an answer ID. In one transaction under the account lock it checks access, ownership, session state, revision, option and withdrawal, then stores the answer, its LearningEvent, coverage and the new continue point: the first open question after this one, wrapping around, or this one when none is open.
+`POST .../questions/:pos/answer` takes the revision the client showed and an answer ID. In one transaction under the account lock it checks access, ownership, session state, revision, option and withdrawal, then stores the answer, its LearningEvent, coverage in the current round, the next round when this answer covers the last question, and the new continue point: the first open question after this one, wrapping around, or this one when none is open.
 
 - Repeating the stored answer returns it, so a retry after a lost response is safe.
 - A different answer is refused with `SessionAnswerAlreadySubmitted` (409) and never overwrites the first.
@@ -97,4 +110,4 @@ Caching:
 - A submission refused because the question was withdrawn shows the question as withdrawn at once, with no error toast and no second attempt.
 - Ending a session refreshes the whole path group.
 
-SRS, goals and XP will join the answer transaction.
+SRS, goals and XP will join the answer transaction. Reviews and favourites will never move coverage or rounds.

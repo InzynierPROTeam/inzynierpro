@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test'
-import { test } from '~e2e/test/fixtures'
+import { smallPathConfiguration, test } from '~e2e/test/fixtures'
 import { chooseTechnicalPath } from '~e2e/test/paths'
 
 const buildingLaw = 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'
@@ -201,7 +201,8 @@ test('after every category is answered, study starts again from the first one', 
   await answerQuestionsFrom(page)
   await finishSession(page)
 
-  // Everything is answered, so the summary and the start page lead back to the first category.
+  // The learning round is complete, so the summary and the start page begin the next one with
+  // the first category.
   await expect(page.getByRole('heading', { level: 2, name: 'Co dalej?' })).toBeVisible()
   await expect(page.getByText(buildingLaw)).toBeVisible()
 
@@ -210,4 +211,40 @@ test('after every category is answered, study starts again from the first one', 
   await expect(page.getByRole('definition').filter({ hasText: buildingLaw })).toBeVisible()
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
   await expect(questionHeading(page, 1)).toBeVisible()
+})
+
+test.describe('on the small seeded path', () => {
+  test.use({ pathConfiguration: smallPathConfiguration })
+
+  // The small path has one category with three questions.
+  const roundQuestions = 3
+
+  const buildingLawCategory = (page: Page) =>
+    page.getByRole('main').getByRole('link', { name: new RegExp(buildingLaw) })
+
+  test('completing the learning round starts the next one with every question to study again', async ({
+    onboarded: { page },
+  }) => {
+    await page.goto('/nauka')
+    await expect(buildingLawCategory(page)).toContainText(`Ukończone: 0 / ${roundQuestions} pytań`)
+    await buildingLawCategory(page).click()
+    await page.getByRole('button', { name: 'Zacznij naukę' }).click()
+    await page.getByRole('button', { name: 'Zacznij sesję' }).click()
+
+    await answerQuestionsFrom(page, 1, roundQuestions)
+    await finishSession(page)
+    await expect(page.getByText(`${roundQuestions} z ${roundQuestions} pytań`)).toBeVisible()
+
+    // Every question was covered, so the next round offers all of them again.
+    await page.getByRole('button', { name: 'Kontynuuj naukę' }).click()
+    await expect(page.getByRole('heading', { name: 'Zacznij sesję nauki' })).toBeVisible()
+    await expect(page.getByRole('definition').filter({ hasText: buildingLaw })).toBeVisible()
+    await page.getByRole('button', { name: 'Zacznij sesję' }).click()
+    await expect(questionHeading(page, 1, roundQuestions)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeVisible()
+
+    // Category progress counts the new round.
+    await page.goto('/nauka')
+    await expect(buildingLawCategory(page)).toContainText(`Ukończone: 0 / ${roundQuestions} pytań`)
+  })
 })

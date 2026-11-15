@@ -1,8 +1,8 @@
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
-  repeatedQuestions,
+  coveredQuestions,
   type SessionQuestionSelection,
-  unansweredQuestions,
+  uncoveredQuestions,
 } from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
 
@@ -25,17 +25,17 @@ export const isAllowedQuestionCount = (
   questionCount <= settings.maximumQuestionCount
 
 /**
- * The questions a new session of the document draws from: the ones not yet answered in regular
- * study, or every one again once the learner answered them all.
+ * The questions a new session of the document draws from: the ones not yet covered in the current
+ * LearningRound, or every one again when the learner chose a document already covered in it.
  */
 export const sessionQuestionPool = (
   document: Pick<DocumentQuestionPool, 'availableQuestionCount' | 'completedQuestionCount'>,
 ): { selection: SessionQuestionSelection; questionCount: QuestionCount } =>
   document.availableQuestionCount > 0 &&
   document.completedQuestionCount >= document.availableQuestionCount
-    ? { selection: repeatedQuestions, questionCount: document.availableQuestionCount }
+    ? { selection: coveredQuestions, questionCount: document.availableQuestionCount }
     : {
-        selection: unansweredQuestions,
+        selection: uncoveredQuestions,
         questionCount: QuestionCount.make(
           document.availableQuestionCount - document.completedQuestionCount,
         ),

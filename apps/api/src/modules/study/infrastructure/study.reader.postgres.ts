@@ -10,13 +10,17 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import {
   SessionQuestionPosition,
   StudySessionId,
-  unansweredQuestions,
+  uncoveredQuestions,
 } from '@inzpro/domain/modules/study/study-session'
 import { Array as Arr, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { makeCursorPaginator, mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { StudyReadError } from '~api/modules/study/application/errors.js'
 import { StudyReader } from '~api/modules/study/application/study.reader.js'
+import {
+  type LearningRoundNumber,
+  LearningRoundProgress,
+} from '~api/modules/study/domain/learning-round.model.js'
 import { DocumentQuestionPool } from '~api/modules/study/domain/study-document.model.js'
 import {
   type SessionCandidate,
@@ -126,7 +130,27 @@ export const StudyReaderLive = Layer.effect(
   StudyReader,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
-    const columns = sql`d.id,d.title,count(r.id)::integer AS available_question_count,count(c.question_id)::integer AS completed_question_count`
+    const columns = sql`d.id,d.title,count(r.id)::integer AS available_question_count,count(cr.id)::integer AS completed_question_count`
+
+    // Joins the user's coverage of the current revision `r` of question `q` on path question `pq`
+    // in the round: `cr` is set only when the covered revision carries the current substantive
+    // content, so a substantive revision uncovers the question and a cosmetic one does not.
+    const roundCoverage = (userId: UserId, round: LearningRoundNumber | Statement.Fragment) =>
+      sql`LEFT JOIN written_question_coverage c ON c.user_id=${userId} AND c.qualification_path_id=pq.qualification_path_id AND c.question_id=q.id AND c.round_number=${round}
+ LEFT JOIN question_revisions cr ON cr.id=c.question_revision_id AND cr.substantive_revision_id=r.substantive_revision_id`
+
+    // The path's documents with their published, non-withdrawn questions and the round's coverage.
+    const documentPools = (
+      userId: UserId,
+      pathId: QualificationPathId,
+      round: LearningRoundNumber,
+    ) =>
+      sql`FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
+ LEFT JOIN path_questions pq ON pq.qualification_path_id=pd.qualification_path_id AND pq.document_id=d.id
+ LEFT JOIN written_questions q ON q.id=pq.question_id
+ LEFT JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
+ ${roundCoverage(userId, round)}
+ WHERE pd.qualification_path_id=${pathId}`
 
     // The most recently used of the user's sessions on the path that meet the conditions.
     const findLatestSession = (
@@ -155,17 +179,31 @@ export const StudyReaderLive = Layer.effect(
     )
 
     return StudyReader.of({
+      learningRound: Effect.fn('StudyReader.learningRound')(
+        function* (userId, pathId) {
+          const rows =
+            yield* sql`WITH lr AS (SELECT coalesce((SELECT round_number FROM written_learning_rounds WHERE user_id=${userId} AND qualification_path_id=${pathId} LIMIT 1),1) AS round)
+ SELECT lr.round,count(r.id)::integer AS question_count,count(cr.id)::integer AS covered_question_count
+ FROM lr LEFT JOIN path_questions pq ON pq.qualification_path_id=${pathId}
+ LEFT JOIN written_questions q ON q.id=pq.question_id
+ LEFT JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
+ ${roundCoverage(userId, sql`lr.round`)}
+ GROUP BY lr.round`
+
+          const [progress] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([LearningRoundProgress]),
+          )(rows)
+
+          return progress
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
       documents: Effect.fn('StudyReader.documents')(
-        function* (userId, pathId, req) {
+        function* (userId, pathId, round, req) {
           return yield* documentsPage(
             req,
             page =>
-              sql`SELECT ${columns} FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
- LEFT JOIN path_questions pq ON pq.qualification_path_id=pd.qualification_path_id AND pq.document_id=d.id
- LEFT JOIN written_questions q ON q.id=pq.question_id
- LEFT JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
- LEFT JOIN written_question_coverage c ON c.user_id=${userId} AND c.qualification_path_id=pd.qualification_path_id AND c.question_id=q.id AND c.question_revision_id=r.id
- WHERE pd.qualification_path_id=${pathId} AND ${page.after} GROUP BY d.id,d.title ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
+              sql`SELECT ${columns} ${documentPools(userId, pathId, round)} AND ${page.after} GROUP BY d.id,d.title ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
                 Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))),
               ),
             row => ({ id: row.id }),
@@ -177,28 +215,27 @@ export const StudyReaderLive = Layer.effect(
         }),
       ),
       nextDocument: Effect.fn('StudyReader.nextDocument')(
-        function* (userId, pathId, fromDocumentId) {
-          const isAnswered = sql`count(r.id)<=count(c.question_id)`
+        function* (userId, pathId, { round, fromDocumentId, skipsStartDocument }) {
+          const isCovered = sql`count(r.id)<=count(cr.id)`
 
-          // Documents with unanswered questions come first, from the starting document on. Among
-          // answered ones the starting document comes last, so a fully answered path moves on in
-          // order. Both wrap around to the documents before the start.
+          // Documents with uncovered questions come first, from the starting document on, or from
+          // the one after it in a new round. Among covered ones the starting document comes last.
+          // Both wrap around to the documents before the start.
           const order = sql.csv([
-            isAnswered,
+            isCovered,
             ...Option.match(fromDocumentId, {
               onNone: () => [],
-              onSome: id => [sql`CASE WHEN ${isAnswered} THEN d.id<=${id} ELSE d.id<${id} END`],
+              onSome: id => [
+                skipsStartDocument
+                  ? sql`d.id<=${id}`
+                  : sql`CASE WHEN ${isCovered} THEN d.id<=${id} ELSE d.id<${id} END`,
+              ],
             }),
             sql`d.id`,
           ])
 
           const rows =
-            yield* sql`SELECT ${columns} FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
- LEFT JOIN path_questions pq ON pq.qualification_path_id=pd.qualification_path_id AND pq.document_id=d.id
- LEFT JOIN written_questions q ON q.id=pq.question_id
- LEFT JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
- LEFT JOIN written_question_coverage c ON c.user_id=${userId} AND c.qualification_path_id=pd.qualification_path_id AND c.question_id=q.id AND c.question_revision_id=r.id
- WHERE pd.qualification_path_id=${pathId} GROUP BY d.id,d.title HAVING count(r.id)>0 ORDER BY ${order} LIMIT 1`
+            yield* sql`SELECT ${columns} ${documentPools(userId, pathId, round)} GROUP BY d.id,d.title HAVING count(r.id)>0 ORDER BY ${order} LIMIT 1`
 
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))(rows)
 
@@ -207,14 +244,9 @@ export const StudyReaderLive = Layer.effect(
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
       document: Effect.fn('StudyReader.document')(
-        function* (userId, pathId, documentId) {
+        function* (userId, pathId, round, documentId) {
           const rows =
-            yield* sql`SELECT ${columns} FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
- LEFT JOIN path_questions pq ON pq.qualification_path_id=pd.qualification_path_id AND pq.document_id=d.id
- LEFT JOIN written_questions q ON q.id=pq.question_id
- LEFT JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
- LEFT JOIN written_question_coverage c ON c.user_id=${userId} AND c.qualification_path_id=pd.qualification_path_id AND c.question_id=q.id AND c.question_revision_id=r.id
- WHERE pd.qualification_path_id=${pathId} AND d.id=${documentId} GROUP BY d.id,d.title LIMIT 1`
+            yield* sql`SELECT ${columns} ${documentPools(userId, pathId, round)} AND d.id=${documentId} GROUP BY d.id,d.title LIMIT 1`
 
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))(rows)
 
@@ -259,11 +291,12 @@ export const StudyReaderLive = Layer.effect(
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
       sessionCandidates: Effect.fn('StudyReader.sessionCandidates')(
-        function* (userId, pathId, documentId, selection, limit) {
-          // Coverage of the current revision means the question was answered in regular study.
-          const unanswered =
-            selection === unansweredQuestions
-              ? sql`NOT EXISTS (SELECT 1 FROM written_question_coverage c WHERE c.user_id=${userId} AND c.qualification_path_id=pq.qualification_path_id AND c.question_id=q.id AND c.question_revision_id=r.id)`
+        function* (userId, pathId, round, documentId, selection, limit) {
+          // Covered in the round by a revision carrying the current substantive content.
+          const uncovered =
+            selection === uncoveredQuestions
+              ? sql`NOT EXISTS (SELECT 1 FROM written_question_coverage c JOIN question_revisions cr ON cr.id=c.question_revision_id
+ WHERE c.user_id=${userId} AND c.qualification_path_id=pq.qualification_path_id AND c.question_id=q.id AND c.round_number=${round} AND cr.substantive_revision_id=r.substantive_revision_id)`
               : sql`true`
 
           const rows =
@@ -271,7 +304,7 @@ export const StudyReaderLive = Layer.effect(
  SELECT q.id AS question_id,r.id AS question_revision_id,q.created_at FROM path_questions pq
  JOIN written_questions q ON q.id=pq.question_id
  JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
- WHERE pq.qualification_path_id=${pathId} AND pq.document_id=${documentId} AND ${unanswered} ORDER BY q.created_at,q.id LIMIT ${limit}
+ WHERE pq.qualification_path_id=${pathId} AND pq.document_id=${documentId} AND ${uncovered} ORDER BY q.created_at,q.id LIMIT ${limit}
  ) c JOIN question_answers a ON a.question_revision_id=c.question_revision_id
  ORDER BY c.created_at,c.question_id,a.created_at,a.id`
 

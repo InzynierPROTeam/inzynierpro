@@ -162,8 +162,18 @@ export const StudyRepositoryLive = Layer.effect(
         ),
       ),
       recordCoverage: Effect.fn('StudyRepository.recordCoverage')(
-        function* (userId, pathId, questionId, revisionId) {
-          return yield* sql`INSERT INTO written_question_coverage (user_id,qualification_path_id,question_id,question_revision_id) VALUES (${userId},${pathId},${questionId},${revisionId}) ON CONFLICT (user_id,qualification_path_id,question_id) DO UPDATE SET question_revision_id=EXCLUDED.question_revision_id,covered_at=clock_timestamp()`.pipe(
+        function* (userId, pathId, questionId, revisionId, round) {
+          return yield* sql`INSERT INTO written_question_coverage (user_id,qualification_path_id,question_id,question_revision_id,round_number) VALUES (${userId},${pathId},${questionId},${revisionId},${round})
+ ON CONFLICT (user_id,qualification_path_id,question_id) DO UPDATE SET question_revision_id=EXCLUDED.question_revision_id,round_number=EXCLUDED.round_number,covered_at=clock_timestamp()`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new StudyWriteError({ cause })),
+          )
+        },
+      ),
+      storeLearningRound: Effect.fn('StudyRepository.storeLearningRound')(
+        function* (userId, pathId, round) {
+          return yield* sql`INSERT INTO written_learning_rounds (user_id,qualification_path_id,round_number) VALUES (${userId},${pathId},${round})
+ ON CONFLICT (user_id,qualification_path_id) DO UPDATE SET round_number=EXCLUDED.round_number`.pipe(
             Effect.asVoid,
             Effect.mapError(cause => new StudyWriteError({ cause })),
           )

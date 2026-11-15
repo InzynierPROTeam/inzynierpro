@@ -48,7 +48,7 @@ const learnerInSession = async (questionCount: number, accessScope: ExamAccessSc
       await request('/sessions', {
         documentId: fixture.documentId,
         questionCount,
-        questionSelection: 'unanswered',
+        questionSelection: 'uncovered',
       })
     ).json(),
   )

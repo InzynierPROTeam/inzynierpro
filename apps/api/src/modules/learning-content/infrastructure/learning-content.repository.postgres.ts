@@ -2,6 +2,10 @@ import { Effect, Layer } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { LearningContentWriteError } from '~api/modules/learning-content/application/errors.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
+import {
+  initialRevision,
+  substantiveChange,
+} from '~api/modules/learning-content/domain/learning-content.model.js'
 
 export const LearningContentRepositoryLive = Layer.effect(
   LearningContentRepository,
@@ -28,7 +32,7 @@ export const LearningContentRepositoryLive = Layer.effect(
           .withTransaction(
             Effect.gen(function* () {
               yield* sql`INSERT INTO written_questions (id,document_id) VALUES (${question.id},${question.documentId})`
-              yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation) VALUES (${question.revisionId},${question.id},${question.body},${question.explanation})`
+              yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id) VALUES (${question.revisionId},${question.id},${question.body},${question.explanation},${initialRevision},${question.revisionId})`
 
               for (const answer of question.answers) {
                 yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answer.id},${answer.questionRevisionId},${answer.text},${answer.isCorrect})`
@@ -48,7 +52,13 @@ export const LearningContentRepositoryLive = Layer.effect(
         return yield* sql
           .withTransaction(
             Effect.gen(function* () {
-              yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation) VALUES (${revision.revisionId},${revision.questionId},${revision.body},${revision.explanation})`
+              // A cosmetic revision carries the substantive content of the revision it replaces.
+              const substantiveRevisionId =
+                revision.changeKind === substantiveChange
+                  ? sql`${revision.revisionId}::uuid`
+                  : sql`(SELECT r.substantive_revision_id FROM written_questions q JOIN question_revisions r ON r.id=q.current_revision_id WHERE q.id=${revision.questionId})`
+
+              yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id) VALUES (${revision.revisionId},${revision.questionId},${revision.body},${revision.explanation},${revision.changeKind},${substantiveRevisionId})`
 
               for (const answer of revision.answers) {
                 yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answer.id},${answer.questionRevisionId},${answer.text},${answer.isCorrect})`

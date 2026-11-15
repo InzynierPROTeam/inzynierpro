@@ -27,7 +27,7 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// The real adapters, except that recording coverage, the last write before moving the session,
+// The real adapters, except that recording coverage, written after the answer and its event,
 // names a revision that does not exist, so PostgreSQL rejects it after the answer and its
 // LearningEvent were already inserted.
 const failingCoverageLayer = Layer.effect(
@@ -38,8 +38,8 @@ const failingCoverageLayer = Layer.effect(
 
     return StudyRepository.of({
       ...studyRepository,
-      recordCoverage: (userId, pathId, questionId) =>
-        studyRepository.recordCoverage(userId, pathId, questionId, missingRevision),
+      recordCoverage: (userId, pathId, questionId, _revisionId, round) =>
+        studyRepository.recordCoverage(userId, pathId, questionId, missingRevision, round),
     })
   }),
 ).pipe(Layer.provide(StudyRepositoryLive))
@@ -71,7 +71,7 @@ test('a failure inside the answer transaction keeps no answer or progress, and a
       await request('/sessions', {
         documentId: fixture.documentId,
         questionCount: 2,
-        questionSelection: 'unanswered',
+        questionSelection: 'uncovered',
       })
     ).json(),
   )

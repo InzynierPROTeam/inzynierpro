@@ -17,13 +17,35 @@ import {
   SessionAlreadyEnded,
   SessionQuestionMissing,
 } from '~api/modules/study/domain/errors.js'
+import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
 
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
 /**
+ * Stores the learner's current LearningRound when it moved past the stored one, which happens once
+ * every question of the path is covered in it, and returns it.
+ */
+const syncLearningRound = Effect.fn('Study.syncLearningRound')(function* (
+  userId: UserId,
+  pathId: QualificationPathId,
+) {
+  const studyReader = yield* StudyReader
+  const studyRepository = yield* StudyRepository
+  const progress = yield* studyReader.learningRound(userId, pathId)
+  const round = currentLearningRound(progress)
+
+  if (round !== progress.round) {
+    yield* studyRepository.storeLearningRound(userId, pathId, round)
+  }
+
+  return round
+})
+
+/**
  * Scores and stores the session's one answer to a question (ADR-0002). The answer, its LearningEvent,
- * the path's coverage and the session's continue point commit together (ADR-0012). The session
+ * the path's coverage in the current LearningRound, the next round once this answer covers the last
+ * question of the path, and the session's continue point commit together (ADR-0012). The session
  * continues from the next question still open; only the learner ends it. The account lock
  * serializes submissions with each other, with recording assistance and with assignment changes, so
  * the first answer wins: retrying it returns the stored result, and a different answer is refused.
@@ -95,8 +117,18 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
 
       const stored = yield* studyRepository.recordAnswer(answer)
       yield* studyRepository.recordLearningEvent(answer)
-      // Any submitted answer covers the question in the first pass, even a wrong or assisted one.
-      yield* studyRepository.recordCoverage(userId, pathId, question.questionId, questionRevisionId)
+      // A withdrawal may have completed the stored round since the last answer, so it is synced first.
+      const round = yield* syncLearningRound(userId, pathId)
+      // Any submitted answer covers the question in the round, even a wrong or assisted one.
+      yield* studyRepository.recordCoverage(
+        userId,
+        pathId,
+        question.questionId,
+        questionRevisionId,
+        round,
+      )
+      // Covering the last uncovered question starts the next round (ADR-0002).
+      yield* syncLearningRound(userId, pathId)
 
       // With nothing left open the session stays on this question until the learner ends it.
       const next = yield* studyReader.nextOpenPosition(sessionId, position)
