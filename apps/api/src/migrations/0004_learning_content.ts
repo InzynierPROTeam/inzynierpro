@@ -33,10 +33,13 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     published_at timestamptz(3),
     withdrawn_at timestamptz(3),
     withdrawal_reason text CHECK (length(withdrawal_reason) > 0),
-    -- A withdrawal is an explicit decision on published content and always keeps its reason (ADR-0003).
+    change_kind text NOT NULL CHECK (change_kind IN ('initial','cosmetic','substantive')),
+    substantive_revision_id uuid NOT NULL,
+    CHECK ((change_kind='cosmetic') = (substantive_revision_id<>id)),
     CHECK ((withdrawn_at IS NULL) = (withdrawal_reason IS NULL)),
     CHECK (withdrawn_at IS NULL OR published_at IS NOT NULL),
     UNIQUE (question_id, id),
+    FOREIGN KEY (question_id, substantive_revision_id) REFERENCES question_revisions(question_id, id),
 created_at timestamptz(3) NOT NULL DEFAULT now(),
 updated_at timestamptz(3) NOT NULL DEFAULT now()
 )`

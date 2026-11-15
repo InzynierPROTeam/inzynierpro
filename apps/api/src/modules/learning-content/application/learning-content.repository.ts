@@ -23,7 +23,10 @@ export class LearningContentRepository extends Context.Service<
     readonly createQuestion: (
       question: NewQuestion,
     ) => Effect.Effect<void, LearningContentWriteError>
-    /** Makes the revision current for new sessions; started sessions keep their pinned revisions. */
+    /**
+     * Makes the revision current for new sessions with its change kind; started sessions keep their
+     * pinned revisions.
+     */
     readonly publishRevision: (
       revision: NewQuestionRevision,
     ) => Effect.Effect<void, LearningContentWriteError>

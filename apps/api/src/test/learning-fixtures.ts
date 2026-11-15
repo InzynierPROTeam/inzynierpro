@@ -16,6 +16,8 @@ import {
   NewQuestion,
   NewQuestionRevision,
   QuestionRevisionWithdrawal,
+  type RevisionChangeKind,
+  substantiveChange,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
@@ -127,8 +129,11 @@ export const addFixtureQuestion = (
     }),
   )
 
-// Publishes a newer revision with its own answer IDs, as an editor's substantive change would.
-export const publishFixtureRevision = (questionId: WrittenQuestionId) =>
+// Publishes a newer revision with its own answer IDs, as an editor's change of the given kind would.
+export const publishFixtureRevision = (
+  questionId: WrittenQuestionId,
+  changeKind: RevisionChangeKind = substantiveChange,
+) =>
   runFixture(
     Effect.gen(function* () {
       const learningContentRepository = yield* LearningContentRepository
@@ -137,6 +142,7 @@ export const publishFixtureRevision = (questionId: WrittenQuestionId) =>
       const revision = yield* Schema.decodeEffect(NewQuestionRevision)({
         questionId,
         revisionId,
+        changeKind,
         body: 'Test-only revised question',
         answers: ['D', 'E', 'F'].map((text, index) => ({
           id: crypto.randomUUID(),

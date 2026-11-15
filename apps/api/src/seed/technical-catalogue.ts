@@ -3,6 +3,7 @@ import { unrestrictedQualificationScopeCode } from '@inzpro/domain/modules/quali
 import { demolitionSpecializationCode } from '@inzpro/domain/modules/qualification-paths/specialization'
 import { DateTime, Effect } from 'effect'
 import { SqlClient } from 'effect/sql'
+import { initialRevision } from '~api/modules/learning-content/domain/learning-content.model.js'
 
 // Local development catalogue with Polish display names and authored example questions.
 // Published chamber dates and explicitly unconfirmed planning estimates live in catalogue.ts.
@@ -197,8 +198,8 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         const revisionId = catalogueId('43', n)
         const { documentId } = question
         yield* sql`INSERT INTO written_questions (id, document_id) VALUES (${questionId}, ${documentId}) ON CONFLICT DO NOTHING`
-        yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation)
-        VALUES (${revisionId},${questionId},${question.body},${question.explanation}) ON CONFLICT DO NOTHING`
+        yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id)
+        VALUES (${revisionId},${questionId},${question.body},${question.explanation},${initialRevision},${revisionId}) ON CONFLICT DO NOTHING`
 
         const revisions =
           yield* sql`SELECT published_at FROM question_revisions WHERE id=${revisionId} LIMIT 1`
