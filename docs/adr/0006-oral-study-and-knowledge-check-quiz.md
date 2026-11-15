@@ -4,7 +4,7 @@
 
 An oral answer is hidden at first; the user may reveal it without a forced wait or recording. The visibility choice is remembered locally per client across questions and sessions, not stored on the account or synced. Revealing the answer is a normal oral step and never makes an answer "assisted".
 
-Oral self-assessment has three levels: cannot answer, partially, and fully. Submitting it moves to the next question, or to the summary after the last one, without confirmation. We do not carry over V1's independent manual "know / don't know" flag; we store self-assessments of individual attempts and the computed learning state. Favourite and difficult remain independent marks.
+Oral self-assessment has three levels: cannot answer, partially, and fully. Submitting it moves to the next question, or to the summary after the last one, without confirmation. We do not carry over V1's independent manual "know / don't know" flag; we store self-assessments of individual attempts and the computed learning state. Favourite remains an independent mark; there is no separate difficult mark.
 
 ## Optional mini-quiz
 

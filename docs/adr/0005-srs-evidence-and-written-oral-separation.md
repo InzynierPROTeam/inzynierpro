@@ -20,7 +20,11 @@ We keep an immutable log of learning events with the actual result, context, tim
 
 - An independent correct written answer is Good and a wrong one is Again. Ease is not inferred from click speed, there is no extra self-assessment after written answers, and Easy is not part of the initial strategy.
 - In oral study, "cannot answer" and "partially" both map to Again, because the user cannot yet answer sufficiently on their own; "fully" maps to Good. All three self-assessments are kept in history. An incomplete answer is not Hard, which means a successful but difficult recall.
-- A correct assisted written answer is kept as correct but does not earn the standard interval extension. A new question gets an early independent check. An existing state is not pushed out by an answer given after viewing help; a wrong answer still records the failure.
+- A correct written answer given after opening the user's own note is Hard: a successful recall with a memory aid, which extends the interval less than Good.
+- A correct written answer given after opening the explanation is kept as correct but does not earn the standard interval extension. A new question is rated Again, so it gets an early independent check. An existing state is not changed: the event is kept, but the due time is not pushed out.
+- A wrong written answer is Again regardless of assistance.
+- Only the first answer to a question on a study day (Europe/Warsaw, by the backend) updates its state; later answers that day stay in history only, except that a wrong answer later that day still applies Again.
+- The implementation is the pinned `ts-fsrs` library with its default model parameters and a desired retention of 0.9, with no per-user parameter optimisation at first. UserReviewState is kept per user, path, study kind and question, together with the version of the rules that produced it.
 
 ## Oral mini-quiz signal
 
@@ -30,4 +34,4 @@ A quiz taken right after the session is extra verification of the same exposure,
 
 ## Still open
 
-The FSRS implementation and model version, parameters, interval details for assisted answers, the time threshold and combination of quiz signals, and the interpretation of immediate re-solving are strategy configuration still to be specified.
+Oral parameters, the time threshold and combination of quiz signals, and the interpretation of immediate re-solving are strategy configuration still to be specified.

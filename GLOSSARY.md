@@ -108,7 +108,7 @@ _Avoid_: exam session (_sesja egzaminacyjna_)
 A separate session whose questions are selected by the review system from the user's SRS state on a path. By default it may span every document or category of that path.
 
 **LearningRound** (UI: _runda nauki_):
-One pass through the whole material of a path in regular study, category by category. It is internal: users start and continue sessions without managing rounds.
+One pass through the whole material of a path in regular study, category by category. It is complete when every published, non-withdrawn question of the path has a regular-study answer in it, and the next round starts automatically. It is internal: users start and continue sessions without managing rounds.
 
 **SessionPreview** (UI: _podgląd sesji_):
 The proposed material scope and available settings shown before a session is created. The user picks settings within the currently available material and the mode's rules.
@@ -129,7 +129,7 @@ The current learning state of one unit of material for a user on a path, used to
 An immutable record of a user's actual activity on a specific material revision in the context of a path and study kind, with its result, time and circumstances. It feeds progress and review scheduling; its meaning depends on assistance and mode, among others.
 
 **AssistedAnswer** (UI: _odpowiedź udzielona z pomocą_):
-A written study attempt preceded by opening the explanation or personal notes for the question. It is correct or wrong but is not evidence of independent mastery.
+A written study attempt preceded by opening the explanation or a non-empty personal note for the question. Its assistance level is note or explanation, the explanation winning when both were opened. It is correct or wrong but is not evidence of fully independent mastery; a note weighs less than the explanation.
 
 **MockExamAttempt** (UI: _podejście do egzaminu próbnego_):
 A separate attempt at a mock exam without ongoing feedback. Until it ends the user may return to questions, change answers, and explicitly pause and resume.
@@ -137,9 +137,6 @@ _Avoid_: exam session (_sesja egzaminacyjna_)
 
 **FavoriteQuestion** (UI: _ulubione pytanie_):
 A question the user marked as a favourite, shared across all their paths.
-
-**DifficultQuestion** (UI: _pytanie oznaczone jako trudne_):
-A personal mark on a question, shared across all the user's paths. It is distinct from the computed mastery of the question on a path.
 
 **PersonalQuestionNote** (UI: _własna notatka do pytania_):
 A user's private note on a question, shared across their paths. It stays available after the question changes, with a notice that it may refer to earlier wording.

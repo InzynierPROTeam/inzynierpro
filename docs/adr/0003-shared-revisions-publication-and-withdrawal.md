@@ -12,7 +12,7 @@ Question content is shared between paths. Selection uses the path's scope, docum
 
 ## Cosmetic and substantive changes
 
-Editors classify a change as cosmetic or substantive by meaning, not by the number of characters changed. Typos and formatting keep learning state. Changing the correct answer or an important part of an oral answer sends the material back for the user to re-check: history is kept, but knowing the old content does not confirm knowing the new. A substantively changed question becomes eligible again for regular study in the current round, even if the earlier revision was answered; it may appear in the next new session, never added to a started set. A cosmetic change does not do this. The exact SRS state transition still needs to be specified.
+Editors classify a change as cosmetic or substantive by meaning, not by the number of characters changed. Typos and formatting keep learning state. Changing the correct answer or an important part of an oral answer sends the material back for the user to re-check: history is kept, but knowing the old content does not confirm knowing the new. A substantively changed question becomes eligible again for regular study in the current round, even if the earlier revision was answered; it may appear in the next new session, never added to a started set. A cosmetic change does not do this. Each published revision records its change kind, cosmetic or substantive, set by the editor at publication. A substantive revision makes the question uncovered in the current round and resets its SRS state to a new card on every path, keeping the earlier history; a cosmetic one changes neither.
 
 ## Withdrawal
 
