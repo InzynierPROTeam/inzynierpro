@@ -32,6 +32,10 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     explanation text NOT NULL CHECK (length(explanation) > 0),
     published_at timestamptz(3),
     withdrawn_at timestamptz(3),
+    withdrawal_reason text CHECK (length(withdrawal_reason) > 0),
+    -- A withdrawal is an explicit decision on published content and always keeps its reason (ADR-0003).
+    CHECK ((withdrawn_at IS NULL) = (withdrawal_reason IS NULL)),
+    CHECK (withdrawn_at IS NULL OR published_at IS NOT NULL),
     UNIQUE (question_id, id),
 created_at timestamptz(3) NOT NULL DEFAULT now(),
 updated_at timestamptz(3) NOT NULL DEFAULT now()
@@ -93,8 +97,12 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
         RETURN OLD;
       END IF;
       IF TG_OP='UPDATE' AND OLD.published_at IS NOT NULL AND
-        (to_jsonb(NEW) - 'withdrawn_at' - 'updated_at') IS DISTINCT FROM (to_jsonb(OLD) - 'withdrawn_at' - 'updated_at') THEN
+        (to_jsonb(NEW) - 'withdrawn_at' - 'withdrawal_reason' - 'updated_at') IS DISTINCT FROM (to_jsonb(OLD) - 'withdrawn_at' - 'withdrawal_reason' - 'updated_at') THEN
         RAISE EXCEPTION 'Published question revisions are immutable';
+      END IF;
+      IF TG_OP='UPDATE' AND OLD.withdrawn_at IS NOT NULL AND
+        (NEW.withdrawn_at,NEW.withdrawal_reason) IS DISTINCT FROM (OLD.withdrawn_at,OLD.withdrawal_reason) THEN
+        RAISE EXCEPTION 'Question revision withdrawals are final';
       END IF;
       IF NEW.published_at IS NOT NULL AND (TG_OP='INSERT' OR OLD.published_at IS NULL) THEN
         SELECT count(*),count(*) FILTER (WHERE is_correct) INTO answer_count,correct_count FROM question_answers WHERE question_revision_id=NEW.id;
