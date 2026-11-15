@@ -21,7 +21,13 @@ const migrations = (await readdir(join(dist, 'migrations')))
   .map(file => join(dist, 'migrations', file))
 
 const { fileList } = await nodeFileTrace(
-  [join(dist, 'main.js'), join(dist, 'lib/migrate.js'), ...migrations],
+  [
+    join(dist, 'main.js'),
+    join(dist, 'lib/migrate.js'),
+    join(dist, 'worker/main.js'),
+    join(dist, 'worker/status.js'),
+    ...migrations,
+  ],
   { base: root },
 )
 
