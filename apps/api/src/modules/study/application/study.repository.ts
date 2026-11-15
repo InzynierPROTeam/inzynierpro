@@ -12,6 +12,11 @@ import type {
 import { Context, type Effect } from 'effect'
 import type { LearningRoundNumber } from '~api/modules/study/domain/learning-round.model.js'
 import type {
+  LearningEventContext,
+  LearningEventId,
+  NewReviewState,
+} from '~api/modules/study/domain/review-state.model.js'
+import type {
   NewSessionAnswer,
   NewStudySession,
   SessionAnswer,
@@ -42,8 +47,13 @@ export class StudyRepository extends Context.Service<
     readonly recordAnswer: (
       answer: NewSessionAnswer,
     ) => Effect.Effect<SessionAnswer, StudyWriteError>
-    /** Appends the answer's LearningEvent with the result, revision, path, mode and assistance. */
-    readonly recordLearningEvent: (answer: NewSessionAnswer) => Effect.Effect<void, StudyWriteError>
+    /** Appends the answer's LearningEvent with the result, revision, path, mode, assistance and time. */
+    readonly recordLearningEvent: (
+      answer: NewSessionAnswer,
+      context: LearningEventContext,
+    ) => Effect.Effect<LearningEventId, StudyWriteError>
+    /** Replaces the question's UserReviewState on the path. */
+    readonly storeReviewState: (state: NewReviewState) => Effect.Effect<void, StudyWriteError>
     /** Moves the continue point after an answer, which also makes the session the most recently used; returns the session. */
     readonly moveSession: (
       sessionId: StudySessionId,

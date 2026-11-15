@@ -7,7 +7,7 @@ import type {
   SessionQuestionPosition,
   StudySessionId,
 } from '@inzpro/domain/modules/study/study-session'
-import { Effect, Option } from 'effect'
+import { DateTime, Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 import {
@@ -18,7 +18,10 @@ import {
   SessionQuestionMissing,
 } from '~api/modules/study/domain/errors.js'
 import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
+import { noAssistance, studyMode } from '~api/modules/study/domain/review-state.model.js'
+import { answerAssistance } from '~api/modules/study/domain/review-state.rules.js'
 
+import { recordWrittenEvidence } from './review-state.service.js'
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
@@ -44,12 +47,14 @@ const syncLearningRound = Effect.fn('Study.syncLearningRound')(function* (
 
 /**
  * Scores and stores the session's one answer to a question (ADR-0002). The answer, its LearningEvent,
- * the path's coverage in the current LearningRound, the next round once this answer covers the last
- * question of the path, and the session's continue point commit together (ADR-0012). The session
+ * the question's UserReviewState, the path's coverage in the current LearningRound, the next round
+ * once this answer covers the last question of the path, and the session's continue point commit
+ * together (ADR-0012). The session
  * continues from the next question still open; only the learner ends it. The account lock
  * serializes submissions with each other, with recording assistance and with assignment changes, so
  * the first answer wins: retrying it returns the stored result, and a different answer is refused.
- * Assistance comes from the recorded opening of the explanation, never from the client.
+ * Assistance comes from the recorded opening of the explanation, never from the client, and the
+ * study day from backend time.
  */
 export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
   userId: UserId,
@@ -102,6 +107,9 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         return yield* new QuestionRevisionWithdrawn()
       }
 
+      const answeredAt = yield* DateTime.now
+      const assistance = answerAssistance(question)
+
       const answer = {
         userId,
         qualificationPathId: pathId,
@@ -112,11 +120,11 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         questionRevisionId,
         answerId,
         isCorrect: option.isCorrect,
-        isAssisted: Option.isSome(question.explanationOpenedAt),
+        isAssisted: assistance !== noAssistance,
       }
 
       const stored = yield* studyRepository.recordAnswer(answer)
-      yield* studyRepository.recordLearningEvent(answer)
+      yield* recordWrittenEvidence(answer, { mode: studyMode, assistance, answeredAt })
       // A withdrawal may have completed the stored round since the last answer, so it is synced first.
       const round = yield* syncLearningRound(userId, pathId)
       // Any submitted answer covers the question in the round, even a wrong or assisted one.

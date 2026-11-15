@@ -3,6 +3,10 @@ import type {
   QuestionCount,
   ReferenceDocumentId,
 } from '@inzpro/domain/modules/learning-content/reference-document'
+import type {
+  QuestionRevisionId,
+  WrittenQuestionId,
+} from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type {
   SessionQuestionPosition,
@@ -15,6 +19,7 @@ import type {
   LearningRoundNumber,
   LearningRoundProgress,
 } from '~api/modules/study/domain/learning-round.model.js'
+import type { ReviewCard, StudyDay } from '~api/modules/study/domain/review-state.model.js'
 import type { DocumentQuestionPool } from '~api/modules/study/domain/study-document.model.js'
 import type {
   SessionCandidate,
@@ -111,6 +116,32 @@ export class StudyReader extends Context.Service<
     readonly sessionResultCounts: (
       sessionId: StudySessionId,
     ) => Effect.Effect<StudySessionResultCounts, StudyReadError>
+    /**
+     * The question's UserReviewState on the path, none for a new card: never answered, or reset
+     * because the question's current revision carries other substantive content than the state.
+     */
+    readonly reviewState: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      questionId: WrittenQuestionId,
+    ) => Effect.Effect<Option.Option<ReviewCard>, StudyReadError>
+    /**
+     * Whether the revision carries the substantive content of its question's current revision,
+     * which a cosmetic revision keeps and a substantive one replaces.
+     */
+    readonly carriesCurrentContent: (
+      questionRevisionId: QuestionRevisionId,
+    ) => Effect.Effect<boolean, StudyReadError>
+    /**
+     * Whether a LearningEvent on the path falls on the study day for a revision carrying the same
+     * substantive content as the given one, so answers to replaced content do not count.
+     */
+    readonly answeredContentOnStudyDay: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      questionRevisionId: QuestionRevisionId,
+      day: StudyDay,
+    ) => Effect.Effect<boolean, StudyReadError>
     /** One cursor page of an owned session's questions with their results, in session order. */
     readonly sessionResults: (
       userId: UserId,

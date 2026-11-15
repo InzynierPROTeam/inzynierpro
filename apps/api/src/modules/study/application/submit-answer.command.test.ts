@@ -16,6 +16,7 @@ import {
 } from '~api/test/learning-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
+import { ReviewSchedulerLive } from './review-state.service.js'
 import { StudyRepository } from './study.repository.js'
 import { submitAnswer } from './submit-answer.command.js'
 
@@ -47,6 +48,7 @@ const failingCoverageLayer = Layer.effect(
 const commandLayer = Layer.mergeAll(
   failingCoverageLayer,
   StudyReaderLive,
+  ReviewSchedulerLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
 ).pipe(Layer.provideMerge(databaseLayerFromConfig))

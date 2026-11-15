@@ -38,6 +38,3 @@ export const correctPercent = (
       scoredQuestionCount({ total: session.questionCount, skipped: session.skippedCount }),
     ),
   )
-
-// The mode recorded on a regular-study LearningEvent; reviews and favourites will add their own (ADR-0005).
-export const studyLearningMode = 'study'
