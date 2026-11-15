@@ -18,6 +18,17 @@ export const technicalConfiguration = {
   oralExamDate: null,
 } satisfies typeof CompleteOnboardingPayload.Encoded
 
+// The second seeded path: architecture design in a restricted scope with three Building Law
+// questions, so its learning round can be finished in a few answers.
+export const smallPathConfiguration = {
+  specializationId: '60000000-0000-4000-8000-000000000002',
+  qualificationKindId: '70000000-0000-4000-8000-000000000002',
+  qualificationScopeId: '80000000-0000-4000-8000-000000000002',
+  accessScope: 'both',
+  examSessionId: '90000000-0000-4000-8000-000000000002',
+  oralExamDate: null,
+} satisfies typeof CompleteOnboardingPayload.Encoded
+
 export const uniqueEmail = (label: string) => `e2e-${label}-${crypto.randomUUID()}@example.com`
 
 // Every Node-side visitor reports its own address, so sign-in rate limits never collide.
@@ -61,15 +72,18 @@ const shareSession = (page: Page, jar: CookieJar) =>
     .addCookies([...jar.cookies].map(([name, value]) => ({ name, value, url: platformUrl })))
 
 export const test = base.extend<{
+  // The path the `onboarded` account configures.
+  pathConfiguration: typeof CompleteOnboardingPayload.Encoded
   // The exam parts the `onboarded` account's path covers.
   accessScope: typeof CompleteOnboardingPayload.Encoded.accessScope
   // A browser page for a new visitor.
   visitor: Page
   // A browser page signed in as a new account that has not configured a path.
   signedIn: SignedInPage
-  // A browser page signed in as a new account with the technical path configured.
+  // A browser page signed in as a new account with its path configured, the technical one by default.
   onboarded: SignedInPage
 }>({
+  pathConfiguration: [technicalConfiguration, { option: true }],
   accessScope: ['both', { option: true }],
   visitor: async ({ page }, use) => {
     const address = uniqueAddress()
@@ -93,14 +107,14 @@ export const test = base.extend<{
     await shareSession(visitor, await signInThroughApi(email))
     await use({ page: visitor, account: { email } })
   },
-  onboarded: async ({ visitor, accessScope }, use) => {
+  onboarded: async ({ visitor, pathConfiguration, accessScope }, use) => {
     const email = uniqueEmail('onboarded')
     const jar = await signInThroughApi(email)
 
     const response = await jar.fetch(`${apiUrl}/api/v1/preparation/onboarding`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...technicalConfiguration, accessScope }),
+      body: JSON.stringify({ ...pathConfiguration, accessScope }),
     })
 
     expect(response.ok).toBe(true)

@@ -20,7 +20,7 @@ The ports differ from local development, so the suite runs beside `pnpm dev`. Af
 ## Writing tests
 
 - Specs live in `src/*.spec.ts`; fixtures and helpers in `src/test/`.
-- Start from the `visitor`, `signedIn` or `onboarded` fixtures. `test.use({ accessScope: 'written' })` changes the exam parts of the `onboarded` path.
+- Start from the `visitor`, `signedIn` or `onboarded` fixtures. `test.use({ accessScope: 'written' })` changes the exam parts of the `onboarded` path, and `test.use({ pathConfiguration: smallPathConfiguration })` onboards to the small second path, whose learning round takes three answers.
 - Each test is its own client address and its own account, so tests run in parallel.
 - Follow the E2E rules in [CODING_STANDARDS.md](../../CODING_STANDARDS.md#testing).
 
