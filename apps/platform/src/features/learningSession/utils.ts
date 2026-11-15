@@ -1,5 +1,14 @@
-import type { SessionPreview } from '@inzpro/api-contracts/modules/study/responses'
+import type {
+  SessionPreview,
+  SessionQuestion,
+  StudySession,
+} from '@inzpro/api-contracts/modules/study/responses'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import {
+  endedStudySession,
+  hasOpenQuestions,
+  type SessionQuestionPosition,
+} from '@inzpro/domain/modules/study/study-session'
 import { getRouteApi } from '@tanstack/react-router'
 
 export const sessionPreviewRouteApi = getRouteApi(
@@ -24,3 +33,51 @@ export const sessionQuestionRouteApi = getRouteApi(
 export const sessionSummaryRouteApi = getRouteApi(
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie',
 )
+
+/**
+ * Where an answered or withdrawn question leads: the summary of an ended session; ending the session
+ * from its last question or once every remaining question was withdrawn (ADR-0003); otherwise the
+ * following question.
+ */
+export const sessionNextStep = (
+  position: SessionQuestionPosition,
+  session: Pick<StudySession, 'status' | 'progress'>,
+): 'summary' | 'end' | 'next' =>
+  session.status === endedStudySession
+    ? 'summary'
+    : position >= session.progress.total || !hasOpenQuestions(session.progress)
+      ? 'end'
+      : 'next'
+
+/**
+ * The one withdrawal notice a session question shows, if any. Once every question left without an
+ * answer was withdrawn, the session can only end, so that notice replaces the one for the question
+ * itself (ADR-0003). It is not shown on the last question after a regular answer, which ends the
+ * session anyway.
+ */
+export const sessionWithdrawalNotice = (
+  question: Pick<SessionQuestion, 'position' | 'isWithdrawn' | 'answer'>,
+  session: Pick<StudySession, 'status' | 'progress'> | null | undefined,
+): 'question' | 'remaining' | null => {
+  const isSkipped = question.isWithdrawn && question.answer === null
+
+  if (
+    session !== null &&
+    session !== undefined &&
+    session.status !== endedStudySession &&
+    !hasOpenQuestions(session.progress) &&
+    session.progress.skipped > 0 &&
+    (isSkipped || question.position < session.progress.total)
+  ) {
+    return 'remaining'
+  }
+
+  return isSkipped ? 'question' : null
+}
+
+/** The question as the backend now holds it after refusing an answer to its withdrawn revision. */
+export const withdrawnQuestion = (question: SessionQuestion): SessionQuestion => ({
+  ...question,
+  isWithdrawn: true,
+  answer: null,
+})

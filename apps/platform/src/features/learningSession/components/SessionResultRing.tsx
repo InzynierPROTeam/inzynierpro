@@ -12,10 +12,6 @@ type SessionResultRingProps = {
   percent: Percent
 }
 
-/**
- * The whole ring is every question of the session; the blue arc the answered ones and the green
- * arc, drawn over it, the correct ones. Both unwind from the top as the score counts up inside.
- */
 export const SessionResultRing: React.FC<SessionResultRingProps> = ({
   total,
   answered,

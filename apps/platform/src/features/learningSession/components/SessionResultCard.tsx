@@ -1,4 +1,5 @@
 import type { StudySessionSummary } from '@inzpro/api-contracts/modules/study/responses'
+import { scoredQuestionCount } from '@inzpro/domain/modules/study/study-session'
 import {
   Card,
   CardContent,
@@ -17,7 +18,7 @@ import {
 } from '@inzpro/ui/components/item'
 import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
-import { CircleCheck, LightbulbOff, ListChecks } from 'lucide-react'
+import { CircleCheck, CircleSlash, LightbulbOff, ListChecks } from 'lucide-react'
 import type React from 'react'
 
 import { SessionResultRing } from './SessionResultRing'
@@ -27,6 +28,8 @@ type SessionResultCardProps = { summary: StudySessionSummary }
 /** The session's score on a ring, then what it is made of. */
 export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary }) => {
   const { result, progress } = summary
+  // Questions withdrawn before an answer were skipped: they are neither wrong nor scored (ADR-0003).
+  const scored = scoredQuestionCount(progress)
 
   return (
     <Card>
@@ -38,7 +41,7 @@ export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary })
       </CardHeader>
       <CardContent className="flex flex-col gap-8">
         <SessionResultRing
-          total={progress.total}
+          total={scored}
           answered={progress.answered}
           correct={result.correct}
           percent={result.correctPercent}
@@ -51,7 +54,7 @@ export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary })
               // The ring's answered arc.
               iconClassName="bg-primary/10 text-primary"
               label="Odpowiedziano na"
-              value={`${progress.answered} z ${progress.total} pytań`}
+              value={`${progress.answered} z ${scored} pytań`}
             />
             <ResultRow
               icon={<CircleCheck />}
@@ -65,6 +68,14 @@ export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary })
               label="Bez podpowiedzi"
               value={`${progress.answered - result.assisted} z ${progress.answered}`}
             />
+            {progress.skipped > 0 && (
+              <ResultRow
+                icon={<CircleSlash />}
+                iconClassName="bg-muted text-muted-foreground"
+                label="Wycofane pytania"
+                value={`${progress.skipped} z ${progress.total} pytań nie liczy się do wyniku`}
+              />
+            )}
           </ItemGroup>
         </div>
       </CardContent>

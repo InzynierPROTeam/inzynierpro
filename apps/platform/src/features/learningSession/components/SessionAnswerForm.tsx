@@ -23,9 +23,10 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useSubmitSessionAnswer } from '../hooks/useSubmitSessionAnswer'
+import { sessionWithdrawalNotice } from '../utils'
 import { SessionAnswerActions } from './SessionAnswerActions'
 import { SessionAnswerExplanation } from './SessionAnswerExplanation'
-import { SessionQuestionWithdrawn } from './SessionQuestionWithdrawn'
+import { RemainingQuestionsWithdrawn, SessionQuestionWithdrawn } from './SessionQuestionWithdrawn'
 
 const answerSchema = Schema.Struct({
   answerId: QuestionAnswerId.annotate({ message: 'Wybierz odpowiedź.' }),
@@ -151,7 +152,11 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
 
       {submitted !== null && <SessionAnswerExplanation explanation={question.explanation} />}
 
-      {submitted === null && question.isWithdrawn && <SessionQuestionWithdrawn />}
+      {Match.value(sessionWithdrawalNotice(question, session)).pipe(
+        Match.when('question', () => <SessionQuestionWithdrawn />),
+        Match.when('remaining', () => <RemainingQuestionsWithdrawn />),
+        Match.orElse(() => null),
+      )}
 
       <SessionAnswerActions
         question={question}
