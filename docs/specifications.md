@@ -5,6 +5,8 @@ GitHub Issues for InzynierPROTeam/inzynierpro own delivery scope and acceptance 
 - [System specification](https://github.com/InzynierPROTeam/inzynierpro/issues/1)
 - [Foundation specification](https://github.com/InzynierPROTeam/inzynierpro/issues/2)
 - [Onboarding, assignments and preview](https://github.com/InzynierPROTeam/inzynierpro/issues/6)
+- [Stage 2: platform learning](https://github.com/InzynierPROTeam/inzynierpro/issues/46)
+- [Complete written study: rounds, FSRS reviews, favourites and notes](https://github.com/InzynierPROTeam/inzynierpro/issues/48)
 
 Before implementation read the applicable issue, glossary and ADRs. [platform.md](platform.md) describes how the web platform guards routes and loads data, [written-study.md](written-study.md) how written study sessions work, and [background-jobs.md](background-jobs.md) how the worker runs durable jobs. Treat V1 at `../inzynier-pro` as read-only reference, not an implicit V2 specification or permission to access production data. Leave changes uncommitted unless publication is explicitly requested.
 
@@ -40,6 +42,10 @@ Before implementation read the applicable issue, glossary and ADRs. [platform.md
 | [0026-api-rate-limiting](adr/0026-api-rate-limiting.md)                                                                 | D1, D15, D17                     |
 | [0027-schema-ownership-and-module-layers](adr/0027-schema-ownership-and-module-layers.md)                               | D15                              |
 
+## Stage order
+
+After Foundation, the platform is completed first on demonstrative technical seed data: platform learning (#46), then the remaining user features (sources, PDF packages, chamber directory, qualification guide, submitting reports). Admin and editorial MCP follow, then the V1 import together with the public website and product launch, then mobile and finally Community. Each feature extends the seed with its own data; the data model follows the ADRs from the start so the import needs no rebuild. The system specification lists the stages.
+
 ## Product scope notes
 
 - The public website has a knowledge base about obtaining a licence alongside a blog, FAQ and contact details available without signing in. Contact about the app is separate from reporting errors in specific questions.
@@ -49,6 +55,6 @@ Before implementation read the applicable issue, glossary and ADRs. [platform.md
 
 ## Confirmed scope changes
 
-The confirmed interview replaces simplified Foundation path selection with dependent onboarding, mandatory versioned exam goals, active/archived assignments, one-way exam-scope extension, profile integration and application authorization. ADR-0025 records the model; ADR-0012 records CQRS; ADR-0014 records combined private queries/client caching. Onboarding choices are public until configuration persistence; concrete catalogue endpoints use cursor pages, while client-local selection is resolved against the complete assignment list (at most five, including archived assignments), fetched with an ordinary query and ordered by assignment `updated_at` descending. All dates use one UTC codec. Full daily planning, gamification and destructive reset execution remain separate tasks; their unresolved rules must be specified before implementation.
+The confirmed interview replaces simplified Foundation path selection with dependent onboarding, mandatory versioned exam goals, active/archived assignments, one-way exam-scope extension, profile integration and application authorization. ADR-0025 records the model; ADR-0012 records CQRS; ADR-0014 records combined private queries/client caching. Onboarding choices are public until configuration persistence; concrete catalogue endpoints use cursor pages, while client-local selection is resolved against the complete assignment list (at most five, including archived assignments), fetched with an ordinary query and ordered by assignment `updated_at` descending. All dates use one UTC codec. Full daily planning, gamification and destructive reset execution are specified from scratch in stage 2 (#46); their unresolved rules must be specified before implementation.
 
 Update behavior in the appropriate GitHub specification and significant decisions in ADRs. This map is an entry point, not a duplicate system specification.
