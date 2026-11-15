@@ -202,3 +202,17 @@ export const storedLearningRound = (userId: UserId, pathId: QualificationPathId)
       return progress.round
     }),
   )
+
+// The question's UserReviewState on the path, which the API does not expose yet; none for a new card.
+export const currentReviewState = (
+  userId: UserId,
+  pathId: QualificationPathId,
+  questionId: WrittenQuestionId,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const studyReader = yield* StudyReader
+
+      return yield* studyReader.reviewState(userId, pathId, questionId)
+    }),
+  )

@@ -23,7 +23,7 @@ We keep an immutable log of learning events with the actual result, context, tim
 - A correct written answer given after opening the user's own note is Hard: a successful recall with a memory aid, which extends the interval less than Good.
 - A correct written answer given after opening the explanation is kept as correct but does not earn the standard interval extension. A new question is rated Again, so it gets an early independent check. An existing state is not changed: the event is kept, but the due time is not pushed out.
 - A wrong written answer is Again regardless of assistance.
-- Only the first answer to a question on a study day (Europe/Warsaw, by the backend) updates its state; later answers that day stay in history only, except that a wrong answer later that day still applies Again.
+- Only the first answer to a question on a study day (Europe/Warsaw, by the backend) updates its state; later answers that day stay in history only, except that a wrong answer later that day still applies Again. The question here means its current substantive content: after a substantive revision, answers to the replaced content neither update the state nor use up the study day of the new content.
 - The implementation is the pinned `ts-fsrs` library with its default model parameters and a desired retention of 0.9, with no per-user parameter optimisation at first. UserReviewState is kept per user, path, study kind and question, together with the version of the rules that produced it.
 
 ## Oral mini-quiz signal

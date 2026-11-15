@@ -19,6 +19,7 @@ import { endSession } from '~api/modules/study/application/end-session.command.j
 import { getLatestSession } from '~api/modules/study/application/latest-session.query.js'
 import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
 import { recordAssistance } from '~api/modules/study/application/record-assistance.command.js'
+import { ReviewSchedulerLive } from '~api/modules/study/application/review-state.service.js'
 import { getSessionPreview } from '~api/modules/study/application/session-preview.query.js'
 import { getSessionQuestion } from '~api/modules/study/application/session-question.query.js'
 import { getSessionResults } from '~api/modules/study/application/session-results.query.js'
@@ -312,4 +313,5 @@ export const StudyRequestServices = Layer.mergeAll(
   PreparationRepositoryLive,
   StudyReaderLive,
   StudyRepositoryLive,
+  ReviewSchedulerLive,
 )

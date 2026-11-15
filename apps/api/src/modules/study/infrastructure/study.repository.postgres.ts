@@ -5,17 +5,19 @@ import type {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
-import { Array as Arr, Data, Effect, Layer, Schema } from 'effect'
+import { Array as Arr, Data, DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { StudyWriteError } from '~api/modules/study/application/errors.js'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
+import { LearningEventId } from '~api/modules/study/domain/review-state.model.js'
 import { StudySession } from '~api/modules/study/domain/study-session.model.js'
-import { studyLearningMode } from '~api/modules/study/domain/study-session.rules.js'
 
 // Keep the operation's generic error separate from SQL failures without changing rollback behavior.
 class StudyTransactionFailure<E> extends Data.TaggedError('StudyTransactionFailure')<{
   readonly error: E
 }> {}
+
+const LearningEventRow = Schema.Struct({ id: LearningEventId })
 
 const AssistanceRow = Schema.Struct({ explanationOpenedAt: DateTimeUtc })
 
@@ -144,9 +146,37 @@ export const StudyRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
-      recordLearningEvent: Effect.fn('StudyRepository.recordLearningEvent')(function* (answer) {
-        return yield* sql`INSERT INTO written_learning_events (user_id,qualification_path_id,user_exam_goal_version,question_id,question_revision_id,mode,is_correct,is_assisted,study_session_id,position)
- VALUES (${answer.userId},${answer.qualificationPathId},${answer.goalVersion},${answer.questionId},${answer.questionRevisionId},${studyLearningMode},${answer.isCorrect},${answer.isAssisted},${answer.sessionId},${answer.position})`.pipe(
+      recordLearningEvent: Effect.fn('StudyRepository.recordLearningEvent')(
+        function* (answer, context) {
+          const answeredAt = DateTime.formatIso(context.answeredAt)
+
+          const rows =
+            yield* sql`INSERT INTO written_learning_events (user_id,qualification_path_id,user_exam_goal_version,question_id,question_revision_id,mode,is_correct,assistance,answered_at,study_session_id,position)
+ VALUES (${answer.userId},${answer.qualificationPathId},${answer.goalVersion},${answer.questionId},${answer.questionRevisionId},${context.mode},${answer.isCorrect},${context.assistance},${answeredAt},${answer.sessionId},${answer.position})
+ RETURNING id`
+
+          const [event] = yield* Schema.decodeUnknownEffect(Schema.Tuple([LearningEventRow]))(rows)
+
+          return event.id
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
+      storeReviewState: Effect.fn('StudyRepository.storeReviewState')(function* (state) {
+        const { card } = state
+        const dueAt = DateTime.formatIso(card.dueAt)
+
+        const lastReviewAt = Option.map(card.lastReviewAt, DateTime.formatIso).pipe(
+          Option.getOrNull,
+        )
+
+        // The state belongs to the substantive content of the answered revision.
+        return yield* sql`INSERT INTO written_review_states (user_id,qualification_path_id,question_id,substantive_revision_id,learning_event_id,rules_version,due_at,last_review_at,stability,stability_fast,difficulty,state,schedule_status,reps,lapses,scheduled_days,learning_step)
+ SELECT ${state.userId},${state.qualificationPathId},${state.questionId},r.substantive_revision_id,${state.learningEventId},${state.rulesVersion},${dueAt},${lastReviewAt},${card.stability},${card.stabilityFast},${card.difficulty},${card.state},${card.scheduleStatus},${card.reps},${card.lapses},${card.scheduledDays},${card.learningStep}
+ FROM question_revisions r WHERE r.id=${state.questionRevisionId} AND r.question_id=${state.questionId}
+ ON CONFLICT (user_id,qualification_path_id,question_id) DO UPDATE SET substantive_revision_id=EXCLUDED.substantive_revision_id,learning_event_id=EXCLUDED.learning_event_id,rules_version=EXCLUDED.rules_version,due_at=EXCLUDED.due_at,last_review_at=EXCLUDED.last_review_at,stability=EXCLUDED.stability,stability_fast=EXCLUDED.stability_fast,difficulty=EXCLUDED.difficulty,state=EXCLUDED.state,schedule_status=EXCLUDED.schedule_status,reps=EXCLUDED.reps,lapses=EXCLUDED.lapses,scheduled_days=EXCLUDED.scheduled_days,learning_step=EXCLUDED.learning_step
+ RETURNING 1`.pipe(
+          // A revision outside the question stores nothing, which must not pass silently.
+          Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([Schema.Unknown]))),
           Effect.asVoid,
           Effect.mapError(cause => new StudyWriteError({ cause })),
         )
