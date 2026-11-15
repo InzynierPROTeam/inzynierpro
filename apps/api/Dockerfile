@@ -31,9 +31,11 @@ RUN --mount=type=cache,id=inzpro-api-turbo,target=/repo/.turbo \
   && node apps/api/scripts/trace-runtime.ts /repo /app
 
 FROM node:${NODE_VERSION}-alpine AS runtime
+ARG RELEASE_SHA=development
 # The runtime needs only node: drop npm and npx with their dependencies.
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+  RELEASE_SHA=${RELEASE_SHA}
 # Owned by root and run as node, so the process cannot change its own code.
 COPY --from=builder /app /app
 WORKDIR /app/apps/api

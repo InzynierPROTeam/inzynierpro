@@ -1,0 +1,10 @@
+{
+  "extends": "@total-typescript/tsconfig/bundler/no-dom",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node"],
+    "target": "ES2024"
+  },
+  "include": ["*.ts"]
+}

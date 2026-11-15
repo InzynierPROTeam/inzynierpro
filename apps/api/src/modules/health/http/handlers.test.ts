@@ -5,7 +5,7 @@ let api: TestApi
 let baseUrl: string
 
 beforeAll(async () => {
-  api = await startTestApi()
+  api = await startTestApi({ releaseSha: '1234567890abcdef1234567890abcdef12345678' })
   baseUrl = api.baseUrl
 })
 
@@ -18,6 +18,8 @@ test('health-check uses /api/v1 and returns only status', async () => {
 
   expect(response.status).toBe(200)
   expect(await response.json()).toEqual({ status: 'ok' })
+  expect(response.headers.get('x-release-sha')).toBe('1234567890abcdef1234567890abcdef12345678')
+  expect(response.headers.get('cache-control')).toBe('no-store')
   expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f]{32}$/)
   expect(response.headers.get('access-control-allow-origin')).toBe('http://localhost:8001')
   expect(response.headers.get('x-content-type-options')).toBe('nosniff')

@@ -61,6 +61,7 @@ const isSentTo = (message: EmailMessage, email: string) =>
   [message.to].flat().some(address => address === email)
 
 export type TestApiOptions = {
+  readonly releaseSha?: string
   readonly now?: DateTime.Utc
   // Delivers email; defaults to an in-memory adapter whose messages the test can read.
   readonly emailAdapter?: EmailAdapter
@@ -68,6 +69,7 @@ export type TestApiOptions = {
 }
 
 export const startTestApi = async ({
+  releaseSha,
   emailAdapter,
   google,
   now = catalogueTestTime,
@@ -76,6 +78,7 @@ export const startTestApi = async ({
 
   const config = {
     ...loaded,
+    RELEASE_SHA: releaseSha ?? loaded.RELEASE_SHA,
     // Mirrors production behind a proxy; visitors send unique addresses so buckets never collide.
     TRUSTED_CLIENT_IP_HEADER: Option.some('x-forwarded-for'),
     GOOGLE:

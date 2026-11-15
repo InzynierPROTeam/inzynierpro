@@ -70,7 +70,9 @@ Stop applications with Ctrl+C. Stop development services with `pnpm --filter @in
 
 The worker is a separate process of the same backend: `pnpm --filter @inzpro/api dev:worker`. Jobs are durable in PostgreSQL. [docs/background-jobs.md](docs/background-jobs.md) describes how to add a queue, deployment and diagnosis.
 
-## API image and deployment
+## Deployment and images
+
+Cloudflare build/preview and state bootstrap are documented in [infra/cloudflare/README.md](infra/cloudflare/README.md). The coordinated API/worker/platform release and readiness gate are in [docs/deployment.md](docs/deployment.md).
 
 `apps/api/Dockerfile` builds the production API image from the repository root; `--target worker` builds the worker from the same sources:
 

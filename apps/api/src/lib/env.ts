@@ -17,6 +17,7 @@ export type ProcessEnv = Effect.Success<typeof processEnv>
 export const env = Config.all({
   ...processVariables,
   PORT: Config.Port('PORT').pipe(Config.withDefault(4000)),
+  RELEASE_SHA: Config.NonEmptyString('RELEASE_SHA').pipe(Config.withDefault('development')),
   // Comma-separated client origins allowed by CORS and Better Auth, e.g. `http://localhost:8001`.
   TRUSTED_ORIGINS: Config.Array(
     Schema.Trim.pipe(Schema.decodeTo(Schema.NonEmptyString)),

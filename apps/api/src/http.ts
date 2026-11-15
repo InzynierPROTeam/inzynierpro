@@ -9,7 +9,7 @@ import { layer as RedisLayer } from '@inzpro/redis'
 import { layer as RateLimiterLayer } from '@inzpro/redis/rate-limiter'
 import { Effect, Layer } from 'effect'
 import { Digest, SecureRandom } from 'effect/crypto'
-import { HttpRouter } from 'effect/http'
+import { HttpEffect, HttpRouter, HttpServerResponse } from 'effect/http'
 import { ApiLive } from '~api/api.js'
 import { env, type Env } from '~api/lib/env.js'
 import { processTelemetryLayer, untracedRequestsLayer } from '~api/lib/observability.js'
@@ -46,6 +46,16 @@ export const httpServerLayer = (config: Env) =>
             RateLimitHeadersMiddleware,
             RequestIdMiddleware,
             SecureHeadersMiddleware,
+            HttpEffect.withPreResponseHandler((request, response) =>
+              Effect.succeed(
+                request.url.split('?')[0] === '/api/v1/health-check'
+                  ? HttpServerResponse.setHeaders(response, {
+                      'x-release-sha': config.RELEASE_SHA,
+                      'cache-control': 'no-store',
+                    })
+                  : response,
+              ),
+            ),
           ),
         { global: true },
       ),

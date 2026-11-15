@@ -1,6 +1,6 @@
 # Deployment
 
-How the API and the worker reach staging and production, and what an operator configures before the first deployment. Decisions live in [ADR-0017](adr/0017-hosting-infrastructure-and-deployment.md). The web platform's Cloudflare deployment is a separate task.
+How the API and the worker reach staging and production, and what an operator configures before the first deployment. Decisions live in [ADR-0017](adr/0017-hosting-infrastructure-and-deployment.md). The platform's Cloudflare state/bootstrap and domain configuration are in [infra/cloudflare/README.md](../infra/cloudflare/README.md).
 
 ## Flow
 
@@ -11,13 +11,14 @@ dev ────PR──▶ main ──CI──▶ production images ──Docke
 
 As in V1, CI builds the images and pushes them to Docker Hub, and Docker Hub's webhook tells Dokploy to pull them. There is no custom Dokploy provider and CI holds no Dokploy credentials.
 
-1. A push to `dev` or `main` runs `.github/workflows/check.yml`: `check` (format, lint, types, tests with coverage, build) and `e2e`.
-2. Only when both pass for that commit does `deploy` run, in the GitHub environment `staging` (`dev`) or `production` (`main`). It deploys only the branch head: if the branch moved on, the newer commit's own run deploys it.
-3. `deploy` builds the API and worker images and pushes `<API_IMAGE>`, then `<WORKER_IMAGE>`, as `latest` and as the commit SHA.
-4. Docker Hub calls the Dokploy webhook of each application, and Dokploy pulls `latest`.
-5. The API container runs the migrations, auth and module alike, in one transaction before the server starts. A failed migration rolls back and the new API never starts; the previous version keeps running. The worker does not migrate. Its image is pushed after the API's, but Dokploy deploys the two applications independently, so the new worker may start before the migration ends; a job that fails on the old schema is retried ([background-jobs.md](background-jobs.md)).
+1. A push to `dev` or `main` starts the quality gates (`check`, `e2e`) and independent parallel builds: the API image, worker image and environment-configured Cloudflare platform. Builds upload artifacts for this workflow run and commit; they do not publish images or change live environments. API and worker images embed the full commit SHA in `RELEASE_SHA`.
+2. Once all gates and builds pass, one `deploy` job owns the environment's release queue. It skips a superseded commit before changing anything, downloads that run's artifacts and checks the platform manifest against the revision, stage and environment configuration. Staging and production have separate queues with `cancel-in-progress: false`; newer releases never cancel a running release. GitHub keeps only the newest pending release.
+3. The release loads the prebuilt images and pushes `<API_IMAGE>`, then `<WORKER_IMAGE>`, as the commit SHA and `latest`. Only the `latest` webhook may trigger Dokploy; confirm its tag filter during setup. Registry credentials are used only by this release job. No build runs in the release job.
+4. Dokploy pulls the images. The API container runs auth/module migrations in one transaction before listening. A failed migration rolls back and the new API never starts; the previous API remains available. The worker does not migrate. Dokploy can start it independently before the migration finishes; jobs that fail against the old schema retry ([background-jobs.md](background-jobs.md)).
+5. CI polls `<VITE_API_URL>/api/v1/health-check` every two seconds, requiring HTTP 200, `status: ok` and `x-release-sha` equal to this release's full SHA. A still-healthy previous API, redirect or error cannot satisfy the gate. The response is `Cache-Control: no-store`; requests bypass caches. `scripts/wait-for-api.sh` makes at most 120 attempts with a five-second request timeout (under fourteen minutes even if every request times out).
+6. Immediately after that readiness confirmation, Alchemy uploads the already built platform artifact. It never rebuilds here. A failed readiness gate blocks Cloudflare deployment and fails the release; the previous frontend remains live. The queue is held until this release finishes or fails, including the readiness wait and Cloudflare deployment. No following release may publish images while an earlier one waits.
 
-Each environment builds one deployment at a time: the `deploy` job of an environment shares a concurrency group with `cancel-in-progress: false`, so a newer merge waits for the running job and never cancels it. Of several waiting deployments GitHub keeps only the newest. Staging and production have separate groups. The job ends once the images are pushed; from there Dokploy runs its deployments of an application one after another.
+An API migration is completed before the process can return the matching health revision. This is a deployment gate, not a database/Redis diagnostic on every health request. The worker's asynchronous Dokploy rollout is not a frontend readiness prerequisite. Before public launch, test the actual proxy/DNS, webhook filtering, start-first rollout, migration rollback and API readiness signal on staging.
 
 As in V1, the API container is the migration step (ADR-0017). That holds while the API runs as a single replica.
 
@@ -44,7 +45,7 @@ In a project of its own per environment:
    - Environment: the variables of `apps/api/.env.example` with this environment's values. `NODE_ENV=production`, `PORT=4000`, `DATABASE_URL` and `REDIS_URL` from steps 1–2, `BETTER_AUTH_URL` the public API origin, `TRUSTED_ORIGINS` the platform origin, `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `RESEND_API_KEY`, the Google client of this environment, `COOKIES_DOMAIN` and, behind Cloudflare, `TRUSTED_CLIENT_IP_HEADER=cf-connecting-ip`. Optional `OTEL_*` with `deployment.environment.name=staging|production`.
    - Domain: the public API host with HTTPS, container port 4000.
    - Swarm settings, update config: `{"Parallelism": 1, "Order": "start-first", "FailureAction": "rollback", "Monitor": 120000000000}`. The new task must pass the image's health check, which it reaches only after migrating, before the old one stops; a task that fails, for example on a migration, rolls back.
-   - Keep one replica, so a single process migrates.
+   - Keep one replica, so a single process migrates. Do not override `RELEASE_SHA` in Dokploy: it is baked into the image and identifies the running code. Never cache `/api/v1/health-check` at the proxy; preserve its `x-release-sha` response header.
    - Enable auto deploy and copy the webhook URL.
 4. **Application `worker`**: image `<WORKER_IMAGE>:latest`, registry credentials of the worker image's account with its read-only token, no domain.
    - Environment: `NODE_ENV`, `LOG_LEVEL`, `DATABASE_URL` and the optional `OTEL_*` variables only.
@@ -56,9 +57,10 @@ In a project of its own per environment:
 
 1. Create the environments `staging` (deployment branch `dev`) and `production` (deployment branch `main`).
 2. In each, add the environment's accounts as secrets: `API_DOCKERHUB_USERNAME` and `API_DOCKERHUB_TOKEN` for the API image, `WORKER_DOCKERHUB_USERNAME` and `WORKER_DOCKERHUB_TOKEN` for the worker image, each token the read-write one. Add the variables `API_IMAGE` and `WORKER_IMAGE`: the repositories, with their account, without a tag, for example `<staging-api-account>/api-staging`.
-3. Protect `dev` and `main`: changes arrive by pull request with an approval, and the checks `check` and `e2e` must pass and be up to date.
+3. Add the Cloudflare environment variables and secret from [infra/cloudflare/README.md](../infra/cloudflare/README.md), and bootstrap the state store separately. `build-platform` needs only public configuration; `CLOUDFLARE_API_TOKEN` is passed only to the final deployment step.
+4. Protect `dev` and `main`: changes arrive by pull request with an approval, and the checks `check` and `e2e` must pass and be up to date.
 
-The first push to `dev` after this deploys staging. Verify the Google and email sign-in by hand ([README](../README.md#google-sign-in)) before promoting to `main`.
+Builds are parallel and may finish before checks; only the coordinated release promotes their artifacts. The first push to `dev` after setup deploys staging. Verify the Google and email sign-in by hand ([README](../README.md#google-sign-in)) before promoting to `main`.
 
 ## Rollback
 
