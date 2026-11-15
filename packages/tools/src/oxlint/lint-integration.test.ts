@@ -12,6 +12,10 @@ const root = fileURLToPath(new URL('../../../..', import.meta.url))
 const name = `lint-probe-${randomUUID()}`
 const local = `packages/tools/src/oxlint/${name}`
 
+// Platform feature folders are camelCase, so their probe drops the dashes.
+const featurePath = `apps/platform/src/features/${name.replaceAll('-', '')}`
+const moduleCommand = `apps/api/src/modules/preparation/application/${name}.command.ts`
+
 type Probe = {
   readonly path: string
   readonly code: string
@@ -122,6 +126,41 @@ export const labels = [1, 2].values().filter(Boolean).map(String).toArray()
     code: "export const AnswerId = Schema.String.check(Schema.isUUID()).pipe(Schema.brand('AnswerId'))",
     rules: ['domain-identifiers'],
   },
+  {
+    path: `${local}/camelCase.ts`,
+    code: 'export const value = 1\n',
+    rules: ['filename-case'],
+  },
+  {
+    path: `${local}/Naming/value.ts`,
+    code: 'export const value = 1\n',
+    rules: ['directory-names'],
+  },
+  {
+    path: `${featurePath}/components/ProbeCard.tsx`,
+    code: 'export const value = 1\n',
+    rules: [],
+  },
+  {
+    path: `${featurePath}/components/VerifyOTPProbe.tsx`,
+    code: 'export const value = 1\n',
+    rules: [],
+  },
+  {
+    path: `${featurePath}/components/probe-card.tsx`,
+    code: 'export const value = 1\n',
+    rules: ['filename-case'],
+  },
+  {
+    path: `${featurePath}/hooks/useProbe.ts`,
+    code: 'export const useProbe = () => 1\n',
+    rules: [],
+  },
+  {
+    path: moduleCommand,
+    code: "import { StudyReader } from '~api/modules/study/application/study.reader.js'\n\nexport const reader = StudyReader\n",
+    rules: ['module-layers'],
+  },
 ]
 
 // Imported by the guard probes; not linted itself.
@@ -132,6 +171,8 @@ const deprecatedApi = {
 
 const cleanupPaths = [
   local,
+  featurePath,
+  moduleCommand,
   `apps/api/src/modules/${name}`,
   `packages/api-client/src/modules/${name}.ts`,
   `packages/api-contracts/src/modules/${name}`,

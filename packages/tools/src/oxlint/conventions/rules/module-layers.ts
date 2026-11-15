@@ -1,5 +1,6 @@
 import { defineRule, type ESTree } from '@oxlint/plugins'
 
+import { apiModuleDependencies } from '../../architecture-policy.ts'
 import { normalizedPath } from './path.ts'
 
 const layers = ['domain', 'application', 'infrastructure', 'http'] as const
@@ -37,6 +38,8 @@ const allowedLayers: Record<Layer, ReadonlyArray<Layer>> = {
   infrastructure: ['domain', 'application', 'infrastructure'],
   http: layers,
 }
+
+const declaredModules: Record<string, ReadonlyArray<string>> = apiModuleDependencies
 
 const modulePath = /\/apps\/api\/src\/modules\/([^/]+)\/(.+)$/
 
@@ -120,6 +123,10 @@ export const moduleLayersRule = defineRule({
         'Only http/ uses @inzpro/api-contracts. Map DTOs to module models in http/mappers.ts.',
       sql: '{{layer}}/ must not use effect/sql. SQL belongs in infrastructure/ adapters.',
       transport: '{{layer}}/ must not use HTTP. Transport belongs in http/.',
+      module:
+        '{{module}} must not depend on {{target}}. Module dependencies follow apiModuleDependencies in packages/tools/src/oxlint/architecture-policy.ts and must stay acyclic.',
+      undeclared:
+        'Declare module {{module}} and its dependencies in apiModuleDependencies (packages/tools/src/oxlint/architecture-policy.ts).',
     },
   },
   create(context) {
@@ -131,6 +138,16 @@ export const moduleLayersRule = defineRule({
     }
 
     const ownModule = match[1] ?? ''
+    const permittedModules = declaredModules[ownModule]
+
+    if (permittedModules === undefined) {
+      return {
+        Program(node) {
+          context.report({ node, messageId: 'undeclared', data: { module: ownModule } })
+        },
+      }
+    }
+
     const [folder, ...rest] = (match[2] ?? '').split('/')
     const name = rest.join('/')
     const test = /\.(?:test|spec)\.ts$/.test(filename)
@@ -147,6 +164,20 @@ export const moduleLayersRule = defineRule({
 
     const check = (node: ESTree.Node, source: string, typeOnly: boolean) => {
       const target = targetOf(filename, source)
+
+      if (
+        target?.kind === 'layer' &&
+        target.module !== ownModule &&
+        !permittedModules.includes(target.module)
+      ) {
+        context.report({
+          node,
+          messageId: 'module',
+          data: { module: ownModule, target: target.module },
+        })
+
+        return
+      }
 
       if (target === undefined || layer === 'http') {
         return

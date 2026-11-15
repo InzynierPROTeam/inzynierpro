@@ -17,6 +17,14 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Turbo replays unchanged tasks; integration tests against PostgreSQL and Redis never cache.
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+      # Only committed example values: no repository secret reaches the checks or their artifacts.
       - name: Configure local environments
         run: |
           cp apps/api/.env.example apps/api/.env
@@ -27,8 +35,10 @@ jobs:
       - name: Publish test coverage
         if: always()
         run: pnpm exec tsx scripts/coverage-summary.ts >> "$GITHUB_STEP_SUMMARY"
-      - name: Verify checks did not modify tracked sources
-        run: git diff --exit-code
+      - name: Verify checks left the working tree unchanged
+        run: |
+          git status --porcelain
+          test -z "$(git status --porcelain)"
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15

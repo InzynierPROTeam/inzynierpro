@@ -1,6 +1,6 @@
 import { appName, getEmailAddress } from '@inzpro/config/app'
 import { Heading, Link, Section, Text } from 'react-email'
-import { Layout } from '~email/components/Layout.js'
+import { Layout } from '~email/components/layout.js'
 import { links } from '~email/lib/links.js'
 
 export type SignInCodeProps = {

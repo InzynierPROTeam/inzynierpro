@@ -37,7 +37,7 @@ Environment variables, credentials and environment loading always stay in the ap
 
 ## Dependencies
 
-[architecture-policy.ts](../packages/tools/src/oxlint/architecture-policy.ts) is the authoritative list of what each workspace may import. An entry permits a dependency; it does not require it.
+[architecture-policy.ts](../packages/tools/src/oxlint/architecture-policy.ts) is the authoritative list of what each workspace, and each API module, may import. An entry permits a dependency; it does not require it. A policy test rejects cycles in both graphs and requires every API module folder to be listed.
 
 - Applications compose packages; packages never import applications, and applications never import each other.
 - `e2e` drives the platform and the API over HTTP and imports none of their sources.
@@ -59,6 +59,8 @@ The checks run inside Oxlint, through `pnpm lint`, `pnpm check` and CI:
 
 - The [architecture plugin](../packages/tools/src/oxlint/architecture.ts) enforces the dependency policy, package-name imports, platform restrictions and test-only imports. It reads static imports, literal dynamic imports, `require` and inline type imports; computed module names are out of its reach.
 - The [conventions plugin](../packages/tools/src/oxlint/conventions/index.ts) enforces the mechanical part of [CODING_STANDARDS.md](../CODING_STANDARDS.md): feature file layout, Effect dates and durations, API module layers, SQL placement, schema homes and client action shapes. Its rules and test cases are the reference for what it checks.
+- `conventions/module-layers` also limits imports between API modules to `apiModuleDependencies`, so module cycles cannot form even when no single file cycle exists, and rejects a module folder missing from the policy.
+- Names: `unicorn/filename-case` keeps files kebab-case, app `.tsx` components PascalCase (acronyms allowed, as in `VerifyOTPPage.tsx`) and hooks `useX` camelCase; TanStack route files and migrations keep their framework names. `conventions/directory-names` keeps folders kebab-case, except camelCase app feature folders and TanStack route folders (`(group)`, `_pathless`, `$param`).
 - `import/no-cycle` rejects file cycles. Package cycles count type-only imports; application cycles ignore them, because generated router files refer back to their router types.
 - Generated `*.gen.ts` files are exempt from source rules but still type-checked.
 
@@ -66,7 +68,7 @@ Static checks cannot judge whether a model is declared independently of its DTO,
 
 ## API modules
 
-The API has five business modules: `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material) and `study` (personal learning). The technical `background-jobs` module owns job diagnostics; the generic queue lives in `src/lib/job-queue.ts`. Each keeps its files in `domain/`, `application/`, `infrastructure/` and `http/` folders, as CODING_STANDARDS.md describes.
+The API has five business modules: `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material) and `study` (personal learning). `identity` mounts authentication, and the technical `health` and `background-jobs` modules own the health check and job diagnostics; the generic queue lives in `src/lib/job-queue.ts`. Each keeps its files in `domain/`, `application/`, `infrastructure/` and `http/` folders, as CODING_STANDARDS.md describes. Personal learning depends on shared data, never the reverse. A new module, or a new edge between modules, starts with its entry in `apiModuleDependencies`.
 
 Module migrations create their final tables directly, so a schema change edits the module's migration and local databases are recreated. The job table is the exception: Effect's queue store creates and migrates it itself ([background-jobs.md](background-jobs.md)). The first migration owns the shared `set_updated_at` trigger function.
 
