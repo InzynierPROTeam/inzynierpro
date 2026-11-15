@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 import { Uuid } from '~domain/common/id.js'
-import type { QuestionCount } from '~domain/modules/learning-content/reference-document.js'
+import { QuestionCount } from '~domain/modules/learning-content/reference-document.js'
 
 export const StudySessionId = Uuid.pipe(Schema.brand('StudySessionId'))
 
@@ -27,6 +27,22 @@ export const nextQuestionPosition = (
   answered: SessionQuestionPosition,
   questionCount: QuestionCount,
 ): SessionQuestionPosition => SessionQuestionPosition.make(Math.min(answered + 1, questionCount))
+
+/**
+ * The questions a session scores: a question withdrawn before it was answered is skipped, neither
+ * wrong nor submitted, so it leaves progress and the score (ADR-0003).
+ */
+export const scoredQuestionCount = (progress: {
+  readonly total: QuestionCount
+  readonly skipped: QuestionCount
+}): QuestionCount => QuestionCount.make(Math.max(progress.total - progress.skipped, 0))
+
+/** Whether a question is still neither answered nor skipped; without one the session can only end. */
+export const hasOpenQuestions = (progress: {
+  readonly total: QuestionCount
+  readonly answered: QuestionCount
+  readonly skipped: QuestionCount
+}): boolean => progress.answered < scoredQuestionCount(progress)
 
 export const unansweredQuestions = 'unanswered'
 export const repeatedQuestions = 'repeat'
