@@ -1,21 +1,18 @@
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@inzpro/ui/components/card'
 import { Link } from '@tanstack/react-router'
-import { useId } from 'react'
 
 export const OralLearningTile = () => {
-  const titleId = useId()
-
   return (
     <Card
       role="region"
-      aria-labelledby={titleId}
+      aria-label="Nauka do egzaminu ustnego"
       // Written study and reviews fill the row above it.
       className="col-span-full"
     >
       <CardHeader>
         <CardTitle>
-          <h2 id={titleId}>Nauka do egzaminu ustnego</h2>
+          <h2>Nauka do egzaminu ustnego</h2>
         </CardTitle>
       </CardHeader>
       <CardContent>
