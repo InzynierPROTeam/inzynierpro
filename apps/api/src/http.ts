@@ -26,7 +26,7 @@ export const httpServerLayer = (config: Env) =>
       AuthHttp,
       HttpRouter.cors({
         allowedOrigins: config.TRUSTED_ORIGINS,
-        allowedMethods: ['GET', 'POST'],
+        allowedMethods: ['GET', 'POST', 'PUT', 'DELETE'],
         // Effect's HTTP client adds trace headers to every request; the server continues the trace.
         allowedHeaders: ['content-type', 'traceparent', 'b3'],
         exposedHeaders: [

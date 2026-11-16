@@ -11,8 +11,8 @@ import { Schema } from 'effect'
 /** The mode a LearningEvent comes from; all three feed SRS, only regular study moves rounds (ADR-0005). */
 export const studyMode = 'study'
 export const reviewMode = 'review'
-export const favouritesMode = 'favourites'
-export const learningModes = [studyMode, reviewMode, favouritesMode] as const
+export const favoritesMode = 'favourites'
+export const learningModes = [studyMode, reviewMode, favoritesMode] as const
 export const LearningMode = Schema.Literals(learningModes)
 
 export type LearningMode = typeof LearningMode.Type

@@ -54,6 +54,16 @@ export class StudyRepository extends Context.Service<
     ) => Effect.Effect<LearningEventId, StudyWriteError>
     /** Replaces the question's UserReviewState on the path. */
     readonly storeReviewState: (state: NewReviewState) => Effect.Effect<void, StudyWriteError>
+    /** Marks the question as the learner's FavoriteQuestion on every path; an existing mark stays. */
+    readonly markFavorite: (
+      userId: UserId,
+      questionId: WrittenQuestionId,
+    ) => Effect.Effect<void, StudyWriteError>
+    /** Removes the learner's FavoriteQuestion mark, if any. */
+    readonly unmarkFavorite: (
+      userId: UserId,
+      questionId: WrittenQuestionId,
+    ) => Effect.Effect<void, StudyWriteError>
     /** Moves the continue point after an answer, which also makes the session the most recently used; returns the session. */
     readonly moveSession: (
       sessionId: StudySessionId,

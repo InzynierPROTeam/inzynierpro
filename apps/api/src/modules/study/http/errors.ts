@@ -1,6 +1,7 @@
 import {
   DocumentNotFound,
   InvalidSessionAnswer,
+  QuestionNotFound,
   SessionAnswerAlreadySubmitted,
   SessionQuestionNotFound,
   SessionQuestionWithdrawn,
@@ -19,6 +20,13 @@ export const documentNotFound = Effect.fail(
   new DocumentNotFound({
     type: 'document_not_found',
     message: 'The selected material was not found.',
+  }),
+)
+
+export const questionNotFound = Effect.fail(
+  new QuestionNotFound({
+    type: 'question_not_found',
+    message: 'The question was not found on this path.',
   }),
 )
 

@@ -1,4 +1,5 @@
 import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect } from 'effect'
 import type {
@@ -19,6 +20,11 @@ export class LearningContentRepository extends Context.Service<
     readonly attachDocument: (
       pathId: QualificationPathId,
       documentId: ReferenceDocumentId,
+    ) => Effect.Effect<void, LearningContentWriteError>
+    readonly attachQuestion: (
+      pathId: QualificationPathId,
+      documentId: ReferenceDocumentId,
+      questionId: WrittenQuestionId,
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly createQuestion: (
       question: NewQuestion,

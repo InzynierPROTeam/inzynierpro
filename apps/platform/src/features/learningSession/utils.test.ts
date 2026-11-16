@@ -103,6 +103,7 @@ const question = Schema.decodeSync(SessionQuestion)({
   answers: [{ id: '41000000-0000-4000-8000-000000000001', text: 'A', isCorrect: true }],
   isWithdrawn: false,
   explanationOpenedAt: null,
+  isFavorite: false,
   answer: {
     answerId: '41000000-0000-4000-8000-000000000001',
     isCorrect: true,
@@ -168,4 +169,10 @@ describe('session scope label', () => {
     expect(sessionScopeLabel({ kind: 'review', document: null })).toBe(
       'Powtórka: wszystkie kategorie',
     ))
+
+  it('names a favourites session of the whole path', () =>
+    expect(sessionScopeLabel({ kind: 'favourites', document: null })).toBe('Ulubione pytania'))
+
+  it('names a favourites session of one category', () =>
+    expect(sessionScopeLabel({ kind: 'favourites', document })).toBe('Ulubione: Prawo budowlane'))
 })

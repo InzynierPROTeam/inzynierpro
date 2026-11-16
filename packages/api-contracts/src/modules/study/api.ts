@@ -10,6 +10,7 @@ import {
 import {
   DocumentNotFound,
   InvalidSessionAnswer,
+  QuestionNotFound,
   SessionAnswerAlreadySubmitted,
   SessionQuestionNotFound,
   SessionQuestionWithdrawn,
@@ -20,6 +21,8 @@ import {
 } from './errors.js'
 import {
   DocumentsQuery,
+  FavoriteQuestionParams,
+  FavoritesScopeQuery,
   GetDocumentsParams,
   GetDocumentParams,
   LatestSessionQuery,
@@ -29,6 +32,7 @@ import {
   SessionParams,
   SessionQuestionParams,
   SessionResultsQuery,
+  StartFavoritesSessionPayload,
   StartReviewSessionPayload,
   StartSessionPayload,
   SubmitSessionAnswerPayload,
@@ -37,6 +41,8 @@ import {
   DocumentResponse,
   DocumentsResponse,
   EndSessionResponse,
+  FavoriteQuestionResponse,
+  FavoritesPreviewResponse,
   LatestStudySessionResponse,
   OralMaterialsResponse,
   ReviewPreviewResponse,
@@ -44,6 +50,7 @@ import {
   SessionPreviewResponse,
   SessionQuestionResponse,
   SessionResultsResponse,
+  StartFavoritesSessionResponse,
   StartReviewSessionResponse,
   StartSessionResponse,
   StudySessionSummaryResponse,
@@ -157,6 +164,72 @@ export const StartReviewSessionEndpoint = HttpApiEndpoint.post(
     params: GetDocumentsParams,
     payload: StartReviewSessionPayload,
     success: StartReviewSessionResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      DocumentNotFound,
+      StaleSessionPreview,
+      StudySessionAlreadyStarted,
+    ],
+  },
+)
+
+// Marks the question as a FavoriteQuestion on every path of the learner; marking again changes nothing.
+export const MarkFavoriteQuestionEndpoint = HttpApiEndpoint.put(
+  'MarkFavoriteQuestion',
+  '/paths/:qualificationPathId/favorites/:questionId',
+  {
+    params: FavoriteQuestionParams,
+    success: FavoriteQuestionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
+// Removes the mark on every path, even for a question no longer on this one; started favourites
+// sessions keep their questions.
+export const UnmarkFavoriteQuestionEndpoint = HttpApiEndpoint.delete(
+  'UnmarkFavoriteQuestion',
+  '/paths/:qualificationPathId/favorites/:questionId',
+  {
+    params: FavoriteQuestionParams,
+    success: FavoriteQuestionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// The FavoriteQuestions of the path or one document a favourites session may hold, with the count settings.
+export const GetFavoritesPreviewEndpoint = HttpApiEndpoint.get(
+  'GetFavoritesPreview',
+  '/paths/:qualificationPathId/favorites-preview',
+  {
+    params: GetDocumentsParams,
+    query: FavoritesScopeQuery,
+    success: FavoritesPreviewResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// The unfinished favourites session of the path or one document, which its tile resumes.
+export const GetFavoritesSessionEndpoint = HttpApiEndpoint.get(
+  'GetFavoritesSession',
+  '/paths/:qualificationPathId/favorites-session',
+  {
+    params: GetDocumentsParams,
+    query: FavoritesScopeQuery,
+    success: StudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// Starts a favourites session with its set fixed; its reads and answers use the session endpoints.
+export const StartFavoritesSessionEndpoint = HttpApiEndpoint.post(
+  'StartFavoritesSession',
+  '/paths/:qualificationPathId/favorites-sessions',
+  {
+    params: GetDocumentsParams,
+    payload: StartFavoritesSessionPayload,
+    success: StartFavoritesSessionResponse,
     error: [
       InternalServerError,
       RateLimitExceeded,
@@ -285,6 +358,11 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(GetReviewPreviewEndpoint)
   .add(GetReviewSessionEndpoint)
   .add(StartReviewSessionEndpoint)
+  .add(MarkFavoriteQuestionEndpoint)
+  .add(UnmarkFavoriteQuestionEndpoint)
+  .add(GetFavoritesPreviewEndpoint)
+  .add(GetFavoritesSessionEndpoint)
+  .add(StartFavoritesSessionEndpoint)
   .add(GetLatestSessionEndpoint)
   .add(GetSessionEndpoint)
   .add(GetSessionSummaryEndpoint)

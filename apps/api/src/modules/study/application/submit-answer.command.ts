@@ -4,9 +4,12 @@ import type { QuestionRevisionId } from '@inzpro/domain/modules/learning-content
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
+  favoritesStudySession,
   regularStudySession,
+  reviewStudySession,
   type SessionQuestionPosition,
   type StudySessionId,
+  type StudySessionKind,
 } from '@inzpro/domain/modules/study/study-session'
 import { DateTime, Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
@@ -20,6 +23,8 @@ import {
 } from '~api/modules/study/domain/errors.js'
 import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
 import {
+  favoritesMode,
+  type LearningMode,
   noAssistance,
   reviewMode,
   studyMode,
@@ -49,6 +54,13 @@ const syncLearningRound = Effect.fn('Study.syncLearningRound')(function* (
 
   return round
 })
+
+// The LearningEvent mode of an answer in a session of each kind (ADR-0005).
+const sessionLearningModes = {
+  [regularStudySession]: studyMode,
+  [reviewStudySession]: reviewMode,
+  [favoritesStudySession]: favoritesMode,
+} satisfies Record<StudySessionKind, LearningMode>
 
 /**
  * Scores and stores the session's one answer to a question (ADR-0002). The answer, its LearningEvent
@@ -132,12 +144,12 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
       const isRegularStudy = session.kind === regularStudySession
 
       yield* recordWrittenEvidence(answer, {
-        mode: isRegularStudy ? studyMode : reviewMode,
+        mode: sessionLearningModes[session.kind],
         assistance,
         answeredAt,
       })
 
-      // Review answers feed SRS only; they never cover questions or move rounds (ADR-0005).
+      // Review and favourites answers feed SRS only; they never cover questions or move rounds (ADR-0005).
       if (isRegularStudy) {
         // A withdrawal may have completed the stored round since the last answer, so it is synced first.
         const round = yield* syncLearningRound(userId, pathId)

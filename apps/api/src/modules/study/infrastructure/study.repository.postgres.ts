@@ -123,6 +123,18 @@ export const StudyRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
+      markFavorite: Effect.fn('StudyRepository.markFavorite')((userId, questionId) =>
+        sql`INSERT INTO written_favorite_questions (user_id,question_id) VALUES (${userId},${questionId}) ON CONFLICT DO NOTHING`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        ),
+      ),
+      unmarkFavorite: Effect.fn('StudyRepository.unmarkFavorite')((userId, questionId) =>
+        sql`DELETE FROM written_favorite_questions WHERE user_id=${userId} AND question_id=${questionId}`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        ),
+      ),
       recordAssistance: Effect.fn('StudyRepository.recordAssistance')(
         function* (sessionId, position) {
           const rows =

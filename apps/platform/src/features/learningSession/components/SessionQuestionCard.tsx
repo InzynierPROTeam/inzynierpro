@@ -14,6 +14,7 @@ import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { Link } from '@tanstack/react-router'
 import { FileQuestionMark } from 'lucide-react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+import { FavoriteToggleButton } from '~platform/features/favorites/components/FavoriteToggleButton'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
@@ -43,7 +44,8 @@ export const SessionQuestionCard = () => {
             <>
               <CardHeader>
                 <h2 className="text-base leading-relaxed font-medium">{question.body}</h2>
-                <CardAction>
+                <CardAction className="flex gap-2">
+                  <FavoriteToggleButton question={question} />
                   <SessionHintDialog question={question} />
                 </CardAction>
               </CardHeader>

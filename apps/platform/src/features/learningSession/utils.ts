@@ -7,9 +7,12 @@ import type {
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   endedStudySession,
+  favoritesStudySession,
   hasOpenQuestions,
+  regularStudySession,
   reviewStudySession,
   type SessionQuestionPosition,
+  type StudySessionKind,
 } from '@inzpro/domain/modules/study/study-session'
 import { getRouteApi } from '@tanstack/react-router'
 
@@ -84,10 +87,19 @@ export const withdrawnQuestion = (question: SessionQuestion): SessionQuestion =>
   answer: null,
 })
 
-/** What an ended session covered: its category, or for a review, the category or the whole path. */
-export const sessionScopeLabel = (
-  summary: Pick<StudySessionSummary, 'kind' | 'document'>,
-): string =>
-  summary.kind === reviewStudySession
-    ? `Powtórka: ${summary.document?.title ?? 'wszystkie kategorie'}`
-    : (summary.document?.title ?? '')
+type SessionScope = Pick<StudySessionSummary, 'kind' | 'document'>
+
+// One label per session kind, so a new kind cannot be left without one.
+const sessionScopeLabels = {
+  [regularStudySession]: summary => summary.document?.title ?? '',
+  [reviewStudySession]: summary => `Powtórka: ${summary.document?.title ?? 'wszystkie kategorie'}`,
+  [favoritesStudySession]: summary =>
+    summary.document === null ? 'Ulubione pytania' : `Ulubione: ${summary.document.title}`,
+} satisfies Record<StudySessionKind, (summary: SessionScope) => string>
+
+/**
+ * What an ended session covered: its category, or for a review or favourites session the category
+ * or the whole path.
+ */
+export const sessionScopeLabel = (summary: SessionScope): string =>
+  sessionScopeLabels[summary.kind](summary)

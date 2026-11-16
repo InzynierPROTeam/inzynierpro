@@ -2,7 +2,11 @@ import {
   QuestionCount,
   ReferenceDocumentId,
 } from '@inzpro/domain/modules/learning-content/reference-document'
-import { regularStudySession, reviewStudySession } from '@inzpro/domain/modules/study/study-session'
+import {
+  favoritesStudySession,
+  regularStudySession,
+  reviewStudySession,
+} from '@inzpro/domain/modules/study/study-session'
 import { Option, Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
@@ -53,6 +57,16 @@ describe('after regular study', () => {
       suggestedReview(
         { kind: regularStudySession, documentId: Option.some(documentId) },
         { scope: count(24), path: count(24) },
+      ),
+    ).toStrictEqual(Option.none()))
+})
+
+describe('after a favourites session', () => {
+  it('goes back to regular study even with a full review session due', () =>
+    expect(
+      suggestedReview(
+        { kind: favoritesStudySession, documentId: Option.none() },
+        { scope: count(40), path: count(40) },
       ),
     ).toStrictEqual(Option.none()))
 })

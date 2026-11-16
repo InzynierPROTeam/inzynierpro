@@ -17,15 +17,18 @@ A key object is flat: `all`, named domain groups, and concrete operations. Each 
 - `all` identifies the whole module.
 - `paths()` groups queries about the set of paths, for example `getPaths(req)`.
 - `path(id)` groups queries about one path: its details, statistics, documents and preview.
-- `session(userId, pathId, id)` groups the reads of one study session inside its path group, so starting or answering can refresh one session without touching others.
-- `progress(userId, pathId)` groups the path's reads that show the learner's progress (documents, preview, latest session, review preview and unfinished review session), so an answer refreshes them without refetching the session reads it already updated.
+- `session(userId, pathId, id)` groups the reads of one study session inside its path group (the session, its summary and results), so starting or answering can refresh one session without touching others. Its questions sit in `favorites(userId)` instead.
+- `progress(userId, pathId)` groups the path's reads that show the learner's progress (documents, preview, latest session, review preview and the unfinished review and favourites sessions), so an answer refreshes them without refetching the session reads it already updated.
+- `account(userId)` groups everything the account reads about its own study: every path group and the favourites group.
+- `favorites(userId)` groups every read that shows a FavoriteQuestion mark on any path: the favourites previews and session questions. A mark is shared across paths and nothing else in a path changes it, so marking or unmarking marks this group stale (`refetchType: 'none'`) without refetching the session or progress.
 - The full request goes into the concrete query key, so every param, query, payload and header that affects the result is part of it. Query contracts use only explicit, serializable data; authentication stays in the HTTP adapter.
 
 ```ts
 export const studyKeys = {
   all: ['study'] as const,
+  account: (userId: UserId) => [...studyKeys.all, 'account', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
-    [...studyKeys.all, 'path', userId, id] as const,
+    [...studyKeys.account(userId), 'path', id] as const,
   getDocuments: (userId: UserId, req: GetDocumentsRequest) =>
     [...studyKeys.path(userId, req.params.qualificationPathId), 'getDocuments', req] as const,
 }

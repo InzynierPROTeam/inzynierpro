@@ -1,4 +1,5 @@
 import type {
+  FavoritesPreview,
   LatestStudySession,
   ReviewPreview,
   SessionNextStep as SessionNextStepDto,
@@ -14,6 +15,7 @@ import {
   startStudyNextStep,
 } from '@inzpro/domain/modules/study/study-session'
 import { Match, Option } from 'effect'
+import type { FavoritesPreview as FavoritesPreviewModel } from '~api/modules/study/domain/favorites-session.model.js'
 import type { ReviewPreview as ReviewPreviewModel } from '~api/modules/study/domain/review-session.model.js'
 import type { SessionNextStep } from '~api/modules/study/domain/session-next-step.model.js'
 import type { SessionDocument } from '~api/modules/study/domain/study-document.model.js'
@@ -103,6 +105,16 @@ export const toReviewPreviewDto = (preview: ReviewPreviewModel): ReviewPreview =
     onSome: dateTimeUtcToUtcIsoDateTime,
   }),
   settings: Option.getOrNull(preview.settings),
+})
+
+export const toFavoritesPreviewDto = ({
+  document,
+  settings,
+  ...preview
+}: FavoritesPreviewModel): FavoritesPreview => ({
+  ...preview,
+  document: Option.getOrNull(document),
+  settings: Option.getOrNull(settings),
 })
 
 // A continued session is regular study, which always has a document.

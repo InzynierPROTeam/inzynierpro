@@ -7,6 +7,11 @@ import type {
   GetReviewPreviewEndpoint,
   GetReviewSessionEndpoint,
   StartReviewSessionEndpoint,
+  MarkFavoriteQuestionEndpoint,
+  UnmarkFavoriteQuestionEndpoint,
+  GetFavoritesPreviewEndpoint,
+  GetFavoritesSessionEndpoint,
+  StartFavoritesSessionEndpoint,
   GetLatestSessionEndpoint,
   GetSessionEndpoint,
   GetSessionSummaryEndpoint,
@@ -91,6 +96,55 @@ export type StartReviewSessionRequest = InferEndpointRequest<typeof StartReviewS
 export type StartReviewSessionRes = Effect.Success<ReturnType<typeof startReviewSession>>
 
 export type StartReviewSessionError = Effect.Error<ReturnType<typeof startReviewSession>>
+
+export const markFavoriteQuestion = (req: MarkFavoriteQuestionRequest) =>
+  apiAction(api => api.Study.MarkFavoriteQuestion(req))
+
+export type MarkFavoriteQuestionRequest = InferEndpointRequest<typeof MarkFavoriteQuestionEndpoint>
+
+export type MarkFavoriteQuestionRes = Effect.Success<ReturnType<typeof markFavoriteQuestion>>
+
+export type MarkFavoriteQuestionError = Effect.Error<ReturnType<typeof markFavoriteQuestion>>
+
+export const unmarkFavoriteQuestion = (req: UnmarkFavoriteQuestionRequest) =>
+  apiAction(api => api.Study.UnmarkFavoriteQuestion(req))
+
+export type UnmarkFavoriteQuestionRequest = InferEndpointRequest<
+  typeof UnmarkFavoriteQuestionEndpoint
+>
+
+export type UnmarkFavoriteQuestionRes = Effect.Success<ReturnType<typeof unmarkFavoriteQuestion>>
+
+export type UnmarkFavoriteQuestionError = Effect.Error<ReturnType<typeof unmarkFavoriteQuestion>>
+
+export const getFavoritesPreview = (req: GetFavoritesPreviewRequest) =>
+  apiAction(api => api.Study.GetFavoritesPreview(req))
+
+export type GetFavoritesPreviewRequest = InferEndpointRequest<typeof GetFavoritesPreviewEndpoint>
+
+export type GetFavoritesPreviewRes = Effect.Success<ReturnType<typeof getFavoritesPreview>>
+
+export type GetFavoritesPreviewError = Effect.Error<ReturnType<typeof getFavoritesPreview>>
+
+export const getFavoritesSession = (req: GetFavoritesSessionRequest) =>
+  apiAction(api => api.Study.GetFavoritesSession(req))
+
+export type GetFavoritesSessionRequest = InferEndpointRequest<typeof GetFavoritesSessionEndpoint>
+
+export type GetFavoritesSessionRes = Effect.Success<ReturnType<typeof getFavoritesSession>>
+
+export type GetFavoritesSessionError = Effect.Error<ReturnType<typeof getFavoritesSession>>
+
+export const startFavoritesSession = (req: StartFavoritesSessionRequest) =>
+  apiAction(api => api.Study.StartFavoritesSession(req))
+
+export type StartFavoritesSessionRequest = InferEndpointRequest<
+  typeof StartFavoritesSessionEndpoint
+>
+
+export type StartFavoritesSessionRes = Effect.Success<ReturnType<typeof startFavoritesSession>>
+
+export type StartFavoritesSessionError = Effect.Error<ReturnType<typeof startFavoritesSession>>
 
 export const getLatestSession = (req: GetLatestSessionRequest) =>
   apiAction(api => api.Study.GetLatestSession(req))
