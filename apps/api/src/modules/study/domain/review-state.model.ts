@@ -38,14 +38,9 @@ export const ReviewRating = Schema.Literals(reviewRatings)
 
 export type ReviewRating = typeof ReviewRating.Type
 
-/**
- * The version of the written strategy and algorithm that produced a UserReviewState: the answer
- * mapping, ts-fsrs 6 with FSRS-7 default weights and desired retention 0.9. A change to any of
- * them gets a new version, so stored states can be recomputed from LearningEvents.
- */
+// Bump when the rating mapping or scheduler parameters change, so event replay remains reproducible.
 export const writtenReviewRulesVersion = 'written-1/fsrs-7'
 
-/** ts-fsrs card states: new, learning, review and relearning. */
 export const newCardState = 0
 export const learningCardState = 1
 export const reviewCardState = 2
@@ -58,7 +53,6 @@ export const cardStates = [
   relearningCardState,
 ] as const
 
-/** ts-fsrs schedule statuses of a card. */
 export const newSchedule = 'new'
 export const learningSchedule = 'learning'
 export const reviewSchedule = 'review'
@@ -85,7 +79,6 @@ export const LearningEventId = Uuid.pipe(Schema.brand('LearningEventId'))
 
 export type LearningEventId = typeof LearningEventId.Type
 
-/** The circumstances a written LearningEvent records beside the answer's result. */
 export type LearningEventContext = {
   readonly mode: LearningMode
   readonly assistance: AssistanceLevel

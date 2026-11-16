@@ -50,7 +50,6 @@ test('a public read is limited per client address and says when to retry', async
   expect(span?.attributes.get('app.rate_limit.exceeded')).toBe(true)
   expect(span?.attributes.get('app.rate_limit.policy')).toBe('public-read')
 
-  // Another client keeps its own bucket.
   expect((await listSpecializations(uniqueAddress())).status).toBe(200)
 })
 

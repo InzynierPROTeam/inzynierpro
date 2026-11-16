@@ -17,7 +17,6 @@ import type {
 export const studySessionStatus = (session: Pick<StudySession, 'endedAt'>): StudySessionStatus =>
   Option.isSome(session.endedAt) ? endedStudySession : activeStudySession
 
-/** The share of the session's scored questions already answered, rounded like V1. */
 export const answeredPercent = (
   session: Pick<StudySession, 'answeredCount' | 'questionCount' | 'skippedCount'>,
 ): Percent =>
@@ -28,10 +27,7 @@ export const answeredPercent = (
     ),
   )
 
-/**
- * The session's score: correct answers among its scored questions, so unanswered questions count
- * against it as in the summary's ring, while skipped withdrawn ones do not (ADR-0003).
- */
+/** Unanswered questions count against the score; withdrawn, unanswered questions do not. */
 export const correctPercent = (
   result: Pick<StudySessionResultCounts, 'correct'>,
   session: Pick<StudySession, 'questionCount' | 'skippedCount'>,

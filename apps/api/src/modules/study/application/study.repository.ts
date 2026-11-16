@@ -33,7 +33,6 @@ export class StudyRepository extends Context.Service<
     readonly transaction: <A, E, R>(
       operation: Effect.Effect<A, E, R>,
     ) => Effect.Effect<A, E | StudyWriteError, R>
-    /** Persists a session with its revision references and answer order, returning it as stored. */
     readonly createSession: (
       session: NewStudySession,
     ) => Effect.Effect<StudySession, StudyWriteError>
@@ -57,19 +56,16 @@ export class StudyRepository extends Context.Service<
     readonly recordAnswer: (
       answer: NewSessionAnswer,
     ) => Effect.Effect<SessionAnswer, StudyWriteError>
-    /** Appends the answer's LearningEvent with the result, revision, path, mode, assistance and time. */
     readonly recordLearningEvent: (
       answer: NewSessionAnswer,
       context: LearningEventContext,
     ) => Effect.Effect<LearningEventId, StudyWriteError>
-    /** Replaces the question's UserReviewState on the path. */
     readonly storeReviewState: (state: NewReviewState) => Effect.Effect<void, StudyWriteError>
     /** Marks the question as the learner's FavoriteQuestion on every path; an existing mark stays. */
     readonly markFavorite: (
       userId: UserId,
       questionId: WrittenQuestionId,
     ) => Effect.Effect<void, StudyWriteError>
-    /** Removes the learner's FavoriteQuestion mark, if any. */
     readonly unmarkFavorite: (
       userId: UserId,
       questionId: WrittenQuestionId,
@@ -83,7 +79,6 @@ export class StudyRepository extends Context.Service<
       questionId: WrittenQuestionId,
       text: QuestionNoteText,
     ) => Effect.Effect<QuestionNote, QuestionNoteWriteError>
-    /** Deletes the learner's PersonalQuestionNote, if any. */
     readonly clearNote: (
       userId: UserId,
       questionId: WrittenQuestionId,
@@ -99,7 +94,6 @@ export class StudyRepository extends Context.Service<
      */
     readonly endSession: (sessionId: StudySessionId) => Effect.Effect<StudySession, StudyWriteError>
     // The answer command owns validation and calls these projection writes in its evidence transaction.
-    /** Records that the question is covered in the round by the answered revision. */
     readonly recordCoverage: (
       userId: UserId,
       pathId: QualificationPathId,
@@ -107,7 +101,6 @@ export class StudyRepository extends Context.Service<
       revisionId: QuestionRevisionId,
       round: LearningRoundNumber,
     ) => Effect.Effect<void, StudyWriteError>
-    /** Stores the learner's current LearningRound on the path. */
     readonly storeLearningRound: (
       userId: UserId,
       pathId: QualificationPathId,

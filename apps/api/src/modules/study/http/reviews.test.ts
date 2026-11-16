@@ -98,7 +98,6 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
   const question = async (sessionId: string, position: number) =>
     decode(SessionQuestion)(await request(`/sessions/${sessionId}/questions/${position}`))
 
-  // The questions of a session in session order.
   const sessionQuestionIds = async (session: StudySession) => {
     const ids: Array<string> = []
 
@@ -109,7 +108,6 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
     return ids
   }
 
-  // Starts what the document's regular-study preview offers.
   const startStudy = async (documentId: string) => {
     const offered = await decode(SessionPreview)(await request(`/preview?documentId=${documentId}`))
 
@@ -122,7 +120,6 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
     )
   }
 
-  // Answers a session question at the given backend time.
   const answerAt = async (
     at: DateTime.Utc,
     sessionId: string,
@@ -161,7 +158,6 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
   const nextStep = async (sessionId: string) =>
     decode(SessionNextStepResponse)(await request(`/sessions/${sessionId}/next-step`))
 
-  // Answers every question of a session now and ends it.
   const finish = async (session: StudySession) => {
     for (let position = 1; position <= session.progress.total; position++) {
       expect((await answerNow(session.id, position)).status).toBe(200)
@@ -188,7 +184,6 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
   }
 }
 
-// A learner on a fresh document of the shared session path with the given number of questions.
 const learnerWithQuestions = async (questionCount: number) => {
   const fixture = await createStudyFixture(studySessionSpecialization)
   const questions: Array<Awaited<ReturnType<typeof addFixtureQuestion>>> = []
@@ -259,7 +254,6 @@ describe('due questions', () => {
       },
     })
 
-    // More than the due questions is refused rather than padded with the one not due.
     expect((await learner.startReview(4)).status).toBe(409)
 
     const response = await learner.startReview(2)
@@ -283,7 +277,6 @@ describe('due questions', () => {
 
     await withdrawFixtureRevision(withdrawn!.revisionId)
     await publishFixtureRevision(replaced!.id)
-    // A cosmetic revision keeps the state, so the question stays due.
     await publishFixtureRevision(polished!.id, cosmeticChange)
 
     expect(await learner.reviewPreview()).toMatchObject({ dueQuestionCount: 1 })
@@ -374,7 +367,6 @@ describe('unfinished review sessions', () => {
     })
     expect(await learner.reviewSession()).toMatchObject({ id: pathReview.id, kind: 'review' })
 
-    // Another scope is a separate session.
     expect(await learner.reviewSession(learner.fixture.documentId)).toBeNull()
 
     const documentReview = await learner.decode(StudySession)(
@@ -385,12 +377,10 @@ describe('unfinished review sessions', () => {
       id: documentReview.id,
     })
 
-    // "Continue learning" stays with regular study.
     expect(
       await learner.decode(LatestStudySessionResponse)(await learner.request('/latest-session')),
     ).toMatchObject({ id: study.id, kind: 'study' })
 
-    // Ending it lets the scope start a new one.
     await learner.end(pathReview.id)
     expect(await learner.reviewSession()).toBeNull()
     expect((await learner.startReview(1)).status).toBe(200)
@@ -518,7 +508,6 @@ describe('the next step after a session', () => {
 
     await learner.finish(second)
 
-    // Questions answered today wait for the next study day, so study moves on.
     expect(await learner.nextStep(second.id)).toMatchObject({ type: 'start-study' })
   })
 

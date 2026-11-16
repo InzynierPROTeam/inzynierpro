@@ -6,7 +6,6 @@ import { type Option, Schema } from 'effect'
 import type { SessionCountSettings } from './session-preview.rules.js'
 import type { SessionDocument } from './study-document.model.js'
 
-/** How many questions of a review scope are due now, and when the next one becomes due. */
 export const ReviewQueue = Schema.Struct({
   dueCount: QuestionCount,
   // The earliest due time after now; none when nothing later is scheduled.
@@ -15,7 +14,6 @@ export const ReviewQueue = Schema.Struct({
 
 export type ReviewQueue = typeof ReviewQueue.Type
 
-/** The due questions of a review scope with the counts a new review session may hold. */
 export type ReviewPreview = {
   readonly qualificationPathId: QualificationPathId
   // None for reviews of the whole path.

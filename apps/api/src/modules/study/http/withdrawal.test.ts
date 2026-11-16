@@ -25,7 +25,6 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// A signed-in learner with a started session over every question of a fresh document.
 const learnerInSession = async (questionCount: number) => {
   const visitor = await loginForPreparation(api)
   const fixture = await createStudyFixture(studySessionSpecialization)
@@ -65,7 +64,6 @@ const learnerInSession = async (questionCount: number) => {
   const optionOf = (shown: SessionQuestion, correct: boolean) =>
     shown.answers.find(({ isCorrect }) => isCorrect === correct)!
 
-  // Submits an option of the question as the client last showed it.
   const submit = (shown: SessionQuestion, correct = true) =>
     request(`${sessionPath}/questions/${shown.position}/answer`, {
       questionRevisionId: shown.questionRevisionId,
@@ -108,7 +106,6 @@ test('a withdrawn question is skipped without penalty in progress and the summar
   await withdrawFixtureRevision(questions[1]!.revisionId)
   await answer(1)
 
-  // The continue point passes over the withdrawn question.
   expect((await session()).progress).toEqual({
     total: 3,
     answered: 1,
@@ -146,7 +143,6 @@ test('when every remaining question is withdrawn nothing is left to answer and t
   await withdrawFixtureRevision(questions[1]!.revisionId)
   await withdrawFixtureRevision(questions[2]!.revisionId)
 
-  // The client still shows the question it opened before the withdrawal; the backend refuses it.
   const refused = await submit(opened)
 
   expect(refused.status).toBe(409)
@@ -179,10 +175,8 @@ test('an answer stored before its revision was withdrawn stays reproducible and 
 
   const shown = await question(1)
 
-  // The pinned revision, its options and the stored answer read back unchanged.
   expect(shown).toEqual({ ...answered, isWithdrawn: true })
 
-  // Retrying the stored answer after a lost response still returns it rather than a refusal.
   expect((await submit(answered, false)).status).toBe(200)
   expect((await session()).progress).toMatchObject({ answered: 1, skipped: 0 })
 
@@ -228,7 +222,6 @@ test('a newer publication leaves the started session on its pinned revision, unl
 
   const revision = await publishFixtureRevision(questions[0]!.id)
 
-  // Publishing and even withdrawing the newer revision never reaches the pinned one.
   await withdrawFixtureRevision(revision.revisionId)
 
   expect(await question(1)).toEqual(pinned)

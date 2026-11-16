@@ -74,7 +74,6 @@ const learnerOnPath = async (specializationId: string, questionCount = 0) => {
       await (await request(`/documents/${documentId}`)).json(),
     ).document
 
-  // Starts what the document's preview offers.
   const start = async (documentId: string) => {
     const offered = await preview(`?documentId=${documentId}`)
 
@@ -103,7 +102,6 @@ const learnerOnPath = async (specializationId: string, questionCount = 0) => {
     })
   }
 
-  // Answers every question the document's preview offers and ends the session.
   const coverDocument = async (documentId: string) => {
     const session = await start(documentId)
 
@@ -114,7 +112,6 @@ const learnerOnPath = async (specializationId: string, questionCount = 0) => {
     await request(`/sessions/${session.id}/end`, {})
   }
 
-  // Covers every document of the path except the given ones.
   const coverPathExcept = async (...kept: ReadonlyArray<string>) => {
     for (const document of await documents()) {
       if (!kept.includes(document.id) && document.availableQuestionCount > 0) {
@@ -160,7 +157,6 @@ test('covering the last uncovered questions concurrently advances the round once
   expect(responses.map(response => response.status)).toEqual([200, 200])
   expect(await round()).toBe(2)
 
-  // The new round starts with every question uncovered, from the first category.
   expect(await documents()).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -181,7 +177,6 @@ test('covering the last uncovered questions concurrently advances the round once
     availableQuestionCount: 5,
   })
 
-  // Answering in the new round covers the question in it without advancing again.
   const next = await start(technicalDocumentA)
   await answer(next.id, 1)
 
@@ -222,7 +217,6 @@ test('a question added during the round is uncovered and a withdrawn one does no
     completedQuestionCount: 1,
   })
 
-  // The withdrawn question leaves the round; only the added one is left uncovered.
   await withdrawFixtureRevision(questions[1]!.revisionId)
 
   expect(await documentProgress(fixture.documentId)).toMatchObject({

@@ -21,14 +21,7 @@ import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rul
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Starts a ReviewSession of the questions due now on the whole path or one document (ADR-0002),
- * after confirming its preview. It holds the most overdue questions first, pins their current
- * revisions and shuffles their options as regular study does, and is never padded with questions
- * that are not due. An unfinished review session of the same scope refuses the start and is
- * reported so the client can continue it. The account lock serializes it with other starts and
- * answers, so the due questions are counted against committed state.
- */
+// The account lock keeps due counts consistent with concurrent starts, answers and assignment changes.
 export const startReviewSession = Effect.fn('Study.startReviewSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

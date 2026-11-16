@@ -7,10 +7,6 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyReader } from './study.reader.js'
 
-/**
- * The learner's most recently started written session on the path, or on one document of it. A
- * document has at most one unfinished session, and it is always the latest one.
- */
 export const getLatestSession = Effect.fn('Study.getLatestSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

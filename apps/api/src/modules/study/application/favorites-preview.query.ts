@@ -9,10 +9,6 @@ import { favoritesSessionSettings } from '~api/modules/study/domain/favorites-se
 
 import { StudyReader } from './study.reader.js'
 
-/**
- * The learner's FavoriteQuestions on the path or in one document with the count settings; it
- * creates no session. A document that is not on the path reads as none.
- */
 export const getFavoritesPreview = Effect.fn('Study.getFavoritesPreview')(function* (
   userId: UserId,
   pathId: QualificationPathId,

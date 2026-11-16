@@ -14,7 +14,6 @@ export const DocumentQuestionPool = Schema.Struct({
 
 export type DocumentQuestionPool = typeof DocumentQuestionPool.Type
 
-/** The document a session covers. */
 export const SessionDocument = Schema.Struct({
   id: ReferenceDocumentId,
   title: Schema.NonEmptyString,

@@ -3,7 +3,6 @@ import { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session
 import { GeneralChamberId } from '@inzpro/domain/modules/exam-calendar/general-chamber'
 import { Schema } from 'effect'
 
-/** A published session a learner can still choose as the goal of a path. */
 export const ExamSessionOption = Schema.Struct({
   id: ExamSessionId,
   name: Schema.NonEmptyString,

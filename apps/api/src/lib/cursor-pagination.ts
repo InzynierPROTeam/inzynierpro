@@ -2,7 +2,6 @@ import { Cursor, defaultPageLimit, type PageLimit } from '@inzpro/domain/common/
 import { type Array as Arr, Data, Effect, Schema } from 'effect'
 import type { Statement } from 'effect/sql'
 
-/** The page a use case asks a reader for; HTTP pagination queries satisfy it structurally. */
 export type CursorPageRequest = {
   readonly cursor?: Cursor | undefined
   readonly limit?: PageLimit | undefined
@@ -67,14 +66,12 @@ type KeyFields = {
   }
 }
 
-/** One sort column: the cursor key field, the SQL expression it is read from and its direction. */
 export type KeysetColumn<F extends KeyFields> = readonly [
   field: Extract<keyof Schema.Struct.Encoded<F>, string>,
   expression: Statement.Fragment,
   direction: SortDirection,
 ]
 
-/** The SQL a reader interpolates into its SELECT for the requested page. */
 export type KeysetWindow = {
   /** `true` on the first page, otherwise the keyset predicate for rows after the cursor. */
   readonly after: Statement.Fragment
@@ -83,20 +80,7 @@ export type KeysetWindow = {
   readonly limit: number
 }
 
-/**
- * Keyset (seek) pagination over an ordered SELECT. The sort columns are declared once and drive
- * ORDER BY, the predicate after the cursor and the opaque cursor written from the last row, so the
- * three cannot drift apart.
- *
- * The columns must be NOT NULL and end with a unique column (usually the id) for a total order.
- *
- * @example
- * const documentsPage = makeCursorPaginator(sql, Schema.Struct({ id: Uuid }), [
- *   ['id', sql`d.id`, 'asc'],
- * ])
- *
- * documentsPage(req, page => sql`SELECT ... WHERE ${page.after} ORDER BY ${page.orderBy} LIMIT ${page.limit}`, row => ({ id: row.id }))
- */
+/** Sort columns must be NOT NULL and end with a unique column for a total order. */
 export const makeCursorPaginator = <F extends KeyFields>(
   sql: Statement.Constructor,
   key: Schema.Struct<F>,

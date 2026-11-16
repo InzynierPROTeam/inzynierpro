@@ -25,5 +25,4 @@ export const ExamCalendarLive = HttpApiBuilder.group(Api, 'ExamCalendar', handle
   ),
 )
 
-/** Services the exam calendar handlers need per request; the API layer provides them where routes are registered. */
 export const ExamCalendarRequestServices = ExamCalendarReaderLive

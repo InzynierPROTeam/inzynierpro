@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build from the repository root: docker build -f apps/api/Dockerfile .
 
-# The latest Node 26 release (ADR-0017), the major in .nvmrc.
 ARG NODE_VERSION=26
 
 FROM node:${NODE_VERSION}-alpine AS tools
@@ -15,7 +14,6 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
   npm install --global pnpm@latest turbo@latest
 WORKDIR /repo
 
-# Keeps only the API and the workspace packages it depends on.
 FROM tools AS pruner
 COPY . .
 RUN turbo prune @inzpro/api --docker
@@ -32,7 +30,6 @@ RUN --mount=type=cache,id=inzpro-api-turbo,target=/repo/.turbo \
 
 FROM node:${NODE_VERSION}-alpine AS runtime
 ARG RELEASE_SHA=development
-# The runtime needs only node: drop npm and npx with their dependencies.
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 ENV NODE_ENV=production \
   RELEASE_SHA=${RELEASE_SHA}
@@ -46,7 +43,6 @@ USER node
 FROM runtime AS worker
 CMD ["node", "dist/worker/main.js"]
 
-# The HTTP API, the default target.
 FROM runtime AS runner
 ENV PORT=4000
 EXPOSE 4000

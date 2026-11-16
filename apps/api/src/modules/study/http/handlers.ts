@@ -76,7 +76,6 @@ import {
   toSessionNextStepDto,
 } from './mappers.js'
 
-// Each kind of opening is recorded by its own command (ADR-0002).
 const assistanceRecords = {
   [explanationAssistanceKind]: recordExplanationOpening,
   [noteAssistanceKind]: recordNoteOpening,
@@ -546,7 +545,6 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
     ),
 ).pipe(Layer.provide(AuthenticationLive))
 
-/** Services the study handlers need per request; the API layer provides them where routes are registered. */
 export const StudyRequestServices = Layer.mergeAll(
   PreparationReaderLive,
   PreparationRepositoryLive,

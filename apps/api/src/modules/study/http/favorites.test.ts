@@ -40,7 +40,6 @@ const decode =
 // A seeded path only these tests add documents to, so other tests' previews never see them.
 const otherPathSpecialization = '60000000-0000-4000-8000-000000000006'
 
-// Marks are written with PUT and DELETE, which the shared POST/GET helper does not send.
 const favoriteRequest = (
   visitor: TestVisitor,
   pathId: QualificationPathId,
@@ -119,7 +118,6 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
   }
 }
 
-// A learner on a fresh document of the shared session path with the given number of questions.
 const learnerWithQuestions = async (questionCount: number) => {
   const fixture = await createStudyFixture(studySessionSpecialization)
   const questions: Array<Awaited<ReturnType<typeof addFixtureQuestion>>> = []
@@ -189,7 +187,6 @@ describe('marking favourites', () => {
       favoriteQuestionCount: 1,
     })
 
-    // Unmarking on the other path removes the one mark.
     expect(
       (await favoriteRequest(learner.visitor, other.pathId, question!.id, 'DELETE')).status,
     ).toBe(200)
@@ -308,7 +305,6 @@ describe('favourites sessions', () => {
   test('the set is fixed at start, in catalogue order, and unmarking changes nothing', async () => {
     const learner = await learnerWithQuestions(3)
 
-    // Marked out of catalogue order.
     for (const question of [...learner.questions].reverse()) {
       await learner.mark(question.id)
     }
@@ -344,7 +340,6 @@ describe('favourites sessions', () => {
       currentPosition: 1,
     })
 
-    // "Continue learning" stays with regular study.
     expect(await (await learner.request('/latest-session')).json()).toBeNull()
 
     await learner.end(session.id)
@@ -405,7 +400,6 @@ describe('the favourites summary', () => {
       result: { correct: 1, incorrect: 0, correctPercent: 50 },
     })
 
-    // Back to regular study, never a review.
     expect(
       await decode(SessionNextStepResponse)(
         await learner.request(`/sessions/${session.id}/next-step`),
@@ -466,7 +460,6 @@ describe('favourites of one category', () => {
       id: inCategory.id,
     })
 
-    // The whole path is another scope.
     expect(await learner.unfinished()).toBeNull()
 
     const wholePath = await decode(StudySession)(await learner.start(1))

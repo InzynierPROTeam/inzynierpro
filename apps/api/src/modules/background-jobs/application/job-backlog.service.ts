@@ -8,7 +8,6 @@ const backgroundJobs = Metric.gauge('app.background_jobs', {
   description: 'Background jobs of a queue in each state.',
 })
 
-/** Log annotations describing one queue's backlog. */
 export const jobBacklogAnnotations = (backlog: JobBacklog) => ({
   'app.job.queue': backlog.queue,
   'app.jobs.waiting': backlog.waiting,
@@ -21,10 +20,6 @@ export const jobBacklogAnnotations = (backlog: JobBacklog) => ({
   ),
 })
 
-/**
- * Records every queue's backlog in the `app.background_jobs` gauge, run by the worker on a
- * schedule. The log is for diagnosis only; `worker:status` shows the same values on demand.
- */
 export const recordJobBacklog = Effect.fn('BackgroundJobs.recordJobBacklog')(function* () {
   const backgroundJobsReader = yield* BackgroundJobsReader
   const backlog = yield* backgroundJobsReader.backlog

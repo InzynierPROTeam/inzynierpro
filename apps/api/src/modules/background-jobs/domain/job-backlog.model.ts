@@ -1,6 +1,5 @@
 import type { Duration, Option } from 'effect'
 
-/** The state of one queue's jobs, for diagnosing a stuck or failing worker. */
 export type JobBacklog = {
   readonly queue: string
   // Jobs ready to run or waiting for a retry delay.

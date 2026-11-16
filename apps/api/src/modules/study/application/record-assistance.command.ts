@@ -14,11 +14,7 @@ import type { SessionQuestion } from '~api/modules/study/domain/study-session.mo
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Runs one assistance record for a session question under the account lock, which orders it
- * against a concurrent submission, so an answer is assisted exactly when the record committed
- * first. `record` returns the updated question, or the question unchanged when nothing is kept.
- */
+// The account lock makes assistance depend on whether the opening or answer committed first.
 const withSessionQuestion = <E, R>(
   userId: UserId,
   pathId: QualificationPathId,
@@ -57,11 +53,6 @@ const withSessionQuestion = <E, R>(
     )
   })
 
-/**
- * Records that the learner opened the explanation before answering, so the answer is assisted at
- * the explanation level (ADR-0002). Opening it again, after answering, in an ended session or on
- * a withdrawn question changes nothing, because no answer can follow it.
- */
 export const recordExplanationOpening = Effect.fn('Study.recordExplanationOpening')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -81,12 +72,6 @@ export const recordExplanationOpening = Effect.fn('Study.recordExplanationOpenin
   )
 })
 
-/**
- * Records that the learner opened their saved PersonalQuestionNote before answering, so the answer
- * is assisted at the note level unless the explanation was opened too (ADR-0002). Opening an empty
- * note records nothing; neither does opening it again, after answering, in an ended session or on
- * a withdrawn question.
- */
 export const recordNoteOpening = Effect.fn('Study.recordNoteOpening')(function* (
   userId: UserId,
   pathId: QualificationPathId,

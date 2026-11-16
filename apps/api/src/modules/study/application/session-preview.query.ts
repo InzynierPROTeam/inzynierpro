@@ -16,7 +16,6 @@ import {
 
 import { StudyReader } from './study.reader.js'
 
-// Preview does not create a StudySession. Selection and counts follow the current LearningRound.
 export const getSessionPreview = Effect.fn('Study.getSessionPreview')(function* (
   userId: UserId,
   pathId: QualificationPathId,

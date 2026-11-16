@@ -43,13 +43,7 @@ const tracerLayer = (serviceName: string) =>
     ),
   ).pipe(Layer.provide(OtlpTracer.layerFromConfig({ resource: { serviceName } })))
 
-/**
- * Exports traces, logs and metrics over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set and
- * `OTEL_TRACES_EXPORTER` / `OTEL_LOGS_EXPORTER` / `OTEL_METRICS_EXPORTER` are `otlp`; otherwise
- * spans stay in memory. Each process has its own `serviceName`.
- * `stdoutLoggers` keep writing to stdout next to the OTLP exporter. Version and environment
- * come from `OTEL_SERVICE_VERSION` and `OTEL_RESOURCE_ATTRIBUTES` (ADR-0022).
- */
+// Effect reads exporter, version and environment settings from OTEL_* variables (ADR-0022).
 export const observabilityLayer = (
   serviceName: string,
   stdoutLoggers: ReadonlyArray<Logger.Logger<unknown, unknown>>,
@@ -57,13 +51,11 @@ export const observabilityLayer = (
   Layer.mergeAll(
     tracerLayer(serviceName),
     OtlpMetrics.layerFromConfig({ resource: { serviceName } }),
-    // The OTLP logger joins the stdout loggers; without an endpoint only stdout remains.
     OtlpLogger.layerFromConfig({ resource: { serviceName } }).pipe(
       Layer.provideMerge(stdoutLoggers.length === 0 ? Layer.empty : Logger.layer(stdoutLoggers)),
     ),
   ).pipe(Layer.provide([OtlpSerialization.layerJson, FetchHttpClient.layer]))
 
-/** Telemetry and log level of a backend process; production stdout logs are JSON lines. */
 export const processTelemetryLayer = (
   serviceName: string,
   config: Pick<ProcessEnv, 'NODE_ENV' | 'LOG_LEVEL'>,

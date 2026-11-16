@@ -36,7 +36,6 @@ export const UserQualificationPath = Schema.Struct({
 
 export type UserQualificationPath = typeof UserQualificationPath.Type
 
-/** A complete onboarding choice: the path, the exam parts and the first goal. */
 export type PathConfiguration = PathSelection & {
   readonly accessScope: ExamAccessScope
   readonly examSessionId: ExamSessionId

@@ -10,12 +10,7 @@ import { QuestionNotOnPath } from '~api/modules/study/domain/errors.js'
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Saves the learner's PersonalQuestionNote on a question of the path (ADR-0002). The note belongs
- * to the question, so it shows on every path the question is on; the text replaces the saved one
- * and the question's current revision is stored with it, so it no longer refers to earlier wording.
- * Saving never records assistance: only opening a saved note before answering does.
- */
+// Saving never records assistance; only opening a saved note before answering does.
 export const saveQuestionNote = Effect.fn('Study.saveQuestionNote')(function* (
   userId: UserId,
   pathId: QualificationPathId,

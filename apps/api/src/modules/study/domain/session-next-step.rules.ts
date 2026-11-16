@@ -11,15 +11,8 @@ import { Option } from 'effect'
 import { defaultReviewQuestionCount } from './review-session.rules.js'
 import type { StudySession } from './study-session.model.js'
 
-/** The scope of a suggested review: one document, or the whole path when none. */
 export type ReviewScope = { readonly documentId: Option.Option<ReferenceDocumentId> }
 
-/**
- * The review a finished session suggests next, if any (ADR-0002). After a review: the rest of its
- * scope while questions there are due, then the whole path while anything is due. After regular
- * study: the whole path once a full review session is due; otherwise study continues. After
- * favourites: regular study, never a review.
- */
 export const suggestedReview = (
   session: Pick<StudySession, 'kind' | 'documentId'>,
   due: {

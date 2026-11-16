@@ -14,10 +14,6 @@ import { seedTechnicalCatalogue } from '~api/seed/technical-catalogue.js'
 
 import { catalogueTestTime, fixedWallClockLayer } from './clock.js'
 
-// The API as the E2E suite runs it: production HTTP composition, the technical catalogue, the
-// catalogue test date, and every sent e-mail appended as JSON lines to a file the browser tests read.
-// It never serves production traffic, so it adds no endpoints.
-
 const outboxAdapter = (path: string): EmailAdapter => {
   const memory = memoryAdapter('e2e-outbox')
 

@@ -21,14 +21,7 @@ import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rul
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Starts a favourites session over the learner's FavoriteQuestions on the path or in one document
- * (ADR-0002), after confirming its preview. It holds them in catalogue order, pins their current revisions and
- * shuffles their options as regular study does. The set is fixed here, so later marks and unmarks
- * never change it. An unfinished favourites session of the same scope refuses the start and is reported
- * so the client can continue it; with nothing marked no session is created. The account lock
- * serializes it with other starts and answers.
- */
+// Persisting the selected question set keeps later marks and unmarks from changing the session.
 export const startFavoritesSession = Effect.fn('Study.startFavoritesSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

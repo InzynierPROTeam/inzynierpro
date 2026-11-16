@@ -34,7 +34,6 @@ export const platformOrigin = 'http://localhost:8001'
 
 export const sessionCookie = 'inzynierpro.session_token'
 
-// What a Better Auth client call resolves to: `error` is null on success.
 type AuthResult = {
   readonly error: { readonly status: number; readonly code?: string | undefined } | null
 }
@@ -56,7 +55,6 @@ export const uniqueAddress = () =>
     Effect.all([octet, octet, octet]).pipe(Effect.map(parts => `10.${parts.join('.')}`)),
   )
 
-// The API addresses sign-in emails to a single plain address.
 const isSentTo = (message: EmailMessage, email: string) =>
   [message.to].flat().some(address => address === email)
 
@@ -96,7 +94,6 @@ export const startTestApi = async ({
   const logs: Array<string> = []
   const spans: Array<Tracer.Span> = []
 
-  // Records spans in memory the way the OTLP tracer would export them, sensitive attributes removed.
   const tracer = redactingTracer(
     Tracer.make({
       span: options => {
@@ -131,8 +128,6 @@ export const startTestApi = async ({
 
   await redis.connect()
 
-  // A client of the API: the shared Better Auth client over a fetch that keeps cookies.
-  // Extra headers are sent with every request, e.g. a forged client address.
   const visitor = (headers: Record<string, string> = {}): TestVisitor => {
     const jar = makeCookieJar({
       origin: platformOrigin,
@@ -152,7 +147,6 @@ export const startTestApi = async ({
     }
   }
 
-  // The six-digit code from the last email sent to the address.
   const lastCodeFor = (email: string) => {
     const sent = sentEmails.findLast(({ message }) => isSentTo(message, email))
     const code = sent?.message.text?.match(/\b(\d{6})\b/)?.[1]

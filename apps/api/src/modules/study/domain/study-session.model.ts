@@ -20,7 +20,6 @@ import { type Option, Schema } from 'effect'
 
 import type { QuestionNote } from './question-note.model.js'
 
-/** A started study session: its kind and material, fixed size and how far the learner got. */
 export const StudySession = Schema.Struct({
   id: StudySessionId,
   kind: StudySessionKind,
@@ -30,7 +29,6 @@ export const StudySession = Schema.Struct({
   // The goal version active at the start; later goal changes never reattribute this session.
   goalVersion: UserExamGoalVersion,
   questionCount: QuestionCount,
-  // The question to continue from; answering moves it forward.
   currentPosition: SessionQuestionPosition,
   answeredCount: QuestionCount,
   // Questions whose revision was withdrawn before they were answered and before the session ended (ADR-0003).
@@ -91,7 +89,6 @@ export type NewSessionAnswer = {
   readonly isAssisted: boolean
 }
 
-/** A currently published question revision that a new session may include. */
 export const SessionCandidate = Schema.Struct({
   questionId: WrittenQuestionId,
   questionRevisionId: QuestionRevisionId,
@@ -100,7 +97,6 @@ export const SessionCandidate = Schema.Struct({
 
 export type SessionCandidate = typeof SessionCandidate.Type
 
-/** A session to persist: revision references and the chosen answer order, never content copies. */
 export type NewStudySession = {
   readonly userId: UserId
   readonly qualificationPathId: QualificationPathId
@@ -119,7 +115,6 @@ export const StudySessionResultCounts = Schema.Struct({
 
 export type StudySessionResultCounts = typeof StudySessionResultCounts.Type
 
-/** One question of a session in the summary details. */
 export type SessionQuestionResult = {
   readonly position: SessionQuestionPosition
   readonly answer: Option.Option<{ readonly isCorrect: boolean; readonly isAssisted: boolean }>

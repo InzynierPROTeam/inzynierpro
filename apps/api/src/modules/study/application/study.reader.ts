@@ -103,7 +103,6 @@ export class StudyReader extends Context.Service<
       userId: UserId,
       pathId: QualificationPathId,
     ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
-    /** The document when it is on the path. */
     readonly pathDocument: (
       pathId: QualificationPathId,
       documentId: ReferenceDocumentId,
@@ -129,7 +128,6 @@ export class StudyReader extends Context.Service<
       now: DateTimeUtc,
       limit: QuestionCount,
     ) => Effect.Effect<ReadonlyArray<SessionCandidate>, StudyReadError>
-    /** Whether the question is on the path, which marking it from there requires. */
     readonly isPathQuestion: (
       pathId: QualificationPathId,
       questionId: WrittenQuestionId,

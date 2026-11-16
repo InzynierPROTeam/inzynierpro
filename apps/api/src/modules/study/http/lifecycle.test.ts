@@ -30,7 +30,6 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// A signed-in learner on a fresh test-only document with the given number of published questions.
 const learnerWithDocument = async (questionCount: number) => {
   const visitor = await loginForPreparation(api)
   const fixture = await createStudyFixture(studySessionSpecialization)
@@ -55,7 +54,6 @@ const learnerWithDocument = async (questionCount: number) => {
       await (await request(`/preview?documentId=${fixture.documentId}`)).json(),
     )
 
-  // Starts what the document's preview offers, as confirming it in the client does.
   const start = async () => {
     const offered = await preview()
 
@@ -128,7 +126,6 @@ test('answering moves to the next unanswered question and the session stays open
   const { start, answer, session, request } = await learnerWithDocument(3)
   const started = await start()
 
-  // Answering out of order continues from the first question still open.
   expect((await answer(started.id, 2)).session).toMatchObject({
     status: 'active',
     progress: { answered: 1, currentQuestion: 3 },
@@ -140,7 +137,6 @@ test('answering moves to the next unanswered question and the session stays open
 
   const last = await answer(started.id, 1, false)
 
-  // Answering everything leaves the session open on its last answer until the learner ends it.
   expect(last.session).toMatchObject({
     status: 'active',
     progress: { total: 3, answered: 3, percent: 100, currentQuestion: 1 },
@@ -155,7 +151,6 @@ test('answering moves to the next unanswered question and the session stays open
 
   expect(endedSession).toMatchObject({ status: 'ended', progress: { answered: 3 } })
   expect(endedSession.endedAt).not.toBeNull()
-  // The end is stored, so it survives a reload.
   expect(await session(started.id)).toEqual(endedSession)
 })
 
@@ -237,10 +232,8 @@ test('ending a session keeps its answers, refuses new ones and lets a new sessio
     status: 'ended',
     progress: { answered: 1 },
   })
-  // Ending twice changes nothing.
   expect((await request(`/sessions/${first.id}/end`, {})).status).toBe(200)
   expect((await summary(first.id)).result).toMatchObject({ correct: 1 })
-  // An ended session accepts no further answers.
   const open = await question(first.id, 2)
 
   const refused = await request(`/sessions/${first.id}/questions/2/answer`, {
@@ -251,7 +244,6 @@ test('ending a session keeps its answers, refuses new ones and lets a new sessio
   expect(refused.status).toBe(409)
   expect(await refused.json()).toMatchObject({ type: 'study_session_ended' })
 
-  // The new session draws only the questions the learner has not answered yet.
   expect(await preview()).toMatchObject({
     questionSelection: 'uncovered',
     availableQuestionCount: 2,
@@ -288,7 +280,6 @@ test('the next session draws uncovered questions, then deliberately goes over a 
     availableQuestionCount: 3,
     settings: { defaultQuestionCount: 3 },
   })
-  // A client that still shows uncovered questions cannot go over covered ones by accident.
   expect(
     (
       await request('/sessions', {
@@ -302,7 +293,6 @@ test('the next session draws uncovered questions, then deliberately goes over a 
   const again = await start()
 
   expect(again.progress.total).toBe(3)
-  // A covered question accepts a new attempt.
   expect((await answer(again.id, 1)).question.answer).not.toBeNull()
 })
 
@@ -310,7 +300,6 @@ test('continuing points to the most recently used session of the path and each d
   const { visitor, fixture, start, answer, latest, request } = await learnerWithDocument(2)
   const firstSession = await start()
 
-  // A second document on the same path, started later.
   const otherDocument = await runFixture(
     Effect.gen(function* () {
       const learningContentRepository = yield* LearningContentRepository
@@ -337,7 +326,6 @@ test('continuing points to the most recently used session of the path and each d
 
   expect((await latest()).id).toBe(otherSession.id)
 
-  // Answering in the earlier session makes it the most recently used one again.
   await answer(firstSession.id, 1)
 
   expect((await latest()).id).toBe(firstSession.id)
@@ -351,7 +339,6 @@ test("another learner's session has no summary or results and cannot be ended", 
   const owned = await start()
   const other = await learnerWithDocument(1)
 
-  // The other learner reads it on their own path, where the session does not exist.
   expect(await (await other.request(`/sessions/${owned.id}/summary`)).json()).toBeNull()
   expect((await other.request(`/sessions/${owned.id}/results`)).status).toBe(200)
   expect((await other.results(owned.id)).data).toEqual([])

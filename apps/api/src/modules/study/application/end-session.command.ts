@@ -10,14 +10,7 @@ import { StudySessionMissing } from '~api/modules/study/domain/errors.js'
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Ends the learner's session, which opens its summary: "Zobacz podsumowanie" after the last
- * question or "Zakończ sesję" at any point. An ended session accepts no answers, and a new one can
- * be configured for its document ("Start over", ADR-0002). Its answers, LearningEvents and coverage
- * stay. Ending an ended session returns it unchanged. The
- * account lock orders it against a concurrent answer, so an answer either lands before the end or
- * is refused after it.
- */
+// The account lock ensures a concurrent answer either commits before the end or is refused.
 export const endSession = Effect.fn('Study.endSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

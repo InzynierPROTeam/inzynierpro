@@ -1,6 +1,3 @@
-// Copies only the files the built API can load at runtime into a directory, keeping the workspace
-// layout and pnpm symlinks. The image then ships what node reaches, not every installed package.
-// Usage: node apps/api/scripts/trace-runtime.ts <workspace root> <output directory>
 import { copyFile, lstat, mkdir, readdir, readlink, realpath, symlink } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -33,8 +30,6 @@ const { fileList } = await nodeFileTrace(
 
 const files = new Set(fileList)
 
-// Adds a file that a package reads through package exports at runtime, with the package.json and
-// symlink that resolution needs.
 const addPackageFile = async (fromPackage: string, specifier: string) => {
   const file = createRequire(join(fromPackage, 'package.json')).resolve(specifier)
   const name = specifier.split('/').slice(0, 2).join('/')

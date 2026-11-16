@@ -25,7 +25,6 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// A signed-in learner on a fresh test-only document with the given number of published questions.
 const learnerWithDocument = async (questionCount: number) => {
   const visitor = await loginForPreparation(api)
   const fixture = await createStudyFixture(studySessionSpecialization)
@@ -59,7 +58,6 @@ const decodeQuestion = async (response: Response) =>
 
 type AnswerIdentity = { readonly id: string; readonly text: string; readonly isCorrect: boolean }
 
-// The options' identity and correctness, independent of the order they are shown in.
 const answerIdentities = (answers: ReadonlyArray<AnswerIdentity>) =>
   answers
     .map(({ id, text, isCorrect }) => ({ id, text, isCorrect }))
@@ -90,7 +88,6 @@ test('starting a session from the preview shows its first question and restores 
   expect(first).toMatchObject({ sessionId: session.id, position: 1 })
   expect(first.questionRevisionId).toBe(pinned?.revisionId)
   expect(first.explanation).toBe(pinned?.explanation)
-  // Shuffling changes only the order: every option keeps its revision's identity and correctness.
   expect(answerIdentities(first.answers)).toEqual(answerIdentities(pinned?.answers ?? []))
   expect(await decodeQuestion(await request(`/sessions/${session.id}/questions/1`))).toEqual(first)
   expect(await decodeSession(await request(`/sessions/${session.id}`))).toEqual(session)

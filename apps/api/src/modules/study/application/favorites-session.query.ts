@@ -8,7 +8,6 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyReader } from './study.reader.js'
 
-/** The unfinished favourites session of the path or one document, which its tile resumes. */
 export const getFavoritesSession = Effect.fn('Study.getFavoritesSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

@@ -25,10 +25,6 @@ export const studyDayOf = (at: DateTime.Utc): StudyDay => {
   }
 }
 
-/**
- * The assistance level of an answer from the backend's records of what was opened before it: the
- * explanation wins over the learner's own note (ADR-0002).
- */
 export const answerAssistance = (opened: {
   readonly explanationOpenedAt: Option.Option<DateTime.Utc>
   readonly noteOpenedAt: Option.Option<DateTime.Utc>
@@ -41,12 +37,8 @@ export const answerAssistance = (opened: {
 }
 
 /**
- * The rating a written answer applies to the question's UserReviewState (ADR-0005, initial
- * mapping), or none when it leaves the state unchanged and stays in history only. An answer to
- * content a substantive revision replaced says nothing about the new content and never rates it
- * (ADR-0003). Only the first answer to the content on a study day rates it, except that a wrong
- * answer always applies Again. A correct answer after the explanation gives a new card an early
- * independent check and never extends an existing card's interval.
+ * Replaced content says nothing about the current card. Explanation-assisted answers schedule
+ * an independent check for new cards without extending an existing card's interval (ADR-0005).
  */
 export const writtenReviewRating = (answer: {
   readonly isCorrect: boolean

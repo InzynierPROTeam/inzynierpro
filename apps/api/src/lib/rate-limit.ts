@@ -17,7 +17,6 @@ export type RateLimitPolicy = {
   readonly whenStoreUnavailable: 'allow' | 'reject'
 }
 
-// The three tiers agreed for the API. Sign-in codes are limited by Better Auth itself.
 export const publicReadLimit: RateLimitPolicy = {
   name: 'public-read',
   limit: 120,
@@ -45,7 +44,6 @@ export const TrustedClientIpHeader = Context.Reference<Option.Option<string>>(
   { defaultValue: Option.none },
 )
 
-// The outcome of this request's check, read by the headers middleware.
 type RateLimitOutcome = Data.TaggedEnum<{
   Allowed: { readonly result: RateLimitResult }
   Exceeded: {
@@ -154,11 +152,9 @@ const clientAddress = Effect.gen(function* () {
   )
 })
 
-/** Limits an anonymous request by client address. */
 export const limitByClient = (policy: RateLimitPolicy) =>
   Effect.flatMap(clientAddress, address => consume(policy, 'ip', address))
 
-/** Limits a signed-in request by account, so users behind one NAT do not share a bucket. */
 export const limitByUser = (policy: RateLimitPolicy) =>
   Effect.flatMap(CurrentUser, user => consume(policy, 'user', user.id))
 
@@ -176,7 +172,6 @@ const headersFor = RateLimitOutcome.$match({
   }),
 })
 
-/** Adds `x-ratelimit-*` and `retry-after` headers when the handler ran a rate-limit check. */
 export const RateLimitHeadersMiddleware = <E, R>(
   app: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>,
 ) =>

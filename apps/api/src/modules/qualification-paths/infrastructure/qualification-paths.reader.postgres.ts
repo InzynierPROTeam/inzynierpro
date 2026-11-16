@@ -25,7 +25,6 @@ export const QualificationPathsReaderLive = Layer.effect(
       ['id', sql`k.id`, 'asc'],
     ])
 
-    // The restricted scope is listed first.
     const scopesPage = makeCursorPaginator(sql, Schema.Struct({ order: Schema.Int, id: Uuid }), [
       ['order', sql`CASE WHEN s.code=${restrictedQualificationScopeCode} THEN 0 ELSE 1 END`, 'asc'],
       ['id', sql`s.id`, 'asc'],

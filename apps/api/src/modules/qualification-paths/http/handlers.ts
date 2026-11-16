@@ -55,5 +55,4 @@ export const QualificationPathsLive = HttpApiBuilder.group(Api, 'QualificationPa
     ),
 )
 
-/** Services the qualification path handlers need per request; the API layer provides them where routes are registered. */
 export const QualificationPathsRequestServices = QualificationPathsReaderLive
