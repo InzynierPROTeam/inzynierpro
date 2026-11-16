@@ -41,3 +41,10 @@ export const goalConflict = Effect.fail(
     message: 'Your goal changed elsewhere. Reload before saving.',
   }),
 )
+
+export const districtChamberUnavailable = Effect.fail(
+  new InvalidPathConfiguration({
+    type: 'invalid_path_configuration',
+    message: 'This district chamber is unavailable for the path.',
+  }),
+)

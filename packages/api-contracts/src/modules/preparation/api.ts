@@ -19,6 +19,7 @@ import {
   GoalOptionsQuery,
   PathParams,
   PathsQuery,
+  SetDistrictChamberPayload,
 } from './requests.js'
 import {
   GoalHistoryResponse,
@@ -97,6 +98,17 @@ export const ChangeGoalEndpoint = HttpApiEndpoint.post(
   },
 )
 
+export const SetDistrictChamberEndpoint = HttpApiEndpoint.post(
+  'SetDistrictChamber',
+  '/paths/:qualificationPathId/district-chamber',
+  {
+    params: PathParams,
+    payload: SetDistrictChamberPayload,
+    success: PathMutationResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, InvalidPathConfiguration],
+  },
+)
+
 export const GetGoalHistoryEndpoint = HttpApiEndpoint.get(
   'GetGoalHistory',
   '/paths/:qualificationPathId/goals',
@@ -127,6 +139,7 @@ export const PreparationApi = HttpApiGroup.make('Preparation')
   .add(RestorePathEndpoint)
   .add(ExtendPathEndpoint)
   .add(ChangeGoalEndpoint)
+  .add(SetDistrictChamberEndpoint)
   .add(GetGoalHistoryEndpoint)
   .add(GetGoalOptionsEndpoint)
   .middleware(Authentication)

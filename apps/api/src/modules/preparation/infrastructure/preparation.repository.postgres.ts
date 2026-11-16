@@ -73,6 +73,18 @@ export const PreparationRepositoryLive = Layer.effect(
           }),
         )
       }),
+      setDistrictChamber: Effect.fn('PreparationRepository.setDistrictChamber')(
+        function* (userId, pathId, districtChamberId) {
+          const chamberId = Option.getOrNull(districtChamberId)
+
+          return yield* sql`UPDATE user_qualification_paths SET district_chamber_id=${chamberId} WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
+            Effect.asVoid,
+            Effect.catchTags({
+              SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),
+            }),
+          )
+        },
+      ),
       extend: Effect.fn('PreparationRepository.extend')(function* (userId, pathId) {
         return yield* sql`UPDATE user_qualification_paths SET access_scope='both' WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
           Effect.asVoid,

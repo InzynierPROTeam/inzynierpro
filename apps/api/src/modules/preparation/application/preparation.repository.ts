@@ -1,4 +1,5 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import type { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import type { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
@@ -35,6 +36,11 @@ export class PreparationRepository extends Context.Service<
     readonly restore: (
       userId: UserId,
       pathId: QualificationPathId,
+    ) => Effect.Effect<void, PreparationWriteError>
+    readonly setDistrictChamber: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      districtChamberId: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<void, PreparationWriteError>
     readonly extend: (
       userId: UserId,

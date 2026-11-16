@@ -21,6 +21,7 @@ import { getGoalHistory } from '~api/modules/preparation/application/goal-histor
 import { getGoalOptions } from '~api/modules/preparation/application/goal-options.query.js'
 import { PreparationReader } from '~api/modules/preparation/application/preparation.reader.js'
 import { restorePath } from '~api/modules/preparation/application/restore-path.command.js'
+import { setDistrictChamber } from '~api/modules/preparation/application/set-district-chamber.command.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
 import {
@@ -31,6 +32,7 @@ import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/i
 import { QualificationPathsRepositoryLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.repository.postgres.js'
 
 import {
+  districtChamberUnavailable,
   goalConflict,
   invalidPathConfiguration,
   pathAccessDenied,
@@ -145,6 +147,27 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           PathPermissionDenied: () => pathAccessDenied,
           StaleExamGoal: () => goalConflict,
           StalePathConfiguration: () => invalidPathConfiguration,
+        }),
+      ),
+    )
+    .handle('SetDistrictChamber', ({ payload, params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            setDistrictChamber(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(payload.districtChamberId),
+            ),
+          ),
+        ),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          ExamCalendarReadError: failExamCalendarRead,
+          ExamCalendarWriteError: failExamCalendarWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          DistrictChamberUnavailable: () => districtChamberUnavailable,
         }),
       ),
     )
