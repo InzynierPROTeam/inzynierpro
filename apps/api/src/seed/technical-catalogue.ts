@@ -13,6 +13,8 @@ import {
 // Published chamber dates and explicitly unconfirmed planning estimates live in catalogue.ts.
 // Stable IDs make repeated explicit seeding safe; existing revisions are never rewritten.
 import {
+  catalogueDistrictChambers,
+  catalogueGeneralChambers,
   catalogueId,
   catalogueSpecializations,
   catalogueKinds,
@@ -24,9 +26,13 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
   yield* sql.withTransaction(
     Effect.gen(function* () {
-      yield* sql`INSERT INTO general_chambers (id, name) VALUES
-        ('50000000-0000-4000-8000-000000000001','Polska Izba Inżynierów Budownictwa'),
-        ('50000000-0000-4000-8000-000000000002','Izba Architektów Rzeczypospolitej Polskiej') ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name`
+      for (const entry of catalogueGeneralChambers) {
+        yield* sql`INSERT INTO general_chambers (id,code,name,short_name) VALUES (${entry.id},${entry.code},${entry.name},${entry.shortName}) ON CONFLICT (id) DO UPDATE SET code=EXCLUDED.code,name=EXCLUDED.name,short_name=EXCLUDED.short_name`
+      }
+
+      for (const entry of catalogueDistrictChambers) {
+        yield* sql`INSERT INTO district_chambers (id,general_chamber_id,code,name,short_name,sort_order,published) VALUES (${entry.id},${entry.generalChamberId},${entry.code},${entry.name},${entry.shortName},${entry.sortOrder},true) ON CONFLICT (id) DO UPDATE SET general_chamber_id=EXCLUDED.general_chamber_id,code=EXCLUDED.code,name=EXCLUDED.name,short_name=EXCLUDED.short_name,sort_order=EXCLUDED.sort_order,published=EXCLUDED.published`
+      }
 
       for (const entry of catalogueSpecializations) {
         yield* sql`INSERT INTO specializations (id,code,name,description,general_chamber_id) VALUES (${entry.id},${entry.code},${entry.name},${entry.description},${entry.chamberId}) ON CONFLICT (id) DO UPDATE SET code=EXCLUDED.code,name=EXCLUDED.name,description=EXCLUDED.description,general_chamber_id=EXCLUDED.general_chamber_id`
