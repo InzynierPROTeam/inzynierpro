@@ -26,7 +26,6 @@ import { getFavoritesPreview } from '~api/modules/study/application/favorites-pr
 import { getFavoritesSession } from '~api/modules/study/application/favorites-session.query.js'
 import { getLatestSession } from '~api/modules/study/application/latest-session.query.js'
 import { markFavorite } from '~api/modules/study/application/mark-favorite.command.js'
-import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
 import {
   recordExplanationOpening,
   recordNoteOpening,
@@ -129,21 +128,6 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
-          StudyReadError: failStudyRead,
-        }),
-      ),
-    )
-    .handle('GetOralMaterials', ({ query, params }) =>
-      limitByUser(accountReadLimit).pipe(
-        Effect.andThen(
-          Effect.flatMap(CurrentUser, user =>
-            getOralMaterials(user.id, params.qualificationPathId, query),
-          ),
-        ),
-        Effect.catchTags({
-          PreparationReadError: failPreparationRead,
-          PathPermissionDenied: () => pathAccessDenied,
-          InvalidCursor: () => invalidCursor,
           StudyReadError: failStudyRead,
         }),
       ),

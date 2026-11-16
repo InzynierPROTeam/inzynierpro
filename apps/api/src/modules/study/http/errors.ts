@@ -1,6 +1,10 @@
 import {
   DocumentNotFound,
+  InvalidOralSelfAssessment,
   InvalidSessionAnswer,
+  OralCategoryNotFound,
+  OralSelfAssessmentAlreadySubmitted,
+  OralSessionAlreadyStarted,
   QuestionNotFound,
   SessionAnswerAlreadySubmitted,
   SessionQuestionNotFound,
@@ -12,7 +16,10 @@ import {
 } from '@inzpro/api-contracts/modules/study/errors'
 import { Effect } from 'effect'
 import { logAndFailInternalServerError } from '~api/lib/internal-server-error.js'
-import type { UnfinishedSessionExists } from '~api/modules/study/domain/errors.js'
+import type {
+  UnfinishedOralSessionExists,
+  UnfinishedSessionExists,
+} from '~api/modules/study/domain/errors.js'
 
 export const failStudyRead = logAndFailInternalServerError('Could not read study material.')
 
@@ -90,5 +97,36 @@ export const sessionAnswerAlreadySubmitted = Effect.fail(
   new SessionAnswerAlreadySubmitted({
     type: 'session_answer_already_submitted',
     message: 'This question already has a submitted answer in this session.',
+  }),
+)
+
+export const oralCategoryNotFound = Effect.fail(
+  new OralCategoryNotFound({
+    type: 'oral_category_not_found',
+    message: 'The oral category was not found on this path.',
+  }),
+)
+
+export const oralSessionAlreadyStarted = (error: UnfinishedOralSessionExists) =>
+  Effect.fail(
+    new OralSessionAlreadyStarted({
+      type: 'oral_session_already_started',
+      message: 'This oral category already has an unfinished session. Continue it instead.',
+      sessionId: error.sessionId,
+      currentPosition: error.currentPosition,
+    }),
+  )
+
+export const invalidOralSelfAssessment = Effect.fail(
+  new InvalidOralSelfAssessment({
+    type: 'invalid_oral_self_assessment',
+    message: 'The self-assessment does not refer to the revision this session shows.',
+  }),
+)
+
+export const oralSelfAssessmentAlreadySubmitted = Effect.fail(
+  new OralSelfAssessmentAlreadySubmitted({
+    type: 'oral_self_assessment_already_submitted',
+    message: 'This question already has a self-assessment in this session.',
   }),
 )

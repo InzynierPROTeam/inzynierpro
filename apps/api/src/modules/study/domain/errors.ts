@@ -1,3 +1,4 @@
+import type { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
 import type {
   SessionQuestionPosition,
   StudySessionId,
@@ -27,3 +28,14 @@ export class QuestionRevisionWithdrawn extends Data.TaggedError('QuestionRevisio
 export class AnswerNotInQuestion extends Data.TaggedError('AnswerNotInQuestion') {}
 
 export class QuestionAlreadyAnswered extends Data.TaggedError('QuestionAlreadyAnswered') {}
+
+export class OralRevisionNotInSession extends Data.TaggedError('OralRevisionNotInSession') {}
+
+export class OralQuestionAlreadyAssessed extends Data.TaggedError('OralQuestionAlreadyAssessed') {}
+
+export class OralCategoryNotOnPath extends Data.TaggedError('OralCategoryNotOnPath') {}
+
+export class UnfinishedOralSessionExists extends Data.TaggedError('UnfinishedOralSessionExists')<{
+  readonly sessionId: OralStudySessionId
+  readonly currentPosition: SessionQuestionPosition
+}> {}

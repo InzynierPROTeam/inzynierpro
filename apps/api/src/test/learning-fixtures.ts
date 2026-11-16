@@ -34,8 +34,10 @@ import {
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
+import { OralStudyReader } from '~api/modules/study/application/oral-study.reader.js'
 import { StudyReader } from '~api/modules/study/application/study.reader.js'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
+import { OralStudyReaderLive } from '~api/modules/study/infrastructure/oral-study.reader.postgres.js'
 import { StudyReaderLive } from '~api/modules/study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
@@ -47,6 +49,7 @@ const fixturesLayer = Layer.mergeAll(
   ExamCalendarRepositoryLive,
   StudyRepositoryLive,
   StudyReaderLive,
+  OralStudyReaderLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
 export const runFixture = <A, E>(
@@ -58,6 +61,7 @@ export const runFixture = <A, E>(
     | ExamCalendarRepository
     | StudyRepository
     | StudyReader
+    | OralStudyReader
   >,
 ) => Effect.runPromise(operation.pipe(Effect.provide(fixturesLayer), Effect.scoped))
 
@@ -253,6 +257,17 @@ export const storedLearningRound = (userId: UserId, pathId: QualificationPathId)
     Effect.gen(function* () {
       const studyReader = yield* StudyReader
       const progress = yield* studyReader.learningRound(userId, pathId)
+
+      return progress.round
+    }),
+  )
+
+// The learner's stored oral LearningRound on a path, which the API does not expose.
+export const storedOralLearningRound = (userId: UserId, pathId: QualificationPathId) =>
+  runFixture(
+    Effect.gen(function* () {
+      const oralStudyReader = yield* OralStudyReader
+      const progress = yield* oralStudyReader.learningRound(userId, pathId)
 
       return progress.round
     }),
