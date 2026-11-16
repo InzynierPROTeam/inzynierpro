@@ -16,7 +16,7 @@ export const MobileAppSection = () => (
       className="group flex-1 rounded-4xl"
       href={ExternalLinks.mobileApp}
     >
-      <Card className="gradient-brand-pink text-primary-foreground h-full flex-1 justify-between bg-linear-to-br">
+      <Card className="gradient-brand-blue text-primary-foreground h-full flex-1 justify-between bg-linear-to-br">
         <CardHeader>
           <IconWrapper
             size="sm"

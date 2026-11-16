@@ -16,7 +16,7 @@ export const ExamSessionTile = () => {
   const { goal } = selectedPath
 
   return (
-    <Card className="gradient-brand-purple text-primary-foreground col-span-6 justify-between bg-linear-to-br @max-3xl:col-span-full">
+    <Card className="gradient-brand text-primary-foreground col-span-6 justify-between bg-linear-to-br @max-3xl:col-span-full">
       <CardHeader>
         <IconWrapper
           size="sm"
