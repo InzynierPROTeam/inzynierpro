@@ -1,4 +1,5 @@
 import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
+import { explanationAssistanceKind } from '@inzpro/domain/modules/study/study-session'
 import { sessionQueryOptions } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
 import {
@@ -32,6 +33,7 @@ export const SessionHintDialog: React.FC<SessionHintDialogProps> = ({ question }
       sessionId: question.sessionId,
       position: question.position,
     },
+    payload: { kind: explanationAssistanceKind },
   })
 
   const { data: session } = useQuery(
@@ -67,7 +69,7 @@ export const SessionHintDialog: React.FC<SessionHintDialogProps> = ({ question }
         <Lightbulb />
         <span className="sr-only">Podpowiedź</span>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Podpowiedź</DialogTitle>
           <DialogDescription className="leading-relaxed whitespace-pre-line">

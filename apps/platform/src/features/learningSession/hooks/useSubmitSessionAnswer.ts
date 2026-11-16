@@ -62,7 +62,7 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
                 isCorrect: current.answers.some(
                   answer => answer.id === req.payload.answerId && answer.isCorrect,
                 ),
-                isAssisted: current.explanationOpenedAt !== null,
+                isAssisted: current.explanationOpenedAt !== null || current.noteOpenedAt !== null,
                 answeredAt: getCurrentUtcIsoDateTime(),
               },
             },

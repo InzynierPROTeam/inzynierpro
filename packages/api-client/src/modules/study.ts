@@ -9,6 +9,8 @@ import type {
   StartReviewSessionEndpoint,
   MarkFavoriteQuestionEndpoint,
   UnmarkFavoriteQuestionEndpoint,
+  SaveQuestionNoteEndpoint,
+  ClearQuestionNoteEndpoint,
   GetFavoritesPreviewEndpoint,
   GetFavoritesSessionEndpoint,
   StartFavoritesSessionEndpoint,
@@ -116,6 +118,24 @@ export type UnmarkFavoriteQuestionRequest = InferEndpointRequest<
 export type UnmarkFavoriteQuestionRes = Effect.Success<ReturnType<typeof unmarkFavoriteQuestion>>
 
 export type UnmarkFavoriteQuestionError = Effect.Error<ReturnType<typeof unmarkFavoriteQuestion>>
+
+export const saveQuestionNote = (req: SaveQuestionNoteRequest) =>
+  apiAction(api => api.Study.SaveQuestionNote(req))
+
+export type SaveQuestionNoteRequest = InferEndpointRequest<typeof SaveQuestionNoteEndpoint>
+
+export type SaveQuestionNoteRes = Effect.Success<ReturnType<typeof saveQuestionNote>>
+
+export type SaveQuestionNoteError = Effect.Error<ReturnType<typeof saveQuestionNote>>
+
+export const clearQuestionNote = (req: ClearQuestionNoteRequest) =>
+  apiAction(api => api.Study.ClearQuestionNote(req))
+
+export type ClearQuestionNoteRequest = InferEndpointRequest<typeof ClearQuestionNoteEndpoint>
+
+export type ClearQuestionNoteRes = Effect.Success<ReturnType<typeof clearQuestionNote>>
+
+export type ClearQuestionNoteError = Effect.Error<ReturnType<typeof clearQuestionNote>>
 
 export const getFavoritesPreview = (req: GetFavoritesPreviewRequest) =>
   apiAction(api => api.Study.GetFavoritesPreview(req))

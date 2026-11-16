@@ -103,7 +103,9 @@ const question = Schema.decodeSync(SessionQuestion)({
   answers: [{ id: '41000000-0000-4000-8000-000000000001', text: 'A', isCorrect: true }],
   isWithdrawn: false,
   explanationOpenedAt: null,
+  noteOpenedAt: null,
   isFavorite: false,
+  note: null,
   answer: {
     answerId: '41000000-0000-4000-8000-000000000001',
     isCorrect: true,
