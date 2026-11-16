@@ -18,8 +18,7 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", "!README.md", ".env*"],
       "outputs": ["dist/**", "*.tsbuildinfo", ".next/**", "build/**", ".output/**", ".vinxi/**"],
-      "cache": true,
-      "env": ["VITE_*", "NODE_ENV"]
+      "cache": true
     },
     "start": {
       "dependsOn": ["build"],
