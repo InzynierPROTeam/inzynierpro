@@ -40,8 +40,7 @@ export const useToggleFavorite = (userId: UserId, req: GetSessionQuestionRequest
       toast.add({ type: 'error', title: 'Nie udało się zmienić ulubionych. Spróbuj ponownie.' })
       await client.invalidateQueries(question)
     },
-    // The mark also shows in the favourites previews and in this question's reads in other
-    // sessions. They are only marked stale and refetch when shown again; this read is set above.
+    // Other sessions share the mark; refresh their copies when next shown.
     onSettled: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: studyKeys.favorites(userId), refetchType: 'none' }),

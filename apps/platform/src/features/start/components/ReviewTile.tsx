@@ -1,7 +1,6 @@
 import { Card, CardHeader, CardTitle } from '@inzpro/ui/components/card'
 import { ReviewTileContent } from '~platform/features/reviews/components/ReviewTileContent'
 
-/** Reviews of the whole path: separate from "Continue learning", which stays regular study (ADR-0002). */
 export const ReviewTile = () => {
   return (
     <Card

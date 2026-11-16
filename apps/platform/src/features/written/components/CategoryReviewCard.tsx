@@ -5,7 +5,6 @@ import { ReviewTileContent } from '~platform/features/reviews/components/ReviewT
 
 type CategoryReviewCardProps = { categoryId: ReferenceDocumentId }
 
-/** Reviews restricted to one category, drawn from the path's shared SRS state (ADR-0002). */
 export const CategoryReviewCard: React.FC<CategoryReviewCardProps> = ({ categoryId }) => {
   return (
     <Card

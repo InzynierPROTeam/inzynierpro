@@ -6,7 +6,6 @@ export const WrittenLearningTile = () => {
     <Card
       role="region"
       aria-label="Nauka do egzaminu pisemnego"
-      // The reviews tile fills the rest of the row.
       className="col-span-8 @max-3xl:col-span-full"
     >
       <CardHeader>

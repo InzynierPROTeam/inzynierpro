@@ -16,7 +16,6 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { useEndSession } from '../hooks/useEndSession'
 import { sessionQuestionRouteApi } from '../utils'
 
-/** Less prominent session actions, as V1's question header menu. */
 export const SessionActionsMenu = () => (
   <DropdownMenu>
     <DropdownMenuTrigger
@@ -36,7 +35,6 @@ export const SessionActionsMenu = () => (
   </DropdownMenu>
 )
 
-// An unfinished session can be ended early; an ended one links to its summary instead.
 const SessionMenuItem = () => {
   const {
     selectedPath,
@@ -69,7 +67,6 @@ const SessionMenuItem = () => {
   return <EndSessionMenuItem />
 }
 
-// Ends the session early and opens its summary.
 const EndSessionMenuItem = () => {
   const {
     selectedPath,

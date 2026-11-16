@@ -2,7 +2,6 @@ import { expect, type Page } from '@playwright/test'
 
 import { latestSignInCode, sentEmailCount } from './outbox'
 
-// Requests a sign-in code on the sign-in page and waits for the code entry page.
 export const requestSignInCode = async (page: Page, email: string) => {
   const previousEmailCount = await sentEmailCount(email)
 

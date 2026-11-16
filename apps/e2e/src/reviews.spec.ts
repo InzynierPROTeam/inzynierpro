@@ -36,14 +36,12 @@ test('after an answer the reviews tile, the category and the review preview say 
 
   await firstAnswer.click()
   await page.getByRole('button', { name: 'Sprawdź' }).click()
-  // Options lock once the backend stored the answer.
   await expect(firstAnswer).toBeDisabled()
 
   await page.goto('/start')
   await expect(page.getByRole('region', { name: 'Powtórka' })).toContainText(
     'Na teraz nie masz pytań do powtórki. Wróć do nich później.',
   )
-  // "Continue learning" still resumes regular study.
   await expect(
     page
       .getByRole('region', { name: 'Nauka do egzaminu pisemnego' })

@@ -25,10 +25,6 @@ import { QuestionNoteForm } from './QuestionNoteForm'
 
 type QuestionNoteDialogProps = { question: SessionQuestion }
 
-/**
- * V1's `QuestionNotesModal`: the learner's own note on the question, always available to read,
- * write, edit or clear. Opening a saved note before answering makes the answer assisted (ADR-0002).
- */
 export const QuestionNoteDialog: React.FC<QuestionNoteDialogProps> = ({ question }) => {
   const {
     selectedPath,
@@ -52,9 +48,7 @@ export const QuestionNoteDialog: React.FC<QuestionNoteDialogProps> = ({ question
     }),
   )
 
-  // Only the first opening of a saved note before an answer can mark it; an empty note records
-  // nothing. While the session is still loading the record is sent anyway: the backend keeps it
-  // only where an answer can still follow.
+  // Record while the session loads too; the backend ignores openings after the session ends.
   const needsAssistanceRecord =
     question.note !== null &&
     question.answer === null &&
@@ -63,7 +57,6 @@ export const QuestionNoteDialog: React.FC<QuestionNoteDialogProps> = ({ question
     session?.status !== 'ended'
 
   const changeOpen = (open: boolean) => {
-    // Without a note the dialog opens straight into writing one.
     setIsEditing(question.note === null)
 
     if (open && needsAssistanceRecord) {

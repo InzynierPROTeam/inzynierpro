@@ -8,7 +8,6 @@ test('a learner marks a favourite, completes a favourites session and sees its s
 }) => {
   const favoritesTile = page.getByRole('region', { name: 'Ulubione pytania' })
 
-  // With nothing marked the tile explains how to mark questions and offers no session.
   await page.goto('/start')
   await expect(favoritesTile).toContainText('Nie masz jeszcze ulubionych pytań.')
 
@@ -24,7 +23,6 @@ test('a learner marks a favourite, completes a favourites session and sees its s
     'true',
   )
 
-  // The category offers its own favourites as well.
   await page.goto('/nauka')
   await page.getByRole('link', { name: new RegExp(buildingLaw) }).click()
   await expect(page.getByRole('region', { name: 'Ulubione z kategorii' })).toContainText(
@@ -54,7 +52,6 @@ test('a learner marks a favourite, completes a favourites session and sees its s
   await expect(page.getByRole('heading', { level: 1, name: 'Podsumowanie sesji' })).toBeVisible()
   await expect(page.getByText('Ulubione pytania', { exact: true })).toBeVisible()
 
-  // The next step goes back to regular study: the unfinished category session.
   await page.getByRole('button', { name: 'Kontynuuj sesję' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
 })

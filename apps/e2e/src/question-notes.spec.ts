@@ -12,7 +12,6 @@ test('a learner writes a note, reads it again after reload and the answer counts
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
 
-  // Without a note the dialog opens straight into writing one.
   await page.getByRole('button', { name: 'Dodaj notatkę' }).click()
   const dialog = page.getByRole('dialog', { name: 'Twoja notatka' })
   await dialog.getByRole('textbox', { name: 'Treść notatki' }).fill('Pozwolenie, nie zgłoszenie.')
@@ -21,7 +20,6 @@ test('a learner writes a note, reads it again after reload and the answer counts
   await dialog.getByRole('button', { name: 'Zamknij' }).first().click()
   await expect(dialog).toBeHidden()
 
-  // The saved note is read before answering, which assists the answer.
   await page.reload()
   await page.getByRole('button', { name: 'Twoja notatka' }).click()
   await expect(dialog.getByText('Pozwolenie, nie zgłoszenie.')).toBeVisible()

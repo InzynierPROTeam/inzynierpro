@@ -12,7 +12,6 @@ const SentEmail = Schema.Struct({
 
 const decodeSentEmail = Schema.decodeUnknownSync(Schema.fromJsonString(SentEmail))
 
-// The sign-in code of every e-mail sent to the address, oldest first; undefined when one has none.
 const codesSentTo = async (email: string) =>
   (await readFile(outboxPath, 'utf8'))
     .split('\n')
@@ -21,7 +20,6 @@ const codesSentTo = async (email: string) =>
     .filter(sent => [sent.to].flat().includes(email))
     .map(sent => sent.text?.match(/\b(\d{6})\b/)?.[1])
 
-// The six-digit code from the latest sign-in e-mail to the address, waiting for it to arrive.
 export const latestSignInCode = async (email: string, previousEmailCount = 0) => {
   await expect
     .poll(async () => (await codesSentTo(email)).length, { message: `No code sent to ${email}` })

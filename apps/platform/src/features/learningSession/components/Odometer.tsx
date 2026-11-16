@@ -4,10 +4,6 @@ const digits = Array.from({ length: 10 }, (_, digit) => digit)
 
 type OdometerProps = { value: number; entered: boolean }
 
-/**
- * A whole number whose digits roll up from zero once `entered`. Wider columns settle first and the
- * ones digit last, so the number reads as one count rather than columns moving in lockstep.
- */
 export const Odometer: React.FC<OdometerProps> = ({ value, entered }) => {
   const columns = String(value).split('').map(Number)
 

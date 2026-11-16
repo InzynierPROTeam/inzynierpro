@@ -51,7 +51,6 @@ export default defineConfig({
       stderr: 'pipe',
     },
     {
-      // A production build served by the Cloudflare runtime, as deployed.
       command:
         'turbo build --filter=@inzpro/platform^... && pnpm --filter @inzpro/platform exec vite build && pnpm --filter @inzpro/platform exec vite preview --port ' +
         platformEnv.PORT +
@@ -59,7 +58,6 @@ export default defineConfig({
       url: platformUrl,
       env: platformEnv,
       reuseExistingServer: false,
-      // The production build runs first.
       timeout: Duration.toMillis(Duration.minutes(5)),
       stdout: 'ignore',
       stderr: 'pipe',

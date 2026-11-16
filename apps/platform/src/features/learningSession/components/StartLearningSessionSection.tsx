@@ -60,7 +60,6 @@ export const StartLearningSessionSection = () => {
                 query: { documentId: preview.document.id },
               })}
               isDataEmpty={session => session === null}
-              // Without an active session of this category the preview offers to start one.
               noDataFallback={<SessionPreviewCard preview={preview} />}
             >
               {session =>

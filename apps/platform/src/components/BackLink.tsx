@@ -29,10 +29,6 @@ type BackLinkProps<TTo extends string> = {
   fallback?: UseLinkPropsOptions<RegisteredRouter, string, TTo>
 }
 
-/**
- * Goes back to the page the user came from when that page is a back target, i.e. declares
- * `staticData.backLabel`, labelled with it. Otherwise it links to the fallback.
- */
 export function BackLink<const TTo extends string>({ fallback }: BackLinkProps<TTo>) {
   const router = useRouter()
   const location = useLocation()
@@ -63,7 +59,6 @@ const BackLinkButton: React.FC<BackLinkButtonProps> = ({ link, label }) => (
   <Button
     variant="ghost"
     nativeButton={false}
-    // On mobile the back link sits in the page's top padding, close to the header.
     className="-ml-3 self-start max-lg:-mt-8"
     render={link}
   >

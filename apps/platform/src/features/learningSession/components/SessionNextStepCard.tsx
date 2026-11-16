@@ -29,11 +29,6 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { sessionSummaryRouteApi } from '../utils'
 import { ContinueSessionButton } from './ContinueSessionButton'
 
-/**
- * One step further (V1's `NextSessionTile`), as the backend decides it from the learner's state
- * now (ADR-0002): a review of due questions, the unfinished regular-study session to continue, or
- * the next regular-study session.
- */
 export const SessionNextStepCard = () => {
   const {
     selectedPath,

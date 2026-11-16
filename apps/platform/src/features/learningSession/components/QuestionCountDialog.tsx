@@ -19,7 +19,6 @@ import { useState } from 'react'
 type QuestionCountDialogProps = {
   settings: SessionCountSettings
   count: number
-  // Stores the chosen count, usually in the preview's search params.
   onCountChange: (count: number) => Promise<void>
 }
 

@@ -53,7 +53,6 @@ export const SessionQuestionCard = () => {
               </CardHeader>
               <CardContent>
                 <SessionAnswerForm
-                  // A new question starts without a selection.
                   key={question.position}
                   question={question}
                 />

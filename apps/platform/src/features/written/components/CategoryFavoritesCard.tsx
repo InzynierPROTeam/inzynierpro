@@ -5,7 +5,6 @@ import { FavoritesTileContent } from '~platform/features/favorites/components/Fa
 
 type CategoryFavoritesCardProps = { categoryId: ReferenceDocumentId }
 
-/** The learner's FavoriteQuestions of one category, studied in their own session (ADR-0002). */
 export const CategoryFavoritesCard: React.FC<CategoryFavoritesCardProps> = ({ categoryId }) => {
   return (
     <Card

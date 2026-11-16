@@ -42,8 +42,7 @@ export const SessionHintDialog: React.FC<SessionHintDialogProps> = ({ question }
     }),
   )
 
-  // Only the first opening before an answer can mark it. While the session is still loading the
-  // record is sent anyway: the backend keeps it only where an answer can still follow.
+  // Record while the session loads too; the backend ignores openings after the session ends.
   const needsAssistanceRecord =
     question.answer === null &&
     question.explanationOpenedAt === null &&

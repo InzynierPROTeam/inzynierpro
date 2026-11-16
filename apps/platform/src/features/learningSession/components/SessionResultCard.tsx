@@ -26,7 +26,6 @@ import { SessionResultRing } from './SessionResultRing'
 
 type SessionResultCardProps = { summary: StudySessionSummary }
 
-/** The session's score on a ring, then what it is made of. */
 export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary }) => {
   const { result, progress } = summary
   // Questions withdrawn before an answer were skipped: they are neither wrong nor scored (ADR-0003).
@@ -52,14 +51,12 @@ export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary })
           <ItemGroup>
             <ResultRow
               icon={<ListChecks />}
-              // The ring's answered arc.
               iconClassName="bg-primary/10 text-primary"
               label="Odpowiedziano na"
               value={`${progress.answered} z ${scored} pytań`}
             />
             <ResultRow
               icon={<CircleCheck />}
-              // The ring's correct arc.
               iconClassName="bg-success/10 text-success"
               label="W tym poprawne"
               value={`${result.correct} z ${progress.answered}`}

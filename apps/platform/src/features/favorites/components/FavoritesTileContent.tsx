@@ -18,15 +18,9 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { noFavoritesMessage } from '../utils'
 
 type FavoritesTileContentProps = {
-  // Without a category, favourites span the whole path.
   documentId?: ReferenceDocumentId
 }
 
-/**
- * Card body for favourites of the path or one category: the unfinished favourites session to
- * continue, otherwise the marked questions to start with, or how to mark them. The card belongs to
- * the caller.
- */
 export const FavoritesTileContent: React.FC<FavoritesTileContentProps> = ({ documentId }) => {
   const {
     selectedPath,
@@ -70,7 +64,6 @@ export const FavoritesTileContent: React.FC<FavoritesTileContentProps> = ({ docu
 
 type FavoritesPreviewContentProps = { preview: FavoritesPreview }
 
-// Like the preview page, nothing marked reads as no settings: no session can start.
 const FavoritesPreviewContent: React.FC<FavoritesPreviewContentProps> = ({ preview }) =>
   preview.settings !== null ? (
     <>

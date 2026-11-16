@@ -28,7 +28,6 @@ import { SessionNextStepCard } from './SessionNextStepCard'
 import { SessionQuestionResultsCard } from './SessionQuestionResultsCard'
 import { SessionResultCard, SessionResultCardSkeleton } from './SessionResultCard'
 
-/** The result of a session, then its questions, then one step further (V1's session summary). */
 export const SessionSummarySection = () => {
   const {
     selectedPath,

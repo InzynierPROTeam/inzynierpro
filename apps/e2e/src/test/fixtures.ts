@@ -34,7 +34,6 @@ export const uniqueEmail = (label: string) => `e2e-${label}-${crypto.randomUUID(
 // Every Node-side visitor reports its own address, so sign-in rate limits never collide.
 const uniqueAddress = () => `10.${[0, 0, 0].map(() => Math.floor(Math.random() * 255)).join('.')}`
 
-// Signs in through the API as the browser would and returns the cookies Better Auth set.
 const signInThroughApi = async (email: string) => {
   const jar = makeCookieJar({ origin: platformUrl, 'x-forwarded-for': uniqueAddress() })
   const auth = getAuthClient({ baseURL: apiUrl, fetchOptions: { customFetchImpl: jar.fetch } })
@@ -72,15 +71,10 @@ const shareSession = (page: Page, jar: CookieJar) =>
     .addCookies([...jar.cookies].map(([name, value]) => ({ name, value, url: platformUrl })))
 
 export const test = base.extend<{
-  // The path the `onboarded` account configures.
   pathConfiguration: typeof CompleteOnboardingPayload.Encoded
-  // The exam parts the `onboarded` account's path covers.
   accessScope: typeof CompleteOnboardingPayload.Encoded.accessScope
-  // A browser page for a new visitor.
   visitor: Page
-  // A browser page signed in as a new account that has not configured a path.
   signedIn: SignedInPage
-  // A browser page signed in as a new account with its path configured, the technical one by default.
   onboarded: SignedInPage
 }>({
   pathConfiguration: [technicalConfiguration, { option: true }],

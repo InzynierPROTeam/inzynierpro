@@ -9,7 +9,6 @@ import { useToggleFavorite } from '../hooks/useToggleFavorite'
 
 type FavoriteToggleButtonProps = { question: SessionQuestion }
 
-/** V1's `QuestionFavoriteToggleButton`: a star that marks the question as a favourite or unmarks it. */
 export const FavoriteToggleButton: React.FC<FavoriteToggleButtonProps> = ({ question }) => {
   const {
     selectedPath,
@@ -29,7 +28,6 @@ export const FavoriteToggleButton: React.FC<FavoriteToggleButtonProps> = ({ ques
       variant="outline"
       size="icon-md"
       aria-pressed={question.isFavorite}
-      // The star changes at once; a second click waits until the first change is saved.
       disabled={mutation.isPending}
       onClick={() =>
         mutation.mutate({ questionId: question.questionId, isFavorite: !question.isFavorite })
