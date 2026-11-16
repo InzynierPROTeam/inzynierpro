@@ -1,5 +1,10 @@
 import type { StudySessionSummary } from '@inzpro/api-contracts/modules/study/responses'
-import { sessionPreviewQueryOptions } from '@inzpro/queries/modules/study'
+import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import { reviewStudySession } from '@inzpro/domain/modules/study/study-session'
+import {
+  reviewPreviewQueryOptions,
+  sessionPreviewQueryOptions,
+} from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@inzpro/ui/components/card'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
@@ -14,7 +19,7 @@ import {
 import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { Link } from '@tanstack/react-router'
-import { Scale } from 'lucide-react'
+import { Repeat, Scale } from 'lucide-react'
 import type React from 'react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
@@ -22,7 +27,11 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 type SessionNextStepCardProps = { summary: StudySessionSummary }
 
-/** One step further (V1's `NextSessionTile`): the preview the learner continues with. */
+/**
+ * One step further (V1's `NextSessionTile`). After regular study it is the preview the learner
+ * continues with; after a review, further due reviews of the same scope when any remain, otherwise
+ * regular study (ADR-0002).
+ */
 export const SessionNextStepCard: React.FC<SessionNextStepCardProps> = ({ summary }) => (
   <Card>
     <CardHeader>
@@ -30,28 +39,38 @@ export const SessionNextStepCard: React.FC<SessionNextStepCardProps> = ({ summar
         <h2>Co dalej?</h2>
       </CardTitle>
     </CardHeader>
-    <NextSessionContent summary={summary} />
+    <CardContent>
+      {summary.kind === reviewStudySession ? (
+        <ReviewNextStep documentId={summary.document?.id} />
+      ) : (
+        <StudyNextStep fromDocumentId={summary.document?.id} />
+      )}
+    </CardContent>
   </Card>
 )
 
-const NextSessionContent: React.FC<SessionNextStepCardProps> = ({ summary }) => {
+type ReviewNextStepProps = { documentId: ReferenceDocumentId | undefined }
+
+const ReviewNextStep: React.FC<ReviewNextStepProps> = ({ documentId }) => {
   const {
     selectedPath,
     session: { user },
   } = onboardedRouteApi.useRouteContext()
 
   return (
-    <CardContent>
-      <SuspenseQueryWrapper fallback={<NextSessionItemSkeleton />}>
-        <SuspenseQuery
-          options={sessionPreviewQueryOptions(apiHttpClient, user.id, {
-            params: { qualificationPathId: selectedPath.id },
-            query: { fromDocumentId: summary.document.id },
-          })}
-          isDataEmpty={preview => preview === null}
-          noDataFallback={<NoNextSessionItem />}
-        >
-          {preview => (
+    <SuspenseQueryWrapper fallback={<NextSessionItemSkeleton />}>
+      <SuspenseQuery
+        options={reviewPreviewQueryOptions(apiHttpClient, user.id, {
+          params: { qualificationPathId: selectedPath.id },
+          query: { documentId },
+        })}
+        isDataEmpty={preview => preview === null}
+        noDataFallback={<StudyNextStep fromDocumentId={documentId} />}
+      >
+        {preview =>
+          preview.dueQuestionCount === 0 ? (
+            <StudyNextStep fromDocumentId={documentId} />
+          ) : (
             <Item
               variant="outline"
               size="lg"
@@ -59,12 +78,14 @@ const NextSessionContent: React.FC<SessionNextStepCardProps> = ({ summary }) => 
             >
               <ItemMedia>
                 <IconWrapper variant="primary-soft">
-                  <Scale />
+                  <Repeat />
                 </IconWrapper>
               </ItemMedia>
               <ItemContent className="gap-1">
-                <ItemTitle className="line-clamp-2">{preview.document.title}</ItemTitle>
-                <ItemDescription>Liczba pytań: {preview.availableQuestionCount}</ItemDescription>
+                <ItemTitle className="line-clamp-2">
+                  {preview.document?.title ?? 'Wszystkie kategorie'}
+                </ItemTitle>
+                <ItemDescription>Pytania do powtórki: {preview.dueQuestionCount}</ItemDescription>
               </ItemContent>
               <ItemActions className="max-sm:w-full">
                 <Button
@@ -72,19 +93,73 @@ const NextSessionContent: React.FC<SessionNextStepCardProps> = ({ summary }) => 
                   className="max-sm:flex-1"
                   render={
                     <Link
-                      to="/nauka/start"
-                      search={{ 'obecny-akt-prawny': summary.document.id }}
+                      to="/nauka/powtorka"
+                      search={{ 'akt-prawny': documentId }}
                     />
                   }
                 >
-                  Kontynuuj naukę
+                  Powtarzaj dalej
                 </Button>
               </ItemActions>
             </Item>
-          )}
-        </SuspenseQuery>
-      </SuspenseQueryWrapper>
-    </CardContent>
+          )
+        }
+      </SuspenseQuery>
+    </SuspenseQueryWrapper>
+  )
+}
+
+type StudyNextStepProps = { fromDocumentId: ReferenceDocumentId | undefined }
+
+const StudyNextStep: React.FC<StudyNextStepProps> = ({ fromDocumentId }) => {
+  const {
+    selectedPath,
+    session: { user },
+  } = onboardedRouteApi.useRouteContext()
+
+  return (
+    <SuspenseQueryWrapper fallback={<NextSessionItemSkeleton />}>
+      <SuspenseQuery
+        options={sessionPreviewQueryOptions(apiHttpClient, user.id, {
+          params: { qualificationPathId: selectedPath.id },
+          query: { fromDocumentId },
+        })}
+        isDataEmpty={preview => preview === null}
+        noDataFallback={<NoNextSessionItem />}
+      >
+        {preview => (
+          <Item
+            variant="outline"
+            size="lg"
+            className="border-primary/50"
+          >
+            <ItemMedia>
+              <IconWrapper variant="primary-soft">
+                <Scale />
+              </IconWrapper>
+            </ItemMedia>
+            <ItemContent className="gap-1">
+              <ItemTitle className="line-clamp-2">{preview.document.title}</ItemTitle>
+              <ItemDescription>Liczba pytań: {preview.availableQuestionCount}</ItemDescription>
+            </ItemContent>
+            <ItemActions className="max-sm:w-full">
+              <Button
+                nativeButton={false}
+                className="max-sm:flex-1"
+                render={
+                  <Link
+                    to="/nauka/start"
+                    search={{ 'obecny-akt-prawny': fromDocumentId }}
+                  />
+                }
+              >
+                Kontynuuj naukę
+              </Button>
+            </ItemActions>
+          </Item>
+        )}
+      </SuspenseQuery>
+    </SuspenseQueryWrapper>
   )
 }
 

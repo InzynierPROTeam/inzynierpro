@@ -21,6 +21,7 @@ import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { CircleCheck, CircleSlash, LightbulbOff, ListChecks } from 'lucide-react'
 import type React from 'react'
 
+import { sessionScopeLabel } from '../utils'
 import { SessionResultRing } from './SessionResultRing'
 
 type SessionResultCardProps = { summary: StudySessionSummary }
@@ -37,7 +38,7 @@ export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary })
         <CardTitle>
           <h2>Wynik sesji</h2>
         </CardTitle>
-        <CardDescription className="line-clamp-2">{summary.document.title}</CardDescription>
+        <CardDescription className="line-clamp-2">{sessionScopeLabel(summary)}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-8">
         <SessionResultRing

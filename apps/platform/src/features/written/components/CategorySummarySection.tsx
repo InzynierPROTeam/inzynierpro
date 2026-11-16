@@ -5,6 +5,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { categoryRouteApi } from '../utils'
+import { CategoryReviewCard } from './CategoryReviewCard'
 import { CategorySessionCard } from './CategorySessionCard'
 import { CategorySummaryCard, CategorySummaryCardSkeleton } from './CategorySummaryCard'
 
@@ -29,10 +30,13 @@ export const CategorySummarySection = () => {
           {({ document }) => (
             <div className="flex gap-8 @max-3xl:flex-col">
               <CategorySummaryCard document={document} />
-              <CategorySessionCard
-                categoryId={document.id}
-                availableQuestionCount={document.availableQuestionCount}
-              />
+              <div className="flex flex-1 flex-col gap-8">
+                <CategorySessionCard
+                  categoryId={document.id}
+                  availableQuestionCount={document.availableQuestionCount}
+                />
+                <CategoryReviewCard categoryId={document.id} />
+              </div>
             </div>
           )}
         </SuspenseQuery>

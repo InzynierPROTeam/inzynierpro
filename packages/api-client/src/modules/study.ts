@@ -4,6 +4,9 @@ import type {
   GetSessionPreviewEndpoint,
   GetOralMaterialsEndpoint,
   StartSessionEndpoint,
+  GetReviewPreviewEndpoint,
+  GetReviewSessionEndpoint,
+  StartReviewSessionEndpoint,
   GetLatestSessionEndpoint,
   GetSessionEndpoint,
   GetSessionSummaryEndpoint,
@@ -60,6 +63,33 @@ export type StartSessionRequest = InferEndpointRequest<typeof StartSessionEndpoi
 export type StartSessionRes = Effect.Success<ReturnType<typeof startSession>>
 
 export type StartSessionError = Effect.Error<ReturnType<typeof startSession>>
+
+export const getReviewPreview = (req: GetReviewPreviewRequest) =>
+  apiAction(api => api.Study.GetReviewPreview(req))
+
+export type GetReviewPreviewRequest = InferEndpointRequest<typeof GetReviewPreviewEndpoint>
+
+export type GetReviewPreviewRes = Effect.Success<ReturnType<typeof getReviewPreview>>
+
+export type GetReviewPreviewError = Effect.Error<ReturnType<typeof getReviewPreview>>
+
+export const getReviewSession = (req: GetReviewSessionRequest) =>
+  apiAction(api => api.Study.GetReviewSession(req))
+
+export type GetReviewSessionRequest = InferEndpointRequest<typeof GetReviewSessionEndpoint>
+
+export type GetReviewSessionRes = Effect.Success<ReturnType<typeof getReviewSession>>
+
+export type GetReviewSessionError = Effect.Error<ReturnType<typeof getReviewSession>>
+
+export const startReviewSession = (req: StartReviewSessionRequest) =>
+  apiAction(api => api.Study.StartReviewSession(req))
+
+export type StartReviewSessionRequest = InferEndpointRequest<typeof StartReviewSessionEndpoint>
+
+export type StartReviewSessionRes = Effect.Success<ReturnType<typeof startReviewSession>>
+
+export type StartReviewSessionError = Effect.Error<ReturnType<typeof startReviewSession>>
 
 export const getLatestSession = (req: GetLatestSessionRequest) =>
   apiAction(api => api.Study.GetLatestSession(req))

@@ -9,6 +9,10 @@ import {
   type GetOralMaterialsRequest,
   getLatestSession,
   type GetLatestSessionRequest,
+  getReviewPreview,
+  type GetReviewPreviewRequest,
+  getReviewSession,
+  type GetReviewSessionRequest,
   getSession,
   type GetSessionRequest,
   getSessionQuestion,
@@ -50,6 +54,19 @@ export const studyKeys = {
     [
       ...studyKeys.progress(userId, req.params.qualificationPathId),
       'getLatestSession',
+      req,
+    ] as const,
+  // Review reads sit in the progress group, because every answer can make a question due or not.
+  getReviewPreview: (userId: UserId, req: GetReviewPreviewRequest) =>
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getReviewPreview',
+      req,
+    ] as const,
+  getReviewSession: (userId: UserId, req: GetReviewSessionRequest) =>
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getReviewSession',
       req,
     ] as const,
   session: (userId: UserId, pathId: QualificationPathId, id: StudySessionId) =>
@@ -122,6 +139,18 @@ export const latestSessionQueryOptions = (
   userId: UserId,
   req: GetLatestSessionRequest,
 ) => effectQueryOptions(studyKeys.getLatestSession(userId, req), getLatestSession(req), httpClient)
+
+export const reviewPreviewQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetReviewPreviewRequest,
+) => effectQueryOptions(studyKeys.getReviewPreview(userId, req), getReviewPreview(req), httpClient)
+
+export const reviewSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetReviewSessionRequest,
+) => effectQueryOptions(studyKeys.getReviewSession(userId, req), getReviewSession(req), httpClient)
 
 export const sessionQueryOptions = (
   httpClient: HttpClient.HttpClient,

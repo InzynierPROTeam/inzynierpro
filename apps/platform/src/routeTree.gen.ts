@@ -26,6 +26,7 @@ import { Route as publicLayoutNotauthenticatedLogowanieRouteImport } from './rou
 import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
 import { Route as appAuthenticatedOnboardedOralValidUstnyRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/index'
+import { Route as appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria.$id'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja.$sessionId.$questionNumber'
@@ -122,6 +123,12 @@ const appAuthenticatedOnboardedWrittenValidNaukaIndexRoute =
     path: '/nauka/',
     getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
   } as any)
+const appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute =
+  appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRouteImport.update({
+    id: '/nauka/powtorka',
+    path: '/nauka/powtorka',
+    getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
+  } as any)
 const appAuthenticatedOnboardedWrittenValidNaukaStartRoute =
   appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport.update({
     id: '/nauka/start',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
+  '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka/': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   '/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
@@ -179,6 +187,7 @@ export interface FileRoutesByTo {
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
+  '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   '/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
@@ -203,6 +212,7 @@ export interface FileRoutesById {
   '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny': typeof appAuthenticatedOnboardedOralValidUstnyRoute
+  '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/': typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id': typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/logowanie'
     | '/zweryfikuj-otp'
     | '/ustny'
+    | '/nauka/powtorka'
     | '/nauka/start'
     | '/nauka/'
     | '/nauka/kategoria/$id'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/logowanie'
     | '/zweryfikuj-otp'
     | '/ustny'
+    | '/nauka/powtorka'
     | '/nauka/start'
     | '/nauka'
     | '/nauka/kategoria/$id'
@@ -262,6 +274,7 @@ export interface FileRouteTypes {
     | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
     | '/(public)/_layout/_notauthenticated/'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny'
+    | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/kategoria/$id'
@@ -396,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport
       parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
     }
+    '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
+      path: '/nauka/powtorka'
+      fullPath: '/nauka/powtorka'
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
+    }
     '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start': {
       id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
       path: '/nauka/start'
@@ -443,6 +463,7 @@ const appAuthenticatedOnboardedOralValidRouteWithChildren =
   )
 
 interface appAuthenticatedOnboardedWrittenValidRouteChildren {
+  appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   appAuthenticatedOnboardedWrittenValidNaukaStartRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   appAuthenticatedOnboardedWrittenValidNaukaIndexRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
@@ -452,6 +473,8 @@ interface appAuthenticatedOnboardedWrittenValidRouteChildren {
 
 const appAuthenticatedOnboardedWrittenValidRouteChildren: appAuthenticatedOnboardedWrittenValidRouteChildren =
   {
+    appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute:
+      appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute,
     appAuthenticatedOnboardedWrittenValidNaukaStartRoute:
       appAuthenticatedOnboardedWrittenValidNaukaStartRoute,
     appAuthenticatedOnboardedWrittenValidNaukaIndexRoute:

@@ -1,4 +1,4 @@
-import type { SessionPreview } from '@inzpro/api-contracts/modules/study/responses'
+import type { SessionCountSettings } from '@inzpro/api-contracts/modules/study/responses'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Dialog,
@@ -16,11 +16,18 @@ import { Schema } from 'effect'
 import type React from 'react'
 import { useState } from 'react'
 
-import { sessionPreviewRouteApi } from '../utils'
+type QuestionCountDialogProps = {
+  settings: SessionCountSettings
+  count: number
+  // Stores the chosen count, usually in the preview's search params.
+  onCountChange: (count: number) => Promise<void>
+}
 
-type QuestionCountDialogProps = { settings: SessionPreview['settings']; count: number }
-
-export const QuestionCountDialog: React.FC<QuestionCountDialogProps> = ({ settings, count }) => {
+export const QuestionCountDialog: React.FC<QuestionCountDialogProps> = ({
+  settings,
+  count,
+  onCountChange,
+}) => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -49,6 +56,7 @@ export const QuestionCountDialog: React.FC<QuestionCountDialogProps> = ({ settin
           key={count}
           settings={settings}
           count={count}
+          onCountChange={onCountChange}
           onSaved={() => setOpen(false)}
         />
       </DialogContent>
@@ -58,9 +66,12 @@ export const QuestionCountDialog: React.FC<QuestionCountDialogProps> = ({ settin
 
 type QuestionCountFormProps = QuestionCountDialogProps & { onSaved: () => void }
 
-const QuestionCountForm: React.FC<QuestionCountFormProps> = ({ settings, count, onSaved }) => {
-  const navigate = sessionPreviewRouteApi.useNavigate()
-
+const QuestionCountForm: React.FC<QuestionCountFormProps> = ({
+  settings,
+  count,
+  onCountChange,
+  onSaved,
+}) => {
   const form = useForm({
     defaultValues: { count },
     validationLogic: revalidateLogic(),
@@ -77,10 +88,7 @@ const QuestionCountForm: React.FC<QuestionCountFormProps> = ({ settings, count, 
       ),
     },
     onSubmit: async ({ value }) => {
-      await navigate({
-        search: previous => ({ ...previous, 'liczba-pytan': value.count }),
-        replace: true,
-      })
+      await onCountChange(value.count)
       onSaved()
     },
   })

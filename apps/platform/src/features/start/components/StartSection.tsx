@@ -5,6 +5,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { ExamSessionTile } from './ExamSessionTile'
 import { MobileAppBanner } from './MobileAppBanner'
 import { OralLearningTile } from './OralLearningTile'
+import { ReviewTile } from './ReviewTile'
 import { SelectedPathTile } from './SelectedPathTile'
 import { WrittenLearningTile } from './WrittenLearningTile'
 
@@ -18,7 +19,12 @@ export const StartSection = () => {
       <div className="grid grid-cols-12 place-content-stretch gap-8 max-sm:gap-x-4">
         <SelectedPathTile />
         <ExamSessionTile />
-        {hasExamAccess(selectedPath.accessScope, writtenExamAccess) && <WrittenLearningTile />}
+        {hasExamAccess(selectedPath.accessScope, writtenExamAccess) && (
+          <>
+            <WrittenLearningTile />
+            <ReviewTile />
+          </>
+        )}
         {hasExamAccess(selectedPath.accessScope, oralExamAccess) && <OralLearningTile />}
       </div>
     </section>
