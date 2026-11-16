@@ -15,8 +15,8 @@ export const LearningContentRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     const requireStoredAssets = Effect.fn('LearningContentRepository.requireStoredAssets')(
-      function* (content: RichContent) {
-        const assetIds = imageAssetIds(content)
+      function* (...contents: ReadonlyArray<RichContent>) {
+        const assetIds = [...new Set(contents.flatMap(imageAssetIds))]
 
         if (assetIds.length === 0) {
           return
@@ -118,6 +118,92 @@ export const LearningContentRepositoryLive = Layer.effect(
       withdrawRevision: Effect.fn('LearningContentRepository.withdrawRevision')(
         function* (withdrawal) {
           return yield* sql`UPDATE question_revisions SET withdrawn_at=clock_timestamp(),withdrawal_reason=${withdrawal.reason}
+ WHERE id=${withdrawal.revisionId} AND published_at IS NOT NULL AND withdrawn_at IS NULL`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
+      createOralCategory: Effect.fn('LearningContentRepository.createOralCategory')(
+        function* (category) {
+          return yield* sql`INSERT INTO oral_question_categories (id,name,sort_order) VALUES (${category.id},${category.name},${category.sortOrder})`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
+      createOralQuestion: Effect.fn('LearningContentRepository.createOralQuestion')(
+        function* (question) {
+          return yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                yield* requireStoredAssets(question.body, question.answer)
+                yield* sql`INSERT INTO oral_questions (id,category_id,category_position) VALUES (${question.id},${question.categoryId},${question.position})`
+                yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id) VALUES (${question.revisionId},${question.id},${JSON.stringify(question.body)}::jsonb,${JSON.stringify(question.answer)}::jsonb,${initialRevision},${question.revisionId})`
+
+                if (question.published) {
+                  yield* sql`UPDATE oral_revisions SET published_at=clock_timestamp() WHERE id=${question.revisionId}`
+                }
+
+                yield* sql`UPDATE oral_questions SET current_revision_id=${question.revisionId} WHERE id=${question.id}`
+                yield* sql`INSERT INTO path_oral_questions (qualification_path_id,question_id) VALUES (${question.qualificationPathId},${question.id})`
+              }),
+            )
+            .pipe(
+              Effect.catchTag('SqlError', cause =>
+                Effect.fail(new LearningContentWriteError({ cause })),
+              ),
+            )
+        },
+      ),
+      assignOralQuestion: Effect.fn('LearningContentRepository.assignOralQuestion')(
+        function* (pathId, questionId) {
+          return yield* sql`INSERT INTO path_oral_questions (qualification_path_id,question_id) VALUES (${pathId},${questionId})`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
+      editOralDraft: Effect.fn('LearningContentRepository.editOralDraft')(function* (edit) {
+        return yield* sql
+          .withTransaction(
+            Effect.gen(function* () {
+              yield* requireStoredAssets(edit.body, edit.answer)
+              yield* sql`UPDATE oral_revisions SET body=${JSON.stringify(edit.body)}::jsonb,answer=${JSON.stringify(edit.answer)}::jsonb WHERE id=${edit.revisionId}`
+            }),
+          )
+          .pipe(
+            Effect.catchTag('SqlError', cause =>
+              Effect.fail(new LearningContentWriteError({ cause })),
+            ),
+          )
+      }),
+      publishOralRevision: Effect.fn('LearningContentRepository.publishOralRevision')(
+        function* (revision) {
+          return yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                yield* requireStoredAssets(revision.body, revision.answer)
+
+                const substantiveRevisionId =
+                  revision.changeKind === substantiveChange
+                    ? sql`${revision.revisionId}::uuid`
+                    : sql`(SELECT r.substantive_revision_id FROM oral_questions q JOIN oral_revisions r ON r.id=q.current_revision_id WHERE q.id=${revision.questionId})`
+
+                yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id,published_at) VALUES (${revision.revisionId},${revision.questionId},${JSON.stringify(revision.body)}::jsonb,${JSON.stringify(revision.answer)}::jsonb,${revision.changeKind},${substantiveRevisionId},clock_timestamp())`
+                yield* sql`UPDATE oral_questions SET current_revision_id=${revision.revisionId} WHERE id=${revision.questionId}`
+              }),
+            )
+            .pipe(
+              Effect.catchTag('SqlError', cause =>
+                Effect.fail(new LearningContentWriteError({ cause })),
+              ),
+            )
+        },
+      ),
+      withdrawOralRevision: Effect.fn('LearningContentRepository.withdrawOralRevision')(
+        function* (withdrawal) {
+          return yield* sql`UPDATE oral_revisions SET withdrawn_at=clock_timestamp(),withdrawal_reason=${withdrawal.reason}
  WHERE id=${withdrawal.revisionId} AND published_at IS NOT NULL AND withdrawn_at IS NULL`.pipe(
             Effect.asVoid,
             Effect.mapError(cause => new LearningContentWriteError({ cause })),
