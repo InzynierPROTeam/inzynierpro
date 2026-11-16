@@ -19,6 +19,8 @@ import {
   StudySessionNotFound,
 } from './errors.js'
 import {
+  OralReviewScopeQuery,
+  StartOralReviewSessionPayload,
   LatestOralSessionQuery,
   OralPathParams,
   OralSessionParams,
@@ -30,6 +32,7 @@ import {
   SubmitOralSelfAssessmentPayload,
 } from './requests.js'
 import {
+  OralReviewPreviewResponse,
   EndOralSessionResponse,
   OralMaterialsResponse,
   OralSessionNextStepResponse,
@@ -177,7 +180,50 @@ export const SubmitOralSelfAssessmentEndpoint = HttpApiEndpoint.post(
   },
 )
 
+export const GetOralReviewPreviewEndpoint = HttpApiEndpoint.get(
+  'GetOralReviewPreview',
+  '/paths/:qualificationPathId/oral/review-preview',
+  {
+    params: OralPathParams,
+    query: OralReviewScopeQuery,
+    success: OralReviewPreviewResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+export const GetOralReviewSessionEndpoint = HttpApiEndpoint.get(
+  'GetOralReviewSession',
+  '/paths/:qualificationPathId/oral/review-session',
+  {
+    params: OralPathParams,
+    query: OralReviewScopeQuery,
+    success: OralStudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+export const StartOralReviewSessionEndpoint = HttpApiEndpoint.post(
+  'StartOralReviewSession',
+  '/paths/:qualificationPathId/oral/review-sessions',
+  {
+    params: OralPathParams,
+    payload: StartOralReviewSessionPayload,
+    success: StartOralSessionResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      OralCategoryNotFound,
+      StaleSessionPreview,
+      OralSessionAlreadyStarted,
+    ],
+  },
+)
+
 export const OralStudyApi = HttpApiGroup.make('OralStudy')
+  .add(GetOralReviewPreviewEndpoint)
+  .add(GetOralReviewSessionEndpoint)
+  .add(StartOralReviewSessionEndpoint)
   .add(GetOralMaterialsEndpoint)
   .add(GetOralSessionPreviewEndpoint)
   .add(StartOralSessionEndpoint)

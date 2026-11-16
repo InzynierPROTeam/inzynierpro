@@ -29,10 +29,10 @@ export const OralStudyRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     const returningSession = (statement: Statement.Fragment) =>
-      sql`WITH s AS (${statement} RETURNING id,category_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
+      sql`WITH s AS (${statement} RETURNING id,kind,category_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
  SELECT s.*,c.name AS category_name,(SELECT count(*)::integer FROM oral_study_self_assessments a WHERE a.study_session_id=s.id) AS answered_count,
  (SELECT count(*)::integer FROM oral_study_session_questions sq JOIN oral_revisions r ON r.id=sq.oral_revision_id WHERE sq.study_session_id=s.id AND r.withdrawn_at<coalesce(s.ended_at,'infinity') AND NOT EXISTS (SELECT 1 FROM oral_study_self_assessments a WHERE a.study_session_id=sq.study_session_id AND a.position=sq.position)) AS skipped_count
- FROM s JOIN oral_question_categories c ON c.id=s.category_id`.pipe(
+ FROM s LEFT JOIN oral_question_categories c ON c.id=s.category_id`.pipe(
         Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([OralStudySession]))),
         Effect.map(([session]) => session),
       )
@@ -76,8 +76,8 @@ export const OralStudyRepositoryLive = Layer.effect(
       createSession: Effect.fn('OralStudyRepository.createSession')(
         function* (session) {
           const created = yield* returningSession(
-            sql`INSERT INTO oral_study_sessions (user_id,qualification_path_id,category_id,user_exam_goal_version,question_count)
- VALUES (${session.userId},${session.qualificationPathId},${session.categoryId},${session.goalVersion},${session.questions.length})`,
+            sql`INSERT INTO oral_study_sessions (user_id,qualification_path_id,kind,category_id,user_exam_goal_version,question_count)
+ VALUES (${session.userId},${session.qualificationPathId},${session.kind},${Option.getOrNull(session.categoryId)},${session.goalVersion},${session.questions.length})`,
           )
 
           const questions: ReadonlyArray<SessionQuestionInsert> = session.questions.map(

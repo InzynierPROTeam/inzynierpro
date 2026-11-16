@@ -1,3 +1,4 @@
+import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type {
   OralQuestionId,
@@ -22,6 +23,7 @@ import type {
   OralSessionResultCounts,
   OralStudySession,
 } from '~api/modules/study/domain/oral-study-session.model.js'
+import type { ReviewQueue } from '~api/modules/study/domain/review-session.model.js'
 import type { ReviewCard, StudyDay } from '~api/modules/study/domain/review-state.model.js'
 
 import type { StudyReadError } from './errors.js'
@@ -29,6 +31,24 @@ import type { StudyReadError } from './errors.js'
 export class OralStudyReader extends Context.Service<
   OralStudyReader,
   {
+    readonly reviewQueue: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      categoryId: Option.Option<OralQuestionCategoryId>,
+      now: DateTimeUtc,
+    ) => Effect.Effect<ReviewQueue, StudyReadError>
+    readonly reviewCandidates: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      categoryId: Option.Option<OralQuestionCategoryId>,
+      now: DateTimeUtc,
+      limit: QuestionCount,
+    ) => Effect.Effect<ReadonlyArray<OralSessionCandidate>, StudyReadError>
+    readonly unfinishedReviewSession: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      categoryId: Option.Option<OralQuestionCategoryId>,
+    ) => Effect.Effect<Option.Option<OralStudySession>, StudyReadError>
     readonly reviewState: (
       userId: UserId,
       pathId: QualificationPathId,

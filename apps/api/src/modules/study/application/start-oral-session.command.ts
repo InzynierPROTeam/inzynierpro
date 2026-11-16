@@ -3,6 +3,7 @@ import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-con
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { regularStudySession } from '@inzpro/domain/modules/study/study-session'
 import { Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
@@ -74,7 +75,8 @@ export const startOralSession = Effect.fn('Study.startOralSession')(function* (
       return yield* oralStudyRepository.createSession({
         userId,
         qualificationPathId: pathId,
-        categoryId,
+        categoryId: Option.some(categoryId),
+        kind: regularStudySession,
         goalVersion: assignment.goal.version,
         questions,
       })

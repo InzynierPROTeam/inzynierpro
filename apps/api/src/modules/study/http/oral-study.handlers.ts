@@ -15,6 +15,10 @@ import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/p
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
 import { endOralSession } from '~api/modules/study/application/end-oral-session.command.js'
 import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
+import {
+  getOralReviewPreview,
+  getOralReviewSession,
+} from '~api/modules/study/application/oral-review-preview.query.js'
 import { getOralSessionNextStep } from '~api/modules/study/application/oral-session-next-step.query.js'
 import { getOralSessionPreview } from '~api/modules/study/application/oral-session-preview.query.js'
 import {
@@ -25,6 +29,7 @@ import {
   getOralSessionSummary,
 } from '~api/modules/study/application/oral-session.query.js'
 import { ReviewSchedulerLive } from '~api/modules/study/application/review-state.service.js'
+import { startOralReviewSession } from '~api/modules/study/application/start-oral-review-session.command.js'
 import { startOralSession } from '~api/modules/study/application/start-oral-session.command.js'
 import { submitOralSelfAssessment } from '~api/modules/study/application/submit-oral-self-assessment.command.js'
 import { OralStudyReaderLive } from '~api/modules/study/infrastructure/oral-study.reader.postgres.js'
@@ -45,6 +50,7 @@ import {
   studySessionNotFound,
 } from './errors.js'
 import {
+  toOralReviewPreviewDto,
   toOralSessionNextStepDto,
   toOralSessionQuestionDto,
   toOralSessionQuestionResultDto,
@@ -54,6 +60,71 @@ import {
 
 export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
   handlers
+    .handle('GetOralReviewPreview', ({ params, query }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getOralReviewPreview(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(query.categoryId),
+            ),
+          ),
+        ),
+        Effect.map(Option.map(toOralReviewPreviewDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('GetOralReviewSession', ({ params, query }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getOralReviewSession(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(query.categoryId),
+            ),
+          ),
+        ),
+        Effect.map(Option.map(toOralStudySessionDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('StartOralReviewSession', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            startOralReviewSession(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(payload.categoryId),
+              payload.questionCount,
+            ),
+          ),
+        ),
+        Effect.map(toOralStudySessionDto),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          OralCategoryNotOnPath: () => oralCategoryNotFound,
+          StaleSessionScope: () => staleSessionPreview,
+          UnfinishedOralSessionExists: oralSessionAlreadyStarted,
+        }),
+      ),
+    )
     .handle('GetOralMaterials', ({ query, params }) =>
       limitByUser(accountReadLimit).pipe(
         Effect.andThen(

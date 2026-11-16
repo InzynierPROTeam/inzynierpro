@@ -7,6 +7,7 @@ import type {
   OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
 import type { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
+import { regularStudySession } from '@inzpro/domain/modules/study/study-session'
 import { DateTime, Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
@@ -18,7 +19,7 @@ import {
   SessionQuestionMissing,
 } from '~api/modules/study/domain/errors.js'
 import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
-import { studyMode } from '~api/modules/study/domain/review-state.model.js'
+import { studyMode, reviewMode } from '~api/modules/study/domain/review-state.model.js'
 
 import { recordOralEvidence } from './oral-review-state.service.js'
 import { OralStudyReader } from './oral-study.reader.js'
@@ -106,19 +107,21 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         sessionId,
         position,
         selfAssessment,
-        mode: studyMode,
+        mode: session.kind === regularStudySession ? studyMode : reviewMode,
         answeredAt: yield* DateTime.now,
       })
 
-      const round = yield* syncOralLearningRound(userId, pathId)
-      yield* oralStudyRepository.recordCoverage(
-        userId,
-        pathId,
-        question.questionId,
-        oralRevisionId,
-        round,
-      )
-      yield* syncOralLearningRound(userId, pathId)
+      if (session.kind === regularStudySession) {
+        const round = yield* syncOralLearningRound(userId, pathId)
+        yield* oralStudyRepository.recordCoverage(
+          userId,
+          pathId,
+          question.questionId,
+          oralRevisionId,
+          round,
+        )
+        yield* syncOralLearningRound(userId, pathId)
+      }
 
       const next = yield* oralStudyReader.nextOpenPosition(sessionId, position)
 

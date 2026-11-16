@@ -32,7 +32,9 @@ import {
   OralSessionResultCounts,
   OralStudySession,
 } from '~api/modules/study/domain/oral-study-session.model.js'
+import { ReviewQueue } from '~api/modules/study/domain/review-session.model.js'
 import { ReviewCard } from '~api/modules/study/domain/review-state.model.js'
+import { studyDayOf } from '~api/modules/study/domain/review-state.rules.js'
 
 const OralCategoryRow = Schema.Struct({
   id: OralQuestionCategoryId,
@@ -107,17 +109,39 @@ export const OralStudyReaderLive = Layer.effect(
       pathId: QualificationPathId,
       conditions: ReadonlyArray<Statement.Fragment>,
     ) =>
-      sql`SELECT s.id,s.category_id,c.name AS category_name,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,
+      sql`SELECT s.id,s.kind,s.category_id,c.name AS category_name,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,
  (SELECT count(*)::integer FROM oral_study_self_assessments a WHERE a.study_session_id=s.id) AS answered_count,
  (SELECT count(*)::integer FROM oral_study_session_questions sq JOIN oral_revisions r ON r.id=sq.oral_revision_id WHERE sq.study_session_id=s.id AND r.withdrawn_at<coalesce(s.ended_at,'infinity') AND NOT EXISTS (SELECT 1 FROM oral_study_self_assessments a WHERE a.study_session_id=sq.study_session_id AND a.position=sq.position)) AS skipped_count,
  s.created_at,s.ended_at
- FROM oral_study_sessions s JOIN oral_question_categories c ON c.id=s.category_id
+ FROM oral_study_sessions s LEFT JOIN oral_question_categories c ON c.id=s.category_id
  WHERE ${sql.and([sql`s.user_id=${userId}`, sql`s.qualification_path_id=${pathId}`, ...conditions])}
  ORDER BY s.last_activity_at DESC,s.id DESC LIMIT 1`.pipe(
         Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(OralStudySession))),
         Effect.map(Arr.head),
         Effect.mapError(cause => new StudyReadError({ cause })),
       )
+
+    const reviewStates = (
+      userId: UserId,
+      pathId: QualificationPathId,
+      categoryId: Option.Option<OralQuestionCategoryId>,
+      now: DateTimeUtc,
+    ) => {
+      const today = studyDayOf(now)
+      const start = DateTime.formatIso(today.start)
+      const end = DateTime.formatIso(today.end)
+
+      return sql`FROM oral_review_states s
+ JOIN path_oral_questions pq ON pq.question_id=s.question_id AND pq.qualification_path_id=s.qualification_path_id
+ JOIN oral_questions q ON q.id=s.question_id
+ JOIN oral_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL AND r.substantive_revision_id=s.substantive_revision_id
+ CROSS JOIN LATERAL (SELECT CASE WHEN EXISTS (SELECT 1 FROM oral_learning_events e
+ JOIN oral_revisions er ON er.id=e.oral_revision_id AND er.substantive_revision_id=s.substantive_revision_id
+ WHERE e.user_id=s.user_id AND e.qualification_path_id=s.qualification_path_id AND e.question_id=s.question_id AND e.answered_at>=${start} AND e.answered_at<${end})
+ THEN greatest(s.due_at,${end}::timestamptz) ELSE s.due_at END AS available_at) v
+ WHERE s.user_id=${userId} AND s.qualification_path_id=${pathId}
+ AND ${Option.match(categoryId, { onNone: () => sql`TRUE`, onSome: id => sql`q.category_id=${id}` })}`
+    }
 
     const categoriesPage = makeCursorPaginator(
       sql,
@@ -135,6 +159,41 @@ export const OralStudyReaderLive = Layer.effect(
     )
 
     return OralStudyReader.of({
+      reviewQueue: Effect.fn('OralStudyReader.reviewQueue')(
+        function* (userId, pathId, categoryId, now) {
+          const at = DateTime.formatIso(now)
+
+          const rows =
+            yield* sql`SELECT count(*) FILTER (WHERE v.available_at<=${at})::integer AS due_count,min(v.available_at) FILTER (WHERE v.available_at>${at}) AS next_due_at ${reviewStates(userId, pathId, categoryId, now)}`
+
+          const [queue] = yield* Schema.decodeUnknownEffect(Schema.Tuple([ReviewQueue]))(rows)
+
+          return queue
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      reviewCandidates: Effect.fn('OralStudyReader.reviewCandidates')(
+        function* (userId, pathId, categoryId, now, limit) {
+          const at = DateTime.formatIso(now)
+
+          const rows =
+            yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${reviewStates(userId, pathId, categoryId, now)} AND v.available_at<=${at} ORDER BY s.due_at,q.id LIMIT ${limit}`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows)
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      unfinishedReviewSession: Effect.fn('OralStudyReader.unfinishedReviewSession')(
+        (userId, pathId, categoryId) =>
+          findSession(userId, pathId, [
+            sql`s.kind='review'`,
+            sql`s.ended_at IS NULL`,
+            Option.match(categoryId, {
+              onNone: () => sql`s.category_id IS NULL`,
+              onSome: id => sql`s.category_id=${id}`,
+            }),
+          ]),
+      ),
       reviewState: Effect.fn('OralStudyReader.reviewState')(
         function* (userId, pathId, questionId) {
           const rows =
@@ -274,20 +333,24 @@ export const OralStudyReaderLive = Layer.effect(
       ),
       unfinishedSession: Effect.fn('OralStudyReader.unfinishedSession')(
         (userId, pathId, categoryId) =>
-          findSession(userId, pathId, [sql`s.category_id=${categoryId}`, sql`s.ended_at IS NULL`]),
+          findSession(userId, pathId, [
+            sql`s.kind='study'`,
+            sql`s.category_id=${categoryId}`,
+            sql`s.ended_at IS NULL`,
+          ]),
       ),
       latestSession: Effect.fn('OralStudyReader.latestSession')((userId, pathId, categoryId) =>
-        findSession(
-          userId,
-          pathId,
-          Option.match(categoryId, {
+        findSession(userId, pathId, [
+          sql`s.kind='study'`,
+          ...Option.match(categoryId, {
             onNone: () => [],
             onSome: id => [sql`s.category_id=${id}`],
           }),
-        ),
+        ]),
       ),
       latestUnfinishedSession: Effect.fn('OralStudyReader.latestUnfinishedSession')(
-        (userId, pathId) => findSession(userId, pathId, [sql`s.ended_at IS NULL`]),
+        (userId, pathId) =>
+          findSession(userId, pathId, [sql`s.kind='study'`, sql`s.ended_at IS NULL`]),
       ),
       session: Effect.fn('OralStudyReader.session')((userId, pathId, sessionId) =>
         findSession(userId, pathId, [sql`s.id=${sessionId}`]),
