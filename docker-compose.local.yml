@@ -40,7 +40,6 @@ services:
       interval: 1s
       timeout: 5s
       retries: 30
-  # Optional local Grafana with an OTLP collector, Tempo, Loki and Prometheus (ADR-0022).
   otel-lgtm:
     image: grafana/otel-lgtm:0.11.10
     profiles: ['telemetry']

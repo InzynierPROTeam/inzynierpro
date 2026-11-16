@@ -78,7 +78,6 @@ saveExact: true
 
 cleanupUnusedCatalogs: true
 
-# 5 days
 minimumReleaseAge: 7200
 allowBuilds:
   react-cookie-manager: false

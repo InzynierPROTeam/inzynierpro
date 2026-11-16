@@ -1,4 +1,3 @@
-# dev
 .yarn/
 !.yarn/releases
 .vscode/*
@@ -10,7 +9,6 @@
 !/.idea/runConfigurations
 .cache
 
-# deps
 node_modules/
 /.pnp
 .pnp.*
@@ -21,14 +19,12 @@ node_modules/
 !.yarn/versions
 !.yarn/sdks
 
-# env
 .env
 .env.production
 .env.dev
 .env.test
 .dev.vars
 
-# logs
 logs/
 *.log
 npm-debug.log*
@@ -37,11 +33,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# misc
 .DS_Store
 *.pem
 
-# build
 dist/
 build
 .vinxi
@@ -50,43 +44,33 @@ build
 .tanstack
 .nitro
 
-# typescript
 *.tsbuildinfo
 next-env.d.ts
 
-# turbo
 .turbo
 
-# vercel
 .vercel
 
-# testing
 coverage/
 
-# next.js
 .next/
 out/
 
-# astro
 .astro/
 
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# cluade
 .claude/settings.local.json
 
 apps/video/build
 
-# e2e
 apps/e2e/.outbox/
 apps/e2e/test-results/
 apps/e2e/playwright-report/
 
-# infrastructure state and local deployment configuration
 .alchemy/
 .env.staging
 .env.prod

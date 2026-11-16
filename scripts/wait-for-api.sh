@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Wait for the exact API image, not an old replica that still answers health checks.
 set -euo pipefail
 
 api_origin=${1:?API origin is required}

@@ -1,8 +1,7 @@
 import { AlchemyContext } from 'alchemy/AlchemyContext'
 import { Layer } from 'effect'
 
-// Alchemy beta.85 maps deploy --yes to state lifecycle approval as well.
-// Application deployment approval must never grant state bootstrap/upgrade.
+// EXTERNAL: Alchemy beta.85 grants state bootstrap/upgrade with deploy --yes; disable state updates separately.
 export const existingStateOnly = Layer.updateService(AlchemyContext, context => ({
   ...context,
   updateStateStore: false,

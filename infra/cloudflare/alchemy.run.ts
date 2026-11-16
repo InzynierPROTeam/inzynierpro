@@ -25,8 +25,6 @@ export default Alchemy.Stack(
       return yield* Effect.die(new Error('CLI stage must match ALCHEMY_STAGE'))
     }
 
-    // Keep local build/preview on the official Cloudflare Vite plugin. Alchemy
-    // uploads that exact output rather than adding a second Vite integration.
     const platform = yield* Cloudflare.Worker('Platform', {
       name: `inzpro-platform-${stage}`,
       main: './apps/platform/dist/server/index.js',

@@ -40,7 +40,6 @@ const run = (args: string[]) => {
       VITE_GOOGLE_TAG_MANAGER_ID: process.env.VITE_GOOGLE_TAG_MANAGER_ID ?? '',
       VITE_META_PIXEL_ID: process.env.VITE_META_PIXEL_ID ?? '',
       ALCHEMY_STAGE: stage,
-      // Never let plan/deploy silently bootstrap or upgrade the state store.
       CI: command === 'bootstrap' ? 'false' : 'true',
     },
   })

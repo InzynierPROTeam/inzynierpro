@@ -23,7 +23,6 @@ target "api" {
   target   = "runner"
   tags     = ["inzpro-api:${RELEASE_SHA}"]
   output   = ["type=docker,dest=${OUTPUT_DIR}/api.tar"]
-  # One exporter stores the shared builder/runtime stages for both images.
   cache-to = ["type=gha,scope=api-images,mode=max"]
 }
 
