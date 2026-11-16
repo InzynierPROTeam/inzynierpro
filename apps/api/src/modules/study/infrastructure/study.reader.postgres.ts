@@ -62,11 +62,9 @@ const SessionQuestionRow = Schema.Struct({
   isWithdrawn: Schema.Boolean,
   explanationOpenedAt: Schema.OptionFromNullOr(DateTimeUtc),
   noteOpenedAt: Schema.OptionFromNullOr(DateTimeUtc),
-  // The note's columns are all null without a saved note.
   noteText: Schema.NullOr(QuestionNoteText),
   noteUpdatedAt: Schema.NullOr(DateTimeUtc),
   noteRefersToEarlierWording: Schema.NullOr(Schema.Boolean),
-  // The submitted answer's columns are all null until the question is answered.
   submittedAnswerId: Schema.NullOr(QuestionAnswerId),
   submittedIsCorrect: Schema.NullOr(Schema.Boolean),
   submittedIsAssisted: Schema.NullOr(Schema.Boolean),
@@ -160,9 +158,6 @@ export const StudyReaderLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
     const columns = sql`d.id,d.title,count(r.id)::integer AS available_question_count,count(cr.id)::integer AS completed_question_count`
 
-    // Joins the user's coverage of the current revision `r` of question `q` on path question `pq`
-    // in the round: `cr` is set only when the covered revision carries the current substantive
-    // content, so a substantive revision uncovers the question and a cosmetic one does not.
     const roundCoverage = (userId: UserId, round: LearningRoundNumber | Statement.Fragment) =>
       sql`LEFT JOIN written_question_coverage c ON c.user_id=${userId} AND c.qualification_path_id=pq.qualification_path_id AND c.question_id=q.id AND c.round_number=${round}
  LEFT JOIN question_revisions cr ON cr.id=c.question_revision_id AND cr.substantive_revision_id=r.substantive_revision_id`
@@ -194,12 +189,6 @@ export const StudyReaderLive = Layer.effect(
         Effect.mapError(cause => new StudyReadError({ cause })),
       )
 
-    // The learner's UserReviewStates on the path that a review may draw: the question is still on
-    // the path, optionally in one document, its current revision is published and not withdrawn,
-    // and the state belongs to that revision's substantive content. A state built on replaced
-    // content reads as a new card, which is never due. `v.available_at` is when a review may
-    // draw it: its due time, but not before the next study day once its content was answered on
-    // the study day of `now`, because a later answer that day would not rate it (ADR-0005).
     const reviewStates = (
       userId: UserId,
       pathId: QualificationPathId,
@@ -291,9 +280,6 @@ export const StudyReaderLive = Layer.effect(
         function* (userId, pathId, { round, fromDocumentId, skipsStartDocument }) {
           const isCovered = sql`count(r.id)<=count(cr.id)`
 
-          // Documents with uncovered questions come first, from the starting document on, or from
-          // the one after it in a new round. Among covered ones the starting document comes last.
-          // Both wrap around to the documents before the start.
           const order = sql.csv([
             isCovered,
             ...Option.match(fromDocumentId, {
@@ -463,7 +449,6 @@ export const StudyReaderLive = Layer.effect(
       ),
       sessionCandidates: Effect.fn('StudyReader.sessionCandidates')(
         function* (userId, pathId, round, documentId, selection, limit) {
-          // Covered in the round by a revision carrying the current substantive content.
           const uncovered =
             selection === uncoveredQuestions
               ? sql`NOT EXISTS (SELECT 1 FROM written_question_coverage c JOIN question_revisions cr ON cr.id=c.question_revision_id
@@ -515,7 +500,6 @@ export const StudyReaderLive = Layer.effect(
       ),
       reviewState: Effect.fn('StudyReader.reviewState')(
         function* (userId, pathId, questionId) {
-          // A state built on other substantive content than the current revision's is reset.
           const rows =
             yield* sql`SELECT s.due_at,s.last_review_at,s.stability,s.stability_fast,s.difficulty,s.state,s.schedule_status,s.reps,s.lapses,s.scheduled_days,s.learning_step
  FROM written_review_states s JOIN written_questions q ON q.id=s.question_id JOIN question_revisions r ON r.id=q.current_revision_id
@@ -546,7 +530,6 @@ export const StudyReaderLive = Layer.effect(
           const start = DateTime.formatIso(day.start)
           const end = DateTime.formatIso(day.end)
 
-          // Events of the same question whose revision carries the same substantive content.
           const rows = yield* sql`SELECT EXISTS (SELECT 1 FROM question_revisions ar
  JOIN written_learning_events e ON e.user_id=${userId} AND e.qualification_path_id=${pathId} AND e.question_id=ar.question_id AND e.answered_at>=${start} AND e.answered_at<${end}
  JOIN question_revisions er ON er.id=e.question_revision_id AND er.substantive_revision_id=ar.substantive_revision_id

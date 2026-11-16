@@ -19,7 +19,6 @@ import { OralStudyReader } from './oral-study.reader.js'
 import { OralStudyRepository } from './oral-study.repository.js'
 import { StudyRepository } from './study.repository.js'
 
-// The account lock keeps preview validation consistent with self-assessments and assignment changes.
 export const startOralSession = Effect.fn('Study.startOralSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -68,7 +67,6 @@ export const startOralSession = Effect.fn('Study.startOralSession')(function* (
         questionCount,
       )
 
-      // Each statement sees newly committed rows, so a withdrawal between the two reads could shrink the set.
       if (questions.length !== questionCount) {
         return yield* new StaleSessionScope()
       }

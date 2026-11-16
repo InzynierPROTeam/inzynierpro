@@ -33,7 +33,6 @@ const decode =
   async (response: Response) =>
     Schema.decodeUnknownSync(schema)(await response.json())
 
-// A seeded path only the favourites and notes tests add documents to.
 const otherPathSpecialization = '60000000-0000-4000-8000-000000000006'
 
 const noteUrl = (pathId: QualificationPathId, questionId: string) =>
@@ -313,7 +312,6 @@ describe('note assistance', () => {
     expect(opened.explanationOpenedAt).toBeNull()
     expect(await decode(SessionQuestion)(await learner.open(1))).toEqual(opened)
 
-    // Clearing the note afterwards keeps the record: the learner saw it before answering.
     await learner.clear(learner.questions[0]!.id)
 
     expect((await learner.answer(1)).question.answer).toMatchObject({

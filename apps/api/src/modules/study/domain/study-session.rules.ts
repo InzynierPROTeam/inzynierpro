@@ -27,7 +27,6 @@ export const answeredPercent = (
     ),
   )
 
-/** Unanswered questions count against the score; withdrawn, unanswered questions do not. */
 export const correctPercent = (
   result: Pick<StudySessionResultCounts, 'correct'>,
   session: Pick<StudySession, 'questionCount' | 'skippedCount'>,

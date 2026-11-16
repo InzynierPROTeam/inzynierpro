@@ -14,7 +14,6 @@ const secureHeaders = {
   'x-xss-protection': '0',
 }
 
-// A pre-response handler also covers error responses and the mounted Better Auth routes.
 export const SecureHeadersMiddleware = <E, R>(
   httpEffect: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>,
 ) =>

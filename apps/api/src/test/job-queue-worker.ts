@@ -1,6 +1,3 @@
-// A worker process for job-queue.test.ts: it takes a job of the given queue, reports it on stdout
-// and hangs, so the test can kill the process while it holds the job.
-// Usage: node --import tsx src/test/job-queue-worker.ts <queue name>
 import { Effect } from 'effect'
 import { makeJobQueue } from '~api/lib/job-queue.js'
 import { Greeting, makeTestStoreLayer } from '~api/test/job-queue.js'

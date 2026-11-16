@@ -13,7 +13,6 @@ import { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import { LearningEventId } from '~api/modules/study/domain/review-state.model.js'
 import { StudySession } from '~api/modules/study/domain/study-session.model.js'
 
-// Keep the operation's generic error separate from SQL failures without changing rollback behavior.
 class StudyTransactionFailure<E> extends Data.TaggedError('StudyTransactionFailure')<{
   readonly error: E
 }> {}
@@ -158,7 +157,6 @@ export const StudyRepositoryLive = Layer.effect(
       ),
       saveNote: Effect.fn('StudyRepository.saveNote')(
         function* (userId, questionId, text) {
-          // The note keeps the revision current now, so it reads as current until a substantive one.
           const rows =
             yield* sql`INSERT INTO written_question_notes (user_id,question_id,question_revision_id,body)
  SELECT ${userId},q.id,q.current_revision_id,${text} FROM written_questions q WHERE q.id=${questionId}
@@ -169,7 +167,6 @@ export const StudyRepositoryLive = Layer.effect(
 
           return stored
         },
-        // A constraint error's detail may quote the row, so only the kind of failure is kept.
         Effect.mapError(
           error =>
             new QuestionNoteWriteError({
@@ -219,13 +216,11 @@ export const StudyRepositoryLive = Layer.effect(
           Option.getOrNull,
         )
 
-        // The state belongs to the substantive content of the answered revision.
         return yield* sql`INSERT INTO written_review_states (user_id,qualification_path_id,question_id,substantive_revision_id,learning_event_id,rules_version,due_at,last_review_at,stability,stability_fast,difficulty,state,schedule_status,reps,lapses,scheduled_days,learning_step)
  SELECT ${state.userId},${state.qualificationPathId},${state.questionId},r.substantive_revision_id,${state.learningEventId},${state.rulesVersion},${dueAt},${lastReviewAt},${card.stability},${card.stabilityFast},${card.difficulty},${card.state},${card.scheduleStatus},${card.reps},${card.lapses},${card.scheduledDays},${card.learningStep}
  FROM question_revisions r WHERE r.id=${state.questionRevisionId} AND r.question_id=${state.questionId}
  ON CONFLICT (user_id,qualification_path_id,question_id) DO UPDATE SET substantive_revision_id=EXCLUDED.substantive_revision_id,learning_event_id=EXCLUDED.learning_event_id,rules_version=EXCLUDED.rules_version,due_at=EXCLUDED.due_at,last_review_at=EXCLUDED.last_review_at,stability=EXCLUDED.stability,stability_fast=EXCLUDED.stability_fast,difficulty=EXCLUDED.difficulty,state=EXCLUDED.state,schedule_status=EXCLUDED.schedule_status,reps=EXCLUDED.reps,lapses=EXCLUDED.lapses,scheduled_days=EXCLUDED.scheduled_days,learning_step=EXCLUDED.learning_step
  RETURNING 1`.pipe(
-          // A revision outside the question stores nothing, which must not pass silently.
           Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([Schema.Unknown]))),
           Effect.asVoid,
           Effect.mapError(cause => new StudyWriteError({ cause })),

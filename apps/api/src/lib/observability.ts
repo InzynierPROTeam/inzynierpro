@@ -3,8 +3,7 @@ import { FetchHttpClient, HttpMiddleware, type HttpServerRequest } from 'effect/
 import { OtlpLogger, OtlpMetrics, OtlpSerialization, OtlpTracer } from 'effect/observability'
 import type { ProcessEnv } from '~api/lib/env.js'
 
-// Attributes that would identify a person or carry a credential never leave the process.
-// `client.address` is the raw peer IP that Effect's HTTP tracer records.
+// EXTERNAL: Effect records the raw peer IP in the client.address span attribute.
 const sensitiveAttribute =
   /(^|\.)(email|password|token|secret|otp|cookie|authorization)$|^(client|network\.peer)\.address$/
 
@@ -27,14 +26,13 @@ export const redactingTracer = (tracer: Tracer.Tracer): Tracer.Tracer =>
     context: tracer.context,
   })
 
-// Health probes and CORS preflights would only add noise to traces.
 export const untracedRequestsLayer = Layer.succeed(
   HttpMiddleware.TracerDisabledWhen,
   (request: HttpServerRequest.HttpServerRequest) =>
     request.method === 'OPTIONS' || request.url.startsWith('/api/v1/health-check'),
 )
 
-// The native tracer stays unwrapped: Effect skips span bookkeeping when it is active.
+// EXTERNAL: Effect skips span bookkeeping for Tracer.nativeTracer; preserve its identity.
 const tracerLayer = (serviceName: string) =>
   Layer.effect(
     Tracer.Tracer,
@@ -43,7 +41,6 @@ const tracerLayer = (serviceName: string) =>
     ),
   ).pipe(Layer.provide(OtlpTracer.layerFromConfig({ resource: { serviceName } })))
 
-// Effect reads exporter, version and environment settings from OTEL_* variables (ADR-0022).
 export const observabilityLayer = (
   serviceName: string,
   stdoutLoggers: ReadonlyArray<Logger.Logger<unknown, unknown>>,

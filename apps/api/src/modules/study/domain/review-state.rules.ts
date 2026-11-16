@@ -15,7 +15,6 @@ import {
 
 const studyDayZone = DateTime.zoneMakeNamedUnsafe(POLAND_TIME_ZONE)
 
-/** The Europe/Warsaw study day an instant falls on, by backend time (ADR-0010). */
 export const studyDayOf = (at: DateTime.Utc): StudyDay => {
   const start = DateTime.startOf(DateTime.setZone(at, studyDayZone), 'day')
 
@@ -36,10 +35,6 @@ export const answerAssistance = (opened: {
   return Option.isSome(opened.noteOpenedAt) ? noteAssistance : noAssistance
 }
 
-/**
- * Replaced content says nothing about the current card. Explanation-assisted answers schedule
- * an independent check for new cards without extending an existing card's interval (ADR-0005).
- */
 export const writtenReviewRating = (answer: {
   readonly isCorrect: boolean
   readonly assistance: AssistanceLevel

@@ -23,7 +23,6 @@ test('a public read is limited per client address and says when to retry', async
   expect(first.headers.get('x-ratelimit-limit')).toBe('120')
   expect(first.headers.get('x-ratelimit-remaining')).toBe('119')
 
-  // The bucket refills one token every 500 ms, so a slow run may need a few extra requests.
   let served = 1
   let limited = await listSpecializations(address)
 

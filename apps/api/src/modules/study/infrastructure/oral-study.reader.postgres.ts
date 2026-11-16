@@ -56,7 +56,6 @@ const SessionQuestionRow = Schema.Struct({
   body: RichContent,
   answer: RichContent,
   isWithdrawn: Schema.Boolean,
-  // Both are null until the question is self-assessed.
   selfAssessment: Schema.NullOr(OralSelfAssessment),
   assessedAt: Schema.NullOr(DateTimeUtc),
 })
@@ -84,9 +83,6 @@ export const OralStudyReaderLive = Layer.effect(
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
 
-    // Joins the user's coverage of the current revision `r` of oral question `q` on path question
-    // `pq` in the round: `cr` is set only when the covered revision carries the current
-    // substantive content, so a substantive revision uncovers the question and a cosmetic one does not.
     const roundCoverage = (userId: UserId, round: LearningRoundNumber | Statement.Fragment) =>
       sql`LEFT JOIN oral_question_coverage cv ON cv.user_id=${userId} AND cv.qualification_path_id=pq.qualification_path_id AND cv.question_id=q.id AND cv.round_number=${round}
  LEFT JOIN oral_revisions cr ON cr.id=cv.oral_revision_id AND cr.substantive_revision_id=r.substantive_revision_id`
@@ -191,9 +187,6 @@ export const OralStudyReaderLive = Layer.effect(
         function* (userId, pathId, { round, fromCategoryId, skipsStartCategory }) {
           const isCovered = sql`count(r.id)<=count(cr.id)`
 
-          // Categories with uncovered questions come first, from the starting category on, or from
-          // the one after it in a new round. Among covered ones the starting category comes last.
-          // Both wrap around to the categories before the start.
           const order = sql.csv([
             isCovered,
             ...Option.match(fromCategoryId, {

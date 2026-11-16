@@ -32,7 +32,6 @@ const signedInVisitor = async (label: string) => {
     throw new Error('Sign-in did not set a session cookie')
   }
 
-  // The cookie value is `<token>.<signature>`; Redis caches the session under the token.
   const token = decodeURIComponent(cookie).split('.')[0] ?? ''
 
   return { visitor, email, cookie, token }
@@ -174,7 +173,6 @@ describe('Redis rate-limit storage', () => {
   test('only the trusted client address header separates clients', async () => {
     const address = uniqueAddress()
 
-    // Headers the proxy does not set are ignored, so forging them does not open a new bucket.
     const forged = (forgedAddress: string) =>
       api.visitor({ 'x-forwarded-for': address, 'cf-connecting-ip': forgedAddress })
 

@@ -46,8 +46,6 @@ export type TestVisitor = {
   readonly session: () => Promise<Response>
 }
 
-// Each visitor has its own random client address, so rate-limit buckets do not leak between tests
-// or test files running in parallel.
 const octet = Random.nextIntBetween(0, 255)
 
 export const uniqueAddress = () =>
@@ -61,7 +59,6 @@ const isSentTo = (message: EmailMessage, email: string) =>
 export type TestApiOptions = {
   readonly releaseSha?: string
   readonly now?: DateTime.Utc
-  // Delivers email; defaults to an in-memory adapter whose messages the test can read.
   readonly emailAdapter?: EmailAdapter
   readonly google?: { readonly clientId: string; readonly clientSecret: string }
 }
@@ -77,7 +74,6 @@ export const startTestApi = async ({
   const config = {
     ...loaded,
     RELEASE_SHA: releaseSha ?? loaded.RELEASE_SHA,
-    // Mirrors production behind a proxy; visitors send unique addresses so buckets never collide.
     TRUSTED_CLIENT_IP_HEADER: Option.some('x-forwarded-for'),
     GOOGLE:
       google === undefined
@@ -123,7 +119,6 @@ export const startTestApi = async ({
 
   const baseUrl = `http://127.0.0.1:${server.address.port}`
 
-  // Separate connection for evicting session cache entries in integration tests.
   const redis: RedisClientType = createClient({ url: Redacted.value(config.REDIS_URL) })
 
   await redis.connect()
@@ -165,7 +160,6 @@ export const startTestApi = async ({
     logs,
     spans,
     visitor,
-    // The Redis connection used by the running API, for simulating outages.
     apiRedis: Context.get(context, Redis),
     redis,
     close: async () => {

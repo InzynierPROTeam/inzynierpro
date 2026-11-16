@@ -10,7 +10,6 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyReader } from './study.reader.js'
 
-// Reads the revision pinned when the session started, with options in the stored order.
 export const getSessionQuestion = Effect.fn('Study.getSessionQuestion')(function* (
   userId: UserId,
   pathId: QualificationPathId,

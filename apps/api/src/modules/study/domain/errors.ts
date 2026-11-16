@@ -9,7 +9,6 @@ export class StudyDocumentNotFound extends Data.TaggedError('StudyDocumentNotFou
 
 export class QuestionNotOnPath extends Data.TaggedError('QuestionNotOnPath') {}
 
-/** The requested session no longer fits the material or settings the preview offered. */
 export class StaleSessionScope extends Data.TaggedError('StaleSessionScope') {}
 
 export class UnfinishedSessionExists extends Data.TaggedError('UnfinishedSessionExists')<{

@@ -21,7 +21,6 @@ import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rul
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-// Persisting the selected question set keeps later marks and unmarks from changing the session.
 export const startFavoritesSession = Effect.fn('Study.startFavoritesSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -74,7 +73,6 @@ export const startFavoritesSession = Effect.fn('Study.startFavoritesSession')(fu
         questionCount,
       )
 
-      // Marks are not taken under the account lock, so the set may change between the two reads.
       if (candidates.length !== questionCount) {
         return yield* new StaleSessionScope()
       }

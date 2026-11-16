@@ -28,7 +28,6 @@ import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rul
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-// The account lock keeps preview validation consistent with answers and assignment changes.
 export const startSession = Effect.fn('Study.startSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -84,7 +83,6 @@ export const startSession = Effect.fn('Study.startSession')(function* (
         questionCount,
       )
 
-      // Each statement sees newly committed rows, so a withdrawal between the two reads could shrink the set.
       if (candidates.length !== questionCount) {
         return yield* new StaleSessionScope()
       }

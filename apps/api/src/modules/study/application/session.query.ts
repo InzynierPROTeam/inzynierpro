@@ -7,7 +7,6 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyReader } from './study.reader.js'
 
-// Another account's session reads as absent, so its existence is never revealed.
 export const getSession = Effect.fn('Study.getSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

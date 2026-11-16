@@ -1,8 +1,6 @@
 import { Effect } from 'effect'
 import { SqlClient } from 'effect/sql'
 
-// Tables owned by Identity & Access and accessed by Better Auth through its official
-// PostgreSQL adapter. Column names are mapped in @inzpro/auth.
 export default Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
 

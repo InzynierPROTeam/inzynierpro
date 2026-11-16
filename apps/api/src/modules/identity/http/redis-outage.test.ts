@@ -25,7 +25,6 @@ test('a Redis outage fails closed and the session works again after recovery', a
 
   const session = await visitor.session()
 
-  // A server error, not 401: the client must not treat an outage as a sign-out.
   expect(session.status).toBe(500)
   expect(await session.json()).toMatchObject({ type: 'internal_server_error' })
 

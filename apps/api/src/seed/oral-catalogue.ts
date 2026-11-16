@@ -15,9 +15,7 @@ import {
 import { catalogueId } from './catalogue.js'
 import { bold, italic, plain } from './rich-text.js'
 
-// Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 20, 22,
-// 29–30, 34, 35, 37, 54) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf
-// (§ 12, 62, 68, 72, 298).
+// EXTERNAL: Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 20, 22, 29–30, 34, 35, 37, 54) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 12, 62, 68, 72, 298).
 
 const paragraph = (...content: ReadonlyArray<Text>): Block => ({ type: 'paragraph', content })
 
@@ -65,7 +63,6 @@ const contentJson = (blocks: ReadonlyArray<Block>) =>
     doc: { type: 'doc', content: blocks },
   }).pipe(Effect.map(content => JSON.stringify(content)))
 
-// The first technical path keeps no oral material, so its learners still see the empty state.
 const pathWithoutOralMaterial = catalogueId('10', 1)
 
 const categories = [
@@ -291,8 +288,6 @@ const questions: ReadonlyArray<{
   },
 ]
 
-// The second answer gains the case of an interrupted construction, which changes what a learner
-// must know (ADR-0003).
 const substantiveRevision = {
   questionNumber: 2,
   question: 'Kiedy wygasa decyzja o pozwoleniu na budowę?',
@@ -310,7 +305,6 @@ const substantiveRevision = {
   ],
 } as const
 
-/** Oral categories and questions on the given paths, kept in their seeded revisions on reruns. */
 export const seedOralCatalogue = Effect.fn('seedOralCatalogue')(function* (
   pathIds: ReadonlyArray<string>,
 ) {

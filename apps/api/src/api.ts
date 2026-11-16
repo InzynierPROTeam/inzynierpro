@@ -22,8 +22,7 @@ import {
   OralStudyRequestServices,
 } from '~api/modules/study/http/oral-study.handlers.js'
 
-// Handlers read module services per request. They must be provided here, on the layer that
-// registers routes: provided on a group layer they would type-check but never reach a handler.
+// EXTERNAL: Effect request services must be provided on the route-registration layer; group provision type-checks but does not reach handlers.
 export const ApiLive = HttpApiBuilder.layer(Api).pipe(
   Layer.provide(
     Layer.mergeAll(

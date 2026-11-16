@@ -1,4 +1,3 @@
-// Usage: pnpm --filter @inzpro/api worker:status
 import { NodeRuntime } from '@effect/platform-node'
 import { Effect, Layer } from 'effect'
 import { EnvProviderLive } from '~api/lib/env-provider.js'

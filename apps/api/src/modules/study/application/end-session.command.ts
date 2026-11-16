@@ -10,7 +10,6 @@ import { StudySessionMissing } from '~api/modules/study/domain/errors.js'
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-// The account lock ensures a concurrent answer either commits before the end or is refused.
 export const endSession = Effect.fn('Study.endSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

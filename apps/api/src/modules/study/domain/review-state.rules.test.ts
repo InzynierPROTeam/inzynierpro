@@ -98,7 +98,6 @@ describe('studyDayOf', () => {
   }
 
   it('starts the study day at midnight in Warsaw, not in UTC', () => {
-    // 23:59 and 00:00 Warsaw (UTC+1 in November) fall on the same UTC date.
     expect(day('2026-11-13T22:59:00.000Z')).toEqual([
       '2026-11-12T23:00:00.000Z',
       '2026-11-13T23:00:00.000Z',
@@ -110,7 +109,6 @@ describe('studyDayOf', () => {
   })
 
   it('follows daylight saving time changes', () => {
-    // 29 March 2026 has 23 hours in Warsaw.
     expect(day('2026-03-29T12:00:00.000Z')).toEqual([
       '2026-03-28T23:00:00.000Z',
       '2026-03-29T22:00:00.000Z',

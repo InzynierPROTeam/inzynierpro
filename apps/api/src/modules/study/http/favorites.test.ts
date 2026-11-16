@@ -37,7 +37,6 @@ const decode =
   async (response: Response) =>
     Schema.decodeUnknownSync(schema)(await response.json())
 
-// A seeded path only these tests add documents to, so other tests' previews never see them.
 const otherPathSpecialization = '60000000-0000-4000-8000-000000000006'
 
 const favoriteRequest = (

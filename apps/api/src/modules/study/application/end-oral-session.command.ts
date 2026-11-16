@@ -11,7 +11,6 @@ import { OralStudyReader } from './oral-study.reader.js'
 import { OralStudyRepository } from './oral-study.repository.js'
 import { StudyRepository } from './study.repository.js'
 
-// The account lock ensures a concurrent self-assessment either commits before the end or is refused.
 export const endOralSession = Effect.fn('Study.endOralSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

@@ -95,7 +95,6 @@ const learnerWithDocument = async (questionCount: number) => {
       await (await request(`/sessions/${sessionId}/summary`)).json(),
     )
 
-  // Decoded as the API client does: the JSON codec reads an absent next cursor as null.
   const results = async (sessionId: string, query = '') =>
     Schema.decodeUnknownSync(Schema.toCodecJson(SessionResultsResponse))(
       await (await request(`/sessions/${sessionId}/results${query}`)).json(),

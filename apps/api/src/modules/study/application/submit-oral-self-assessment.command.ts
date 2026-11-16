@@ -39,10 +39,6 @@ const syncOralLearningRound = Effect.fn('Study.syncOralLearningRound')(function*
   return round
 })
 
-/**
- * The account lock orders self-assessments against each other and assignment changes, so the
- * self-assessment, round coverage, round advance and continue point commit together (ADR-0012).
- */
 export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessment')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -73,7 +69,6 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
       const { session, question } = found.value
 
       if (Option.isSome(question.selfAssessment)) {
-        // A retry after a lost response gets the stored self-assessment back.
         if (question.selfAssessment.value.value === selfAssessment) {
           return { question, session }
         }
@@ -100,7 +95,6 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         selfAssessment,
       )
 
-      // A withdrawal may have completed the stored round since the last self-assessment.
       const round = yield* syncOralLearningRound(userId, pathId)
       yield* oralStudyRepository.recordCoverage(
         userId,

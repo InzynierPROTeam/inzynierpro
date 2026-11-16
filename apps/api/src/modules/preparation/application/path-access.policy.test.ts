@@ -54,7 +54,6 @@ const assignment = (accessScope: ExamAccessScope, archived: boolean) =>
     },
   })
 
-// A reader holding at most one assignment of the user; other lookups are outside these policies.
 const readerWith = (found: Option.Option<UserQualificationPath>) =>
   Layer.succeed(PreparationReader)({
     hasReachedPathLimit: () => Effect.die('unused by the policies'),

@@ -38,17 +38,9 @@ export class LearningContentRepository extends Context.Service<
     readonly createQuestion: (
       question: NewQuestion,
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
-    /**
-     * Makes the revision current for new sessions with its change kind; started sessions keep their
-     * pinned revisions.
-     */
     readonly publishRevision: (
       revision: NewQuestionRevision,
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
-    /**
-     * Withdraws a published revision, which then accepts no answers even in started sessions. A
-     * revision is withdrawn once: repeating it keeps the first decision and its reason.
-     */
     readonly withdrawRevision: (
       withdrawal: QuestionRevisionWithdrawal,
     ) => Effect.Effect<void, LearningContentWriteError>
@@ -62,15 +54,12 @@ export class LearningContentRepository extends Context.Service<
       pathId: QualificationPathId,
       questionId: OralQuestionId,
     ) => Effect.Effect<void, LearningContentWriteError>
-    /** A published revision is immutable, so the write fails (ADR-0003). */
     readonly editOralDraft: (
       edit: OralDraftEdit,
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
-    /** Makes the oral revision current with its change kind; earlier revisions stay unchanged (ADR-0003). */
     readonly publishOralRevision: (
       revision: NewOralRevision,
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
-    /** Withdraws a published oral revision once; repeating it keeps the first decision and reason. */
     readonly withdrawOralRevision: (
       withdrawal: OralRevisionWithdrawal,
     ) => Effect.Effect<void, LearningContentWriteError>

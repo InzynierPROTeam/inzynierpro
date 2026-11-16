@@ -19,10 +19,6 @@ type CursorKey = Schema.Top & {
   readonly EncodingServices: never
 }
 
-/**
- * An opaque cursor: the sort-key fields as JSON, encoded as base64url. Clients pass it back
- * unchanged and never parse it, so the server can change the key without a contract change.
- */
 export const cursorCodec = <S extends CursorKey>(key: S) =>
   Schema.StringFromBase64Url.pipe(Schema.decodeTo(Schema.fromJsonString(key)))
 
@@ -36,7 +32,6 @@ export const decodeCursor = <S extends CursorKey>(key: S, cursor: Cursor | undef
     ? Effect.undefined
     : Schema.decodeEffect(cursorCodec(key))(cursor).pipe(Effect.mapError(() => new InvalidCursor()))
 
-/** Builds a page from `limit + 1` rows: the extra row only proves that another page exists. */
 export const makeCursorPage = <A>(
   rows: ReadonlyArray<A>,
   limit: number,
@@ -73,14 +68,11 @@ export type KeysetColumn<F extends KeyFields> = readonly [
 ]
 
 export type KeysetWindow = {
-  /** `true` on the first page, otherwise the keyset predicate for rows after the cursor. */
   readonly after: Statement.Fragment
   readonly orderBy: Statement.Fragment
-  /** One row more than the page, so the page knows whether another exists. */
   readonly limit: number
 }
 
-/** Sort columns must be NOT NULL and end with a unique column for a total order. */
 export const makeCursorPaginator = <F extends KeyFields>(
   sql: Statement.Constructor,
   key: Schema.Struct<F>,
@@ -108,12 +100,10 @@ export const makeCursorPaginator = <F extends KeyFields>(
       return sql`${expression} ${comparison(direction)} ${values[0]}`
     }
 
-    // A row comparison keeps one index range scan when every column sorts the same way.
     if (sameDirection) {
       return sql`(${sql.csv(columns.map(([, expression]) => expression))}) ${comparison(firstDirection)} (${sql.csv(values.map(value => sql`${value}`))})`
     }
 
-    // Mixed directions: (a > x) OR (a = x AND b < y) OR ...
     return sql.or(
       columns.map(([, expression, direction], index) =>
         sql.and([

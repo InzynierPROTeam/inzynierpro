@@ -8,7 +8,6 @@ import type { QuestionNote } from '~api/modules/study/domain/question-note.model
 
 import { StudyRepository } from './study.repository.js'
 
-// Notes remain clearable after a question leaves the path; recorded session openings stay.
 export const clearQuestionNote = Effect.fn('Study.clearQuestionNote')(function* (
   userId: UserId,
   pathId: QualificationPathId,

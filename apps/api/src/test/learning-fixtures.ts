@@ -65,8 +65,6 @@ export const runFixture = <A, E>(
   >,
 ) => Effect.runPromise(operation.pipe(Effect.provide(fixturesLayer), Effect.scoped))
 
-// A seeded path the session and answer tests give their own fresh documents. They never read its
-// first-document preview, so the documents they add cannot disturb one another.
 export const studySessionSpecialization = '60000000-0000-4000-8000-000000000011'
 
 const resolveSeededPath = (configuration: typeof CompleteOnboardingPayload.Encoded) =>
@@ -236,7 +234,6 @@ export const withdrawFixtureRevision = (
     }),
   )
 
-// The goal version a session was started under, which the API does not expose.
 export const sessionGoalVersion = (
   userId: UserId,
   pathId: QualificationPathId,
@@ -251,7 +248,6 @@ export const sessionGoalVersion = (
     }),
   )
 
-// The learner's stored LearningRound on a path, which the API does not expose.
 export const storedLearningRound = (userId: UserId, pathId: QualificationPathId) =>
   runFixture(
     Effect.gen(function* () {
@@ -262,7 +258,6 @@ export const storedLearningRound = (userId: UserId, pathId: QualificationPathId)
     }),
   )
 
-// The learner's stored oral LearningRound on a path, which the API does not expose.
 export const storedOralLearningRound = (userId: UserId, pathId: QualificationPathId) =>
   runFixture(
     Effect.gen(function* () {
@@ -273,7 +268,6 @@ export const storedOralLearningRound = (userId: UserId, pathId: QualificationPat
     }),
   )
 
-// The question's UserReviewState on the path, which the API does not expose yet; none for a new card.
 export const currentReviewState = (
   userId: UserId,
   pathId: QualificationPathId,

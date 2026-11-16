@@ -28,9 +28,6 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// The real adapters, except that recording coverage, written after the answer and its event,
-// names a revision that does not exist, so PostgreSQL rejects it after the answer and its
-// LearningEvent were already inserted.
 const failingCoverageLayer = Layer.effect(
   StudyRepository,
   Effect.gen(function* () {

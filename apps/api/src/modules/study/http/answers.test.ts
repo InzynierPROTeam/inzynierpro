@@ -329,7 +329,6 @@ test('extending access, changing the goal, archiving and restoring keep the stor
 
   const completed = async () => (await request(`/documents/${fixture.documentId}`)).json()
 
-  // Extending access appends goal version 2; the goal change then appends version 3.
   expect((await request('/extend', {})).status).toBe(200)
   expect(
     (

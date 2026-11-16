@@ -14,7 +14,6 @@ import type { SessionQuestion } from '~api/modules/study/domain/study-session.mo
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-// The account lock makes assistance depend on whether the opening or answer committed first.
 const withSessionQuestion = <E, R>(
   userId: UserId,
   pathId: QualificationPathId,
@@ -39,7 +38,6 @@ const withSessionQuestion = <E, R>(
           return yield* new SessionQuestionMissing()
         }
 
-        // A record only marks the answer that follows it, so it is kept only where one still can.
         if (
           Option.isSome(question.value.answer) ||
           Option.isSome(session.value.endedAt) ||

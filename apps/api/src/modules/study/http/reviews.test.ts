@@ -42,8 +42,6 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// Answers go through the command with a fixed earlier clock, so their review states are due by the
-// API's business time (`catalogueTestTime`).
 const commandLayer = Layer.mergeAll(
   StudyRepositoryLive,
   StudyReaderLive,
@@ -54,8 +52,6 @@ const commandLayer = Layer.mergeAll(
 
 const daysBeforeNow = (days: number) => DateTime.subtract(catalogueTestTime, { days })
 
-// The seeded small path: one Building Law document with three questions no test adds to, so its
-// round can be completed by answering them.
 const smallPathConfiguration = {
   specializationId: '60000000-0000-4000-8000-000000000002',
   qualificationKindId: '70000000-0000-4000-8000-000000000002',
@@ -240,7 +236,6 @@ describe('due questions', () => {
     await learner.answerAt(daysBeforeNow(1), study.id, 1, false)
     await learner.answerAt(daysBeforeNow(3), study.id, 2, false)
     await learner.answerAt(daysBeforeNow(2), study.id, 3, false)
-    // Answered now, so its next review is still ahead.
     expect((await learner.answerNow(study.id, 4)).status).toBe(200)
     await learner.end(study.id)
 
@@ -316,8 +311,6 @@ describe('due questions', () => {
     const study = await learner.startStudy(learner.fixture.documentId)
     const [, answeredYesterday] = await learner.sessionQuestionIds(study)
 
-    // A wrong answer an hour ago is due again within minutes, but no later answer today would
-    // rate it, so a review would only repeat it without moving it.
     await learner.answerAt(DateTime.subtract(catalogueTestTime, { hours: 1 }), study.id, 1, false)
     await learner.answerAt(daysBeforeNow(1), study.id, 2, false)
     await learner.end(study.id)
@@ -329,7 +322,6 @@ describe('due questions', () => {
     expect(await learner.sessionQuestionIds(review)).toEqual([answeredYesterday])
     expect((await learner.answerNow(review.id, 1)).status).toBe(200)
 
-    // Midnight in Warsaw (UTC+1 in November) starts the next study day.
     expect(await learner.reviewPreview()).toEqual({
       qualificationPathId: learner.fixture.pathId,
       document: null,
@@ -399,8 +391,6 @@ describe('answering a review session', () => {
     const documentProgress = async () =>
       learner.decode(DocumentResponse)(await learner.request(`/documents/${document!.id}`))
 
-    // Covering every question of the small path in the past completes round 1, so each is due
-    // and uncovered in round 2.
     const study = await learner.startStudy(document!.id)
 
     for (let position = 1; position <= study.progress.total; position++) {

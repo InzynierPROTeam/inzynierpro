@@ -10,7 +10,6 @@ import { QuestionNotOnPath } from '~api/modules/study/domain/errors.js'
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-// Saving never records assistance; only opening a saved note before answering does.
 export const saveQuestionNote = Effect.fn('Study.saveQuestionNote')(function* (
   userId: UserId,
   pathId: QualificationPathId,

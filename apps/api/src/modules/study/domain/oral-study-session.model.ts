@@ -20,12 +20,10 @@ export const OralStudySession = Schema.Struct({
   id: OralStudySessionId,
   categoryId: OralQuestionCategoryId,
   categoryName: Schema.NonEmptyString,
-  // The goal version active at the start; later goal changes never reattribute this session.
   goalVersion: UserExamGoalVersion,
   questionCount: QuestionCount,
   currentPosition: SessionQuestionPosition,
   answeredCount: QuestionCount,
-  // Questions whose revision was withdrawn before a self-assessment and before the session ended (ADR-0003).
   skippedCount: QuestionCount,
   createdAt: DateTimeUtc,
   endedAt: Schema.OptionFromNullOr(DateTimeUtc),
@@ -38,7 +36,6 @@ export type StoredOralSelfAssessment = {
   readonly assessedAt: DateTimeUtc
 }
 
-/** A question of a started oral session as pinned at its start. */
 export type OralSessionQuestion = {
   readonly sessionId: OralStudySessionId
   readonly position: SessionQuestionPosition

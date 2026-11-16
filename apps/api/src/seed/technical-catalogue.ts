@@ -10,9 +10,6 @@ import {
   substantiveChange,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
-// Local development catalogue with Polish display names and authored example questions.
-// Published chamber dates and explicitly unconfirmed planning estimates live in catalogue.ts.
-// Stable IDs make repeated explicit seeding safe; existing revisions are never rewritten.
 import {
   catalogueDistrictChambers,
   catalogueGeneralChambers,
@@ -56,7 +53,6 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
       }
 
       for (const entry of catalogueSessions) {
-        // The published day is represented at Warsaw midnight; no examination hour is invented.
         const written = DateTime.makeZonedUnsafe(`${entry.day}T00:00:00`, {
           timeZone: POLAND_TIME_ZONE,
           adjustForTimeZone: true,
@@ -124,9 +120,7 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         }
       }
 
-      // Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 18,
-      // 24, 37, 82) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf
-      // (§ 62, 68, 72, 298). The first option of each question is correct.
+      // EXTERNAL: Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 18, 24, 37, 82) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 62, 68, 72, 298).
       const buildingLaw = catalogueId('20', 1)
       const technicalConditions = catalogueId('20', 2)
 
@@ -288,9 +282,7 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         VALUES ('10000000-0000-4000-8000-000000000001', ${documentId}, ${questionId}) ON CONFLICT DO NOTHING`
       }
 
-      // Later revisions show how a change kind affects coverage (ADR-0003): a cosmetic comma fix
-      // keeps the question covered in the current round, a changed question uncovers it. Source for
-      // the substantive one: art. 37 ust. 1 Prawa budowlanego. The first option is correct.
+      // EXTERNAL: Source for the substantive revision: Prawo budowlane, art. 37 ust. 1.
       const laterRevisions = [
         {
           questionNumber: 6,
@@ -354,8 +346,6 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         yield* sql`UPDATE written_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id=${previousId}`
       }
 
-      // The second path is small enough to finish its learning round by hand in a few minutes. It
-      // shares its Building Law questions and their revisions with the first path.
       for (const n of [1, 2, 4]) {
         yield* sql`INSERT INTO path_questions (qualification_path_id, document_id, question_id)
         VALUES ('10000000-0000-4000-8000-000000000002', ${buildingLaw}, ${catalogueId('30', n)}) ON CONFLICT DO NOTHING`

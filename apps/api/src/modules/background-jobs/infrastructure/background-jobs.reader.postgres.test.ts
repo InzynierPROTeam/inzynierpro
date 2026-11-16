@@ -15,7 +15,6 @@ const testLayer = BackgroundJobsReaderLive.pipe(Layer.provideMerge(makeTestStore
 const run = <A, E>(effect: Effect.Effect<A, E, Layer.Success<typeof testLayer> | Scope.Scope>) =>
   Effect.runPromise(effect.pipe(Effect.scoped, Effect.provide(testLayer)))
 
-// The reader lists every queue, so each test picks out its own.
 const queueBacklog = (name: string) =>
   BackgroundJobsReader.use(backgroundJobsReader => backgroundJobsReader.backlog).pipe(
     Effect.map(backlog => backlog.find(entry => entry.queue === name)),

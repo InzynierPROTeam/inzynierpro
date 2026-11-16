@@ -16,7 +16,6 @@ export type ReviewScope = { readonly documentId: Option.Option<ReferenceDocument
 export const suggestedReview = (
   session: Pick<StudySession, 'kind' | 'documentId'>,
   due: {
-    // Due in the session's own scope: its document for a document review, otherwise the path.
     readonly scope: QuestionCount
     readonly path: QuestionCount
   },

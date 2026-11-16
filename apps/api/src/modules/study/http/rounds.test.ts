@@ -32,10 +32,6 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// Completing a round needs every question of the path, so each test that completes one owns a
-// seeded path no other test adds questions to. It holds both technical documents and a fresh
-// test-only document. A test that adds questions withdraws them when it finishes, so reruns
-// against the same database find nothing left to cover but the seed.
 const roundPathSpecializations = {
   completion: '60000000-0000-4000-8000-000000000004',
   withdrawal: '60000000-0000-4000-8000-000000000005',
@@ -63,7 +59,6 @@ const learnerOnPath = async (specializationId: string, questionCount = 0) => {
   const preview = async (query = '') =>
     Schema.decodeUnknownSync(SessionPreview)(await (await request(`/preview${query}`)).json())
 
-  // One page holds every document of these paths; the envelope's cursor is not needed.
   const documents = async () =>
     Schema.decodeUnknownSync(Schema.Struct({ data: Schema.Array(DocumentQuestionPool) }))(
       await (await request('/documents?limit=100')).json(),
@@ -225,7 +220,6 @@ test('a question added during the round is uncovered and a withdrawn one does no
   })
   expect(await round()).toBe(1)
 
-  // A document keeps one unfinished session, so the partial one is ended first.
   await request(`/sessions/${partial.id}/end`, {})
 
   const last = await start(fixture.documentId)

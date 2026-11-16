@@ -57,10 +57,6 @@ const sessionLearningModes = {
   [favoritesStudySession]: favoritesMode,
 } satisfies Record<StudySessionKind, LearningMode>
 
-/**
- * The account lock orders answers against assistance and assignment changes. The answer, evidence,
- * review state, round coverage and continue point commit together (ADR-0012).
- */
 export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -90,7 +86,6 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
       const { session, question } = found.value
 
       if (Option.isSome(question.answer)) {
-        // A retry after a lost response gets the stored result back instead of a second attempt.
         if (question.answer.value.answerId === answerId) {
           return { question, session }
         }
@@ -138,9 +133,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
       })
 
       if (isRegularStudy) {
-        // A withdrawal may have completed the stored round since the last answer, so it is synced first.
         const round = yield* syncLearningRound(userId, pathId)
-        // Any submitted answer covers the question in the round, even a wrong or assisted one.
         yield* studyRepository.recordCoverage(
           userId,
           pathId,

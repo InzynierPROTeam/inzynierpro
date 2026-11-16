@@ -25,19 +25,16 @@ export class OralStudyRepository extends Context.Service<
     readonly createSession: (
       session: NewOralStudySession,
     ) => Effect.Effect<OralStudySession, StudyWriteError>
-    /** Stores the session's one self-assessment of the question; a second insert violates its key. */
     readonly recordSelfAssessment: (
       sessionId: OralStudySessionId,
       position: SessionQuestionPosition,
       oralRevisionId: OralRevisionId,
       selfAssessment: OralSelfAssessment,
     ) => Effect.Effect<StoredOralSelfAssessment, StudyWriteError>
-    /** Moves the continue point, which also makes the session the most recently used; returns the session. */
     readonly moveSession: (
       sessionId: OralStudySessionId,
       currentPosition: SessionQuestionPosition,
     ) => Effect.Effect<OralStudySession, StudyWriteError>
-    /** Ends an unfinished session; the caller checks under the account lock that it is unfinished. */
     readonly endSession: (
       sessionId: OralStudySessionId,
     ) => Effect.Effect<OralStudySession, StudyWriteError>

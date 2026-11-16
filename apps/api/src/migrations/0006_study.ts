@@ -25,8 +25,6 @@ created_at timestamptz(3) NOT NULL DEFAULT now(),
 updated_at timestamptz(3) NOT NULL DEFAULT now()
 )`
   yield* sql`CREATE TRIGGER written_question_coverage_updated_at BEFORE UPDATE ON written_question_coverage FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
-  // Regular study covers one document; a review or favourites session covers one document or,
-  // without one, the whole path.
   yield* sql`CREATE TABLE written_study_sessions (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     user_id uuid NOT NULL,
@@ -46,8 +44,6 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     UNIQUE (id, user_id, qualification_path_id, user_exam_goal_version)
   )`
   yield* sql`CREATE TRIGGER written_study_sessions_updated_at BEFORE UPDATE ON written_study_sessions FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
-  // At most one unfinished session per user, path, kind and scope (ADR-0002, ADR-0005); a review
-  // or favourites session of the whole path has no document, which counts as one scope.
   yield* sql`CREATE UNIQUE INDEX written_study_sessions_one_unfinished ON written_study_sessions (user_id, qualification_path_id, kind, document_id) NULLS NOT DISTINCT WHERE ended_at IS NULL`
   yield* sql`CREATE INDEX written_study_sessions_last_activity ON written_study_sessions (user_id, qualification_path_id, last_activity_at DESC, id DESC)`
   yield* sql`CREATE TABLE written_study_session_questions (
@@ -77,8 +73,6 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     FOREIGN KEY (study_session_id, position, question_revision_id) REFERENCES written_study_session_questions(study_session_id, position, question_revision_id) ON DELETE CASCADE,
     FOREIGN KEY (question_revision_id, question_answer_id) REFERENCES question_answers(question_revision_id, id)
   )`
-  // One submitted answer per session question: the primary key lets the first one win (ADR-0002).
-  // The option key ties the answer to an option the session showed for that question's revision.
   yield* sql`CREATE TABLE written_study_answers (
     study_session_id uuid NOT NULL,
     position integer NOT NULL,
@@ -91,9 +85,6 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     FOREIGN KEY (study_session_id, position, question_revision_id) REFERENCES written_study_session_questions(study_session_id, position, question_revision_id) ON DELETE CASCADE,
     FOREIGN KEY (study_session_id, position, question_answer_id) REFERENCES written_study_session_answer_options(study_session_id, position, question_answer_id) ON DELETE CASCADE
   )`
-  // Immutable raw evidence of written learning (LearningEvent), the input for SRS, goals and XP.
-  // The study kind is implied by the table (ADR-0005); the source answer is unique, so a retry never duplicates it.
-  // `answered_at` is backend time, which decides the study day; review states are recomputable from these rows.
   yield* sql`CREATE TABLE written_learning_events (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     user_id uuid NOT NULL,
@@ -114,10 +105,6 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     FOREIGN KEY (question_id, question_revision_id) REFERENCES question_revisions(question_id, id)
   )`
   yield* sql`CREATE INDEX written_learning_events_question_time ON written_learning_events (user_id, qualification_path_id, question_id, answered_at)`
-  // UserReviewState: the FSRS card of a written question per user and path (ADR-0005), produced by
-  // `learning_event_id` under `rules_version`. It belongs to the substantive content it was built
-  // on; once the question's current revision carries other substantive content, it reads as a new
-  // card on every path, while the earlier events stay.
   yield* sql`CREATE TABLE written_review_states (
     user_id uuid NOT NULL,
     qualification_path_id uuid NOT NULL,
@@ -162,7 +149,6 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     FOREIGN KEY (question_id, question_revision_id) REFERENCES question_revisions(question_id, id)
   )`
   yield* sql`CREATE TRIGGER written_question_notes_updated_at BEFORE UPDATE ON written_question_notes FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
-  // Oral study keeps its own rounds, sessions and self-assessments (ADR-0005, ADR-0006).
   yield* sql`CREATE TABLE oral_learning_rounds (
     user_id uuid NOT NULL,
     qualification_path_id uuid NOT NULL,
@@ -217,7 +203,6 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     UNIQUE (study_session_id, position, oral_revision_id),
     FOREIGN KEY (question_id, oral_revision_id) REFERENCES oral_revisions(question_id, id)
   )`
-  // One OralSelfAssessment per session question: the primary key lets the first one win (ADR-0006).
   yield* sql`CREATE TABLE oral_study_self_assessments (
     study_session_id uuid NOT NULL,
     position integer NOT NULL,

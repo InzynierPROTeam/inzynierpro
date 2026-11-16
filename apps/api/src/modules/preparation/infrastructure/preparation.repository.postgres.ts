@@ -3,7 +3,6 @@ import { SqlClient } from 'effect/sql'
 import { PreparationWriteError } from '~api/modules/preparation/application/errors.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 
-// Keep the operation's generic error separate from SQL failures without changing rollback behavior.
 class PreparationTransactionFailure<E> extends Data.TaggedError('PreparationTransactionFailure')<{
   readonly error: E
 }> {}

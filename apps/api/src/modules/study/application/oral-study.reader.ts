@@ -24,19 +24,10 @@ import type { StudyReadError } from './errors.js'
 export class OralStudyReader extends Context.Service<
   OralStudyReader,
   {
-    /**
-     * The learner's stored oral LearningRound with the path's published, non-withdrawn oral
-     * questions and those covered in that round. A question is covered in a round when a
-     * self-assessment in it covered a revision carrying the question's current substantive content.
-     */
     readonly learningRound: (
       userId: UserId,
       pathId: QualificationPathId,
     ) => Effect.Effect<LearningRoundProgress, StudyReadError>
-    /**
-     * Oral categories in catalogue order that have published, non-withdrawn questions assigned to
-     * the path; a category is never assigned to a path as a whole (ADR-0008).
-     */
     readonly categories: (
       userId: UserId,
       pathId: QualificationPathId,
@@ -49,12 +40,6 @@ export class OralStudyReader extends Context.Service<
       round: LearningRoundNumber,
       categoryId: OralQuestionCategoryId,
     ) => Effect.Effect<Option.Option<OralCategoryQuestionPool>, StudyReadError>
-    /**
-     * The category to continue oral study with: the first one in catalogue order, starting from
-     * `fromCategoryId` and wrapping around, that still has questions uncovered in the round. With
-     * `skipsStartCategory` the starting category comes last, so a new round continues with the
-     * category after the one that completed the previous round.
-     */
     readonly nextCategory: (
       userId: UserId,
       pathId: QualificationPathId,
@@ -64,10 +49,6 @@ export class OralStudyReader extends Context.Service<
         readonly skipsStartCategory: boolean
       },
     ) => Effect.Effect<Option.Option<OralCategoryQuestionPool>, StudyReadError>
-    /**
-     * Published, non-withdrawn current revisions of a category's questions on the path: those
-     * uncovered in the round first, each group in catalogue order.
-     */
     readonly sessionCandidates: (
       userId: UserId,
       pathId: QualificationPathId,
@@ -80,7 +61,6 @@ export class OralStudyReader extends Context.Service<
       pathId: QualificationPathId,
       categoryId: OralQuestionCategoryId,
     ) => Effect.Effect<Option.Option<OralStudySession>, StudyReadError>
-    /** The most recently used oral session; with a category, only that category's sessions count. */
     readonly latestSession: (
       userId: UserId,
       pathId: QualificationPathId,
@@ -101,10 +81,6 @@ export class OralStudyReader extends Context.Service<
       sessionId: OralStudySessionId,
       position: SessionQuestionPosition,
     ) => Effect.Effect<Option.Option<OralSessionQuestion>, StudyReadError>
-    /**
-     * The question to continue from: the first one without a self-assessment and not withdrawn
-     * after `position`, wrapping around to the start; none when nothing can be assessed any more.
-     */
     readonly nextOpenPosition: (
       sessionId: OralStudySessionId,
       position: SessionQuestionPosition,
@@ -112,7 +88,6 @@ export class OralStudyReader extends Context.Service<
     readonly sessionResultCounts: (
       sessionId: OralStudySessionId,
     ) => Effect.Effect<OralSessionResultCounts, StudyReadError>
-    /** One cursor page of an owned session's questions with their self-assessments, in session order. */
     readonly sessionResults: (
       userId: UserId,
       pathId: QualificationPathId,

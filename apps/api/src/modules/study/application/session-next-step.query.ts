@@ -46,7 +46,6 @@ export const getSessionNextStep = Effect.fn('Study.getSessionNextStep')(function
 
     return Option.some<SessionNextStep>({
       type: reviewNextStep,
-      // A document review is always the finished session's own document.
       document: inDocument
         ? Option.all({ id: session.documentId, title: session.documentTitle })
         : Option.none(),
@@ -60,7 +59,6 @@ export const getSessionNextStep = Effect.fn('Study.getSessionNextStep')(function
     return Option.some<SessionNextStep>({ type: continueStudyNextStep, session: unfinished.value })
   }
 
-  // Study moves on from the document studied last, as after regular study.
   const fromDocumentId =
     session.kind === regularStudySession
       ? session.documentId

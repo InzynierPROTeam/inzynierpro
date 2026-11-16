@@ -27,7 +27,6 @@ export const httpServerLayer = (config: Env) =>
       HttpRouter.cors({
         allowedOrigins: config.TRUSTED_ORIGINS,
         allowedMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-        // Effect's HTTP client adds trace headers to every request; the server continues the trace.
         allowedHeaders: ['content-type', 'traceparent', 'b3'],
         exposedHeaders: [
           'x-request-id',
@@ -73,7 +72,6 @@ export const httpServerLayer = (config: Env) =>
       }),
     ),
     Layer.provide(RateLimiterLayer),
-    // Merged so tests can reach the connections, for example to simulate a Redis outage.
     Layer.provideMerge(
       Layer.mergeAll(
         pgPoolLayer({ url: config.DATABASE_URL }),

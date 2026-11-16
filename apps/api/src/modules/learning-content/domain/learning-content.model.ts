@@ -77,15 +77,10 @@ export const cosmeticChange = 'cosmetic'
 export const substantiveChange = 'substantive'
 export const revisionChangeKindValues = [cosmeticChange, substantiveChange] as const
 
-/** Substantive changes reset coverage across paths; cosmetic changes preserve learning state (ADR-0003). */
 export const RevisionChangeKind = Schema.Literals(revisionChangeKindValues)
 
 export type RevisionChangeKind = typeof RevisionChangeKind.Type
 
-/**
- * A newer published revision of an existing question; earlier revisions stay unchanged and started
- * sessions keep answering the revision they pinned (ADR-0003).
- */
 export const NewQuestionRevision = Schema.Struct({
   questionId: WrittenQuestionId,
   revisionId: QuestionRevisionId,
@@ -97,10 +92,6 @@ export const NewQuestionRevision = Schema.Struct({
 
 export type NewQuestionRevision = typeof NewQuestionRevision.Type
 
-/**
- * An emergency withdrawal of a faulty published revision. Unlike publishing a newer revision, it
- * blocks further answers even in started sessions; history and the reason are kept (ADR-0003).
- */
 export const QuestionRevisionWithdrawal = Schema.Struct({
   revisionId: QuestionRevisionId,
   reason: Schema.NonEmptyString,
@@ -116,10 +107,6 @@ export const OralQuestionCategory = Schema.Struct({
 
 export type OralQuestionCategory = typeof OralQuestionCategory.Type
 
-/**
- * An oral question in its primary category with its first revision. It is assigned to one path
- * here; further paths are assigned per question, never per category (ADR-0008).
- */
 export const NewOralQuestion = Schema.Struct({
   id: OralQuestionId,
   revisionId: OralRevisionId,

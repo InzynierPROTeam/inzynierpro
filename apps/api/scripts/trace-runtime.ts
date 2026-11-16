@@ -12,7 +12,7 @@ if (root === undefined || out === undefined) {
 
 const dist = join(root, 'apps/api/dist')
 
-// The migrator loads migrations by reading the directory, so tracing cannot find them.
+// EXTERNAL: The migrator discovers migration files at runtime, outside node-file-trace analysis.
 const migrations = (await readdir(join(dist, 'migrations')))
   .filter(file => file.endsWith('.js'))
   .map(file => join(dist, 'migrations', file))
@@ -50,7 +50,7 @@ const addPackageFile = async (fromPackage: string, specifier: string) => {
   }
 }
 
-// The email theme reads its CSS through package exports, which tracing does not follow.
+// EXTERNAL: node-file-trace does not discover the email theme CSS resolved through package exports.
 const email = join(root, 'packages/email')
 
 await addPackageFile(email, '@inzpro/ui/theme.css')

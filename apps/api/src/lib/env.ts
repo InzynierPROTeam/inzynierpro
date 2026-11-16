@@ -17,7 +17,6 @@ export const env = Config.all({
   ...processVariables,
   PORT: Config.Port('PORT').pipe(Config.withDefault(4000)),
   RELEASE_SHA: Config.NonEmptyString('RELEASE_SHA').pipe(Config.withDefault('development')),
-  // Comma-separated client origins allowed by CORS and Better Auth, e.g. `http://localhost:8001`.
   TRUSTED_ORIGINS: Config.Array(
     Schema.Trim.pipe(Schema.decodeTo(Schema.NonEmptyString)),
     'TRUSTED_ORIGINS',
@@ -30,8 +29,7 @@ export const env = Config.all({
     clientSecret: Config.Redacted('GOOGLE_CLIENT_SECRET'),
   }).pipe(Config.option),
   COOKIES_DOMAIN: Config.option(Config.NonEmptyString('COOKIES_DOMAIN')),
-  // Header with the client address set by the proxy, e.g. `cf-connecting-ip`. Only safe when the
-  // origin accepts traffic from that proxy alone; without it the socket peer is the client.
+  // EXTERNAL: Trust this proxy address header only when the origin accepts traffic exclusively from that proxy.
   TRUSTED_CLIENT_IP_HEADER: Config.option(Config.NonEmptyString('TRUSTED_CLIENT_IP_HEADER')),
   RESEND_API_KEY: Config.Redacted('RESEND_API_KEY'),
 })

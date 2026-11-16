@@ -24,7 +24,7 @@ export const BackgroundJobsReaderLive = Layer.effect(
   BackgroundJobsReader,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
-    // Effect's store writes its timestamps without a time zone in the session's local time.
+    // EXTERNAL: Effect stores queue timestamps without time zones in the database session's local time.
     const jobs = sql(jobQueueTable)
 
     return BackgroundJobsReader.of({

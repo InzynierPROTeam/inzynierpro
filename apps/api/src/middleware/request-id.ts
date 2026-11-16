@@ -2,7 +2,6 @@ import { Effect } from 'effect'
 import { SecureRandom } from 'effect/crypto'
 import { HttpServerResponse } from 'effect/http'
 
-// Requests without a span (health probes, or no tracing backend) get a fresh ID in the same format.
 const requestId = Effect.currentParentSpan.pipe(
   Effect.map(span => span.traceId),
   Effect.catchTag('NoSuchElementError', () =>
@@ -12,10 +11,6 @@ const requestId = Effect.currentParentSpan.pipe(
   ),
 )
 
-/**
- * Returns the request's trace ID as `x-request-id`, so a reported failure leads straight to its
- * trace and logs. The ID also annotates stdout logs, which carry no span context of their own.
- */
 export const RequestIdMiddleware = <E, R>(
   httpEffect: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>,
 ) =>

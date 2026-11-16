@@ -65,11 +65,9 @@ export const toStudySessionDto = (session: StudySession): StudySessionDto => ({
   }),
 })
 
-// The document of a regular-study session or a document-scoped review session.
 const sessionDocument = (session: StudySession): Option.Option<SessionDocument> =>
   Option.all({ id: session.documentId, title: session.documentTitle })
 
-// The latest-session read returns regular study only, which always has a document.
 export const toLatestStudySessionDto = (session: StudySession): Option.Option<LatestStudySession> =>
   Option.map(sessionDocument(session), document => ({ ...toStudySessionDto(session), document }))
 
@@ -155,7 +153,6 @@ export const toFavoritesPreviewDto = ({
   settings: Option.getOrNull(settings),
 })
 
-// A continued session is regular study, which always has a document.
 export const toSessionNextStepDto = (step: SessionNextStep): Option.Option<SessionNextStepDto> =>
   Match.value(step).pipe(
     Match.discriminatorsExhaustive('type')({

@@ -7,7 +7,6 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyRepository } from './study.repository.js'
 
-// Unmarking remains allowed after the question leaves the path.
 export const unmarkFavorite = Effect.fn('Study.unmarkFavorite')(function* (
   userId: UserId,
   pathId: QualificationPathId,

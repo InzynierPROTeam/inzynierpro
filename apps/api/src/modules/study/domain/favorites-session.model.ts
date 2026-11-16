@@ -7,9 +7,7 @@ import type { SessionDocument } from './study-document.model.js'
 
 export type FavoritesPreview = {
   readonly qualificationPathId: QualificationPathId
-  // None for favourites of the whole path.
   readonly document: Option.Option<SessionDocument>
   readonly favoriteQuestionCount: QuestionCount
-  // None when nothing is marked, so no favourites session can start.
   readonly settings: Option.Option<SessionCountSettings>
 }

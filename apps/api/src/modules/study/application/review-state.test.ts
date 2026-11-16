@@ -47,8 +47,6 @@ const commandLayer = Layer.merge(StudyRepositoryLive, commandServices).pipe(
   Layer.provideMerge(databaseLayerFromConfig),
 )
 
-// Storing the review state names a revision that does not exist, so PostgreSQL rejects it after
-// the answer, its LearningEvent and coverage were already written.
 const failingReviewStateLayer = Layer.effect(
   StudyRepository,
   Effect.gen(function* () {
@@ -67,13 +65,10 @@ const failingCommandLayer = Layer.merge(failingReviewStateLayer, commandServices
   Layer.provideMerge(databaseLayerFromConfig),
 )
 
-// 12:00 in Warsaw (UTC+1 in November) on consecutive study days.
 const day1 = '2026-11-13T11:00:00.000Z'
 const day1Later = '2026-11-13T19:00:00.000Z'
 const day2 = '2026-11-14T11:00:00.000Z'
 
-// A learner on a fresh document with one question, so every new session on the document offers
-// that question again.
 const learnerWithQuestion = async () => {
   const visitor = await loginForPreparation(api)
   const fixture = await createStudyFixture(studySessionSpecialization)
@@ -209,7 +204,6 @@ describe('a new card', () => {
 
     const state = Option.getOrThrow(await learner.state())
 
-    // Hard keeps a new card learning, unlike Good, but later than Again's one minute.
     expect(state).toMatchObject({ scheduleStatus: 'learning', reps: 1, lapses: 0 })
     expect(DateTime.isGreaterThan(state.dueAt, minutesAfter(day1, 1))).toBe(true)
   })
@@ -261,7 +255,6 @@ describe('an existing card', () => {
 
     await learner.answerAt(day2, { isCorrect: true, afterNote: true })
 
-    // Hard extends the interval less than Good would have, and is no lapse.
     expect(Option.getOrThrow(await learner.state())).toMatchObject({
       scheduleStatus: 'review',
       reps: 2,
@@ -313,7 +306,6 @@ describe('the study day', () => {
 
     await learner.answerAt(day1, { isCorrect: true })
     const kept = await learner.state()
-    // The day's first answer leans on the explanation, which leaves an existing card unchanged.
     await learner.answerAt(day2, { isCorrect: true, afterExplanation: true })
     await learner.answerAt('2026-11-14T19:00:00.000Z', { isCorrect: true })
 
@@ -336,7 +328,6 @@ describe('the study day', () => {
   test('a new study day starts at midnight in Warsaw, not in UTC', async () => {
     const learner = await learnerWithQuestion()
 
-    // 23:30 and 00:30 in Warsaw, both on 13 November in UTC.
     await learner.answerAt('2026-11-13T22:30:00.000Z', { isCorrect: true })
     await learner.answerAt('2026-11-13T23:30:00.000Z', { isCorrect: true })
 
@@ -346,7 +337,6 @@ describe('the study day', () => {
   test('answers on different UTC dates share one Warsaw study day', async () => {
     const learner = await learnerWithQuestion()
 
-    // 00:30 and 01:30 on 14 November in Warsaw, on different UTC dates.
     await learner.answerAt('2026-11-13T23:30:00.000Z', { isCorrect: true })
     await learner.answerAt('2026-11-14T00:30:00.000Z', { isCorrect: true })
 
@@ -407,7 +397,6 @@ describe('revisions', () => {
 
     expect(await learner.state()).toEqual(Option.none())
 
-    // The changed question is a new card again: the explanation now rates it Again.
     await learner.answerAt(day2, { isCorrect: true, afterExplanation: true })
 
     expect(Option.getOrThrow(await learner.state())).toMatchObject({

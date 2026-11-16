@@ -2,7 +2,6 @@ import { databaseLayerFromConfig } from '@inzpro/db'
 import { Data, Layer, Schema } from 'effect'
 import { type JobQueueStoreOptions, jobQueueStoreLayer } from '~api/lib/job-queue.js'
 
-// Each test owns a queue name, so workers of parallel tests never take each other's jobs.
 export const uniqueQueue = () => `test-${crypto.randomUUID()}`
 
 export const makeTestStoreLayer = (options: JobQueueStoreOptions = {}) =>

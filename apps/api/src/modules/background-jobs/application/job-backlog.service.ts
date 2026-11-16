@@ -3,7 +3,6 @@ import type { JobBacklog } from '~api/modules/background-jobs/domain/job-backlog
 
 import { BackgroundJobsReader } from './background-jobs.reader.js'
 
-// Exported over OTLP, so alerts can watch failed jobs and a growing backlog (ADR-0022).
 const backgroundJobs = Metric.gauge('app.background_jobs', {
   description: 'Background jobs of a queue in each state.',
 })

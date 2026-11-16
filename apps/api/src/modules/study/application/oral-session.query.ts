@@ -21,7 +21,6 @@ export const getLatestOralSession = Effect.fn('Study.getLatestOralSession')(func
   return yield* oralStudyReader.latestSession(userId, pathId, categoryId)
 })
 
-// Another account's session reads as absent, so its existence is never revealed.
 export const getOralSession = Effect.fn('Study.getOralSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -33,7 +32,6 @@ export const getOralSession = Effect.fn('Study.getOralSession')(function* (
   return yield* oralStudyReader.session(userId, pathId, sessionId)
 })
 
-// Reads the revision pinned when the session started.
 export const getOralSessionQuestion = Effect.fn('Study.getOralSessionQuestion')(function* (
   userId: UserId,
   pathId: QualificationPathId,

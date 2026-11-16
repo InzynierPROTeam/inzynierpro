@@ -10,7 +10,6 @@ class TestReadError {
   readonly _tag = 'TestReadError'
 }
 
-// A stand-in OTLP collector that keeps every request body by signal path.
 const received: Array<{ readonly path: string; readonly body: string }> = []
 
 const collector = createServer((request, response) => {

@@ -160,10 +160,7 @@ const districtRegions = [
   },
 ] as const
 
-// Verified 2026-11-16 against the national chambers' lists of district chambers:
-// PIIB: https://www.piib.org.pl/kontakt/dane-adresowe-oiib
-// IARP: https://www.izbaarchitektow.pl/okregowe_izby_architektow/
-// Neither list publishes per-chamber abbreviations, so the short name is the region.
+// EXTERNAL: Verified 2026-11-16 against the national chambers' lists of district chambers: PIIB: https://www.piib.org.pl/kontakt/dane-adresowe-oiib IARP: https://www.izbaarchitektow.pl/okregowe_izby_architektow/ Neither list publishes per-chamber abbreviations, so the short name is the region.
 export const catalogueDistrictChambers = [
   ...districtRegions.map((region, index) => ({
     id: catalogueId('51', index + 1),
@@ -293,10 +290,7 @@ export const catalogueScopes = [
   },
 ] as const
 
-// Verified 2026-11-13 against the official national chamber publications:
-// PIIB: https://www.piib.org.pl/organy/krajowa-komisja-kwalifikacyjna/terminarz-posiedzen-kkk
-// IARP: https://www.izbaarchitektow.pl/kategoria/uprawnienia_egzamin-na-uprawnienia-budowlane-w-specjalnosci-architektonicznej,287
-// PIIB 2029–2030 are planning estimates, not published exam dates.
+// EXTERNAL: Verified 2026-11-13 against the official national chamber publications: PIIB: https://www.piib.org.pl/organy/krajowa-komisja-kwalifikacyjna/terminarz-posiedzen-kkk IARP: https://www.izbaarchitektow.pl/kategoria/uprawnienia_egzamin-na-uprawnienia-budowlane-w-specjalnosci-architektonicznej,287 PIIB 2029–2030 are planning estimates, not published exam dates.
 export const catalogueSessions = [
   {
     id: catalogueId('90', 1),

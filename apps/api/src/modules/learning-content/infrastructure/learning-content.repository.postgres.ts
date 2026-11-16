@@ -93,7 +93,6 @@ export const LearningContentRepositoryLive = Layer.effect(
             Effect.gen(function* () {
               yield* requireStoredAssets(revision.explanation)
 
-              // A cosmetic revision carries the substantive content of the revision it replaces.
               const substantiveRevisionId =
                 revision.changeKind === substantiveChange
                   ? sql`${revision.revisionId}::uuid`

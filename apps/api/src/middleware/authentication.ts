@@ -22,7 +22,6 @@ export const AuthenticationLive = Layer.effect(
       Effect.gen(function* () {
         const request = yield* HttpServerRequest.HttpServerRequest
 
-        // A storage failure is a server error, not a sign-out, so it is not mapped to 401.
         const { headers, response: session } = yield* Effect.promise(() =>
           auth.api.getSession({ headers: new Headers(request.headers), returnHeaders: true }),
         )
@@ -36,12 +35,10 @@ export const AuthenticationLive = Layer.effect(
           image: session.user.image ?? null,
         }).pipe(Effect.mapError(() => unauthenticated))
 
-        // The pseudonymous id lets a trace be tied to an account; e-mail stays out (ADR-0022).
         yield* Effect.annotateCurrentSpan('user.id', user.id)
 
         const response = yield* Effect.provideService(httpEffect, CurrentUser, user)
 
-        // Better Auth refreshes the cookie when it extends the session.
         return HttpServerResponse.mergeCookies(
           HttpServerResponse.setHeader(response, 'cache-control', 'private, no-store'),
           Cookies.fromSetCookie(headers.getSetCookie()),

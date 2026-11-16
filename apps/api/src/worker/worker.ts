@@ -7,7 +7,7 @@ import { processTelemetryLayer } from '~api/lib/observability.js'
 import { recordJobBacklog } from '~api/modules/background-jobs/application/job-backlog.service.js'
 import { BackgroundJobsReaderLive } from '~api/modules/background-jobs/infrastructure/background-jobs.reader.postgres.js'
 
-// Building Effect's job store also runs its table migrations.
+// EXTERNAL: Building Effect's SQL job store also runs its migrations.
 export const BackgroundJobsLive = Layer.unwrap(
   Effect.map(processEnv, config =>
     BackgroundJobsReaderLive.pipe(
@@ -23,9 +23,7 @@ const recordBacklog = recordJobBacklog().pipe(
   Effect.repeat(Schedule.spaced(Duration.minutes(1))),
 )
 
-// Completed jobs are kept for Effect's default 30 days, so offering an existing job id within that
-// time is still ignored; failed jobs stay until handled. Each worker runs the cleanup; the batched
-// deletes are safe to repeat, though one instance would do.
+// EXTERNAL: Effect cleanup retains completed jobs for 30 days by default; their IDs remain deduplicated during that period. Failed jobs remain stored.
 const CleanupLive = PersistedQueue.layerCleanup()
 
 export const WorkerLive = Layer.effectDiscard(

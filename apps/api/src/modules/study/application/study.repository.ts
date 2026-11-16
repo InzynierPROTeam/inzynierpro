@@ -36,23 +36,14 @@ export class StudyRepository extends Context.Service<
     readonly createSession: (
       session: NewStudySession,
     ) => Effect.Effect<StudySession, StudyWriteError>
-    /**
-     * Records when the explanation was first opened and returns it. The caller checks under the
-     * account lock that it was not recorded yet.
-     */
     readonly recordExplanationOpening: (
       sessionId: StudySessionId,
       position: SessionQuestionPosition,
     ) => Effect.Effect<DateTimeUtc, StudyWriteError>
-    /**
-     * Records when a saved note was first opened and returns it. The caller checks under the
-     * account lock that it was not recorded yet and that the note is saved.
-     */
     readonly recordNoteOpening: (
       sessionId: StudySessionId,
       position: SessionQuestionPosition,
     ) => Effect.Effect<DateTimeUtc, StudyWriteError>
-    /** Stores the session's one answer to the question and returns it; a second insert violates its key. */
     readonly recordAnswer: (
       answer: NewSessionAnswer,
     ) => Effect.Effect<SessionAnswer, StudyWriteError>
@@ -61,7 +52,6 @@ export class StudyRepository extends Context.Service<
       context: LearningEventContext,
     ) => Effect.Effect<LearningEventId, StudyWriteError>
     readonly storeReviewState: (state: NewReviewState) => Effect.Effect<void, StudyWriteError>
-    /** Marks the question as the learner's FavoriteQuestion on every path; an existing mark stays. */
     readonly markFavorite: (
       userId: UserId,
       questionId: WrittenQuestionId,
@@ -70,10 +60,6 @@ export class StudyRepository extends Context.Service<
       userId: UserId,
       questionId: WrittenQuestionId,
     ) => Effect.Effect<void, StudyWriteError>
-    /**
-     * Replaces the learner's PersonalQuestionNote with the text and the question's current revision,
-     * and returns it as stored.
-     */
     readonly saveNote: (
       userId: UserId,
       questionId: WrittenQuestionId,
@@ -83,17 +69,11 @@ export class StudyRepository extends Context.Service<
       userId: UserId,
       questionId: WrittenQuestionId,
     ) => Effect.Effect<void, StudyWriteError>
-    /** Moves the continue point after an answer, which also makes the session the most recently used; returns the session. */
     readonly moveSession: (
       sessionId: StudySessionId,
       currentPosition: SessionQuestionPosition,
     ) => Effect.Effect<StudySession, StudyWriteError>
-    /**
-     * Ends an unfinished session and returns it as stored; its answers and LearningEvents stay.
-     * The caller checks under the account lock that it is still unfinished.
-     */
     readonly endSession: (sessionId: StudySessionId) => Effect.Effect<StudySession, StudyWriteError>
-    // The answer command owns validation and calls these projection writes in its evidence transaction.
     readonly recordCoverage: (
       userId: UserId,
       pathId: QualificationPathId,

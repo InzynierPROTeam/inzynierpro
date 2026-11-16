@@ -36,16 +36,12 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// Completing an oral round needs every oral question of the path, so each test that reads the
-// whole path owns a seeded path no other test adds oral questions to. A test that adds questions
-// to one withdraws them when it finishes, so reruns find nothing left to cover but the seed.
 const wholePathSpecializations = {
   completion: '60000000-0000-4000-8000-000000000007',
   withdrawal: '60000000-0000-4000-8000-000000000008',
   nextStep: '60000000-0000-4000-8000-000000000009',
 }
 
-// Tests on this shared path give themselves fresh categories and read only those.
 const sharedPathSpecialization = '60000000-0000-4000-8000-000000000003'
 
 const seededCategories = [

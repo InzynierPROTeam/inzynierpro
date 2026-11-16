@@ -21,7 +21,6 @@ import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rul
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-// The account lock keeps due counts consistent with concurrent starts, answers and assignment changes.
 export const startReviewSession = Effect.fn('Study.startReviewSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -75,7 +74,6 @@ export const startReviewSession = Effect.fn('Study.startReviewSession')(function
         questionCount,
       )
 
-      // Each statement sees newly committed rows, so a withdrawal between the two reads could shrink the set.
       if (candidates.length !== questionCount) {
         return yield* new StaleSessionScope()
       }

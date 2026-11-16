@@ -60,7 +60,6 @@ test(
       Effect.gen(function* () {
         const queue = yield* makeJobQueue({ name: uniqueQueue(), schema: Greeting, ...fastRetries })
         const deliveries = yield* Ref.make(0)
-        // Stands in for a table with a unique key on the job id and `ON CONFLICT DO NOTHING`.
         const effects = yield* Ref.make<ReadonlySet<string>>(new Set())
         const done = yield* Deferred.make<void>()
 
@@ -70,7 +69,6 @@ test(
           .process((_, job) =>
             Effect.gen(function* () {
               yield* Ref.update(deliveries, count => count + 1)
-              // The effect happens before the failure, as when a worker dies before acknowledging.
               yield* Ref.update(effects, ids => new Set([...ids, job.id]))
 
               if (job.attempts < 3) {
@@ -103,7 +101,6 @@ test(
   async () => {
     const name = uniqueQueue()
 
-    // The first worker process takes the job and stops before finishing it, as on a deployment.
     await run(
       Effect.gen(function* () {
         const queue = yield* makeJobQueue({ name, schema: Greeting, ...fastRetries })
@@ -118,7 +115,6 @@ test(
       }),
     )
 
-    // A fresh store with its own connections, as in a restarted process, finds the job in PostgreSQL.
     const attempts = await run(
       Effect.gen(function* () {
         const queue = yield* makeJobQueue({ name, schema: Greeting, ...fastRetries })
@@ -132,7 +128,6 @@ test(
       }),
     )
 
-    // The interrupted attempt is released without counting against the job's attempts.
     expect(attempts).toBe(1)
   },
 )
@@ -172,7 +167,6 @@ test('a job runs in the trace of the operation that offered it', { timeout: 20_0
   expect(processed?.attributes.get('app.job.attempt')).toBe(1)
 })
 
-// Takes a job of the queue it is given, writes `JOB_STARTED` and hangs until it is killed.
 const workerScript = fileURLToPath(new URL('../test/job-queue-worker.ts', import.meta.url))
 
 test(
@@ -187,7 +181,6 @@ test(
       ),
     )
 
-    // A separate process, so nothing in this one can release the job when it dies.
     const worker = spawn(process.execPath, ['--import', 'tsx', workerScript, name], {
       stdio: ['ignore', 'pipe', 'inherit'],
     })
@@ -218,7 +211,6 @@ test(
       makeTestStoreLayer({ lockExpiration: '1 second' }),
     )
 
-    // Unlike a graceful stop, the killed worker's attempt counts.
     expect(attempts).toBe(2)
   },
 )

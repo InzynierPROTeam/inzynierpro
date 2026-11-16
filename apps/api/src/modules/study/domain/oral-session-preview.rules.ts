@@ -12,7 +12,6 @@ export type OralSessionPreview = {
 
 const defaultOralQuestionCount = QuestionCount.make(10)
 
-/** Ten questions by default, or all of them when fewer; with more available, any count from one to all (ADR-0002). */
 export const oralStudySettings = (availableCount: QuestionCount): SessionCountSettings => {
   const canChangeQuestionCount = availableCount > defaultOralQuestionCount
 

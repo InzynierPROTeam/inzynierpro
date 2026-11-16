@@ -22,11 +22,9 @@ const grades = {
   [goodRating]: Rating.Good,
 } as const
 
-// Disable fuzzing so replaying LearningEvents reproduces the same state (ADR-0005).
 export class ReviewScheduler extends Context.Service<
   ReviewScheduler,
   {
-    /** The card after rating the question at the given time; without a card it starts as new. */
     readonly review: (
       questionId: WrittenQuestionId,
       card: Option.Option<ReviewCard>,
@@ -42,7 +40,6 @@ export const ReviewSchedulerLive = Layer.effect(
     Effect.map(scheduler =>
       ReviewScheduler.of({
         review: (questionId, card, rating, at) => {
-          // ts-fsrs works with native dates; the question identifies the card.
           const now = DateTime.toDate(at)
 
           const current = Option.match(card, {
@@ -78,7 +75,6 @@ export const ReviewSchedulerLive = Layer.effect(
   ),
 )
 
-/** Runs in the caller's answer transaction; unrated answers remain in history only (ADR-0005). */
 export const recordWrittenEvidence = Effect.fn('Study.recordWrittenEvidence')(function* (
   answer: NewSessionAnswer,
   context: LearningEventContext,
@@ -90,7 +86,6 @@ export const recordWrittenEvidence = Effect.fn('Study.recordWrittenEvidence')(fu
 
   const answersCurrentContent = yield* studyReader.carriesCurrentContent(answer.questionRevisionId)
 
-  // Checked before this answer's event exists, so it never counts itself.
   const answeredToday = yield* studyReader.answeredContentOnStudyDay(
     userId,
     pathId,
