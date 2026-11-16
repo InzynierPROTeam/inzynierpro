@@ -42,7 +42,6 @@ type ProgressVariants = VariantProps<typeof progressVariants>
 type ProgressProps = Omit<ProgressPrimitive.Root.Props, 'className'> &
   ProgressVariants & { className?: string }
 
-// Label and value read the size from `data-size`, so they scale with the track.
 function Progress({ className, children, variant, size = 'md', ...props }: ProgressProps) {
   const styles = progressVariants({ variant, size })
 
@@ -92,7 +91,6 @@ function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
 
 type ProgressSkeletonProps = React.ComponentProps<'div'> & Pick<ProgressVariants, 'size'>
 
-// A track-sized placeholder for a Progress without a label.
 function ProgressSkeleton({ className, size, ...props }: ProgressSkeletonProps) {
   return (
     <Skeleton

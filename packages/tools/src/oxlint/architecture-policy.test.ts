@@ -11,7 +11,6 @@ import {
 
 type Graph = Readonly<Record<string, ReadonlyArray<string>>>
 
-/** Returns the first dependency cycle as a path that starts and ends at the same node. */
 const findCycle = (graph: Graph) => {
   const done = new Set<string>()
 

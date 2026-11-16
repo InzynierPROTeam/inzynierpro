@@ -122,7 +122,6 @@ test('hydrating a system theme on a dark device never switches the page to light
     await act(async () => {})
     records.push(...observer.takeRecords())
 
-    // Every intermediate class value, plus the final one.
     const classes = [
       ...records.flatMap(record => (record.attributeName === 'class' ? [record.oldValue] : [])),
       document.documentElement.className,

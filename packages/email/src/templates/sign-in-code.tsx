@@ -12,7 +12,6 @@ const contactAddress = getEmailAddress('kontakt')
 
 export const signInCodeSubject = `Zaloguj się do ${appName}`
 
-// Wording follows the V1 sign-in email.
 export const SignInCode = ({ code, expiresInMinutes }: SignInCodeProps) => (
   <Layout preview={`Twój kod weryfikacyjny do ${appName}: ${code}`}>
     <Section className="px-10 pb-10">

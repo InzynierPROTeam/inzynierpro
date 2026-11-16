@@ -60,7 +60,6 @@ export const make = (adapter: EmailAdapter) => {
   })
 }
 
-// Sends through any email-sdk adapter, e.g. `memoryAdapter()` from `@opencoredev/email-sdk/testing`.
 export const layer = (adapter: EmailAdapter) => Layer.sync(EmailService, () => make(adapter))
 
 export type ResendConfig = {

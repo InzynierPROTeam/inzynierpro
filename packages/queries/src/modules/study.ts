@@ -39,7 +39,6 @@ import {
 
 export const studyKeys = {
   all: ['study'] as const,
-  // Everything the account reads about its own study, across its paths.
   account: (userId: UserId) => [...studyKeys.all, 'account', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
     [...studyKeys.account(userId), 'path', id] as const,
@@ -83,12 +82,9 @@ export const studyKeys = {
       'getFavoritesSession',
       req,
     ] as const,
-  // The favourites previews of every path. A mark is shared across the account's paths and nothing
-  // else changes them, so they sit outside the path groups and a mark refreshes only them and the
-  // session questions.
+  // Marks span all paths, so their previews invalidate independently of path progress.
   favorites: (userId: UserId) => [...studyKeys.account(userId), 'favorites'] as const,
-  // Every session question, on any path. A question shows the learner's FavoriteQuestion mark and
-  // PersonalQuestionNote, both shared across paths, so a mark or a note refreshes this group.
+  // Marks and notes span all paths and invalidate every session question.
   questions: (userId: UserId) => [...studyKeys.account(userId), 'questions'] as const,
   getFavoritesPreview: (userId: UserId, req: GetFavoritesPreviewRequest) =>
     [...studyKeys.favorites(userId), 'getFavoritesPreview', req] as const,
@@ -119,8 +115,7 @@ export const studyKeys = {
       'getSessionResultsInfinite',
       req,
     ] as const,
-  // A session question shows the mark and the note, so it sits in the questions group rather than
-  // in its session. Answering and assistance set it directly; its content never changes otherwise.
+  // Outside session keys so account-wide mark/note invalidation reaches it; answers update it directly.
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
     [...studyKeys.questions(userId), 'getSessionQuestion', req] as const,
 }

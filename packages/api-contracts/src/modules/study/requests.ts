@@ -95,7 +95,6 @@ export const SessionParams = Schema.Struct({
 export const SessionQuestionParams = Schema.Struct({
   qualificationPathId: QualificationPathId,
   sessionId: StudySessionId,
-  // URL params arrive as strings.
   position: Schema.FiniteFromString.pipe(Schema.decodeTo(SessionQuestionPosition)),
 })
 

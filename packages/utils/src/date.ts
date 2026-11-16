@@ -46,7 +46,6 @@ const padTwoDigits = (value: number): string => String(value).padStart(2, '0')
 
 export const getCurrentDate = (): Date => Effect.runSync(DateTime.nowAsDate)
 
-/** The current instant as stored in query caches, e.g. for an optimistic update's timestamp. */
 export const getCurrentUtcIsoDateTime = (): UtcIsoDateTime =>
   dateTimeUtcToUtcIsoDateTime(Effect.runSync(DateTime.now))
 

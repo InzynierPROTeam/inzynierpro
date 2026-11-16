@@ -1,7 +1,6 @@
 import type { ESTree, Scope, SourceCode, Variable } from '@oxlint/plugins'
 import { Predicate } from 'effect'
 
-/** Unwrap syntax-only wrappers when inspecting array methods and accumulator references. */
 export function unwrapArrayExpression(node: ESTree.Node): ESTree.Node {
   while (
     node.type === 'ParenthesizedExpression' ||
@@ -17,7 +16,6 @@ export function unwrapArrayExpression(node: ESTree.Node): ESTree.Node {
   return node
 }
 
-/** Resolve a local binding by scope, not by identifier spelling. */
 export function resolveArrayBinding(sourceCode: SourceCode, node: ESTree.Node): Variable | null {
   node = unwrapArrayExpression(node)
 

@@ -9,7 +9,6 @@ type Layer = (typeof layers)[number]
 
 const isLayer = (value: string | undefined): value is Layer => layers.some(layer => layer === value)
 
-/** The file names each layer folder accepts; tests may sit in any layer. */
 const roles: Record<Layer, { readonly pattern: RegExp; readonly description: string }> = {
   domain: {
     pattern: /^(?:[a-z0-9-]+\.(?:model|rules)|errors)\.ts$/,
@@ -31,7 +30,6 @@ const roles: Record<Layer, { readonly pattern: RegExp; readonly description: str
   },
 }
 
-/** Module layers each layer may import; dependencies point inward. */
 const allowedLayers: Record<Layer, ReadonlyArray<Layer>> = {
   domain: ['domain'],
   application: ['domain', 'application'],
@@ -104,7 +102,6 @@ const targetOf = (filename: string, source: string): Target => {
     : { kind: 'layer', module: match[1] ?? '', layer: match[2]?.split('/')[0] ?? '' }
 }
 
-/** Keeps API module files in their layer folders and their imports pointing inward. */
 export const moduleLayersRule = defineRule({
   meta: {
     type: 'problem',

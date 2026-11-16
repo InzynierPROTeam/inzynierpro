@@ -36,7 +36,6 @@ const decodesNumberFromString = (node: ESTree.MemberExpression) => {
   )
 }
 
-/** Transport schemas preserve JSON; backend operations use their module's rich models. */
 export const dateBoundariesRule = defineRule({
   meta: {
     type: 'problem',
@@ -62,14 +61,12 @@ export const dateBoundariesRule = defineRule({
       filename.includes('/packages/domain/src/modules/') ||
       (filename.includes('/packages/api-contracts/src/') && !filename.endsWith('/errors.ts'))
 
-    // Request params and pagination queries arrive as strings; responses keep JSON values.
     const requestSchemas =
       filename.includes('/packages/api-contracts/src/') &&
       (filename.endsWith('/requests.ts') || filename.endsWith('/utils/pagination.ts'))
 
     const client = /\/apps\/(platform|web|admin|mobile)\/src\//.test(filename)
 
-    // HTTP mappers and SQL adapters convert representations; domain and application use models.
     const backend = /\/apps\/api\/src\/modules\/[^/]+\/(?:domain|application)\//.test(filename)
 
     const schemaNamespaces = new Set<string>()

@@ -31,7 +31,6 @@ export function SuspenseQueryWrapper({ errorFallback, ...props }: SuspenseQueryW
   )
 }
 
-/** The data children receive: without the narrowed-out type when `isDataEmpty` is a type predicate. */
 export type NonEmptyData<TData, TIsDataEmpty> = TIsDataEmpty extends ((
   data: TData,
 ) => data is infer TEmpty extends TData)

@@ -7,7 +7,6 @@ import { noServiceConstructorImportsRule } from './rules/no-service-constructor-
 import { preferEffectDateTimeRule } from './rules/prefer-effect-datetime.ts'
 import { preferEffectMatchRule } from './rules/prefer-effect-match.ts'
 
-/** Opt-in Oxlint rules for Effect service and Layer architecture. */
 const antiSlopEffectPlugin = eslintCompatPlugin({
   meta: { name: 'anti-slop-effect' },
   rules: {

@@ -24,7 +24,6 @@ import { queryKeysRule } from './rules/query-keys.ts'
 import { requestSchemasRule } from './rules/request-schemas.ts'
 import { tracedBackendOperationsRule } from './rules/traced-backend-operations.ts'
 
-/** Workspace conventions for file placement, schema ownership, route state, failure handling, query modules and backend tracing. */
 const conventionsPlugin = eslintCompatPlugin({
   meta: { name: 'conventions' },
   rules: {

@@ -33,7 +33,6 @@ export const CursorPaginatedResponse = <S extends Schema.Top>(item: S) =>
 export const OffsetPaginatedResponse = <S extends Schema.Top>(item: S) =>
   Schema.Struct({ data: Schema.Array(item), meta: OffsetPaginationMeta })
 
-/** One decoded cursor page of a collection response. */
 export type CursorPage<A> = {
   readonly data: ReadonlyArray<A>
   readonly meta: typeof CursorPaginationMeta.Type

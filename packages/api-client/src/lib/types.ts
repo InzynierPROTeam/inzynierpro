@@ -1,6 +1,5 @@
 import type { HttpApiEndpoint } from 'effect/http-api'
 
-// Same endpoint-derived request shape as V1: absent HTTP parts add no fields.
 type RequestPart<Key extends string, Value> = [Value] extends [never]
   ? {}
   : { readonly [Part in Key]: Value }

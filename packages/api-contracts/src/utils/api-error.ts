@@ -5,10 +5,6 @@ export const errorFields = <const Type extends readonly [string, ...string[]]>(.
   type: Schema.Literals(types),
 })
 
-// ==========================================
-// 4xx Client Errors
-// ==========================================
-
 export const BadRequestAnnotations = () => ({
   httpApiStatus: 400,
   description: 'The request was invalid or cannot be otherwise served',
@@ -128,10 +124,6 @@ export const UnavailableForLegalReasonsAnnotations = () => ({
   httpApiStatus: 451,
   description: 'The server is denying access to the resource as a consequence of a legal demand',
 })
-
-// ==========================================
-// 5xx Server Errors
-// ==========================================
 
 export const InternalServerErrorAnnotations = () => ({
   httpApiStatus: 500,

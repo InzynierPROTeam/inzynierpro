@@ -22,7 +22,6 @@ export const StudySessionStatus = Schema.Literals(studySessionStatusValues)
 
 export type StudySessionStatus = typeof StudySessionStatus.Type
 
-/** The question to continue from after answering one: the next one, or the last when it was the last. */
 export const nextQuestionPosition = (
   answered: SessionQuestionPosition,
   questionCount: QuestionCount,
@@ -37,7 +36,6 @@ export const scoredQuestionCount = (progress: {
   readonly skipped: QuestionCount
 }): QuestionCount => QuestionCount.make(Math.max(progress.total - progress.skipped, 0))
 
-/** Whether a question is still neither answered nor skipped; without one the session can only end. */
 export const hasOpenQuestions = (progress: {
   readonly total: QuestionCount
   readonly answered: QuestionCount
@@ -67,11 +65,7 @@ export const studySessionKindValues = [
   favoritesStudySession,
 ] as const
 
-/**
- * What a written session draws its questions from: regular study over one document in the current
- * LearningRound, a ReviewSession of questions due by SRS on the whole path or one document, or the
- * learner's FavoriteQuestions on the path. Only regular study moves rounds; all feed SRS (ADR-0005).
- */
+/** Only regular study advances LearningRounds; every kind feeds SRS (ADR-0005). */
 export const StudySessionKind = Schema.Literals(studySessionKindValues)
 
 export type StudySessionKind = typeof StudySessionKind.Type
@@ -86,10 +80,6 @@ export const sessionNextStepValues = [
   startStudyNextStep,
 ] as const
 
-/**
- * What a finished written session suggests next: a review of due questions, continuing an
- * unfinished regular-study session, or starting the next one (ADR-0002).
- */
 export const SessionNextStepType = Schema.Literals(sessionNextStepValues)
 
 export type SessionNextStepType = typeof SessionNextStepType.Type

@@ -11,7 +11,6 @@ export const SessionUser = Schema.Struct({
 
 export type SessionUser = typeof SessionUser.Type
 
-// The signed-in user, provided to handlers behind the Authentication middleware.
 export class CurrentUser extends Context.Service<CurrentUser, SessionUser>()(
   'api-contracts/middleware/authentication/CurrentUser',
 ) {}

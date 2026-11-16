@@ -2,8 +2,7 @@ import { Clock, Context, Data, Duration, Effect, Layer, Schema } from 'effect'
 
 import { Redis } from './index.js'
 
-// Token bucket, ported from V1: refills one token every window/limit and never exceeds limit.
-// A rejected request does not debit the bucket. Returns { remaining, available tokens }.
+// Lua returns { remaining after debit, available before debit }; rejected requests keep their tokens.
 const TOKEN_BUCKET_SCRIPT = `
 local key = KEYS[1]
 local refillKey = key .. ':refill'
