@@ -134,21 +134,18 @@ test('a path parent key invalidates its documents and preview while preserving o
       }),
   ))
 
-test('a session group invalidates its own questions while the path group covers every session', () => {
+test('a session group invalidates its own summary while the path group covers every session', () => {
   const sessionA = Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000001')
   const sessionB = Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000002')
-  const position = Schema.decodeSync(SessionQuestionPosition)(1)
 
-  const questionKey = (sessionId: StudySessionId) =>
-    studyKeys.getSessionQuestion(userId, {
-      params: { qualificationPathId: pathA, sessionId, position },
-    })
+  const summaryKey = (sessionId: StudySessionId) =>
+    studyKeys.getSessionSummary(userId, { params: { qualificationPathId: pathA, sessionId } })
 
   const startsWith = (key: ReadonlyArray<unknown>, parent: ReadonlyArray<unknown>) =>
     parent.every((part, index) => key[index] === part)
 
-  expect(startsWith(questionKey(sessionA), studyKeys.session(userId, pathA, sessionA))).toBe(true)
-  expect(startsWith(questionKey(sessionB), studyKeys.session(userId, pathA, sessionA))).toBe(false)
+  expect(startsWith(summaryKey(sessionA), studyKeys.session(userId, pathA, sessionA))).toBe(true)
+  expect(startsWith(summaryKey(sessionB), studyKeys.session(userId, pathA, sessionA))).toBe(false)
   expect(
     startsWith(
       studyKeys.getSession(userId, { params: { qualificationPathId: pathA, sessionId: sessionB } }),
@@ -206,4 +203,60 @@ test('the next step after a session refreshes with the progress group, not only 
   const progress = studyKeys.progress(userId, pathA)
 
   expect(progress.every((part, index) => key[index] === part)).toBe(true)
+})
+
+test('the favourites group a mark refreshes covers every read showing a mark, on every path, and nothing else', () => {
+  const startsWith = (key: ReadonlyArray<unknown>, parent: ReadonlyArray<unknown>) =>
+    parent.every((part, index) => key[index] === part)
+
+  const favorites = studyKeys.favorites(userId)
+  const otherUserId = Schema.decodeSync(UserId)('a0000000-0000-4000-8000-000000000002')
+  const sessionId = Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000001')
+  const position = Schema.decodeSync(SessionQuestionPosition)(1)
+
+  for (const qualificationPathId of [pathA, pathB]) {
+    for (const query of [{}, { documentId }]) {
+      expect(
+        startsWith(
+          studyKeys.getFavoritesPreview(userId, { params: { qualificationPathId }, query }),
+          favorites,
+        ),
+      ).toBe(true)
+    }
+
+    expect(
+      startsWith(
+        studyKeys.getSessionQuestion(userId, {
+          params: { qualificationPathId, sessionId, position },
+        }),
+        favorites,
+      ),
+    ).toBe(true)
+    // The session itself shows no mark, so a mark leaves it alone.
+    expect(
+      startsWith(
+        studyKeys.getSession(userId, { params: { qualificationPathId, sessionId } }),
+        favorites,
+      ),
+    ).toBe(false)
+  }
+
+  expect(
+    startsWith(
+      studyKeys.getSessionQuestion(otherUserId, {
+        params: { qualificationPathId: pathA, sessionId, position },
+      }),
+      favorites,
+    ),
+  ).toBe(false)
+  expect(startsWith(favorites, studyKeys.account(userId))).toBe(true)
+})
+
+test('the unfinished favourites session refreshes with the progress group of its path', () => {
+  const key = studyKeys.getFavoritesSession(userId, {
+    params: { qualificationPathId: pathA },
+    query: {},
+  })
+
+  expect(studyKeys.progress(userId, pathA).every((part, index) => key[index] === part)).toBe(true)
 })

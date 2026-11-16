@@ -13,6 +13,10 @@ import {
   type GetReviewPreviewRequest,
   getReviewSession,
   type GetReviewSessionRequest,
+  getFavoritesPreview,
+  type GetFavoritesPreviewRequest,
+  getFavoritesSession,
+  type GetFavoritesSessionRequest,
   getSession,
   type GetSessionRequest,
   getSessionQuestion,
@@ -35,8 +39,10 @@ import {
 
 export const studyKeys = {
   all: ['study'] as const,
+  // Everything the account reads about its own study, across its paths.
+  account: (userId: UserId) => [...studyKeys.all, 'account', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
-    [...studyKeys.all, 'path', userId, id] as const,
+    [...studyKeys.account(userId), 'path', id] as const,
   // Reads that show the learner's progress on the path, which every answer changes.
   progress: (userId: UserId, pathId: QualificationPathId) =>
     [...studyKeys.path(userId, pathId), 'progress'] as const,
@@ -71,6 +77,18 @@ export const studyKeys = {
       'getReviewSession',
       req,
     ] as const,
+  getFavoritesSession: (userId: UserId, req: GetFavoritesSessionRequest) =>
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getFavoritesSession',
+      req,
+    ] as const,
+  // Every read that shows a FavoriteQuestion mark, on any path. A mark is shared across the
+  // account's paths and nothing else changes it, so these reads sit outside the path groups and a
+  // mark refreshes only them.
+  favorites: (userId: UserId) => [...studyKeys.account(userId), 'favorites'] as const,
+  getFavoritesPreview: (userId: UserId, req: GetFavoritesPreviewRequest) =>
+    [...studyKeys.favorites(userId), 'getFavoritesPreview', req] as const,
   // The step after a session depends on the whole path's progress, not on the session alone.
   getSessionNextStep: (userId: UserId, req: GetSessionNextStepRequest) =>
     [
@@ -98,12 +116,10 @@ export const studyKeys = {
       'getSessionResultsInfinite',
       req,
     ] as const,
+  // A session question shows the mark, so it sits in the favourites group rather than in its
+  // session. Answering and assistance set it directly; its content never changes otherwise.
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
-    [
-      ...studyKeys.session(userId, req.params.qualificationPathId, req.params.sessionId),
-      'getSessionQuestion',
-      req,
-    ] as const,
+    [...studyKeys.favorites(userId), 'getSessionQuestion', req] as const,
 }
 
 export const documentsInfiniteQueryOptions = (
@@ -160,6 +176,28 @@ export const reviewSessionQueryOptions = (
   userId: UserId,
   req: GetReviewSessionRequest,
 ) => effectQueryOptions(studyKeys.getReviewSession(userId, req), getReviewSession(req), httpClient)
+
+export const favoritesPreviewQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetFavoritesPreviewRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getFavoritesPreview(userId, req),
+    getFavoritesPreview(req),
+    httpClient,
+  )
+
+export const favoritesSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetFavoritesSessionRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getFavoritesSession(userId, req),
+    getFavoritesSession(req),
+    httpClient,
+  )
 
 export const sessionNextStepQueryOptions = (
   httpClient: HttpClient.HttpClient,

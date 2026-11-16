@@ -5,6 +5,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { categoryRouteApi } from '../utils'
+import { CategoryFavoritesCard } from './CategoryFavoritesCard'
 import { CategoryReviewCard } from './CategoryReviewCard'
 import { CategorySessionCard } from './CategorySessionCard'
 import { CategorySummaryCard, CategorySummaryCardSkeleton } from './CategorySummaryCard'
@@ -36,6 +37,7 @@ export const CategorySummarySection = () => {
                   availableQuestionCount={document.availableQuestionCount}
                 />
                 <CategoryReviewCard categoryId={document.id} />
+                <CategoryFavoritesCard categoryId={document.id} />
               </div>
             </div>
           )}

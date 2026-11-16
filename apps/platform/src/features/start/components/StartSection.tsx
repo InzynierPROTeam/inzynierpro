@@ -3,6 +3,7 @@ import { hasExamAccess } from '@inzpro/utils/exam-access'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 
 import { ExamSessionTile } from './ExamSessionTile'
+import { FavoritesTile } from './FavoritesTile'
 import { MobileAppBanner } from './MobileAppBanner'
 import { OralLearningTile } from './OralLearningTile'
 import { ReviewTile } from './ReviewTile'
@@ -23,6 +24,7 @@ export const StartSection = () => {
           <>
             <WrittenLearningTile />
             <ReviewTile />
+            <FavoritesTile />
           </>
         )}
         {hasExamAccess(selectedPath.accessScope, oralExamAccess) && <OralLearningTile />}
