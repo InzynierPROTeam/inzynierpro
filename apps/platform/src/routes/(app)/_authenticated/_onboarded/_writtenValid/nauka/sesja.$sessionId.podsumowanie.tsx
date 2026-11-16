@@ -1,7 +1,5 @@
-import { reviewStudySession } from '@inzpro/domain/modules/study/study-session'
 import {
-  reviewPreviewQueryOptions,
-  sessionPreviewQueryOptions,
+  sessionNextStepQueryOptions,
   sessionResultsInfiniteQueryOptions,
   sessionSummaryQueryOptions,
 } from '@inzpro/queries/modules/study'
@@ -23,32 +21,12 @@ export const Route = createFileRoute(
     const sessionParams = { qualificationPathId: selectedPath.id, sessionId: params.sessionId }
 
     void Promise.all([
-      queryClient
-        .query(
-          sessionSummaryQueryOptions(apiHttpClient, session.user.id, { params: sessionParams }),
-        )
-        .then(async summary => {
-          if (summary === null) {
-            return
-          }
-
-          const params = { qualificationPathId: selectedPath.id }
-
-          // The next step after a review shows further due reviews of its scope when any remain.
-          await (summary.kind === reviewStudySession
-            ? queryClient.query(
-                reviewPreviewQueryOptions(apiHttpClient, session.user.id, {
-                  params,
-                  query: { documentId: summary.document?.id },
-                }),
-              )
-            : queryClient.query(
-                sessionPreviewQueryOptions(apiHttpClient, session.user.id, {
-                  params,
-                  query: { fromDocumentId: summary.document?.id },
-                }),
-              ))
-        }),
+      queryClient.query(
+        sessionSummaryQueryOptions(apiHttpClient, session.user.id, { params: sessionParams }),
+      ),
+      queryClient.query(
+        sessionNextStepQueryOptions(apiHttpClient, session.user.id, { params: sessionParams }),
+      ),
       queryClient.infiniteQuery(
         sessionResultsInfiniteQueryOptions(apiHttpClient, session.user.id, {
           params: sessionParams,

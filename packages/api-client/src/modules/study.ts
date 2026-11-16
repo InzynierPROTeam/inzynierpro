@@ -10,6 +10,7 @@ import type {
   GetLatestSessionEndpoint,
   GetSessionEndpoint,
   GetSessionSummaryEndpoint,
+  GetSessionNextStepEndpoint,
   GetSessionResultsEndpoint,
   EndSessionEndpoint,
   GetSessionQuestionEndpoint,
@@ -116,6 +117,15 @@ export type GetSessionSummaryRequest = InferEndpointRequest<typeof GetSessionSum
 export type GetSessionSummaryRes = Effect.Success<ReturnType<typeof getSessionSummary>>
 
 export type GetSessionSummaryError = Effect.Error<ReturnType<typeof getSessionSummary>>
+
+export const getSessionNextStep = (req: GetSessionNextStepRequest) =>
+  apiAction(api => api.Study.GetSessionNextStep(req))
+
+export type GetSessionNextStepRequest = InferEndpointRequest<typeof GetSessionNextStepEndpoint>
+
+export type GetSessionNextStepRes = Effect.Success<ReturnType<typeof getSessionNextStep>>
+
+export type GetSessionNextStepError = Effect.Error<ReturnType<typeof getSessionNextStep>>
 
 export const getSessionResults = (req: GetSessionResultsRequest) =>
   apiAction(api => api.Study.GetSessionResults(req))

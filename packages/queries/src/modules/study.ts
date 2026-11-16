@@ -19,6 +19,8 @@ import {
   type GetSessionQuestionRequest,
   getSessionSummary,
   type GetSessionSummaryRequest,
+  getSessionNextStep,
+  type GetSessionNextStepRequest,
   getSessionResults,
   type GetSessionResultsRequest,
 } from '@inzpro/api-client/modules/study'
@@ -67,6 +69,13 @@ export const studyKeys = {
     [
       ...studyKeys.progress(userId, req.params.qualificationPathId),
       'getReviewSession',
+      req,
+    ] as const,
+  // The step after a session depends on the whole path's progress, not on the session alone.
+  getSessionNextStep: (userId: UserId, req: GetSessionNextStepRequest) =>
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getSessionNextStep',
       req,
     ] as const,
   session: (userId: UserId, pathId: QualificationPathId, id: StudySessionId) =>
@@ -151,6 +160,13 @@ export const reviewSessionQueryOptions = (
   userId: UserId,
   req: GetReviewSessionRequest,
 ) => effectQueryOptions(studyKeys.getReviewSession(userId, req), getReviewSession(req), httpClient)
+
+export const sessionNextStepQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetSessionNextStepRequest,
+) =>
+  effectQueryOptions(studyKeys.getSessionNextStep(userId, req), getSessionNextStep(req), httpClient)
 
 export const sessionQueryOptions = (
   httpClient: HttpClient.HttpClient,

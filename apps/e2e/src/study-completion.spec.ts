@@ -154,6 +154,22 @@ test('an answered category can be started again', async ({ onboarded: { page } }
   await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeVisible()
 })
 
+test('a finished session suggests continuing the unfinished session of another category', async ({
+  onboarded: { page },
+}) => {
+  const buildingLawSession = await startCategorySession(page, buildingLaw)
+
+  await answerQuestion(page)
+  await startCategorySession(page, technicalConditions)
+  await answerQuestionsFrom(page)
+  await finishSession(page)
+
+  await expect(page.getByText(`Odpowiedziano 1 / ${categoryQuestions}`)).toBeVisible()
+  await page.getByRole('button', { name: 'Kontynuuj sesję' }).click()
+  // It continues from the question still open.
+  await expect(page).toHaveURL(buildingLawSession.replace(/\/1$/, '/2'))
+})
+
 test('continue opens the most recently used session and each category keeps its own after reload', async ({
   onboarded: { page },
 }) => {
