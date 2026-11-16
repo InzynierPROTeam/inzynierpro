@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@inzpro/ui/components/dialog'
+import { RichText } from '@inzpro/ui/components/rich-text'
 import { useQuery } from '@tanstack/react-query'
 import { Lightbulb } from 'lucide-react'
 import type React from 'react'
@@ -71,8 +72,11 @@ export const SessionHintDialog: React.FC<SessionHintDialogProps> = ({ question }
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Podpowiedź</DialogTitle>
-          <DialogDescription className="leading-relaxed whitespace-pre-line">
-            {question.explanation}
+          <DialogDescription render={<div />}>
+            <RichText
+              content={question.explanation.content}
+              assets={question.explanation.assets}
+            />
           </DialogDescription>
         </DialogHeader>
         <DialogFooter showCloseButton />

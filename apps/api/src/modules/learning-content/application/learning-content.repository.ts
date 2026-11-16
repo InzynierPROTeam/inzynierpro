@@ -2,7 +2,9 @@ import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-conten
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect } from 'effect'
+import type { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
 import type {
+  ContentAsset,
   NewQuestion,
   NewQuestionRevision,
   QuestionRevisionWithdrawal,
@@ -26,16 +28,17 @@ export class LearningContentRepository extends Context.Service<
       documentId: ReferenceDocumentId,
       questionId: WrittenQuestionId,
     ) => Effect.Effect<void, LearningContentWriteError>
+    readonly createAsset: (asset: ContentAsset) => Effect.Effect<void, LearningContentWriteError>
     readonly createQuestion: (
       question: NewQuestion,
-    ) => Effect.Effect<void, LearningContentWriteError>
+    ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
     /**
      * Makes the revision current for new sessions with its change kind; started sessions keep their
      * pinned revisions.
      */
     readonly publishRevision: (
       revision: NewQuestionRevision,
-    ) => Effect.Effect<void, LearningContentWriteError>
+    ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
     /**
      * Withdraws a published revision, which then accepts no answers even in started sessions. A
      * revision is withdrawn once: repeating it keeps the first decision and its reason.

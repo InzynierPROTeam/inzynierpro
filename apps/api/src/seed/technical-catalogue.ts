@@ -1,7 +1,14 @@
 import { POLAND_TIME_ZONE, POLISH_LANGUAGE } from '@inzpro/config/localization'
 import { unrestrictedQualificationScopeCode } from '@inzpro/domain/modules/qualification-paths/qualification-scope'
 import { demolitionSpecializationCode } from '@inzpro/domain/modules/qualification-paths/specialization'
-import { DateTime, Effect } from 'effect'
+import {
+  boldMark,
+  italicMark,
+  RichContent,
+  richContentVersion,
+  type Text,
+} from '@inzpro/rich-content/rich-content'
+import { DateTime, Effect, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 import {
   cosmeticChange,
@@ -21,6 +28,16 @@ import {
   catalogueScopes,
   catalogueSessions,
 } from './catalogue.js'
+
+const plain = (text: string): Text => ({ type: 'text', text })
+const bold = (text: string): Text => ({ type: 'text', text, marks: [{ type: boldMark }] })
+const italic = (text: string): Text => ({ type: 'text', text, marks: [{ type: italicMark }] })
+
+const explanationJson = (paragraph: ReadonlyArray<Text>) =>
+  Schema.decodeEffect(RichContent)({
+    version: richContentVersion,
+    doc: { type: 'doc', content: [{ type: 'paragraph', content: paragraph }] },
+  }).pipe(Effect.map(content => JSON.stringify(content)))
 
 export const seedTechnicalCatalogue = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
@@ -126,8 +143,12 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
           documentId: buildingLaw,
           body: 'Która z wymienionych osób jest uczestnikiem procesu budowlanego w rozumieniu Prawa budowlanego?',
           answers: ['Projektant', 'Rzeczoznawca majątkowy', 'Pośrednik w obrocie nieruchomościami'],
-          explanation:
-            'Art. 17 Prawa budowlanego zalicza projektanta do uczestników procesu budowlanego.',
+          explanation: [
+            italic('Art. 17 Prawa budowlanego'),
+            plain(' zalicza '),
+            bold('projektanta'),
+            plain(' do uczestników procesu budowlanego.'),
+          ],
         },
         {
           documentId: buildingLaw,
@@ -137,22 +158,37 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
             'Tak, za zgodą inwestora.',
             'Tak, jeżeli budowa dotyczy budynku jednorodzinnego.',
           ],
-          explanation:
-            'Art. 24 ust. 1 Prawa budowlanego zabrania łączenia funkcji kierownika budowy i inspektora nadzoru inwestorskiego.',
+          explanation: [
+            italic('Art. 24 ust. 1 Prawa budowlanego'),
+            plain(' zabrania '),
+            bold('łączenia funkcji'),
+            plain(' kierownika budowy i inspektora nadzoru inwestorskiego.'),
+          ],
         },
         {
           documentId: technicalConditions,
           body: 'Jaka jest minimalna wysokość balustrady, mierzona do wierzchu poręczy, w budynku jednorodzinnym?',
           answers: ['0,9 m', '0,7 m', '0,8 m'],
-          explanation:
-            'Zgodnie z tabelą w § 298 ust. 2 warunków technicznych minimalna wysokość balustrady w budynkach jednorodzinnych wynosi 0,9 m.',
+          explanation: [
+            plain('Zgodnie z tabelą w '),
+            italic('§ 298 ust. 2 warunków technicznych'),
+            plain(' minimalna wysokość balustrady w budynkach jednorodzinnych wynosi '),
+            bold('0,9 m'),
+            plain('.'),
+          ],
         },
         {
           documentId: buildingLaw,
           body: 'Kto zapewnia ustanowienie inspektora nadzoru inwestorskiego, jeżeli jest on wymagany?',
           answers: ['Inwestor', 'Kierownik budowy', 'Projektant'],
-          explanation:
-            'Art. 18 ust. 1 Prawa budowlanego nakłada na inwestora obowiązek zapewnienia ustanowienia inspektora nadzoru inwestorskiego, jeżeli jest on wymagany.',
+          explanation: [
+            italic('Art. 18 ust. 1 Prawa budowlanego'),
+            plain(' nakłada na '),
+            bold('inwestora'),
+            plain(
+              ' obowiązek zapewnienia ustanowienia inspektora nadzoru inwestorskiego, jeżeli jest on wymagany.',
+            ),
+          ],
         },
         {
           documentId: buildingLaw,
@@ -162,43 +198,73 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
             'Po upływie 2 lat od dnia wydania decyzji.',
             'Po upływie 5 lat od dnia, w którym decyzja stała się ostateczna.',
           ],
-          explanation:
-            'Art. 37 ust. 1 Prawa budowlanego: decyzja wygasa, jeżeli budowa nie została rozpoczęta przed upływem 3 lat od dnia, w którym stała się ostateczna.',
+          explanation: [
+            italic('Art. 37 ust. 1 Prawa budowlanego'),
+            plain(': decyzja wygasa, jeżeli budowa nie została rozpoczęta przed upływem '),
+            bold('3 lat'),
+            plain(' od dnia, w którym stała się ostateczna.'),
+          ],
         },
         {
           documentId: buildingLaw,
           body: 'Który organ jest co do zasady organem administracji architektoniczno-budowlanej pierwszej instancji?',
           answers: ['Starosta', 'Wojewoda', 'Wójt gminy'],
-          explanation:
-            'Art. 82 ust. 2 Prawa budowlanego powierza zadania organu administracji architektoniczno-budowlanej pierwszej instancji staroście.',
+          explanation: [
+            italic('Art. 82 ust. 2 Prawa budowlanego'),
+            plain(
+              ' powierza zadania organu administracji architektoniczno-budowlanej pierwszej instancji ',
+            ),
+            bold('staroście'),
+            plain('.'),
+          ],
         },
         {
           documentId: technicalConditions,
           body: 'Jaka jest minimalna szerokość drzwi wejściowych do budynku w świetle ościeżnicy?',
           answers: ['0,9 m', '0,8 m', '1,2 m'],
-          explanation:
-            '§ 62 ust. 1 warunków technicznych wymaga, aby drzwi wejściowe do budynku miały w świetle ościeżnicy szerokość co najmniej 0,9 m.',
+          explanation: [
+            italic('§ 62 ust. 1 warunków technicznych'),
+            plain(
+              ' wymaga, aby drzwi wejściowe do budynku miały w świetle ościeżnicy szerokość co najmniej ',
+            ),
+            bold('0,9 m'),
+            plain('.'),
+          ],
         },
         {
           documentId: technicalConditions,
           body: 'Jaka jest minimalna szerokość użytkowa biegu schodów w budynku mieszkalnym jednorodzinnym?',
           answers: ['0,8 m', '0,9 m', '1,2 m'],
-          explanation:
-            'Tabela w § 68 ust. 1 warunków technicznych określa minimalną szerokość użytkową biegu w budynku jednorodzinnym na 0,8 m.',
+          explanation: [
+            plain('Tabela w '),
+            italic('§ 68 ust. 1 warunków technicznych'),
+            plain(' określa minimalną szerokość użytkową biegu w budynku jednorodzinnym na '),
+            bold('0,8 m'),
+            plain('.'),
+          ],
         },
         {
           documentId: technicalConditions,
           body: 'Jaka jest maksymalna wysokość stopni schodów w budynku mieszkalnym jednorodzinnym?',
           answers: ['0,19 m', '0,175 m', '0,22 m'],
-          explanation:
-            'Tabela w § 68 ust. 1 warunków technicznych dopuszcza w budynku jednorodzinnym stopnie o wysokości do 0,19 m.',
+          explanation: [
+            plain('Tabela w '),
+            italic('§ 68 ust. 1 warunków technicznych'),
+            plain(' dopuszcza w budynku jednorodzinnym stopnie o wysokości do '),
+            bold('0,19 m'),
+            plain('.'),
+          ],
         },
         {
           documentId: technicalConditions,
           body: 'Jaka jest co do zasady minimalna wysokość w świetle pomieszczeń przeznaczonych na stały pobyt ludzi?',
           answers: ['2,5 m', '2,2 m', '2,8 m'],
-          explanation:
-            '§ 72 ust. 1 warunków technicznych wymaga co do zasady wysokości w świetle co najmniej 2,5 m dla pomieszczeń przeznaczonych na stały pobyt ludzi.',
+          explanation: [
+            italic('§ 72 ust. 1 warunków technicznych'),
+            plain(' wymaga co do zasady wysokości w świetle co najmniej '),
+            bold('2,5 m'),
+            plain(' dla pomieszczeń przeznaczonych na stały pobyt ludzi.'),
+          ],
         },
       ]
 
@@ -207,9 +273,10 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         const questionId = catalogueId('30', n)
         const revisionId = catalogueId('43', n)
         const { documentId } = question
+        const explanation = yield* explanationJson(question.explanation)
         yield* sql`INSERT INTO written_questions (id, document_id) VALUES (${questionId}, ${documentId}) ON CONFLICT DO NOTHING`
         yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id)
-        VALUES (${revisionId},${questionId},${question.body},${question.explanation},${initialRevision},${revisionId}) ON CONFLICT DO NOTHING`
+        VALUES (${revisionId},${questionId},${question.body},${explanation}::jsonb,${initialRevision},${revisionId}) ON CONFLICT DO NOTHING`
 
         const revisions =
           yield* sql`SELECT published_at FROM question_revisions WHERE id=${revisionId} LIMIT 1`
@@ -238,8 +305,14 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
           changeKind: cosmeticChange,
           body: 'Który organ jest, co do zasady, organem administracji architektoniczno-budowlanej pierwszej instancji?',
           answers: ['Starosta', 'Wojewoda', 'Wójt gminy'],
-          explanation:
-            'Art. 82 ust. 2 Prawa budowlanego powierza zadania organu administracji architektoniczno-budowlanej pierwszej instancji staroście.',
+          explanation: [
+            italic('Art. 82 ust. 2 Prawa budowlanego'),
+            plain(
+              ' powierza zadania organu administracji architektoniczno-budowlanej pierwszej instancji ',
+            ),
+            bold('staroście'),
+            plain('.'),
+          ],
         },
         {
           questionNumber: 5,
@@ -250,8 +323,12 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
             'Gdy budowa została przerwana na czas dłuższy niż 2 lata.',
             'Przerwa w budowie nie powoduje wygaśnięcia decyzji.',
           ],
-          explanation:
-            'Art. 37 ust. 1 Prawa budowlanego: decyzja wygasa również wtedy, gdy budowa została przerwana na czas dłuższy niż 3 lata.',
+          explanation: [
+            italic('Art. 37 ust. 1 Prawa budowlanego'),
+            plain(': decyzja wygasa również wtedy, gdy budowa została '),
+            bold('przerwana na czas dłuższy niż 3 lata'),
+            plain('.'),
+          ],
         },
       ] as const
 
@@ -264,8 +341,10 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
         const substantiveRevisionId =
           revision.changeKind === cosmeticChange ? previousId : revisionId
 
+        const explanation = yield* explanationJson(revision.explanation)
+
         yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id)
-        VALUES (${revisionId},${questionId},${revision.body},${revision.explanation},${revision.changeKind},${substantiveRevisionId}) ON CONFLICT DO NOTHING`
+        VALUES (${revisionId},${questionId},${revision.body},${explanation}::jsonb,${revision.changeKind},${substantiveRevisionId}) ON CONFLICT DO NOTHING`
 
         const revisions =
           yield* sql`SELECT published_at FROM question_revisions WHERE id=${revisionId} LIMIT 1`

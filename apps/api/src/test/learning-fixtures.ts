@@ -8,11 +8,13 @@ import type {
 } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
+import { paragraphs, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Effect, Layer, Schema, Option } from 'effect'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import {
+  ContentAsset,
   NewQuestion,
   NewQuestionRevision,
   QuestionRevisionWithdrawal,
@@ -91,10 +93,31 @@ export const createStudyFixture = (specializationId = '60000000-0000-4000-8000-0
     }),
   )
 
+export const addFixtureAsset = () =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const asset = yield* Schema.decodeEffect(ContentAsset)({
+        id: crypto.randomUUID(),
+        storageKey: `test/${crypto.randomUUID()}.png`,
+        mediaType: 'image/png',
+        width: 640,
+        height: 480,
+        size: 2048,
+      })
+
+      yield* learningContentRepository.createAsset(asset)
+
+      return asset.id
+    }),
+  )
+
 export const addFixtureQuestion = (
   pathId: QualificationPathId,
   documentId: ReferenceDocumentId,
   published = true,
+  explanation: typeof RichContent.Encoded = paragraphs('Fixture'),
 ) =>
   runFixture(
     Effect.gen(function* () {
@@ -128,7 +151,7 @@ export const addFixtureQuestion = (
             isCorrect: false,
           },
         ],
-        explanation: 'Fixture',
+        explanation,
         published,
       })
 
@@ -155,6 +178,7 @@ export const attachFixtureQuestion = (
 export const publishFixtureRevision = (
   questionId: WrittenQuestionId,
   changeKind: RevisionChangeKind = substantiveChange,
+  explanation: typeof RichContent.Encoded = paragraphs('Revised fixture'),
 ) =>
   runFixture(
     Effect.gen(function* () {
@@ -172,7 +196,7 @@ export const publishFixtureRevision = (
           text,
           isCorrect: index === 0,
         })),
-        explanation: 'Revised fixture',
+        explanation,
       })
 
       yield* learningContentRepository.publishRevision(revision)

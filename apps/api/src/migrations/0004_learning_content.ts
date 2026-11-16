@@ -16,6 +16,17 @@ created_at timestamptz(3) NOT NULL DEFAULT now(),
 updated_at timestamptz(3) NOT NULL DEFAULT now()
 )`
   yield* sql`CREATE TRIGGER path_documents_updated_at BEFORE UPDATE ON path_documents FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
+  yield* sql`CREATE TABLE content_assets (
+    id uuid PRIMARY KEY DEFAULT uuidv7(),
+    storage_key text NOT NULL UNIQUE CHECK (length(storage_key) > 0),
+    media_type text NOT NULL CHECK (media_type IN ('image/png','image/jpeg','image/webp')),
+    width integer NOT NULL CHECK (width > 0),
+    height integer NOT NULL CHECK (height > 0),
+    size_bytes integer NOT NULL CHECK (size_bytes > 0),
+created_at timestamptz(3) NOT NULL DEFAULT now(),
+updated_at timestamptz(3) NOT NULL DEFAULT now()
+)`
+  yield* sql`CREATE TRIGGER content_assets_updated_at BEFORE UPDATE ON content_assets FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`CREATE TABLE written_questions (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     document_id uuid NOT NULL REFERENCES reference_documents(id),
@@ -29,7 +40,7 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     question_id uuid NOT NULL REFERENCES written_questions(id),
     body text NOT NULL CHECK (length(body) > 0),
-    explanation text NOT NULL CHECK (length(explanation) > 0),
+    explanation jsonb NOT NULL CHECK (jsonb_typeof(explanation)='object'),
     published_at timestamptz(3),
     withdrawn_at timestamptz(3),
     withdrawal_reason text CHECK (length(withdrawal_reason) > 0),
