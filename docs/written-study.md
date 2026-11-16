@@ -6,20 +6,20 @@ How a written study session runs from preview to summary, for regular study, rev
 
 A read that finds nothing for the learner returns HTTP 200 with `null`: preview, latest session, review and favourites previews (for a document not on the path), review session, favourites session, session, next step, question and summary. Category details keep 404. Authentication and access failures stay errors.
 
-| Endpoint                                  | Returns                                                                                                                            |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /documents/:documentId`              | One category with the learner's progress in the current round, independent of the preview.                                         |
-| `GET /preview`                            | The proposed document, its `questionSelection` and the count settings.                                                             |
-| `GET /latest-session[?documentId=]`       | The most recently used regular-study session of the path or document, with status, progress and document.                          |
-| `GET /review-preview[?documentId=]`       | The due question count, the next due time and the count settings of reviews of the path or one document.                           |
-| `GET /review-session[?documentId=]`       | The unfinished review session of the path or one document.                                                                         |
-| `GET /favorites-preview[?documentId=]`    | The count of the learner's FavoriteQuestions on the path or one document and the count settings.                                   |
-| `GET /favorites-session[?documentId=]`    | The unfinished favourites session of the path or one document.                                                                     |
-| `GET /sessions/:sessionId`                | Status and progress: `total`, `answered`, `skipped`, `percent` and `currentQuestion` to continue from.                             |
-| `GET /sessions/:sessionId/next-step`      | The one step after the session, decided from the learner's state now (see [Next step](#next-step)).                                |
-| `GET /sessions/:sessionId/questions/:pos` | The pinned revision with options in session order, their correctness, the explanation, the stored answer, `isFavorite` and `note`. |
-| `GET /sessions/:sessionId/summary`        | An ended session's correct, incorrect and assisted counts and its score.                                                           |
-| `GET /sessions/:sessionId/results`        | A cursor page of positions, each with its answer or withdrawal. Empty until the session ends.                                      |
+| Endpoint                                  | Returns                                                                                                                                            |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /documents/:documentId`              | One category with the learner's progress in the current round, independent of the preview.                                                         |
+| `GET /preview`                            | The proposed document, its `questionSelection` and the count settings.                                                                             |
+| `GET /latest-session[?documentId=]`       | The most recently used regular-study session of the path or document, with status, progress and document.                                          |
+| `GET /review-preview[?documentId=]`       | The due question count, the next due time and the count settings of reviews of the path or one document.                                           |
+| `GET /review-session[?documentId=]`       | The unfinished review session of the path or one document.                                                                                         |
+| `GET /favorites-preview[?documentId=]`    | The count of the learner's FavoriteQuestions on the path or one document and the count settings.                                                   |
+| `GET /favorites-session[?documentId=]`    | The unfinished favourites session of the path or one document.                                                                                     |
+| `GET /sessions/:sessionId`                | Status and progress: `total`, `answered`, `skipped`, `percent` and `currentQuestion` to continue from.                                             |
+| `GET /sessions/:sessionId/next-step`      | The one step after the session, decided from the learner's state now (see [Next step](#next-step)).                                                |
+| `GET /sessions/:sessionId/questions/:pos` | The pinned revision with options in session order, their correctness, the explanation as rich content, the stored answer, `isFavorite` and `note`. |
+| `GET /sessions/:sessionId/summary`        | An ended session's correct, incorrect and assisted counts and its score.                                                                           |
+| `GET /sessions/:sessionId/results`        | A cursor page of positions, each with its answer or withdrawal. Empty until the session ends.                                                      |
 
 "Most recently used" is `last_activity_at`: starting or answering, never reading. A document's unfinished session is always its latest.
 
@@ -106,7 +106,7 @@ Selecting an option is a draft kept in the form: it is no attempt and a reload c
 - A different answer is refused with `SessionAnswerAlreadySubmitted` (409) and never overwrites the first.
 - Answering never ends a session.
 
-**Assistance.** The hint button shows the explanation already in the question read, and the note button the learner's note. The client posts `.../questions/:pos/assistance` with `kind` `explanation` or `note` only while the opening can still mark an answer: unanswered, not recorded yet, not withdrawn, session active, and for the note only when one is saved. Under the account lock the backend records `explanation_opened_at` or `note_opened_at` once; a note opening is kept only when a non-empty note is saved at that moment, so opening an empty note records nothing. Opening either after answering, in an ended session or on a withdrawn question changes nothing. The answer's level is `explanation` when the explanation was opened, otherwise `note` when the note was, otherwise `none`; it is assisted at any level but `none`, and the client's own view never decides it. Checking waits for any pending record.
+**Assistance.** The hint button shows the explanation already in the question read, rendered from [rich content](rich-content.md), and the note button the learner's note. The client posts `.../questions/:pos/assistance` with `kind` `explanation` or `note` only while the opening can still mark an answer: unanswered, not recorded yet, not withdrawn, session active, and for the note only when one is saved. Under the account lock the backend records `explanation_opened_at` or `note_opened_at` once; a note opening is kept only when a non-empty note is saved at that moment, so opening an empty note records nothing. Opening either after answering, in an ended session or on a withdrawn question changes nothing. The answer's level is `explanation` when the explanation was opened, otherwise `note` when the note was, otherwise `none`; it is assisted at any level but `none`, and the client's own view never decides it. Checking waits for any pending record.
 
 ## Withdrawn questions
 

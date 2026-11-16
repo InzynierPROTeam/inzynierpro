@@ -8,6 +8,7 @@ Application behaviour has its own documents:
 
 - [platform.md](platform.md): the web platform's authentication, route guards, assignment selection, back navigation and data loading.
 - [written-study.md](written-study.md): written study sessions from preview to summary, including withdrawn questions.
+- [rich-content.md](rich-content.md): the versioned rich content format, its validation and the web renderer.
 - [background-jobs.md](background-jobs.md): durable background jobs, the worker process and its diagnosis.
 - [deployment.md](deployment.md): images, CI/CD to staging and production through Dokploy, operator setup and backups.
 
@@ -19,6 +20,7 @@ Application behaviour has its own documents:
 | `api-client`    | Effect actions generated from the contracts, the Promise adapter and HTTP transport composition.       |
 | `queries`       | Query keys and TanStack Query options over `api-client` actions.                                       |
 | `domain`        | Shared vocabulary: branded IDs, literal codes, value primitives and pure rules. No object schemas.     |
+| `rich-content`  | The versioned rich content schema, its validation and the shared renderer fixtures.                    |
 | `utils`         | Environment-independent helpers, including Warsaw date helpers and exam-access labels.                 |
 | `browser-utils` | Browser APIs such as cookies and storage.                                                              |
 | `react-utils`   | Shared hooks, QueryClient factories and React integrations, split into web and native subpaths.        |
@@ -44,7 +46,7 @@ Environment variables, credentials and environment loading always stay in the ap
 - `e2e` drives the platform and the API over HTTP and imports none of their sources.
 - Client applications import neither `db` nor API sources.
 - Universal packages stay free of React, native platforms and Node built-ins.
-- `config` and `domain` are leaves. `utils` may depend on `config` and `domain`; `domain` never depends on `utils`, so there is no cycle.
+- `config` and `domain` are leaves. `utils` may depend on `config` and `domain`; `domain` never depends on `utils`, so there is no cycle. `rich-content` depends only on `domain`, so the backend's modules, the contracts and clients share one content schema.
 - Only tests (`*.test.*`, `*.spec.*`) and a workspace's `src/test` support code may use `testing`. Production code imports neither.
 - Runtime workspace dependencies go in the consumer's `dependencies`, test-only ones in `devDependencies`. Hoisted development tools may stay in the root manifest.
 
