@@ -141,8 +141,11 @@ An immutable record of a user's actual activity on a specific material revision 
 A written study attempt preceded by opening the explanation or a non-empty personal note for the question. Its assistance level is note or explanation, the explanation winning when both were opened. It is correct or wrong but is not evidence of fully independent mastery; a note weighs less than the explanation.
 
 **MockExamAttempt** (UI: _podejście do egzaminu próbnego_):
-A separate attempt at a mock exam without ongoing feedback. Until it ends the user may return to questions, change answers, and explicitly pause and resume.
+A separate attempt at a mock exam without ongoing feedback. Until it ends the user may return to questions, change answers, flag them for later, and explicitly pause and resume. It ends finished (submitted or timed out) or abandoned; a finished attempt with a withdrawn question is incomplete and has no pass/fail.
 _Avoid_: exam session (_sesja egzaminacyjna_)
+
+**ExamBlueprint** (UI: _konfiguracja egzaminu próbnego_):
+The versioned mock exam configuration assigned to paths: duration, pass threshold and sections that draw a number of questions from chosen documents. An attempt keeps the version it started with.
 
 **FavoriteQuestion** (UI: _ulubione pytanie_):
 A question the user marked as a favourite, shared across all their paths.
@@ -172,7 +175,19 @@ Points for approved contributions to the material or the platform. They are dist
 A measure of a contributor's or reviewer's trustworthiness based on the quality of their contributions. It is distinct from learning activity and learning points.
 
 **DailyGoal** (UI: _dzienny cel nauki_):
-The number of questions planned for a day, separately for written and oral study on a path. It plans the pass through the material up to the chosen date and is distinct from account XP and streak.
+The number of questions planned for a day, separately for written and oral study on a path. It spreads the uncovered questions of the current round up to the target date, is frozen for the day once used, and is distinct from account XP and streak. Only regular-study answers that cover a question count towards it.
 
 **Streak** (UI: _seria dni nauki_):
 The number of consecutive days meeting the learning-activity condition, shared by the account. It motivates; it does not measure knowledge.
+
+**XpLedger** (UI: _historia punktów_):
+The append-only record of every XP award, each with a unique award key, its path and the exam session of that path's goal. It is the source of XP totals and rankings, and the minimal reward ledger that survives a path reset.
+
+**Badge** (UI: _odznaka_):
+A one-off account achievement, such as a streak length or a first passed mock exam, granted once and recorded in the XP ledger.
+
+**Ranking** (UI: _ranking_):
+The order of users by XP earned in a period: this week, this month, an exam session or all time. Private profiles keep their rows.
+
+**PathReset** (UI: _reset postępu ścieżki_):
+An explicit removal of a user's private learning state on one path, in both study kinds. It keeps the assignment, goal, notes, favourites, XP ledger, badges and streak.

@@ -8,6 +8,8 @@ GitHub Issues for InzynierPROTeam/inzynierpro own delivery scope and acceptance 
 - [Stage 2: platform learning](https://github.com/InzynierPROTeam/inzynierpro/issues/46)
 - [Complete written study: rounds, FSRS reviews, favourites and notes](https://github.com/InzynierPROTeam/inzynierpro/issues/48)
 - [Oral study and the post-session mini-quiz](https://github.com/InzynierPROTeam/inzynierpro/issues/56)
+- [Written mock exams](https://github.com/InzynierPROTeam/inzynierpro/issues/74)
+- [Daily plan, learning XP, rankings and path reset](https://github.com/InzynierPROTeam/inzynierpro/issues/83)
 
 Before implementation read the applicable issue, glossary and ADRs. [platform.md](platform.md) describes how the web platform guards routes and loads data, [written-study.md](written-study.md) how written study sessions work, and [background-jobs.md](background-jobs.md) how the worker runs durable jobs. Treat V1 at `../inzynier-pro` as read-only reference, not an implicit V2 specification or permission to access production data. Leave changes uncommitted unless publication is explicitly requested.
 
@@ -56,6 +58,6 @@ After Foundation, the platform is completed first on demonstrative technical see
 
 ## Confirmed scope changes
 
-The confirmed interview replaces simplified Foundation path selection with dependent onboarding, mandatory versioned exam goals, active/archived assignments, one-way exam-scope extension, profile integration and application authorization. ADR-0025 records the model; ADR-0012 records CQRS; ADR-0014 records combined private queries/client caching. Onboarding choices are public until configuration persistence; concrete catalogue endpoints use cursor pages, while client-local selection is resolved against the complete assignment list (at most five, including archived assignments), fetched with an ordinary query and ordered by assignment `updated_at` descending. All dates use one UTC codec. Full daily planning, gamification and destructive reset execution are specified from scratch in stage 2 (#46); their unresolved rules must be specified before implementation.
+The confirmed interview replaces simplified Foundation path selection with dependent onboarding, mandatory versioned exam goals, active/archived assignments, one-way exam-scope extension, profile integration and application authorization. ADR-0025 records the model; ADR-0012 records CQRS; ADR-0014 records combined private queries/client caching. Onboarding choices are public until configuration persistence; concrete catalogue endpoints use cursor pages, while client-local selection is resolved against the complete assignment list (at most five, including archived assignments), fetched with an ordinary query and ordered by assignment `updated_at` descending. All dates use one UTC codec. Daily planning, gamification and path reset are specified in #83 (stage 2, #46).
 
 Update behavior in the appropriate GitHub specification and significant decisions in ADRs. This map is an entry point, not a duplicate system specification.
