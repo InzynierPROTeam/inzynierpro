@@ -8,7 +8,15 @@ import { Schema } from 'effect'
 
 import type { DocumentQuestionPool } from './study-document.model.js'
 
-export const writtenStudySettings = (availableCount: QuestionCount) => ({
+/** The question counts a new session may hold, which the preview shows and the start rechecks. */
+export type SessionCountSettings = {
+  readonly defaultQuestionCount: QuestionCount
+  readonly canChangeQuestionCount: boolean
+  readonly minimumQuestionCount: QuestionCount
+  readonly maximumQuestionCount: QuestionCount
+}
+
+export const writtenStudySettings = (availableCount: QuestionCount): SessionCountSettings => ({
   defaultQuestionCount: availableCount,
   canChangeQuestionCount: availableCount > 25,
   minimumQuestionCount: availableCount > 25 ? Schema.decodeSync(QuestionCount)(1) : availableCount,
@@ -17,7 +25,7 @@ export const writtenStudySettings = (availableCount: QuestionCount) => ({
 
 /** Whether a new session may hold this many questions under the current preview settings. */
 export const isAllowedQuestionCount = (
-  settings: ReturnType<typeof writtenStudySettings>,
+  settings: SessionCountSettings,
   questionCount: QuestionCount,
 ) =>
   questionCount > 0 &&

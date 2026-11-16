@@ -5,7 +5,10 @@ import type {
 } from '@inzpro/domain/modules/learning-content/reference-document'
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import type { SessionQuestionSelection } from '@inzpro/domain/modules/study/study-session'
+import {
+  regularStudySession,
+  type SessionQuestionSelection,
+} from '@inzpro/domain/modules/study/study-session'
 import { Effect, Option, Random } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
@@ -49,7 +52,12 @@ export const startSession = Effect.fn('Study.startSession')(function* (
       yield* preparationRepository.lockUser(userId)
       const assignment = yield* requirePathAccess(userId, pathId, writtenExamAccess)
 
-      const unfinished = yield* studyReader.unfinishedSession(userId, pathId, documentId)
+      const unfinished = yield* studyReader.unfinishedSession(
+        userId,
+        pathId,
+        regularStudySession,
+        Option.some(documentId),
+      )
 
       if (Option.isSome(unfinished)) {
         return yield* new UnfinishedSessionExists({
@@ -98,7 +106,8 @@ export const startSession = Effect.fn('Study.startSession')(function* (
       return yield* studyRepository.createSession({
         userId,
         qualificationPathId: pathId,
-        documentId,
+        kind: regularStudySession,
+        documentId: Option.some(documentId),
         goalVersion: assignment.goal.version,
         questions,
       })

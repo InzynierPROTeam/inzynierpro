@@ -19,12 +19,15 @@ import { endSession } from '~api/modules/study/application/end-session.command.j
 import { getLatestSession } from '~api/modules/study/application/latest-session.query.js'
 import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
 import { recordAssistance } from '~api/modules/study/application/record-assistance.command.js'
+import { getReviewPreview } from '~api/modules/study/application/review-preview.query.js'
+import { getReviewSession } from '~api/modules/study/application/review-session.query.js'
 import { ReviewSchedulerLive } from '~api/modules/study/application/review-state.service.js'
 import { getSessionPreview } from '~api/modules/study/application/session-preview.query.js'
 import { getSessionQuestion } from '~api/modules/study/application/session-question.query.js'
 import { getSessionResults } from '~api/modules/study/application/session-results.query.js'
 import { getSessionSummary } from '~api/modules/study/application/session-summary.query.js'
 import { getSession } from '~api/modules/study/application/session.query.js'
+import { startReviewSession } from '~api/modules/study/application/start-review-session.command.js'
 import { startSession } from '~api/modules/study/application/start-session.command.js'
 import { submitAnswer } from '~api/modules/study/application/submit-answer.command.js'
 import { StudyReaderLive } from '~api/modules/study/infrastructure/study.reader.postgres.js'
@@ -45,6 +48,7 @@ import {
 } from './errors.js'
 import {
   toLatestStudySessionDto,
+  toReviewPreviewDto,
   toSessionQuestionDto,
   toSessionQuestionResultDto,
   toStudySessionDto,
@@ -143,6 +147,71 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
         }),
       ),
     )
+    .handle('GetReviewPreview', ({ params, query }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getReviewPreview(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(query.documentId),
+            ),
+          ),
+        ),
+        Effect.map(Option.map(toReviewPreviewDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('GetReviewSession', ({ params, query }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getReviewSession(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(query.documentId),
+            ),
+          ),
+        ),
+        Effect.map(Option.map(toStudySessionDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('StartReviewSession', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            startReviewSession(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(payload.documentId),
+              payload.questionCount,
+            ),
+          ),
+        ),
+        Effect.map(toStudySessionDto),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          StudyDocumentNotFound: () => documentNotFound,
+          StaleSessionScope: () => staleSessionPreview,
+          UnfinishedSessionExists: studySessionAlreadyStarted,
+        }),
+      ),
+    )
     .handle('GetLatestSession', ({ params, query }) =>
       limitByUser(accountReadLimit).pipe(
         Effect.andThen(
@@ -154,7 +223,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
             ),
           ),
         ),
-        Effect.map(Option.map(toLatestStudySessionDto)),
+        Effect.map(Option.flatMap(toLatestStudySessionDto)),
         Effect.map(Option.getOrNull),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,

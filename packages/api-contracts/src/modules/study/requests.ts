@@ -40,6 +40,16 @@ export const StartSessionPayload = Schema.Struct({
 
 export type StartSessionPayload = typeof StartSessionPayload.Type
 
+// Without a document reviews span the whole path; with one only that document's due questions.
+export const ReviewScopeQuery = Schema.Struct({ documentId: Schema.optional(ReferenceDocumentId) })
+
+export const StartReviewSessionPayload = Schema.Struct({
+  documentId: Schema.optional(ReferenceDocumentId),
+  questionCount: QuestionCount,
+})
+
+export type StartReviewSessionPayload = typeof StartReviewSessionPayload.Type
+
 export const LatestSessionQuery = Schema.Struct({
   // Without a document the latest session of the whole path is returned.
   documentId: Schema.optional(ReferenceDocumentId),

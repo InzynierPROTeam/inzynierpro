@@ -1,3 +1,4 @@
+import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type {
   QuestionCount,
@@ -12,6 +13,7 @@ import type {
   SessionQuestionPosition,
   SessionQuestionSelection,
   StudySessionId,
+  StudySessionKind,
 } from '@inzpro/domain/modules/study/study-session'
 import { Context, type Effect, type Option } from 'effect'
 import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
@@ -19,8 +21,12 @@ import type {
   LearningRoundNumber,
   LearningRoundProgress,
 } from '~api/modules/study/domain/learning-round.model.js'
+import type { ReviewQueue } from '~api/modules/study/domain/review-session.model.js'
 import type { ReviewCard, StudyDay } from '~api/modules/study/domain/review-state.model.js'
-import type { DocumentQuestionPool } from '~api/modules/study/domain/study-document.model.js'
+import type {
+  DocumentQuestionPool,
+  SessionDocument,
+} from '~api/modules/study/domain/study-document.model.js'
 import type {
   SessionCandidate,
   SessionQuestion,
@@ -70,18 +76,51 @@ export class StudyReader extends Context.Service<
       round: LearningRoundNumber,
       documentId: ReferenceDocumentId,
     ) => Effect.Effect<Option.Option<DocumentQuestionPool>, StudyReadError>
-    /** The user's unfinished written study session on a document, if any. */
+    /**
+     * The user's unfinished written session of the kind and scope, if any: a document, or for a
+     * review session without one, the whole path.
+     */
     readonly unfinishedSession: (
       userId: UserId,
       pathId: QualificationPathId,
-      documentId: ReferenceDocumentId,
+      kind: StudySessionKind,
+      documentId: Option.Option<ReferenceDocumentId>,
     ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
-    /** The most recently used session; with a document, only that document's sessions count. */
+    /**
+     * The most recently used regular-study session; with a document, only that document's sessions
+     * count. Review sessions resume from their own tiles (ADR-0002).
+     */
     readonly latestSession: (
       userId: UserId,
       pathId: QualificationPathId,
       documentId: Option.Option<ReferenceDocumentId>,
     ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
+    /** The document when it is on the path. */
+    readonly pathDocument: (
+      pathId: QualificationPathId,
+      documentId: ReferenceDocumentId,
+    ) => Effect.Effect<Option.Option<SessionDocument>, StudyReadError>
+    /**
+     * How many questions of the review scope are due at `now` and when the next one becomes due.
+     * Due means an SRS due time at or before `now` for a published, non-withdrawn question still
+     * on the path, whose state belongs to its current substantive content (ADR-0002). A question
+     * whose content was already answered on the study day of `now` waits for the next study day,
+     * since a later answer that day would not rate it (ADR-0005).
+     */
+    readonly reviewQueue: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: Option.Option<ReferenceDocumentId>,
+      now: DateTimeUtc,
+    ) => Effect.Effect<ReviewQueue, StudyReadError>
+    /** The current revisions of the scope's questions due at `now`, most overdue first. */
+    readonly reviewCandidates: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: Option.Option<ReferenceDocumentId>,
+      now: DateTimeUtc,
+      limit: QuestionCount,
+    ) => Effect.Effect<ReadonlyArray<SessionCandidate>, StudyReadError>
     readonly session: (
       userId: UserId,
       pathId: QualificationPathId,

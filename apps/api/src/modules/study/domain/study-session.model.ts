@@ -11,14 +11,20 @@ import {
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
+import {
+  SessionQuestionPosition,
+  StudySessionId,
+  StudySessionKind,
+} from '@inzpro/domain/modules/study/study-session'
 import { type Option, Schema } from 'effect'
 
-/** A started study session: its material, fixed size and how far the learner got. */
+/** A started study session: its kind and material, fixed size and how far the learner got. */
 export const StudySession = Schema.Struct({
   id: StudySessionId,
-  documentId: ReferenceDocumentId,
-  documentTitle: Schema.NonEmptyString,
+  kind: StudySessionKind,
+  // Regular study always has a document; a review session of the whole path has none.
+  documentId: Schema.OptionFromNullOr(ReferenceDocumentId),
+  documentTitle: Schema.OptionFromNullOr(Schema.NonEmptyString),
   // The goal version active at the start; later goal changes never reattribute this session.
   goalVersion: UserExamGoalVersion,
   questionCount: QuestionCount,
@@ -90,7 +96,8 @@ export type SessionCandidate = typeof SessionCandidate.Type
 export type NewStudySession = {
   readonly userId: UserId
   readonly qualificationPathId: QualificationPathId
-  readonly documentId: ReferenceDocumentId
+  readonly kind: StudySessionKind
+  readonly documentId: Option.Option<ReferenceDocumentId>
   readonly goalVersion: UserExamGoalVersion
   readonly questions: ReadonlyArray<SessionCandidate>
 }

@@ -25,9 +25,11 @@ import {
   LatestSessionQuery,
   SessionPreviewQuery,
   OralMaterialsQuery,
+  ReviewScopeQuery,
   SessionParams,
   SessionQuestionParams,
   SessionResultsQuery,
+  StartReviewSessionPayload,
   StartSessionPayload,
   SubmitSessionAnswerPayload,
 } from './requests.js'
@@ -37,9 +39,11 @@ import {
   EndSessionResponse,
   LatestStudySessionResponse,
   OralMaterialsResponse,
+  ReviewPreviewResponse,
   SessionPreviewResponse,
   SessionQuestionResponse,
   SessionResultsResponse,
+  StartReviewSessionResponse,
   StartSessionResponse,
   StudySessionSummaryResponse,
   StudySessionResponse,
@@ -109,6 +113,49 @@ export const StartSessionEndpoint = HttpApiEndpoint.post(
     params: GetDocumentsParams,
     payload: StartSessionPayload,
     success: StartSessionResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      DocumentNotFound,
+      StaleSessionPreview,
+      StudySessionAlreadyStarted,
+    ],
+  },
+)
+
+// The questions due for review now on the path or one document, or when the next review is due.
+export const GetReviewPreviewEndpoint = HttpApiEndpoint.get(
+  'GetReviewPreview',
+  '/paths/:qualificationPathId/review-preview',
+  {
+    params: GetDocumentsParams,
+    query: ReviewScopeQuery,
+    success: ReviewPreviewResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// The unfinished review session of the path or one document, which its tile resumes.
+export const GetReviewSessionEndpoint = HttpApiEndpoint.get(
+  'GetReviewSession',
+  '/paths/:qualificationPathId/review-session',
+  {
+    params: GetDocumentsParams,
+    query: ReviewScopeQuery,
+    success: StudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// Starts a review session of the most overdue questions; its reads and answers use the session endpoints.
+export const StartReviewSessionEndpoint = HttpApiEndpoint.post(
+  'StartReviewSession',
+  '/paths/:qualificationPathId/review-sessions',
+  {
+    params: GetDocumentsParams,
+    payload: StartReviewSessionPayload,
+    success: StartReviewSessionResponse,
     error: [
       InternalServerError,
       RateLimitExceeded,
@@ -223,6 +270,9 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(GetSessionPreviewEndpoint)
   .add(GetOralMaterialsEndpoint)
   .add(StartSessionEndpoint)
+  .add(GetReviewPreviewEndpoint)
+  .add(GetReviewSessionEndpoint)
+  .add(StartReviewSessionEndpoint)
   .add(GetLatestSessionEndpoint)
   .add(GetSessionEndpoint)
   .add(GetSessionSummaryEndpoint)
