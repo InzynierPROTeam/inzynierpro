@@ -1,15 +1,31 @@
 import type { GetOralMaterialsRes } from '@inzpro/api-client/modules/study'
 import { ratioToPercent } from '@inzpro/domain/common/percent'
 import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
-import { Item, ItemContent, ItemDescription, ItemTitle } from '@inzpro/ui/components/item'
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from '@inzpro/ui/components/item'
 import { Progress, ProgressSkeleton } from '@inzpro/ui/components/progress'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
+import { Link } from '@tanstack/react-router'
+import { ChevronRight } from 'lucide-react'
 import type React from 'react'
 
 type OralCategoryItemProps = { category: GetOralMaterialsRes['data'][number] }
 
 export const OralCategoryItem: React.FC<OralCategoryItemProps> = ({ category }) => (
-  <Item variant="background-soft">
+  <Item
+    variant="background-soft"
+    render={
+      <Link
+        to="/ustny/start"
+        search={{ kategoria: category.id }}
+      />
+    }
+  >
     <ItemContent>
       <ItemTitle>
         <h2>{category.name}</h2>
@@ -29,6 +45,9 @@ export const OralCategoryItem: React.FC<OralCategoryItemProps> = ({ category }) 
         )}
       />
     </ItemContent>
+    <ItemActions>
+      <ChevronRight aria-hidden="true" />
+    </ItemActions>
   </Item>
 )
 

@@ -1,10 +1,9 @@
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
-import { Button } from '@inzpro/ui/components/button'
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@inzpro/ui/components/card'
+import { Card, CardHeader, CardTitle } from '@inzpro/ui/components/card'
 import { hasExamAccess } from '@inzpro/utils/exam-access'
-import { Link } from '@tanstack/react-router'
 import { cx } from 'tailwind-variants'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { LatestOralSessionContent } from '~platform/features/oralSession/components/LatestOralSessionContent'
 
 export const OralLearningTile = () => {
   const { selectedPath } = onboardedRouteApi.useRouteContext()
@@ -23,17 +22,7 @@ export const OralLearningTile = () => {
           <h2>Nauka do egzaminu ustnego</h2>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <p>Przygotuj się do odpowiedzi przed komisją egzaminacyjną.</p>
-      </CardContent>
-      <CardFooter className="mt-auto">
-        <Button
-          nativeButton={false}
-          render={<Link to="/ustny" />}
-        >
-          Zacznij naukę
-        </Button>
-      </CardFooter>
+      <LatestOralSessionContent />
     </Card>
   )
 }
