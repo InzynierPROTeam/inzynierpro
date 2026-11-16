@@ -2,6 +2,7 @@ import { eslintCompatPlugin } from '@oxlint/plugins'
 
 import { apiClientContractsRule } from './rules/api-client-contracts.ts'
 import { backendBoundariesRule } from './rules/backend-boundaries.ts'
+import { commentPolicyRule } from './rules/comment-policy.ts'
 import { dateBoundariesRule } from './rules/date-boundaries.ts'
 import { directoryNamesRule } from './rules/directory-names.ts'
 import { domainIdentifiersRule } from './rules/domain-identifiers.ts'
@@ -27,6 +28,7 @@ import { tracedBackendOperationsRule } from './rules/traced-backend-operations.t
 const conventionsPlugin = eslintCompatPlugin({
   meta: { name: 'conventions' },
   rules: {
+    'comment-policy': commentPolicyRule,
     'query-keys': queryKeysRule,
     'infinite-query-names': infiniteQueryNamesRule,
     'named-component-props': namedComponentPropsRule,

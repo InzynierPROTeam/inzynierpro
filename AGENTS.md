@@ -2,7 +2,7 @@
 
 ### Code conventions
 
-Before changing code, read [CODING_STANDARDS.md](CODING_STANDARDS.md), including backend responsibilities, collection contracts, dates and public onboarding.
+Write self-describing code without narrative comments. Before changing code or delegating implementation, read [CODING_STANDARDS.md](CODING_STANDARDS.md), including its Comments policy, backend responsibilities, collection contracts, dates and public onboarding; pass those standards to implementers.
 
 ### Review workflow
 

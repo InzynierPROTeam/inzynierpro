@@ -5,7 +5,6 @@ import { pathSegments } from './path.ts'
 const kebab = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const camel = /^[a-z][a-zA-Z0-9]*$/
 
-// TanStack Router reads `(group)`, `_pathless` and `$param` folders as route syntax.
 const route = /^(?:\([a-z0-9-]+\)|_{1,2}[a-zA-Z0-9]+|\$[a-zA-Z0-9]+|[a-z0-9-]+)$/
 
 export const directoryNamesRule = defineRule({

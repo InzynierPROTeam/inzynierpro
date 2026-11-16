@@ -14,7 +14,6 @@ const richSchemas = new Set([
   'Class',
 ])
 
-// URL params and query strings are text, so request schemas may decode a number from them.
 const decodesNumberFromString = (node: ESTree.MemberExpression) => {
   const decodeTo = node.parent
 

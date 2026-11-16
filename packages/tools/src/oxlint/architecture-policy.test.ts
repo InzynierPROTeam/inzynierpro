@@ -54,7 +54,6 @@ const undeclaredTargets = (graph: Graph, nodes: ReadonlyArray<string>) =>
 
 const folders = (path: string) =>
   readdirSync(fileURLToPath(new URL(path, import.meta.url)), { withFileTypes: true })
-    // lint-integration.test.ts writes temporary lint-probe-* modules while the suites run in parallel.
     .flatMap(entry =>
       entry.isDirectory() && !entry.name.startsWith('lint-probe-') ? [entry.name] : [],
     )

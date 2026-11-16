@@ -100,7 +100,6 @@ tester.run('anti-slop/require-readable-spacing', requireReadableSpacingRule, {
   ],
 })
 
-// Exercise padding options that the opinionated public rule does not enable.
 tester.run(
   'vendored padding removal',
   createPaddingLineRule([{ blankLine: 'never', prev: '*', next: '*' }]),

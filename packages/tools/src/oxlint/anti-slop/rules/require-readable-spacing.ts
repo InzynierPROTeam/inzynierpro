@@ -9,7 +9,6 @@ function isSinglelineBinding(node: ESTree.Node): boolean {
   return declaration?.type === 'VariableDeclaration' && node.loc.start.line === node.loc.end.line
 }
 
-/** Comments above a statement belong to it; a comment trailing the previous line does not. */
 function hasLeadingComment(node: ESTree.Node, sourceCode: SourceCode): boolean {
   const previousLine = sourceCode.getTokenBefore(node)?.loc.end.line
 
@@ -48,8 +47,6 @@ const paddingRule = createPaddingLineRule(
     },
     { blankLine: 'always', prev: 'block-like', next: '*' },
     { blankLine: 'any', prev: 'import', next: 'import' },
-    // Consecutive single-line bindings form one group at any scope, including
-    // module scope. A binding with its own leading comment starts a new group.
     { blankLine: 'any', prev: 'singleline-binding', next: 'undocumented-singleline-binding' },
     {
       blankLine: 'any',

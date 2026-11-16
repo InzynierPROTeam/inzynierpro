@@ -185,7 +185,6 @@ export const moduleLayersRule = defineRule({
       } else if (target.kind === 'transport' || target.kind === 'middleware') {
         context.report({ node, messageId: 'transport', data: { layer } })
       } else if (target.kind === 'sql') {
-        // Application ports name SQL failures as the cause of their read/write errors.
         if (layer === 'domain' || (layer === 'application' && !typeOnly)) {
           context.report({ node, messageId: 'sql', data: { layer } })
         }

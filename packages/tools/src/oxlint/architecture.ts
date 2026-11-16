@@ -27,11 +27,9 @@ function workspaceOf(filename: string): Workspace | null {
   return { root, group, name }
 }
 
-// Test files, plus test support code kept in a workspace's `src/test` directory.
 const isTest = (path: string) =>
   /\.(test|spec)\.[cm]?[jt]sx?$/.test(path) || /[\\/]src[\\/]test[\\/]/.test(path)
 
-// Relative and `~workspace/` alias imports are compared by their path inside the workspace.
 const isTestSource = (filename: string, source: string) =>
   isTest(
     source.startsWith('.')

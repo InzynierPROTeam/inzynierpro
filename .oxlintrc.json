@@ -47,6 +47,7 @@
     "anti-slop/no-widen-then-assert": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
     "conventions/query-keys": "error",
+    "conventions/comment-policy": "error",
     "conventions/api-client-contracts": "error",
     "conventions/backend-boundaries": "error",
     "conventions/domain-identifiers": "error",
@@ -69,7 +70,6 @@
     "conventions/prefer-cx": "error",
     "conventions/page-sections": "error",
     "conventions/queries-read-only": "error",
-    // The workspace deliberately builds on effect/http and effect/http-api.
     "effecttsgo/unstable-api-usage": "off",
     "anti-slop-effect/no-manual-effect-error-tag": "error",
     "anti-slop-effect/no-manual-tag-comparison": "error",
@@ -210,7 +210,6 @@
             "name": "crypto",
             "message": "Use effect modules: SecureRandom, Digest from 'effect/crypto', or Random from 'effect'."
           },
-          // shadcn generates these imports; this repo styles with tailwind-variants.
           {
             "name": "class-variance-authority",
             "message": "Use tv from 'tailwind-variants' instead of cva."
@@ -231,7 +230,6 @@
       }
     },
     {
-      // Components keep acronyms (VerifyOTPPage.tsx); TanStack Start requires src/router.tsx.
       "files": ["apps/*/src/**/*.tsx"],
       "rules": {
         "unicorn/filename-case": [
@@ -253,12 +251,10 @@
       }
     },
     {
-      // TanStack Router derives routes from file names; Effect's migrator loads <id>_<name> files.
       "files": ["apps/*/src/routes/**", "apps/api/src/migrations/**"],
       "rules": { "unicorn/filename-case": "off" }
     },
     {
-      // Lint tooling runs outside Effect programs.
       "files": ["packages/tools/**/*.ts"],
       "rules": { "no-restricted-imports": "off" }
     },

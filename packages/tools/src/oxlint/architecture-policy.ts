@@ -33,7 +33,6 @@ const clientDependencies = [
 ]
 
 export const applicationDependencies = {
-  // auth-client is used only by the API tests, which sign in as a client would.
   api: [
     'api-contracts',
     'auth',
@@ -47,15 +46,12 @@ export const applicationDependencies = {
     'config',
   ],
   platform: [...clientDependencies, 'ui'],
-  // Browser tests drive the running applications: they sign in through the shared auth client and
-  // type API requests with the contracts.
   e2e: ['api-contracts', 'auth-client'],
   admin: [...clientDependencies, 'ui'],
   web: [...clientDependencies, 'ui'],
   mobile: [...clientDependencies, 'mobile-ui'],
 } as const
 
-// List every API module; dependencies point from personal learning toward shared catalogue data.
 export const apiModuleDependencies = {
   'background-jobs': [],
   'exam-calendar': [],

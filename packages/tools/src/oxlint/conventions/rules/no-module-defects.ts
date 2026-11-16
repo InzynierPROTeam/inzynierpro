@@ -22,7 +22,6 @@ export const noModuleDefectsRule = defineRule({
   create(context) {
     const filename = normalizedPath(context.filename)
 
-    // Test doubles may stand in for a dependency with a defect.
     if (!moduleLayer.test(filename) || /\.test\.tsx?$/.test(filename)) {
       return {}
     }

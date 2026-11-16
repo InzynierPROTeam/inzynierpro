@@ -5,7 +5,6 @@ import { queryKeysRule } from './query-keys.ts'
 const tester = new RuleTester({ languageOptions: { parserOptions: { lang: 'ts' } } })
 const filename = '/repo/packages/queries/src/modules/exam-calendar.ts'
 
-// Concrete keys are owned by XKeys; using options.queryKey remains valid in consumers.
 tester.run('conventions/query-keys', queryKeysRule, {
   valid: [
     { filename, code: 'effectQueryOptions(examKeys.list(req), action(req), client)' },

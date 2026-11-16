@@ -38,7 +38,6 @@ export function resolveArrayBinding(sourceCode: SourceCode, node: ESTree.Node): 
   return null
 }
 
-/** Read static method names, including computed string literals, without evaluating expressions. */
 export function arrayMethodTarget(
   node: ESTree.Node,
 ): { readonly name: string; readonly object: ESTree.Node } | null {
@@ -81,7 +80,6 @@ function isArrayAnnotation(type: ESTree.TSType): boolean {
   )
 }
 
-/** Recognize local array evidence; unknown receivers and iterator pipelines are deliberately excluded. */
 export function isKnownArrayExpression(
   sourceCode: SourceCode,
   node: ESTree.Node,

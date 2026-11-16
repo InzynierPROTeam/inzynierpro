@@ -1,5 +1,3 @@
-// One oxlint run over probe files checks that .oxlintrc.json wires every plugin, path-scoped rule
-// and built-in guard. What each rule reports is covered by its own RuleTester suite.
 import { spawnSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -12,18 +10,26 @@ const root = fileURLToPath(new URL('../../../..', import.meta.url))
 const name = `lint-probe-${randomUUID()}`
 const local = `packages/tools/src/oxlint/${name}`
 
-// Platform feature folders are camelCase, so their probe drops the dashes.
 const featurePath = `apps/platform/src/features/${name.replaceAll('-', '')}`
 const moduleCommand = `apps/api/src/modules/preparation/application/${name}.command.ts`
 
 type Probe = {
   readonly path: string
   readonly code: string
-  /** Rules that must report on the file; an empty list means the file must stay clean. */
   readonly rules: ReadonlyArray<string>
 }
 
 const probes: ReadonlyArray<Probe> = [
+  {
+    path: `${local}/comment-narration.ts`,
+    code: '// The question card explains a missing session.\nexport const value = 1\n',
+    rules: ['comment-policy'],
+  },
+  {
+    path: `${local}/comment-fixture.ts`,
+    code: 'export const value = "// The question card explains a missing session."\n',
+    rules: [],
+  },
   {
     path: `${local}/anti-slop.ts`,
     code: `import { join } from 'node:path'
@@ -163,7 +169,6 @@ export const labels = [1, 2].values().filter(Boolean).map(String).toArray()
   },
 ]
 
-// Imported by the guard probes; not linted itself.
 const deprecatedApi = {
   path: `${local}/guards/api.ts`,
   code: '/** @deprecated Use current instead. */\nexport function legacy() { return 1 }\n\nexport function current() { return 1 }\n',

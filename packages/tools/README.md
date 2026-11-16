@@ -24,11 +24,15 @@ Follow the workspace dependency directions in [policy.ts](../tools/src/oxlint/ar
 
 ## Convention checks
 
+`conventions/comment-policy` rejects ordinary source prose, including JSDoc and JSX comments. It permits only explicit exceptions from [the Comments policy](../../CODING_STANDARDS.md#comments), native tool directives and legal notices. `CONTRACT:` is restricted to HTTP contract sources. Exceptions still require semantic review; the rule neither judges their truth nor deletes comments. It runs through the existing lint, pre-commit and CI commands.
+
 The Oxlint conventions plugin checks infinite-query factory names, named component props, page composition from feature sections, gap-based spacing and read-only query dependencies. The rules and their adjacent regression tests define the exact accepted syntax. They run through the existing lint, pre-commit and CI commands.
 
 Schema ownership (ADR-0027) uses `conventions/module-layers` and `conventions/domain-vocabulary`. The first requires API module files to sit in `domain/`, `application/`, `infrastructure/` or `http/` with that folder's file roles. It also rejects imports that point outward: only `http/` uses `@inzpro/api-contracts` and transport, only `infrastructure/` runs SQL (application may name `SqlError` types), and another module's `infrastructure/` is wired only from `http/`. The second rejects object schemas in `@inzpro/domain`. Tests may sit in any layer and are exempt from the import checks.
 
 `conventions/module-layers` also permits imports from another API module only along `apiModuleDependencies` in the architecture policy, and `architecture-policy.test.ts` keeps the package and module graphs acyclic and the module list equal to the real module folders.
+
+The lint integration test creates temporary source probes, so Turbo orders it after the affected package builds. The architecture policy test also reads API module folders; those folders participate in its cache inputs.
 
 Names combine Oxlint's `unicorn/filename-case` (configured per path in `.oxlintrc.json`) with `conventions/directory-names` for folders, which Oxlint does not check. Its test cases cover kebab-case folders, camelCase feature folders and TanStack route folders.
 

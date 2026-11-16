@@ -86,7 +86,6 @@ export const queryKeysRule = defineRule({
 
         let parent = node.parent
 
-        // The factory visitor already reports a malformed first argument.
         if (
           parent.type === 'CallExpression' &&
           parent.callee.type === 'Identifier' &&

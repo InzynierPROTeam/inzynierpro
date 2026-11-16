@@ -68,11 +68,16 @@ Polish is for UI text, validation feedback shown by applications, e-mails, SEO, 
 
 ## Comments
 
-Make names, types and structure carry the explanation. Keep a comment when it adds information the code does not express: a non-obvious reason, constraint, external workaround or contract meaning. Read the implementation and callers before deciding whether that information is redundant. A public contract comment earns its place through semantics, such as what `null` means or which unit a value uses, rather than merely documenting an exported symbol.
+Default to comment-free code. Names, types, structure and tests express our own behaviour, including business rules, transactions, cache invalidation and navigation choices. Internal models, reader/repository ports and exported functions earn no automatic documentation. Put lasting design decisions in their owning ADR. Remove narration, paraphrases, section banners and commented-out code; a small rename is preferable to an explanation.
 
-Remove paraphrases of names or statements, step-by-step narration (including in tests and scripts), decorative section headings and commented-out code. For example, `// Recently updated assignments first` adds nothing above an explicit descending `updatedAt` sort. Prefer a small rename or local simplification when it makes an explanation unnecessary; keep larger refactors separate and retain necessary context until the code expresses it.
+Source prose is limited to these explicit exceptions, checked by `conventions/comment-policy`:
 
-Keep useful explanations close to the constraint and concise. Refer to the owning ADR or issue for the full decision instead of copying it. Preserve actionable TODOs, required legal notices, tool directives, justified lint suppressions, `SAFETY` evidence and the reason for a `data-testid`. Comment-shaped text in test fixtures is test data. Generated and vendored files follow their owning tools or upstream sources.
+- `EXTERNAL:` explains a verified limitation or workaround imposed by a named library, platform or protocol, or cites the provenance of externally sourced seed data. It is not a label for our own implementation decisions.
+- `CONTRACT:` in `@inzpro/api-contracts` defines genuinely ambiguous public HTTP semantics, such as the meaning of `null`. It does not retell domain rules, endpoint names or field types.
+- `SAFETY:` supplies required evidence for a type assertion; `TESTID:` explains why an accessible selector cannot identify an element.
+- `TODO:` or `TODO(#issue):` names concrete unfinished work.
+
+Keep exceptions short and local. Review their substance: adding a prefix does not make narration acceptable. Tool directives (including justified lint suppressions), compiler annotations and required legal notices retain their native syntax. Comment-shaped test fixtures are data; generated and vendored sources remain owned by their generator or upstream. The lint rule never auto-deletes comments.
 
 ## Semantic primitives
 

@@ -142,7 +142,6 @@ tester.run('conventions/module-layers', moduleLayersRule, {
       code: "import { AuthenticationLive } from '~api/middleware/authentication.js'",
       errors: [{ messageId: 'transport' }],
     },
-    // Modules depend only on the modules apiModuleDependencies permits, so module cycles cannot form.
     {
       filename: file('application/archive-path.command.ts'),
       code: "import { StudyReader } from '~api/modules/study/application/study.reader.js'",
