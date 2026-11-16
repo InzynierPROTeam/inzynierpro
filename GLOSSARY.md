@@ -10,6 +10,15 @@ A shared qualification variant defined by specialization, qualification kind and
 **ExamSession** (UI: _sesja egzaminacyjna_):
 An official exam round organized by a chamber. It is distinct from the user's own exam date, a study session and a mock exam attempt.
 
+**GeneralChamber** (UI: _izba krajowa_):
+A national professional chamber, such as PIIB or IARP, that owns specializations and organizes exam sessions.
+
+**DistrictChamber** (UI: _izba okręgowa_):
+A regional chamber belonging to one general chamber. A user may choose one per path assignment; it filters oral questions reported in that chamber and later matches local dates and contacts.
+
+**RegionalQuestionLink** (UI: _zgłoszenie pytania w izbie_):
+A link between an oral question and a district chamber where it was reported, recording whether it comes from an exam-taker's recollection or an official pool source. It never copies question content.
+
 **QualificationProcess** (UI: _proces kwalifikacyjny_):
 The sequence of formalities and stages leading to a licence: preparing documents, submitting the application and the exams. It is broader than the exam session and than learning progress.
 
@@ -71,7 +80,7 @@ A specific version of the prepared answer to an oral question. Linked knowledge 
 An approved, versioned question that checks understanding of a specific oral answer, used in the optional post-session mini-quiz. It supports the rating of the whole oral question; it is neither a written exam question nor a separate review unit.
 
 **OralSessionQuiz** (UI: _mini-quiz po sesji ustnej_):
-An optional test of knowledge checks covering the material of one oral study session. It is distinct from studying oral answers and from self-assessments.
+An optional set of knowledge checks covering the material of one oral study session, with feedback after each check and no overall score. It is distinct from studying oral answers and from self-assessments.
 
 **OralSelfAssessment** (UI: _samoocena odpowiedzi ustnej_):
 The user's declaration of whether they can answer an oral question on their own: cannot, partially or fully. It is distinct from the mini-quiz result.
