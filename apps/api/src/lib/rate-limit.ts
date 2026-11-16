@@ -6,14 +6,9 @@ import { Digest } from 'effect/crypto'
 import { Headers, HttpEffect, HttpServerRequest, HttpServerResponse } from 'effect/http'
 
 export type RateLimitPolicy = {
-  /** Names the bucket in Redis keys and telemetry. */
   readonly name: string
   readonly limit: number
   readonly window: Duration.Input
-  /**
-   * What a Redis outage means: `allow` serves the request and logs a warning; `reject` answers
-   * with HTTP 500, for endpoints whose abuse costs more than a short outage.
-   */
   readonly whenStoreUnavailable: 'allow' | 'reject'
 }
 
@@ -38,7 +33,6 @@ export const accountWriteLimit: RateLimitPolicy = {
   whenStoreUnavailable: 'reject',
 }
 
-/** The request header that carries the client address set by the proxy, e.g. `cf-connecting-ip`. */
 export const TrustedClientIpHeader = Context.Reference<Option.Option<string>>(
   'api/TrustedClientIpHeader',
   { defaultValue: Option.none },
@@ -48,7 +42,7 @@ type RateLimitOutcome = Data.TaggedEnum<{
   Allowed: { readonly result: RateLimitResult }
   Exceeded: {
     readonly limit: number
-    readonly resetAt: number
+    readonly resetAtUnixSeconds: number
     readonly retryAfterSeconds: number
   }
 }>
@@ -68,7 +62,6 @@ const recordOutcome = (outcome: RateLimitOutcome) =>
     }),
   )
 
-// Keys and telemetry carry a hash, so Redis never stores a raw IP address or account id.
 const hashed = (value: string) =>
   Effect.flatMap(Digest.Digest, digest =>
     digest.digestHex(Digest.sha256, new TextEncoder().encode(value)),
@@ -118,7 +111,7 @@ const consume = Effect.fn('RateLimit.consume')(function* (
               recordOutcome(
                 RateLimitOutcome.Exceeded({
                   limit: exceeded.limit,
-                  resetAt: exceeded.resetAt,
+                  resetAtUnixSeconds: exceeded.resetAtUnixSeconds,
                   retryAfterSeconds: exceeded.retryAfterSeconds,
                 }),
               ),
@@ -144,7 +137,6 @@ const clientAddress = Effect.gen(function* () {
   const request = yield* HttpServerRequest.HttpServerRequest
   const header = yield* TrustedClientIpHeader
 
-  // Behind the proxy only its header is trusted; without one, the socket peer is the client.
   return Option.flatMap(header, name => Headers.get(request.headers, name)).pipe(
     Option.map(value => value.trim()),
     Option.orElse(() => request.remoteAddress),
@@ -162,12 +154,12 @@ const headersFor = RateLimitOutcome.$match({
   Allowed: ({ result }) => ({
     'x-ratelimit-limit': String(result.limit),
     'x-ratelimit-remaining': String(result.remaining),
-    'x-ratelimit-reset': String(result.resetAt),
+    'x-ratelimit-reset': String(result.resetAtUnixSeconds),
   }),
   Exceeded: outcome => ({
     'x-ratelimit-limit': String(outcome.limit),
     'x-ratelimit-remaining': '0',
-    'x-ratelimit-reset': String(outcome.resetAt),
+    'x-ratelimit-reset': String(outcome.resetAtUnixSeconds),
     'retry-after': String(outcome.retryAfterSeconds),
   }),
 })

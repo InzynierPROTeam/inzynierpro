@@ -2,7 +2,6 @@ import { Clock, Context, Data, Duration, Effect, Layer, Schema } from 'effect'
 
 import { Redis } from './index.js'
 
-// Lua returns { remaining after debit, available before debit }; rejected requests keep their tokens.
 const TOKEN_BUCKET_SCRIPT = `
 local key = KEYS[1]
 local refillKey = key .. ':refill'
@@ -47,8 +46,7 @@ const ScriptReply = Schema.Tuple([Schema.Int, Schema.Int])
 export class RateLimitExceeded extends Data.TaggedError('RateLimitExceeded')<{
   readonly limit: number
   readonly retryAfterSeconds: number
-  /** Unix time in seconds when the bucket is full again. */
-  readonly resetAt: number
+  readonly resetAtUnixSeconds: number
 }> {
   override get message() {
     return 'Rate limit exceeded.'
@@ -66,8 +64,7 @@ export class RateLimiterStoreError extends Data.TaggedError('RateLimiterStoreErr
 export type RateLimitResult = {
   readonly limit: number
   readonly remaining: number
-  /** Unix time in seconds when the bucket is full again. */
-  readonly resetAt: number
+  readonly resetAtUnixSeconds: number
 }
 
 export type RateLimitConsumeOptions = {
@@ -113,14 +110,14 @@ export const layer: Layer.Layer<RateLimiter, never, Redis> = Layer.effect(
           return yield* new RateLimitExceeded({
             limit: options.limit,
             retryAfterSeconds: Math.max(1, Math.ceil((-remaining * refillMs) / 1000)),
-            resetAt: Math.ceil((now + (options.limit - available) * refillMs) / 1000),
+            resetAtUnixSeconds: Math.ceil((now + (options.limit - available) * refillMs) / 1000),
           })
         }
 
         return {
           limit: options.limit,
           remaining,
-          resetAt: Math.ceil((now + (options.limit - remaining) * refillMs) / 1000),
+          resetAtUnixSeconds: Math.ceil((now + (options.limit - remaining) * refillMs) / 1000),
         }
       }),
     })
