@@ -1,5 +1,6 @@
 import {
   oralSessionNextStepQueryOptions,
+  oralSessionQuizQueryOptions,
   oralSessionResultsInfiniteQueryOptions,
   oralSessionSummaryQueryOptions,
 } from '@inzpro/queries/modules/study'
@@ -28,6 +29,9 @@ export const Route = createFileRoute(
         oralSessionNextStepQueryOptions(apiHttpClient, session.user.id, {
           params: sessionParams,
         }),
+      ),
+      queryClient.query(
+        oralSessionQuizQueryOptions(apiHttpClient, session.user.id, { params: sessionParams }),
       ),
       queryClient.infiniteQuery(
         oralSessionResultsInfiniteQueryOptions(apiHttpClient, session.user.id, {

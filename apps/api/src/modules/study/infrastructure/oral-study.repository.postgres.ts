@@ -11,6 +11,7 @@ import { Array as Arr, DateTime, Effect, Layer, Option, Predicate, Schema } from
 import { SqlClient, type Statement } from 'effect/sql'
 import { QuestionNoteWriteError, StudyWriteError } from '~api/modules/study/application/errors.js'
 import { OralStudyRepository } from '~api/modules/study/application/oral-study.repository.js'
+import { OralReviewEvidence } from '~api/modules/study/domain/oral-review-state.model.js'
 import { OralStudySession } from '~api/modules/study/domain/oral-study-session.model.js'
 import { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import { LearningEventId } from '~api/modules/study/domain/review-state.model.js'
@@ -94,17 +95,31 @@ export const OralStudyRepositoryLive = Layer.effect(
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
       storeReviewState: Effect.fn('OralStudyRepository.storeReviewState')(function* (state) {
-        const { card } = state
+        const { card, evidence } = state
+
+        const { learningEventId, quizId, quizPosition } = OralReviewEvidence.$match(evidence, {
+          SelfAssessment: ({ learningEventId }) => ({
+            learningEventId,
+            quizId: null,
+            quizPosition: null,
+          }),
+          QuizAnswer: ({ quizId, position }) => ({
+            learningEventId: null,
+            quizId,
+            quizPosition: position,
+          }),
+        })
+
         const dueAt = DateTime.formatIso(card.dueAt)
 
         const lastReviewAt = Option.map(card.lastReviewAt, DateTime.formatIso).pipe(
           Option.getOrNull,
         )
 
-        return yield* sql`INSERT INTO oral_review_states (user_id,qualification_path_id,question_id,substantive_revision_id,learning_event_id,rules_version,due_at,last_review_at,stability,stability_fast,difficulty,state,schedule_status,reps,lapses,scheduled_days,learning_step)
- SELECT ${state.userId},${state.qualificationPathId},${state.questionId},r.substantive_revision_id,${state.learningEventId},${state.rulesVersion},${dueAt},${lastReviewAt},${card.stability},${card.stabilityFast},${card.difficulty},${card.state},${card.scheduleStatus},${card.reps},${card.lapses},${card.scheduledDays},${card.learningStep}
+        return yield* sql`INSERT INTO oral_review_states (user_id,qualification_path_id,question_id,substantive_revision_id,learning_event_id,quiz_id,quiz_position,rules_version,due_at,last_review_at,stability,stability_fast,difficulty,state,schedule_status,reps,lapses,scheduled_days,learning_step)
+ SELECT ${state.userId},${state.qualificationPathId},${state.questionId},r.substantive_revision_id,${learningEventId},${quizId},${quizPosition},${state.rulesVersion},${dueAt},${lastReviewAt},${card.stability},${card.stabilityFast},${card.difficulty},${card.state},${card.scheduleStatus},${card.reps},${card.lapses},${card.scheduledDays},${card.learningStep}
  FROM oral_revisions r WHERE r.id=${state.oralRevisionId} AND r.question_id=${state.questionId}
- ON CONFLICT (user_id,qualification_path_id,question_id) DO UPDATE SET substantive_revision_id=EXCLUDED.substantive_revision_id,learning_event_id=EXCLUDED.learning_event_id,rules_version=EXCLUDED.rules_version,due_at=EXCLUDED.due_at,last_review_at=EXCLUDED.last_review_at,stability=EXCLUDED.stability,stability_fast=EXCLUDED.stability_fast,difficulty=EXCLUDED.difficulty,state=EXCLUDED.state,schedule_status=EXCLUDED.schedule_status,reps=EXCLUDED.reps,lapses=EXCLUDED.lapses,scheduled_days=EXCLUDED.scheduled_days,learning_step=EXCLUDED.learning_step
+ ON CONFLICT (user_id,qualification_path_id,question_id) DO UPDATE SET substantive_revision_id=EXCLUDED.substantive_revision_id,learning_event_id=EXCLUDED.learning_event_id,quiz_id=EXCLUDED.quiz_id,quiz_position=EXCLUDED.quiz_position,rules_version=EXCLUDED.rules_version,due_at=EXCLUDED.due_at,last_review_at=EXCLUDED.last_review_at,stability=EXCLUDED.stability,stability_fast=EXCLUDED.stability_fast,difficulty=EXCLUDED.difficulty,state=EXCLUDED.state,schedule_status=EXCLUDED.schedule_status,reps=EXCLUDED.reps,lapses=EXCLUDED.lapses,scheduled_days=EXCLUDED.scheduled_days,learning_step=EXCLUDED.learning_step
  RETURNING 1`.pipe(
           Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([Schema.Unknown]))),
           Effect.asVoid,

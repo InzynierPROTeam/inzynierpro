@@ -9,7 +9,12 @@ import {
 
 import {
   QuestionNotFound,
+  InvalidOralQuizSelection,
   InvalidOralSelfAssessment,
+  OralQuizCheckAlreadyAnswered,
+  OralQuizCheckNotFound,
+  OralQuizFormatUnsupported,
+  OralQuizUnavailable,
   OralCategoryNotFound,
   OralSelfAssessmentAlreadySubmitted,
   OralSessionAlreadyStarted,
@@ -20,6 +25,10 @@ import {
   StudySessionNotFound,
 } from './errors.js'
 import {
+  OralQuizCheckParams,
+  OralQuizChecksQuery,
+  AnswerOralQuizCheckPayload,
+  StartOralSessionQuizPayload,
   SaveQuestionNotePayload,
   OralFavoriteQuestionParams,
   StartOralFavoritesSessionPayload,
@@ -36,6 +45,10 @@ import {
   SubmitOralSelfAssessmentPayload,
 } from './requests.js'
 import {
+  AnswerOralQuizCheckResponse,
+  OralQuizChecksResponse,
+  OralSessionQuizStateResponse,
+  StartOralSessionQuizResponse,
   OralQuestionNoteResult,
   OralFavoriteQuestion,
   OralFavoritesPreviewResponse,
@@ -306,6 +319,66 @@ export const ClearOralQuestionNoteEndpoint = HttpApiEndpoint.delete(
   },
 )
 
+export const GetOralSessionQuizEndpoint = HttpApiEndpoint.get(
+  'GetOralSessionQuiz',
+  '/paths/:qualificationPathId/oral/sessions/:sessionId/quiz',
+  {
+    params: OralSessionParams,
+    success: OralSessionQuizStateResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// CONTRACT: Starting again returns the session's existing quiz with its fixed checks.
+export const StartOralSessionQuizEndpoint = HttpApiEndpoint.post(
+  'StartOralSessionQuiz',
+  '/paths/:qualificationPathId/oral/sessions/:sessionId/quiz',
+  {
+    params: OralSessionParams,
+    payload: StartOralSessionQuizPayload,
+    success: StartOralSessionQuizResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      StudySessionNotFound,
+      OralQuizUnavailable,
+      OralQuizFormatUnsupported,
+    ],
+  },
+)
+
+// CONTRACT: A session without a quiz, or another learner's session, returns an empty page.
+export const GetOralQuizChecksEndpoint = HttpApiEndpoint.get(
+  'GetOralQuizChecks',
+  '/paths/:qualificationPathId/oral/sessions/:sessionId/quiz/checks',
+  {
+    params: OralSessionParams,
+    query: OralQuizChecksQuery,
+    success: OralQuizChecksResponse,
+    error: [InternalServerError, RateLimitExceeded, InvalidRequest, PathAccessDenied],
+  },
+)
+
+// CONTRACT: Retrying the same answer returns the stored result; a different answer conflicts.
+export const AnswerOralQuizCheckEndpoint = HttpApiEndpoint.post(
+  'AnswerOralQuizCheck',
+  '/paths/:qualificationPathId/oral/sessions/:sessionId/quiz/checks/:position/answer',
+  {
+    params: OralQuizCheckParams,
+    payload: AnswerOralQuizCheckPayload,
+    success: AnswerOralQuizCheckResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      OralQuizCheckNotFound,
+      OralQuizCheckAlreadyAnswered,
+      InvalidOralQuizSelection,
+    ],
+  },
+)
+
 export const OralStudyApi = HttpApiGroup.make('OralStudy')
   .add(ClearOralQuestionNoteEndpoint)
   .add(SaveOralQuestionNoteEndpoint)
@@ -328,5 +401,9 @@ export const OralStudyApi = HttpApiGroup.make('OralStudy')
   .add(EndOralSessionEndpoint)
   .add(GetOralSessionQuestionEndpoint)
   .add(SubmitOralSelfAssessmentEndpoint)
+  .add(GetOralSessionQuizEndpoint)
+  .add(StartOralSessionQuizEndpoint)
+  .add(GetOralQuizChecksEndpoint)
+  .add(AnswerOralQuizCheckEndpoint)
   .middleware(Authentication)
   .prefix('/study')

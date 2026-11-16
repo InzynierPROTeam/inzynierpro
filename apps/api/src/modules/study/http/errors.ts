@@ -1,5 +1,10 @@
 import {
   DocumentNotFound,
+  InvalidOralQuizSelection,
+  OralQuizCheckAlreadyAnswered,
+  OralQuizCheckNotFound,
+  OralQuizFormatUnsupported,
+  OralQuizUnavailable,
   InvalidOralSelfAssessment,
   InvalidSessionAnswer,
   OralCategoryNotFound,
@@ -128,5 +133,40 @@ export const oralSelfAssessmentAlreadySubmitted = Effect.fail(
   new OralSelfAssessmentAlreadySubmitted({
     type: 'oral_self_assessment_already_submitted',
     message: 'This question already has a self-assessment in this session.',
+  }),
+)
+
+export const oralQuizUnavailable = Effect.fail(
+  new OralQuizUnavailable({
+    type: 'oral_quiz_unavailable',
+    message: 'This oral session has no knowledge checks to offer in the supported formats.',
+  }),
+)
+
+export const oralQuizFormatUnsupported = Effect.fail(
+  new OralQuizFormatUnsupported({
+    type: 'oral_quiz_format_unsupported',
+    message: 'This quiz contains a check format the client does not support. Update the app.',
+  }),
+)
+
+export const oralQuizCheckNotFound = Effect.fail(
+  new OralQuizCheckNotFound({
+    type: 'oral_quiz_check_not_found',
+    message: 'The quiz check was not found.',
+  }),
+)
+
+export const invalidOralQuizSelection = Effect.fail(
+  new InvalidOralQuizSelection({
+    type: 'invalid_oral_quiz_selection',
+    message: 'The selected options do not fit this quiz check.',
+  }),
+)
+
+export const oralQuizCheckAlreadyAnswered = Effect.fail(
+  new OralQuizCheckAlreadyAnswered({
+    type: 'oral_quiz_check_already_answered',
+    message: 'This quiz check already has a final answer.',
   }),
 )

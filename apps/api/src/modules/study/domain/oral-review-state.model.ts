@@ -7,10 +7,15 @@ import type {
 import type { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type {
+  OralQuizCheckPosition,
+  OralSessionQuizId,
+} from '@inzpro/domain/modules/study/oral-session-quiz'
+import type {
   OralSelfAssessment,
   OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
 import type { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
+import { Data } from 'effect'
 
 import type { LearningEventId, LearningMode, ReviewCard } from './review-state.model.js'
 
@@ -29,12 +34,19 @@ export type NewOralEvidence = {
   readonly answeredAt: DateTimeUtc
 }
 
+export type OralReviewEvidence = Data.TaggedEnum<{
+  SelfAssessment: { readonly learningEventId: LearningEventId }
+  QuizAnswer: { readonly quizId: OralSessionQuizId; readonly position: OralQuizCheckPosition }
+}>
+
+export const OralReviewEvidence = Data.taggedEnum<OralReviewEvidence>()
+
 export type NewOralReviewState = {
   readonly userId: UserId
   readonly qualificationPathId: QualificationPathId
   readonly questionId: OralQuestionId
   readonly oralRevisionId: OralRevisionId
-  readonly learningEventId: LearningEventId
+  readonly evidence: OralReviewEvidence
   readonly rulesVersion: string
   readonly card: ReviewCard
 }

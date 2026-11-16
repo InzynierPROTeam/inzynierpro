@@ -1,6 +1,10 @@
 import { UtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { Percent } from '@inzpro/domain/common/percent'
 import {
+  KnowledgeCheckFormat,
+  OralKnowledgeCheckOptionId,
+} from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
+import {
   OralQuestionId,
   OralRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-question'
@@ -15,6 +19,10 @@ import {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import {
+  OralQuizCheckPosition,
+  OralSessionQuizId,
+} from '@inzpro/domain/modules/study/oral-session-quiz'
 import {
   OralSelfAssessment,
   OralStudySessionId,
@@ -417,3 +425,61 @@ export const OralQuestionNoteResult = Schema.Struct({
 })
 
 export type OralQuestionNoteResult = typeof OralQuestionNoteResult.Type
+
+export const OralQuizCheckOption = Schema.Struct({
+  id: OralKnowledgeCheckOptionId,
+  text: Schema.NonEmptyString,
+})
+
+export const OralQuizCheckResult = Schema.Struct({
+  isCorrect: Schema.Boolean,
+  selectedOptionIds: Schema.Array(OralKnowledgeCheckOptionId),
+  correctOptionIds: Schema.Array(OralKnowledgeCheckOptionId),
+  explanation: ResolvedRichContent,
+  answeredAt: UtcIsoDateTime,
+})
+
+export type OralQuizCheckResult = typeof OralQuizCheckResult.Type
+
+export const OralQuizCheck = Schema.Struct({
+  position: OralQuizCheckPosition,
+  format: KnowledgeCheckFormat,
+  prompt: Schema.NonEmptyString,
+  options: Schema.Array(OralQuizCheckOption),
+  // CONTRACT: result is null until the check is answered.
+  result: Schema.NullOr(OralQuizCheckResult),
+})
+
+export type OralQuizCheck = typeof OralQuizCheck.Type
+
+export const OralQuizChecksResponse = CursorPaginatedResponse(OralQuizCheck)
+
+export const OralSessionQuiz = Schema.Struct({
+  id: OralSessionQuizId,
+  sessionId: OralStudySessionId,
+  checkCount: QuestionCount,
+  answeredCount: QuestionCount,
+  isCompleted: Schema.Boolean,
+})
+
+export type OralSessionQuiz = typeof OralSessionQuiz.Type
+
+export const OralSessionQuizState = Schema.Struct({
+  quiz: Schema.NullOr(OralSessionQuiz),
+  // CONTRACT: availableFormats lists the formats a new quiz could draw; it is empty while the session is unfinished and once its quiz exists.
+  availableFormats: Schema.Array(KnowledgeCheckFormat),
+})
+
+export type OralSessionQuizState = typeof OralSessionQuizState.Type
+
+// CONTRACT: null means the oral session does not belong to the learner on this path.
+export const OralSessionQuizStateResponse = Schema.NullOr(OralSessionQuizState)
+
+export const StartOralSessionQuizResponse = OralSessionQuiz
+
+export const AnswerOralQuizCheckResponse = Schema.Struct({
+  check: OralQuizCheck,
+  quiz: OralSessionQuiz,
+})
+
+export type AnswerOralQuizCheckResponse = typeof AnswerOralQuizCheckResponse.Type

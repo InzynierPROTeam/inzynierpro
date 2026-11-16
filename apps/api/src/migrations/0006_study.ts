@@ -235,12 +235,66 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
     FOREIGN KEY (question_id, oral_revision_id) REFERENCES oral_revisions(question_id, id)
   )`
   yield* sql`CREATE INDEX oral_learning_events_question_time ON oral_learning_events (user_id, qualification_path_id, question_id, answered_at)`
+  yield* sql`CREATE TABLE oral_session_quizzes (
+    id uuid PRIMARY KEY DEFAULT uuidv7(),
+    study_session_id uuid NOT NULL UNIQUE REFERENCES oral_study_sessions(id) ON DELETE CASCADE,
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    UNIQUE (id, study_session_id)
+  )`
+  yield* sql`CREATE TABLE oral_session_quiz_checks (
+    quiz_id uuid NOT NULL,
+    position integer NOT NULL CHECK (position > 0),
+    study_session_id uuid NOT NULL,
+    session_position integer NOT NULL,
+    oral_revision_id uuid NOT NULL,
+    knowledge_check_revision_id uuid NOT NULL REFERENCES oral_knowledge_check_revisions(id),
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    PRIMARY KEY (quiz_id, position),
+    UNIQUE (quiz_id, knowledge_check_revision_id),
+    UNIQUE (quiz_id, position, knowledge_check_revision_id),
+    FOREIGN KEY (quiz_id, study_session_id) REFERENCES oral_session_quizzes(id, study_session_id) ON DELETE CASCADE,
+    FOREIGN KEY (study_session_id, session_position, oral_revision_id) REFERENCES oral_study_session_questions(study_session_id, position, oral_revision_id) ON DELETE CASCADE
+  )`
+  yield* sql`CREATE TABLE oral_session_quiz_options (
+    quiz_id uuid NOT NULL,
+    position integer NOT NULL,
+    knowledge_check_revision_id uuid NOT NULL,
+    option_position smallint NOT NULL CHECK (option_position > 0),
+    option_id uuid NOT NULL,
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    PRIMARY KEY (quiz_id, position, option_position),
+    UNIQUE (quiz_id, position, option_id),
+    FOREIGN KEY (quiz_id, position, knowledge_check_revision_id) REFERENCES oral_session_quiz_checks(quiz_id, position, knowledge_check_revision_id) ON DELETE CASCADE,
+    FOREIGN KEY (knowledge_check_revision_id, option_id) REFERENCES oral_knowledge_check_options(knowledge_check_revision_id, id)
+  )`
+  yield* sql`CREATE TABLE oral_session_quiz_answers (
+    quiz_id uuid NOT NULL,
+    position integer NOT NULL,
+    is_correct boolean NOT NULL,
+    answered_at timestamptz(3) NOT NULL,
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    PRIMARY KEY (quiz_id, position),
+    FOREIGN KEY (quiz_id, position) REFERENCES oral_session_quiz_checks(quiz_id, position) ON DELETE CASCADE
+  )`
+  yield* sql`CREATE TABLE oral_session_quiz_answer_options (
+    quiz_id uuid NOT NULL,
+    position integer NOT NULL,
+    option_id uuid NOT NULL,
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    PRIMARY KEY (quiz_id, position, option_id),
+    FOREIGN KEY (quiz_id, position) REFERENCES oral_session_quiz_answers(quiz_id, position) ON DELETE CASCADE,
+    FOREIGN KEY (quiz_id, position, option_id) REFERENCES oral_session_quiz_options(quiz_id, position, option_id) ON DELETE CASCADE
+  )`
   yield* sql`CREATE TABLE oral_review_states (
     user_id uuid NOT NULL,
     qualification_path_id uuid NOT NULL,
     question_id uuid NOT NULL,
     substantive_revision_id uuid NOT NULL,
-    learning_event_id uuid NOT NULL REFERENCES oral_learning_events(id) ON DELETE CASCADE,
+    learning_event_id uuid REFERENCES oral_learning_events(id) ON DELETE CASCADE,
+    quiz_id uuid,
+    quiz_position integer,
+    CONSTRAINT oral_review_states_evidence CHECK (num_nonnulls(learning_event_id, quiz_id) = 1 AND (quiz_id IS NULL) = (quiz_position IS NULL)),
+    FOREIGN KEY (quiz_id, quiz_position) REFERENCES oral_session_quiz_answers(quiz_id, position) ON DELETE CASCADE,
     rules_version text NOT NULL CHECK (length(rules_version) > 0),
     due_at timestamptz(3) NOT NULL,
     last_review_at timestamptz(3),

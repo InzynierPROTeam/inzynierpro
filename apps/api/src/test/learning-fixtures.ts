@@ -1,6 +1,7 @@
 import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { databaseLayerFromConfig } from '@inzpro/db'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import type { KnowledgeCheckFormat } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import type {
   OralQuestionId,
   OralRevisionId,
@@ -20,6 +21,7 @@ import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastru
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import {
   ContentAsset,
+  NewOralKnowledgeCheck,
   NewOralQuestion,
   NewOralRevision,
   NewQuestion,
@@ -402,5 +404,36 @@ export const withdrawFixtureOralRevision = (
       const withdrawal = yield* Schema.decodeEffect(OralRevisionWithdrawal)({ revisionId, reason })
 
       yield* learningContentRepository.withdrawOralRevision(withdrawal)
+    }),
+  )
+
+type FixtureKnowledgeCheckOption = { readonly text: string; readonly isCorrect: boolean }
+
+export const addFixtureKnowledgeCheck = (
+  questionId: OralQuestionId,
+  oralRevisionId: OralRevisionId,
+  format: KnowledgeCheckFormat,
+  options: ReadonlyArray<FixtureKnowledgeCheckOption>,
+  published = true,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const check = yield* Schema.decodeEffect(NewOralKnowledgeCheck)({
+        id: crypto.randomUUID(),
+        revisionId: crypto.randomUUID(),
+        questionId,
+        oralRevisionId,
+        format,
+        prompt: `Test-only ${format} check`,
+        options: options.map(option => ({ id: crypto.randomUUID(), ...option })),
+        explanation: paragraphs('Test-only check explanation'),
+        published,
+      })
+
+      yield* learningContentRepository.createKnowledgeCheck(check)
+
+      return check
     }),
   )

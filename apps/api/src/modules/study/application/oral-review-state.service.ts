@@ -1,6 +1,7 @@
 import { Effect, Option } from 'effect'
 import {
   oralReviewRulesVersion,
+  OralReviewEvidence,
   type NewOralEvidence,
 } from '~api/modules/study/domain/oral-review-state.model.js'
 import { oralReviewRating, studyDayOf } from '~api/modules/study/domain/review-state.rules.js'
@@ -40,7 +41,7 @@ export const recordOralEvidence = Effect.fn('Study.recordOralEvidence')(function
       qualificationPathId,
       questionId,
       oralRevisionId,
-      learningEventId,
+      evidence: OralReviewEvidence.SelfAssessment({ learningEventId }),
       rulesVersion: oralReviewRulesVersion,
       card: reviewScheduler.review(questionId, card, rating.value, answeredAt),
     })

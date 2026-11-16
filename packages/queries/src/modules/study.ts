@@ -29,6 +29,10 @@ import {
   type GetOralSessionResultsRequest,
   getOralSessionQuestion,
   type GetOralSessionQuestionRequest,
+  getOralSessionQuiz,
+  type GetOralSessionQuizRequest,
+  getOralQuizChecks,
+  type GetOralQuizChecksRequest,
   getLatestSession,
   type GetLatestSessionRequest,
   getReviewPreview,
@@ -203,6 +207,18 @@ export const studyKeys = {
     ] as const,
   getOralSessionQuestion: (userId: UserId, req: GetOralSessionQuestionRequest) =>
     [...studyKeys.oralQuestions(userId), 'getOralSessionQuestion', req] as const,
+  getOralSessionQuiz: (userId: UserId, req: GetOralSessionQuizRequest) =>
+    [
+      ...studyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getOralSessionQuiz',
+      req,
+    ] as const,
+  getOralQuizChecksInfinite: (userId: UserId, req: GetOralQuizChecksRequest) =>
+    [
+      ...studyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getOralQuizChecksInfinite',
+      req,
+    ] as const,
 }
 
 export const documentsInfiniteQueryOptions = (
@@ -436,4 +452,23 @@ export const oralFavoritesSessionQueryOptions = (
     studyKeys.getOralFavoritesSession(userId, req),
     getOralFavoritesSession(req),
     httpClient,
+  )
+
+export const oralSessionQuizQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralSessionQuizRequest,
+) =>
+  effectQueryOptions(studyKeys.getOralSessionQuiz(userId, req), getOralSessionQuiz(req), httpClient)
+
+export const oralQuizChecksInfiniteQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralQuizChecksRequest,
+) =>
+  effectInfiniteQueryOptions(
+    studyKeys.getOralQuizChecksInfinite(userId, req),
+    cursor => getOralQuizChecks({ ...req, query: { ...req.query, cursor } }),
+    httpClient,
+    req.query.cursor,
   )
