@@ -22,7 +22,6 @@ export const AccessExtension = ({ pathId, userId, onExtended }: AccessExtensionP
         wybraną sesję egzaminacyjną.
       </p>
       <Button
-        className="h-auto min-h-10 py-3 whitespace-normal"
         disabled={mutation.isPending}
         onClick={() =>
           toast.promise(
