@@ -62,7 +62,9 @@ type OralSessionContentProps = { session: OralStudySession }
 const ActiveOralSessionContent: React.FC<OralSessionContentProps> = ({ session }) => (
   <>
     <CardContent className="flex flex-col gap-2">
-      <CardDescription className="line-clamp-2">{session.category.name}</CardDescription>
+      <CardDescription className="line-clamp-2">
+        {session.category?.name ?? 'Wszystkie kategorie'}
+      </CardDescription>
       <SessionProgress progress={session.progress} />
     </CardContent>
     <CardFooter className="mt-auto">
@@ -90,7 +92,9 @@ const EndedOralSessionContent: React.FC<OralSessionContentProps> = ({ session })
           Zobacz podsumowanie
         </Button>
       </div>
-      <CardDescription className="line-clamp-2">{session.category.name}</CardDescription>
+      <CardDescription className="line-clamp-2">
+        {session.category?.name ?? 'Wszystkie kategorie'}
+      </CardDescription>
       <SessionProgress progress={session.progress} />
     </CardContent>
     <CardFooter className="mt-auto">
@@ -99,7 +103,7 @@ const EndedOralSessionContent: React.FC<OralSessionContentProps> = ({ session })
         render={
           <Link
             to="/ustny/start"
-            search={{ 'obecna-kategoria': session.category.id }}
+            search={{ 'obecna-kategoria': session.category?.id }}
           />
         }
       >

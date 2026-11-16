@@ -5,6 +5,10 @@ import {
   type GetDocumentsRequest,
   getSessionPreview,
   type GetSessionPreviewRequest,
+  getOralReviewPreview,
+  type GetOralReviewPreviewRequest,
+  getOralReviewSession,
+  type GetOralReviewSessionRequest,
   getOralMaterials,
   type GetOralMaterialsRequest,
   getOralSessionPreview,
@@ -125,6 +129,18 @@ export const studyKeys = {
     ] as const,
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
     [...studyKeys.questions(userId), 'getSessionQuestion', req] as const,
+  getOralReviewPreview: (userId: UserId, req: GetOralReviewPreviewRequest) =>
+    [
+      ...studyKeys.oralProgress(userId, req.params.qualificationPathId),
+      'getOralReviewPreview',
+      req,
+    ] as const,
+  getOralReviewSession: (userId: UserId, req: GetOralReviewSessionRequest) =>
+    [
+      ...studyKeys.oralProgress(userId, req.params.qualificationPathId),
+      'getOralReviewSession',
+      req,
+    ] as const,
   oralProgress: (userId: UserId, pathId: QualificationPathId) =>
     [...studyKeys.path(userId, pathId), 'oralProgress'] as const,
   getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
@@ -366,4 +382,26 @@ export const oralSessionResultsInfiniteQueryOptions = (
     cursor => getOralSessionResults({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
+  )
+
+export const oralReviewPreviewQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralReviewPreviewRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralReviewPreview(userId, req),
+    getOralReviewPreview(req),
+    httpClient,
+  )
+
+export const oralReviewSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralReviewSessionRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralReviewSession(userId, req),
+    getOralReviewSession(req),
+    httpClient,
   )

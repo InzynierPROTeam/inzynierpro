@@ -1,6 +1,6 @@
 # Oral study
 
-How oral material is stored, how the oral catalogue is read and how an oral study session runs from preview to summary. Oral reviews, favourites, notes and the mini-quiz follow in later stages of [#56](https://github.com/InzynierPROTeam/inzynierpro/issues/56). The decisions are [ADR-0002](adr/0002-study-session-lifecycle.md) (session lifecycle and rounds), [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal), [ADR-0005](adr/0005-srs-evidence-and-written-oral-separation.md) (separate oral tables), [ADR-0006](adr/0006-oral-study-and-knowledge-check-quiz.md) (oral study) and [ADR-0008](adr/0008-written-document-groups-and-oral-categories.md) (oral categories). Endpoints below sit under `/study/paths/:qualificationPathId/oral` and require oral access.
+How oral material is stored, how the oral catalogue is read and how an oral study session runs from preview to summary. Oral favourites, notes and the mini-quiz follow in later stages of [#56](https://github.com/InzynierPROTeam/inzynierpro/issues/56). The decisions are [ADR-0002](adr/0002-study-session-lifecycle.md) (session lifecycle and rounds), [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal), [ADR-0005](adr/0005-srs-evidence-and-written-oral-separation.md) (separate oral tables), [ADR-0006](adr/0006-oral-study-and-knowledge-check-quiz.md) (oral study) and [ADR-0008](adr/0008-written-document-groups-and-oral-categories.md) (oral categories). Endpoints below sit under `/study/paths/:qualificationPathId/oral` and require oral access.
 
 ## Content model
 
@@ -57,7 +57,7 @@ A read that finds nothing for the learner returns HTTP 200 with `null`.
 | `GET /sessions/:sessionId/results`        | A cursor page of positions, each with its self-assessment or withdrawal. Empty until the session ends.        |
 | `GET /sessions/:sessionId/next-step`      | `continue-study` with the most recently used unfinished oral session, otherwise `start-study` with a preview. |
 
-The next step continues from the session's category as `fromCategoryId` does. Oral reviews join it in [#61](https://github.com/InzynierPROTeam/inzynierpro/issues/61).
+After a review, the next step offers remaining due questions in the same category, then the whole path. After regular study it offers a review once at least ten oral questions are due. Otherwise it continues the latest unfinished regular session, or starts regular study from the session's category as `fromCategoryId` does.
 
 ## Self-assessment
 
@@ -85,10 +85,22 @@ The technical seed has three oral categories with four questions each, assigned 
 
 ## SRS
 
-Every accepted self-assessment records its raw value, session mode (`study`, `review`, `favourites`), revision, goal version and backend answer time in `oral_learning_events`. Regular sessions currently produce `study`; reviews and favourites will use the same evidence operation. The event, self-assessment, review state and round progress commit together under the account lock. Retrying an already stored self-assessment returns the original result without recording another event or applying FSRS again.
+Every accepted self-assessment records its raw value, session mode (`study`, `review`, `favourites`), revision, goal version and backend answer time in `oral_learning_events`. Regular sessions produce `study` and review sessions produce `review`; favourites will use the same evidence operation. The event, self-assessment, review state and round progress commit together under the account lock. Retrying an already stored self-assessment returns the original result without recording another event or applying FSRS again.
 
 `oral_review_states` stores a card per user, path and oral question, separate from written cards. Both use the pinned `ts-fsrs` scheduler with default parameters, desired retention 0.9 and fuzz disabled; the oral interpretation is versioned as `oral-1/fsrs-7`. This follows ADR-0005 rather than V1’s SM-2 scheduler, which has no oral self-assessment mapping.
 
 „Trudne” maps to Again, „Średnie” to Hard and „Łatwe” to Good. Only the first self-assessment of current substantive content on a Europe/Warsaw day changes the card, except that a later „Trudne” still applies Again. Later successes remain in history without changing the schedule. Revealing the oral answer is never assistance.
 
 A substantive revision makes the stored card obsolete on every path: reads treat it as a new card and the next current-content self-assessment starts from new. Cosmetic revisions keep the card and share its study-day history. A session pinned to replaced substantive content still records its self-assessments, but cannot update the new card or consume its first self-assessment of the day. The same substantive-revision identity uncovers the question in the current round. History is preserved.
+
+## Oral reviews
+
+`GET /review-preview[?categoryId=]` returns due questions for the whole path or one category. Due means `due_at <= now` for a question still assigned to the path with current published, non-withdrawn substantive content matching its oral review state. A self-assessment of the current substantive content on a Europe/Warsaw day makes the question unavailable to new reviews until at least the next local midnight, without changing the stored SRS due time. `nextDueAt` includes this availability boundary. This follows the written review queue and prevents repeated same-day reviews whose successful assessments cannot update SRS again. The queue orders eligible questions by due time, then question ID. It never fills a session with future or unseen questions.
+
+The preview offers ten questions or the due count if smaller, and allows any count from one to the due count. With no due questions, `settings` is null and `nextDueAt` is the earliest future due time, or null if none exists. An unavailable category returns null.
+
+`POST /review-sessions` accepts an optional `categoryId` and `questionCount`. Under the account lock it validates access, scope and current availability, pins current revisions, and refuses an unavailable count with `StaleSessionPreview`. `GET /review-session` returns the unfinished review for the exact scope. Sessions share `oral_study_sessions`, whose `kind` and nullable category distinguish regular study, category reviews and whole-path reviews. A unique index permits one unfinished session per account, path, kind and scope. Regular-study continuation excludes reviews.
+
+Reviews reuse oral self-assessment, withdrawal, resume, ending and summary endpoints. Their answers record `review` learning events and update oral SRS under its existing study-day policy, without writing coverage or advancing the oral round.
+
+The Start screen has a separate oral Reviews tile with due count or the next due time, or an action resuming its unfinished whole-path review. Each oral category links to `/ustny/powtorka?kategoria=...`. The preview preserves the category and question count in the URL, resumes an existing review and shows the next due time when empty. Sessions and summaries use the existing oral routes; a whole-path session is labelled „Wszystkie kategorie”. Review queries live in `studyKeys.oralProgress`, so self-assessment refreshes their queue and continuation state.

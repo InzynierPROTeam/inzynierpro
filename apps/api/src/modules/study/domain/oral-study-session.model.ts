@@ -12,14 +12,18 @@ import {
   type OralSelfAssessment,
   OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
-import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
+import {
+  StudySessionKind,
+  SessionQuestionPosition,
+} from '@inzpro/domain/modules/study/study-session'
 import type { RichContent } from '@inzpro/rich-content/rich-content'
 import { type Option, Schema } from 'effect'
 
 export const OralStudySession = Schema.Struct({
   id: OralStudySessionId,
-  categoryId: OralQuestionCategoryId,
-  categoryName: Schema.NonEmptyString,
+  kind: StudySessionKind,
+  categoryId: Schema.OptionFromNullOr(OralQuestionCategoryId),
+  categoryName: Schema.OptionFromNullOr(Schema.NonEmptyString),
   goalVersion: UserExamGoalVersion,
   questionCount: QuestionCount,
   currentPosition: SessionQuestionPosition,
@@ -55,7 +59,8 @@ export type OralSessionCandidate = {
 export type NewOralStudySession = {
   readonly userId: UserId
   readonly qualificationPathId: QualificationPathId
-  readonly categoryId: OralQuestionCategoryId
+  readonly categoryId: Option.Option<OralQuestionCategoryId>
+  readonly kind: StudySessionKind
   readonly goalVersion: UserExamGoalVersion
   readonly questions: ReadonlyArray<OralSessionCandidate>
 }

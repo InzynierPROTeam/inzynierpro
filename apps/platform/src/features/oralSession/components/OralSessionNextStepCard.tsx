@@ -1,5 +1,6 @@
 import type { OralSessionNextStep } from '@inzpro/api-contracts/modules/study/responses'
 import {
+  reviewNextStep,
   continueStudyNextStep,
   startStudyNextStep,
 } from '@inzpro/domain/modules/study/study-session'
@@ -65,10 +66,30 @@ type NextStepItemProps = { step: OralSessionNextStep }
 const NextStepItem: React.FC<NextStepItemProps> = ({ step }) =>
   Match.value(step).pipe(
     Match.discriminatorsExhaustive('type')({
+      [reviewNextStep]: ({ category, dueQuestionCount }) => (
+        <SuggestedItem
+          icon={<Mic2 />}
+          title="Powtórz pytania ustne"
+          description={`Pytania do powtórki: ${dueQuestionCount}`}
+          action={
+            <Button
+              nativeButton={false}
+              render={
+                <Link
+                  to="/ustny/powtorka"
+                  search={{ kategoria: category?.id }}
+                />
+              }
+            >
+              Przejdź do powtórki
+            </Button>
+          }
+        />
+      ),
       [continueStudyNextStep]: ({ session }) => (
         <SuggestedItem
           icon={<Play />}
-          title={session.category.name}
+          title={session.category?.name ?? 'Wszystkie kategorie'}
           description={`Oceniono ${session.progress.answered} / ${session.progress.total}`}
           action={
             <ContinueOralSessionButton session={session}>Kontynuuj sesję</ContinueOralSessionButton>

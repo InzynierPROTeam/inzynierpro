@@ -24,6 +24,9 @@ import type {
   SubmitSessionAnswerEndpoint,
 } from '@inzpro/api-contracts/modules/study/api'
 import type {
+  GetOralReviewPreviewEndpoint,
+  GetOralReviewSessionEndpoint,
+  StartOralReviewSessionEndpoint,
   EndOralSessionEndpoint,
   GetLatestOralSessionEndpoint,
   GetOralMaterialsEndpoint,
@@ -364,3 +367,32 @@ export type SubmitOralSelfAssessmentRes = Effect.Success<
 export type SubmitOralSelfAssessmentError = Effect.Error<
   ReturnType<typeof submitOralSelfAssessment>
 >
+
+export const getOralReviewPreview = (req: GetOralReviewPreviewRequest) =>
+  apiAction(api => api.OralStudy.GetOralReviewPreview(req))
+
+export type GetOralReviewPreviewRequest = InferEndpointRequest<typeof GetOralReviewPreviewEndpoint>
+
+export type GetOralReviewPreviewRes = Effect.Success<ReturnType<typeof getOralReviewPreview>>
+
+export type GetOralReviewPreviewError = Effect.Error<ReturnType<typeof getOralReviewPreview>>
+
+export const getOralReviewSession = (req: GetOralReviewSessionRequest) =>
+  apiAction(api => api.OralStudy.GetOralReviewSession(req))
+
+export type GetOralReviewSessionRequest = InferEndpointRequest<typeof GetOralReviewSessionEndpoint>
+
+export type GetOralReviewSessionRes = Effect.Success<ReturnType<typeof getOralReviewSession>>
+
+export type GetOralReviewSessionError = Effect.Error<ReturnType<typeof getOralReviewSession>>
+
+export const startOralReviewSession = (req: StartOralReviewSessionRequest) =>
+  apiAction(api => api.OralStudy.StartOralReviewSession(req))
+
+export type StartOralReviewSessionRequest = InferEndpointRequest<
+  typeof StartOralReviewSessionEndpoint
+>
+
+export type StartOralReviewSessionRes = Effect.Success<ReturnType<typeof startOralReviewSession>>
+
+export type StartOralReviewSessionError = Effect.Error<ReturnType<typeof startOralReviewSession>>

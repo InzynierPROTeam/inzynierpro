@@ -129,7 +129,7 @@ export const StartOralSessionPayload = Schema.Struct({
 export type StartOralSessionPayload = typeof StartOralSessionPayload.Type
 
 export const LatestOralSessionQuery = Schema.Struct({
-  // CONTRACT: Omitting categoryId returns the latest oral session across the whole path.
+  // CONTRACT: Omitting categoryId returns the latest regular-study oral session across the whole path.
   categoryId: Schema.optional(OralQuestionCategoryId),
 })
 
@@ -152,3 +152,12 @@ export const SubmitOralSelfAssessmentPayload = Schema.Struct({
 })
 
 export type SubmitOralSelfAssessmentPayload = typeof SubmitOralSelfAssessmentPayload.Type
+
+export const OralReviewScopeQuery = Schema.Struct({
+  categoryId: Schema.optional(OralQuestionCategoryId),
+})
+
+export const StartOralReviewSessionPayload = Schema.Struct({
+  categoryId: Schema.optional(OralQuestionCategoryId),
+  questionCount: QuestionCount,
+})

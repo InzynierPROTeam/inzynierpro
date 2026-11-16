@@ -1,3 +1,4 @@
+import type { OralReviewPreview as OralReviewPreviewDto } from '@inzpro/api-contracts/modules/study/responses'
 import type {
   OralSessionNextStep as OralSessionNextStepDto,
   OralSessionQuestion as OralSessionQuestionDto,
@@ -46,6 +47,8 @@ import {
   correctPercent,
   studySessionStatus,
 } from '~api/modules/study/domain/study-session.rules.js'
+
+import type { OralReviewPreview } from '../domain/oral-review-session.model.js'
 
 export const toStudySessionDto = (session: StudySession): StudySessionDto => ({
   id: session.id,
@@ -174,7 +177,8 @@ export const toSessionNextStepDto = (step: SessionNextStep): Option.Option<Sessi
 
 export const toOralStudySessionDto = (session: OralStudySession): OralStudySessionDto => ({
   id: session.id,
-  category: { id: session.categoryId, name: session.categoryName },
+  kind: session.kind,
+  category: Option.getOrNull(Option.all({ id: session.categoryId, name: session.categoryName })),
   status: studySessionStatus(session),
   progress: {
     total: session.questionCount,
@@ -227,6 +231,11 @@ export const toOralSessionQuestionResultDto = ({
 export const toOralSessionNextStepDto = (step: OralSessionNextStep): OralSessionNextStepDto =>
   Match.value(step).pipe(
     Match.discriminatorsExhaustive('type')({
+      [reviewNextStep]: ({ category, dueQuestionCount }): OralSessionNextStepDto => ({
+        type: reviewNextStep,
+        category: Option.getOrNull(category),
+        dueQuestionCount,
+      }),
       [continueStudyNextStep]: ({ session }): OralSessionNextStepDto => ({
         type: continueStudyNextStep,
         session: toOralStudySessionDto(session),
@@ -237,3 +246,17 @@ export const toOralSessionNextStepDto = (step: OralSessionNextStep): OralSession
       }),
     }),
   )
+
+export const toOralReviewPreviewDto = (preview: OralReviewPreview): OralReviewPreviewDto => ({
+  qualificationPathId: preview.qualificationPathId,
+  category: Option.match(preview.category, {
+    onNone: () => null,
+    onSome: ({ id, name }) => ({ id, name }),
+  }),
+  dueQuestionCount: preview.queue.dueCount,
+  nextDueAt: Option.match(preview.queue.nextDueAt, {
+    onNone: () => null,
+    onSome: dateTimeUtcToUtcIsoDateTime,
+  }),
+  settings: Option.getOrNull(preview.settings),
+})

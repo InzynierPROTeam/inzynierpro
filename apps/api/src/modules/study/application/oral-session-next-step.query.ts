@@ -3,17 +3,21 @@ import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
 import {
+  regularStudySession,
+  reviewNextStep,
+  reviewStudySession,
   continueStudyNextStep,
   startStudyNextStep,
 } from '@inzpro/domain/modules/study/study-session'
 import { Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
+import { defaultOralReviewQuestionCount } from '~api/modules/study/domain/oral-review-session.rules.js'
 import type { OralSessionNextStep } from '~api/modules/study/domain/oral-session-next-step.model.js'
 
+import { getOralReviewPreview } from './oral-review-preview.query.js'
 import { getOralSessionPreview } from './oral-session-preview.query.js'
 import { OralStudyReader } from './oral-study.reader.js'
 
-// TODO(#61): offer oral reviews; until then the step continues or starts oral study.
 export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -27,6 +31,28 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
     return Option.none<OralSessionNextStep>()
   }
 
+  const scopes =
+    session.value.kind === reviewStudySession && Option.isSome(session.value.categoryId)
+      ? [session.value.categoryId, Option.none()]
+      : [Option.none()]
+
+  for (const scope of scopes) {
+    const review = yield* getOralReviewPreview(userId, pathId, scope)
+
+    if (
+      Option.isSome(review) &&
+      (session.value.kind === reviewStudySession
+        ? review.value.queue.dueCount > 0
+        : review.value.queue.dueCount >= defaultOralReviewQuestionCount)
+    ) {
+      return Option.some<OralSessionNextStep>({
+        type: reviewNextStep,
+        category: Option.map(review.value.category, ({ id, name }) => ({ id, name })),
+        dueQuestionCount: review.value.queue.dueCount,
+      })
+    }
+  }
+
   const unfinished = yield* oralStudyReader.latestUnfinishedSession(userId, pathId)
 
   if (Option.isSome(unfinished)) {
@@ -36,12 +62,15 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
     })
   }
 
-  const preview = yield* getOralSessionPreview(
-    userId,
-    pathId,
-    Option.none(),
-    Option.some(session.value.categoryId),
-  )
+  const fromCategoryId =
+    session.value.kind === regularStudySession
+      ? session.value.categoryId
+      : Option.flatMap(
+          yield* oralStudyReader.latestSession(userId, pathId, Option.none()),
+          latest => latest.categoryId,
+        )
+
+  const preview = yield* getOralSessionPreview(userId, pathId, Option.none(), fromCategoryId)
 
   return Option.map(preview, (next): OralSessionNextStep => ({
     type: startStudyNextStep,

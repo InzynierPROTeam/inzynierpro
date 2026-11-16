@@ -295,7 +295,8 @@ export const OralSessionPreviewResponse = Schema.NullOr(OralSessionPreview)
 
 export const OralStudySession = Schema.Struct({
   id: OralStudySessionId,
-  category: OralSessionCategory,
+  kind: StudySessionKind,
+  category: Schema.NullOr(OralSessionCategory),
   status: StudySessionStatus,
   progress: StudySessionProgress,
   createdAt: UtcIsoDateTime,
@@ -368,6 +369,11 @@ export type OralSessionQuestionResult = typeof OralSessionQuestionResult.Type
 export const OralSessionResultsResponse = CursorPaginatedResponse(OralSessionQuestionResult)
 
 export const OralSessionNextStep = Schema.Union([
+  Schema.Struct({
+    type: Schema.Literal(reviewNextStep),
+    category: Schema.NullOr(OralSessionCategory),
+    dueQuestionCount: QuestionCount,
+  }),
   Schema.Struct({ type: Schema.Literal(continueStudyNextStep), session: OralStudySession }),
   Schema.Struct({ type: Schema.Literal(startStudyNextStep), preview: OralSessionPreview }),
 ])
@@ -375,3 +381,15 @@ export const OralSessionNextStep = Schema.Union([
 export type OralSessionNextStep = typeof OralSessionNextStep.Type
 
 export const OralSessionNextStepResponse = Schema.NullOr(OralSessionNextStep)
+
+export const OralReviewPreview = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  category: Schema.NullOr(OralSessionCategory),
+  dueQuestionCount: QuestionCount,
+  nextDueAt: Schema.NullOr(UtcIsoDateTime),
+  settings: Schema.NullOr(SessionCountSettings),
+})
+
+export type OralReviewPreview = typeof OralReviewPreview.Type
+
+export const OralReviewPreviewResponse = Schema.NullOr(OralReviewPreview)
