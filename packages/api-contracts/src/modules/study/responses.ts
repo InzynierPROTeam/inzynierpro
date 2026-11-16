@@ -39,6 +39,9 @@ export type DocumentQuestionPool = typeof DocumentQuestionPool.Type
 export const OralQuestionCategory = Schema.Struct({
   id: OralQuestionCategoryId,
   name: Schema.NonEmptyString,
+  availableQuestionCount: QuestionCount,
+  // Questions covered in the learner's current oral round.
+  completedQuestionCount: QuestionCount,
 })
 
 export type OralQuestionCategory = typeof OralQuestionCategory.Type
