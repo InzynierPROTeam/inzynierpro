@@ -66,6 +66,14 @@ Mechanical conventions are enforced by the [Oxlint conventions plugin](packages/
 
 Polish is for UI text, validation feedback shown by applications, e-mails, SEO, public route paths, educational content and development catalogue data displayed as product content. HTTP API error codes and technical message fields are English; clients map typed errors to Polish presentation instead of displaying raw API messages. Identifiers, comments, test descriptions, purely technical fixtures, documentation, ADRs, the glossary and issues are English. User-visible seed labels use realistic names. Route-group identifiers and HTTP contract field names are technical identifiers. Keep proper names (PIIB, IARP, InżynierPRO) and existing public identifiers intact. Glossary entries carry the Polish UI term beside the English one.
 
+## Comments
+
+Make names, types and structure carry the explanation. Keep a comment when it adds information the code does not express: a non-obvious reason, constraint, external workaround or contract meaning. Read the implementation and callers before deciding whether that information is redundant. A public contract comment earns its place through semantics, such as what `null` means or which unit a value uses, rather than merely documenting an exported symbol.
+
+Remove paraphrases of names or statements, step-by-step narration (including in tests and scripts), decorative section headings and commented-out code. For example, `// Recently updated assignments first` adds nothing above an explicit descending `updatedAt` sort. Prefer a small rename or local simplification when it makes an explanation unnecessary; keep larger refactors separate and retain necessary context until the code expresses it.
+
+Keep useful explanations close to the constraint and concise. Refer to the owning ADR or issue for the full decision instead of copying it. Preserve actionable TODOs, required legal notices, tool directives, justified lint suppressions, `SAFETY` evidence and the reason for a `data-testid`. Comment-shaped text in test fixtures is test data. Generated and vendored files follow their owning tools or upstream sources.
+
 ## Semantic primitives
 
 Use concrete branded schemas for concurrency versions and meaningful quantities. Keep semantic types in catalogue options, request/response fields, service interfaces and query keys. Presentation drafts, arithmetic intermediates and loop indices may remain primitive; decode them at the domain boundary.
