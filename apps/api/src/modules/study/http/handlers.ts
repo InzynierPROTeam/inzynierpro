@@ -1,5 +1,10 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
+import {
+  explanationAssistanceKind,
+  noteAssistanceKind,
+  type SessionAssistanceKind,
+} from '@inzpro/domain/modules/study/study-session'
 import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
@@ -13,6 +18,7 @@ import {
 } from '~api/modules/preparation/http/errors.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { clearQuestionNote } from '~api/modules/study/application/clear-question-note.command.js'
 import { getDocument } from '~api/modules/study/application/document.query.js'
 import { getDocuments } from '~api/modules/study/application/documents.query.js'
 import { endSession } from '~api/modules/study/application/end-session.command.js'
@@ -21,10 +27,14 @@ import { getFavoritesSession } from '~api/modules/study/application/favorites-se
 import { getLatestSession } from '~api/modules/study/application/latest-session.query.js'
 import { markFavorite } from '~api/modules/study/application/mark-favorite.command.js'
 import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
-import { recordAssistance } from '~api/modules/study/application/record-assistance.command.js'
+import {
+  recordExplanationOpening,
+  recordNoteOpening,
+} from '~api/modules/study/application/record-assistance.command.js'
 import { getReviewPreview } from '~api/modules/study/application/review-preview.query.js'
 import { getReviewSession } from '~api/modules/study/application/review-session.query.js'
 import { ReviewSchedulerLive } from '~api/modules/study/application/review-state.service.js'
+import { saveQuestionNote } from '~api/modules/study/application/save-question-note.command.js'
 import { getSessionNextStep } from '~api/modules/study/application/session-next-step.query.js'
 import { getSessionPreview } from '~api/modules/study/application/session-preview.query.js'
 import { getSessionQuestion } from '~api/modules/study/application/session-question.query.js'
@@ -41,6 +51,7 @@ import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.rep
 
 import {
   documentNotFound,
+  failQuestionNoteWrite,
   failStudyRead,
   failStudyWrite,
   invalidSessionAnswer,
@@ -56,6 +67,7 @@ import {
 import {
   toFavoritesPreviewDto,
   toLatestStudySessionDto,
+  toQuestionNoteResultDto,
   toReviewPreviewDto,
   toSessionQuestionDto,
   toSessionQuestionResultDto,
@@ -63,6 +75,12 @@ import {
   toStudySessionSummaryDto,
   toSessionNextStepDto,
 } from './mappers.js'
+
+// Each kind of opening is recorded by its own command (ADR-0002).
+const assistanceRecords = {
+  [explanationAssistanceKind]: recordExplanationOpening,
+  [noteAssistanceKind]: recordNoteOpening,
+} satisfies Record<SessionAssistanceKind, typeof recordExplanationOpening>
 
 export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
   handlers
@@ -244,6 +262,38 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
             unmarkFavorite(user.id, params.qualificationPathId, params.questionId),
           ),
         ),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyWriteError: failStudyWrite,
+        }),
+      ),
+    )
+    .handle('SaveQuestionNote', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            saveQuestionNote(user.id, params.qualificationPathId, params.questionId, payload.text),
+          ),
+        ),
+        Effect.map(toQuestionNoteResultDto),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          QuestionNoteWriteError: failQuestionNoteWrite,
+          QuestionNotOnPath: () => questionNotFound,
+        }),
+      ),
+    )
+    .handle('ClearQuestionNote', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            clearQuestionNote(user.id, params.qualificationPathId, params.questionId),
+          ),
+        ),
+        Effect.map(toQuestionNoteResultDto),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
@@ -439,11 +489,11 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
         }),
       ),
     )
-    .handle('RecordSessionAssistance', ({ params }) =>
+    .handle('RecordSessionAssistance', ({ params, payload }) =>
       limitByUser(accountWriteLimit).pipe(
         Effect.andThen(
           Effect.flatMap(CurrentUser, user =>
-            recordAssistance(
+            assistanceRecords[payload.kind](
               user.id,
               params.qualificationPathId,
               params.sessionId,

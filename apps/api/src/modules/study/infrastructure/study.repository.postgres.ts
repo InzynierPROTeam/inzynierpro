@@ -5,10 +5,11 @@ import type {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
-import { Array as Arr, Data, DateTime, Effect, Layer, Option, Schema } from 'effect'
+import { Array as Arr, Data, DateTime, Effect, Layer, Option, Predicate, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
-import { StudyWriteError } from '~api/modules/study/application/errors.js'
+import { QuestionNoteWriteError, StudyWriteError } from '~api/modules/study/application/errors.js'
 import { StudyRepository } from '~api/modules/study/application/study.repository.js'
+import { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import { LearningEventId } from '~api/modules/study/domain/review-state.model.js'
 import { StudySession } from '~api/modules/study/domain/study-session.model.js'
 
@@ -19,7 +20,7 @@ class StudyTransactionFailure<E> extends Data.TaggedError('StudyTransactionFailu
 
 const LearningEventRow = Schema.Struct({ id: LearningEventId })
 
-const AssistanceRow = Schema.Struct({ explanationOpenedAt: DateTimeUtc })
+const OpeningRow = Schema.Struct({ openedAt: DateTimeUtc })
 
 const AnswerRow = Schema.Struct({
   answerId: QuestionAnswerId,
@@ -135,17 +136,56 @@ export const StudyRepositoryLive = Layer.effect(
           Effect.mapError(cause => new StudyWriteError({ cause })),
         ),
       ),
-      recordAssistance: Effect.fn('StudyRepository.recordAssistance')(
+      recordExplanationOpening: Effect.fn('StudyRepository.recordExplanationOpening')(
         function* (sessionId, position) {
           const rows =
             yield* sql`UPDATE written_study_session_questions SET explanation_opened_at=now() WHERE study_session_id=${sessionId} AND position=${position} AND explanation_opened_at IS NULL
- RETURNING explanation_opened_at`
+ RETURNING explanation_opened_at AS opened_at`
 
-          const [opened] = yield* Schema.decodeUnknownEffect(Schema.Tuple([AssistanceRow]))(rows)
+          const [opened] = yield* Schema.decodeUnknownEffect(Schema.Tuple([OpeningRow]))(rows)
 
-          return opened.explanationOpenedAt
+          return opened.openedAt
         },
         Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
+      recordNoteOpening: Effect.fn('StudyRepository.recordNoteOpening')(
+        function* (sessionId, position) {
+          const rows =
+            yield* sql`UPDATE written_study_session_questions SET note_opened_at=now() WHERE study_session_id=${sessionId} AND position=${position} AND note_opened_at IS NULL
+ RETURNING note_opened_at AS opened_at`
+
+          const [opened] = yield* Schema.decodeUnknownEffect(Schema.Tuple([OpeningRow]))(rows)
+
+          return opened.openedAt
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
+      saveNote: Effect.fn('StudyRepository.saveNote')(
+        function* (userId, questionId, text) {
+          // The note keeps the revision current now, so it reads as current until a substantive one.
+          const rows =
+            yield* sql`INSERT INTO written_question_notes (user_id,question_id,question_revision_id,body)
+ SELECT ${userId},q.id,q.current_revision_id,${text} FROM written_questions q WHERE q.id=${questionId}
+ ON CONFLICT (user_id,question_id) DO UPDATE SET body=EXCLUDED.body,question_revision_id=EXCLUDED.question_revision_id
+ RETURNING body AS text,updated_at,false AS refers_to_earlier_wording`
+
+          const [stored] = yield* Schema.decodeUnknownEffect(Schema.Tuple([QuestionNote]))(rows)
+
+          return stored
+        },
+        // A constraint error's detail may quote the row, so only the kind of failure is kept.
+        Effect.mapError(
+          error =>
+            new QuestionNoteWriteError({
+              reason: Predicate.isTagged(error, 'SqlError') ? error.reason._tag : error._tag,
+            }),
+        ),
+      ),
+      clearNote: Effect.fn('StudyRepository.clearNote')((userId, questionId) =>
+        sql`DELETE FROM written_question_notes WHERE user_id=${userId} AND question_id=${questionId}`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        ),
       ),
       recordAnswer: Effect.fn('StudyRepository.recordAnswer')(
         function* (answer) {

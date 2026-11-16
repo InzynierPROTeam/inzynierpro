@@ -3,6 +3,8 @@ import type {
   LatestStudySession,
   ReviewPreview,
   SessionNextStep as SessionNextStepDto,
+  QuestionNote as QuestionNoteDto,
+  QuestionNoteResult,
   SessionQuestion as SessionQuestionDto,
   SessionQuestionResult as SessionQuestionResultDto,
   StudySession as StudySessionDto,
@@ -16,6 +18,7 @@ import {
 } from '@inzpro/domain/modules/study/study-session'
 import { Match, Option } from 'effect'
 import type { FavoritesPreview as FavoritesPreviewModel } from '~api/modules/study/domain/favorites-session.model.js'
+import type { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import type { ReviewPreview as ReviewPreviewModel } from '~api/modules/study/domain/review-session.model.js'
 import type { SessionNextStep } from '~api/modules/study/domain/session-next-step.model.js'
 import type { SessionDocument } from '~api/modules/study/domain/study-document.model.js'
@@ -57,8 +60,23 @@ const sessionDocument = (session: StudySession): Option.Option<SessionDocument> 
 export const toLatestStudySessionDto = (session: StudySession): Option.Option<LatestStudySession> =>
   Option.map(sessionDocument(session), document => ({ ...toStudySessionDto(session), document }))
 
+const toQuestionNoteDto = ({ updatedAt, ...note }: QuestionNote): QuestionNoteDto => ({
+  ...note,
+  updatedAt: dateTimeUtcToUtcIsoDateTime(updatedAt),
+})
+
+export const toQuestionNoteResultDto = (result: {
+  questionId: QuestionNoteResult['questionId']
+  note: Option.Option<QuestionNote>
+}): QuestionNoteResult => ({
+  questionId: result.questionId,
+  note: Option.match(result.note, { onNone: () => null, onSome: toQuestionNoteDto }),
+})
+
 export const toSessionQuestionDto = ({
   explanationOpenedAt,
+  noteOpenedAt,
+  note,
   answer,
   ...question
 }: SessionQuestion): SessionQuestionDto => ({
@@ -67,6 +85,11 @@ export const toSessionQuestionDto = ({
     onNone: () => null,
     onSome: dateTimeUtcToUtcIsoDateTime,
   }),
+  noteOpenedAt: Option.match(noteOpenedAt, {
+    onNone: () => null,
+    onSome: dateTimeUtcToUtcIsoDateTime,
+  }),
+  note: Option.match(note, { onNone: () => null, onSome: toQuestionNoteDto }),
   answer: Option.match(answer, {
     onNone: () => null,
     onSome: ({ answeredAt, ...submitted }) => ({

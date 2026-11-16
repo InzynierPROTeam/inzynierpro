@@ -32,6 +32,8 @@ export const questionNotFound = Effect.fail(
 
 export const failStudyWrite = logAndFailInternalServerError('Could not save study progress.')
 
+export const failQuestionNoteWrite = logAndFailInternalServerError('Could not save the note.')
+
 export const staleSessionPreview = Effect.fail(
   new StaleSessionPreview({
     type: 'stale_session_preview',

@@ -93,3 +93,12 @@ export const sessionNextStepValues = [
 export const SessionNextStepType = Schema.Literals(sessionNextStepValues)
 
 export type SessionNextStepType = typeof SessionNextStepType.Type
+
+export const explanationAssistanceKind = 'explanation'
+export const noteAssistanceKind = 'note'
+
+export const sessionAssistanceKindValues = [explanationAssistanceKind, noteAssistanceKind] as const
+
+export const SessionAssistanceKind = Schema.Literals(sessionAssistanceKindValues)
+
+export type SessionAssistanceKind = typeof SessionAssistanceKind.Type
