@@ -8,12 +8,15 @@ import {
   CardContent,
   CardFooter,
 } from '@inzpro/ui/components/card'
-import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
-import { List, Scale, Split } from 'lucide-react'
+import { List, Scale } from 'lucide-react'
 import type React from 'react'
-import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import {
+  SessionDetail,
+  SessionDetails,
+  SessionPathDetail,
+} from '~platform/components/session/SessionDetails'
 
 import { getSessionQuestionCount, sessionPreviewRouteApi } from '../utils'
 import { QuestionCountDialog } from './QuestionCountDialog'
@@ -22,7 +25,6 @@ import { StartSessionButton } from './StartSessionButton'
 type SessionPreviewCardProps = { preview: NonNullable<GetSessionPreviewRes> }
 
 export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview }) => {
-  const { selectedPath } = onboardedRouteApi.useRouteContext()
   const search = sessionPreviewRouteApi.useSearch()
   const navigate = sessionPreviewRouteApi.useNavigate()
 
@@ -40,52 +42,33 @@ export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview 
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <dl className="flex flex-col gap-8">
-          <div className="flex items-start gap-4">
-            <IconWrapper>
-              <Split />
-            </IconWrapper>
-            <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground text-sm">Specjalność</dt>
-              <dd>
-                {selectedPath.specialization.name} • {selectedPath.qualificationKind.name} •{' '}
-                {selectedPath.qualificationScope.name}
-              </dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <IconWrapper>
-              <Scale />
-            </IconWrapper>
-            <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground text-sm">Kategoria</dt>
-              <dd>{preview.document.title}</dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <IconWrapper>
-              <List />
-            </IconWrapper>
-            <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground text-sm">Liczba pytań</dt>
-              <dd className="flex items-center gap-2">
-                {count}
-                {preview.settings.canChangeQuestionCount && (
-                  <QuestionCountDialog
-                    settings={preview.settings}
-                    count={count}
-                    onCountChange={questionCount =>
-                      navigate({
-                        search: previous => ({ ...previous, 'liczba-pytan': questionCount }),
-                        replace: true,
-                      })
-                    }
-                  />
-                )}
-              </dd>
-            </div>
-          </div>
-        </dl>
+        <SessionDetails>
+          <SessionPathDetail />
+          <SessionDetail
+            icon={<Scale />}
+            label="Kategoria"
+          >
+            {preview.document.title}
+          </SessionDetail>
+          <SessionDetail
+            icon={<List />}
+            label="Liczba pytań"
+          >
+            {count}
+            {preview.settings.canChangeQuestionCount && (
+              <QuestionCountDialog
+                settings={preview.settings}
+                count={count}
+                onCountChange={questionCount =>
+                  navigate({
+                    search: previous => ({ ...previous, 'liczba-pytan': questionCount }),
+                    replace: true,
+                  })
+                }
+              />
+            )}
+          </SessionDetail>
+        </SessionDetails>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2">
         <StartSessionButton
