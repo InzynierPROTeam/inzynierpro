@@ -1,3 +1,4 @@
+import { knowledgeCheckFormatValues } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import {
   easySelfAssessment,
   hardSelfAssessment,
@@ -18,6 +19,8 @@ export const oralSessionQuestionRouteApi = getRouteApi(
 export const oralSessionSummaryRouteApi = getRouteApi(
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/sesja/$sessionId/podsumowanie',
 )
+
+export const supportedKnowledgeCheckFormats = knowledgeCheckFormatValues
 
 type SelfAssessmentLevel = {
   readonly label: string

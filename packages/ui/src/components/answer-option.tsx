@@ -1,3 +1,4 @@
+import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox'
 import { Radio as RadioPrimitive } from '@base-ui/react/radio'
 import { cn, tv, type VariantProps } from 'tailwind-variants'
 
@@ -33,6 +34,24 @@ type AnswerOptionProps = Omit<RadioPrimitive.Root.Props, 'className'> &
 function AnswerOption({ className, tone = 'neutral', ...props }: AnswerOptionProps) {
   return (
     <RadioPrimitive.Root
+      data-slot="answer-option"
+      data-tone={tone}
+      className={answerOptionVariants({ tone, className })}
+      {...props}
+    />
+  )
+}
+
+type AnswerCheckboxOptionProps = Omit<CheckboxPrimitive.Root.Props, 'className'> &
+  AnswerOptionVariants & { className?: string }
+
+function AnswerCheckboxOption({
+  className,
+  tone = 'neutral',
+  ...props
+}: AnswerCheckboxOptionProps) {
+  return (
+    <CheckboxPrimitive.Root
       data-slot="answer-option"
       data-tone={tone}
       className={answerOptionVariants({ tone, className })}
@@ -80,6 +99,7 @@ function AnswerOptionSkeleton({ className, textClassName, ...props }: AnswerOpti
 
 export {
   AnswerOption,
+  AnswerCheckboxOption,
   AnswerOptionIndicator,
   AnswerOptionText,
   AnswerOptionSkeleton,

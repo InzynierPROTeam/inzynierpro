@@ -27,6 +27,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { oralSessionSummaryRouteApi } from '../utils'
 import { OralSessionNextStepCard } from './OralSessionNextStepCard'
 import { OralSessionQuestionsCard } from './OralSessionQuestionsCard'
+import { OralSessionQuizCard } from './OralSessionQuizCard'
 import { OralSessionResultCard } from './OralSessionResultCard'
 
 export const OralSessionSummarySection = () => {
@@ -62,6 +63,7 @@ export const OralSessionSummarySection = () => {
             <>
               <OralSessionResultCard summary={summary} />
               <OralSessionQuestionsCard sessionId={summary.id} />
+              <OralSessionQuizCard />
               <OralSessionNextStepCard />
             </>
           )}

@@ -16,6 +16,10 @@ import {
   type ClearOralQuestionNoteRequest,
   saveOralQuestionNote,
   type SaveOralQuestionNoteRequest,
+  startOralSessionQuiz,
+  type StartOralSessionQuizRequest,
+  answerOralQuizCheck,
+  type AnswerOralQuizCheckRequest,
 } from '@inzpro/api-client/modules/study'
 import { apiHttpClient } from '~platform/lib/api-client'
 
@@ -42,3 +46,9 @@ export const saveOralNote = (req: SaveOralQuestionNoteRequest) =>
 
 export const clearOralNote = (req: ClearOralQuestionNoteRequest) =>
   runApi(clearOralQuestionNote(req), apiHttpClient)
+
+export const startOralQuiz = (req: StartOralSessionQuizRequest) =>
+  runApi(startOralSessionQuiz(req), apiHttpClient)
+
+export const checkOralQuizAnswer = (req: AnswerOralQuizCheckRequest) =>
+  runApi(answerOralQuizCheck(req), apiHttpClient)
