@@ -1,23 +1,25 @@
 # Written study
 
-How a written study session runs from preview to summary, for regular study and for review sessions. The decisions behind it are in [ADR-0002](adr/0002-study-session-lifecycle.md) (session lifecycle) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal); this document describes how they are implemented. Endpoints below sit under `/study/paths/:qualificationPathId`.
+How a written study session runs from preview to summary, for regular study, review sessions and favourites sessions. The decisions behind it are in [ADR-0002](adr/0002-study-session-lifecycle.md) (session lifecycle) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal); this document describes how they are implemented. Endpoints below sit under `/study/paths/:qualificationPathId`.
 
 ## Reads
 
-A read that finds nothing for the learner returns HTTP 200 with `null`: preview, latest session, review preview (for a document not on the path), review session, session, next step, question and summary. Category details keep 404. Authentication and access failures stay errors.
+A read that finds nothing for the learner returns HTTP 200 with `null`: preview, latest session, review and favourites previews (for a document not on the path), review session, favourites session, session, next step, question and summary. Category details keep 404. Authentication and access failures stay errors.
 
-| Endpoint                                  | Returns                                                                                                      |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `GET /documents/:documentId`              | One category with the learner's progress in the current round, independent of the preview.                   |
-| `GET /preview`                            | The proposed document, its `questionSelection` and the count settings.                                       |
-| `GET /latest-session[?documentId=]`       | The most recently used regular-study session of the path or document, with status, progress and document.    |
-| `GET /review-preview[?documentId=]`       | The due question count, the next due time and the count settings of reviews of the path or one document.     |
-| `GET /review-session[?documentId=]`       | The unfinished review session of the path or one document.                                                   |
-| `GET /sessions/:sessionId`                | Status and progress: `total`, `answered`, `skipped`, `percent` and `currentQuestion` to continue from.       |
-| `GET /sessions/:sessionId/next-step`      | The one step after the session, decided from the learner's state now (see [Next step](#next-step)).          |
-| `GET /sessions/:sessionId/questions/:pos` | The pinned revision with options in session order, their correctness, the explanation and the stored answer. |
-| `GET /sessions/:sessionId/summary`        | An ended session's correct, incorrect and assisted counts and its score.                                     |
-| `GET /sessions/:sessionId/results`        | A cursor page of positions, each with its answer or withdrawal. Empty until the session ends.                |
+| Endpoint                                  | Returns                                                                                                                    |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `GET /documents/:documentId`              | One category with the learner's progress in the current round, independent of the preview.                                 |
+| `GET /preview`                            | The proposed document, its `questionSelection` and the count settings.                                                     |
+| `GET /latest-session[?documentId=]`       | The most recently used regular-study session of the path or document, with status, progress and document.                  |
+| `GET /review-preview[?documentId=]`       | The due question count, the next due time and the count settings of reviews of the path or one document.                   |
+| `GET /review-session[?documentId=]`       | The unfinished review session of the path or one document.                                                                 |
+| `GET /favorites-preview[?documentId=]`    | The count of the learner's FavoriteQuestions on the path or one document and the count settings.                           |
+| `GET /favorites-session[?documentId=]`    | The unfinished favourites session of the path or one document.                                                             |
+| `GET /sessions/:sessionId`                | Status and progress: `total`, `answered`, `skipped`, `percent` and `currentQuestion` to continue from.                     |
+| `GET /sessions/:sessionId/next-step`      | The one step after the session, decided from the learner's state now (see [Next step](#next-step)).                        |
+| `GET /sessions/:sessionId/questions/:pos` | The pinned revision with options in session order, their correctness, the explanation, the stored answer and `isFavorite`. |
+| `GET /sessions/:sessionId/summary`        | An ended session's correct, incorrect and assisted counts and its score.                                                   |
+| `GET /sessions/:sessionId/results`        | A cursor page of positions, each with its answer or withdrawal. Empty until the session ends.                              |
 
 "Most recently used" is `last_activity_at`: starting or answering, never reading. A document's unfinished session is always its latest.
 
@@ -57,15 +59,26 @@ A review session ([ADR-0002](adr/0002-study-session-lifecycle.md#review-mode)) d
 - Reading, answering, assistance, withdrawal, ending, the summary and the results use the session endpoints below. A review answer records its LearningEvent with mode `review` and updates the review state, but never covers questions or moves the round.
 - "Continue learning" (`/latest-session`) stays with regular study. The Powtórka tile and a category resume their unfinished review session through `/review-session`.
 
+## Favourites
+
+A FavoriteQuestion ([ADR-0002](adr/0002-study-session-lifecycle.md#favourites-and-continuing)) is a personal mark on a question identity, shared across the learner's paths.
+
+- **Marks**: `PUT /favorites/:questionId` marks and `DELETE /favorites/:questionId` unmarks; both return `{ questionId, isFavorite }` and repeating either changes nothing. Marking requires the question to be on the path the request names (`QuestionNotFound`, 404, otherwise), but the mark shows on every path the question is on. Unmarking only needs access to the path, so a learner can always remove their own mark, for example from an older session's results. Question reads return the mark as it is now (`isFavorite`), so it can be set on the question screen in any mode, including a question opened from a summary.
+- **Scope**: the whole path, or with `documentId` one document on it, as for reviews. The Start tile covers the whole path and a category's card that category.
+- **Preview**: `favoriteQuestionCount` counts the marked questions in the scope whose current revision is published and not withdrawn; `document` is the scope's document or `null`. `settings` is regular study's: all of them by default, any count from 1 when there are more than 25. With nothing marked `settings` is `null` and no session can start.
+- **Start**: `POST /favorites-sessions` with an optional `documentId` and the count confirms the preview under the account lock. It stores the first marked questions in catalogue order (document, then question), pins their current revisions and shuffles their options. The set is fixed here: marking or unmarking later never changes a started session. An unfinished favourites session of the same scope refuses it with `StudySessionAlreadyStarted`; a count outside the current settings, including anything with nothing marked, with `StaleSessionPreview`; a document that is not on the path with `DocumentNotFound`.
+- A favourites session of the whole path has no document. Its answers record LearningEvents with mode `favourites` and update the review state, but never cover questions or move the round.
+
 ## Storage
 
 Written study has its own tables, separate from future oral study (ADR-0005).
 
-- `written_study_sessions`: its `kind` is `study` or `review`. Regular study always has a document; a review session of the whole path has none. A partial unique index keeps one unfinished session per user, path, kind and document, with no document counting as one scope (`NULLS NOT DISTINCT`). A session stores the UserExamGoal version active at its start and its `current_position`.
+- `written_study_sessions`: its `kind` is `study`, `review` or `favourites`. Regular study always has a document; a review or favourites session of the whole path has none. A partial unique index keeps one unfinished session per user, path, kind and document, with no document counting as one scope (`NULLS NOT DISTINCT`). A session stores the UserExamGoal version active at its start and its `current_position`.
 - `written_study_session_questions` and `written_study_session_answer_options`: references to revisions and answer IDs in session order, never content copies.
 - `written_study_answers`: one answer per session question.
-- `written_learning_events`: one LearningEvent per answer, with result, revision, path, the session's goal version, mode (`study`, later `review` and `favourites`), assistance level (`none`, `note` or `explanation`) and `answered_at` in backend time.
+- `written_learning_events`: one LearningEvent per answer, with result, revision, path, the session's goal version, mode (`study`, `review` or `favourites`), assistance level (`none`, `note` or `explanation`) and `answered_at` in backend time.
 - `written_review_states`: the UserReviewState per learner, path and question: the FSRS card, the event and `rules_version` that produced it, and the substantive revision it was built on.
+- `written_favorite_questions`: one row per learner and marked question, with no path, so a mark is shared across paths. Unmarking deletes it.
 - `written_learning_rounds`: the learner's stored round per path; without a row it is round 1.
 - `written_question_coverage`: per learner, path and question, the revision and round of the latest regular-study answer, for rounds, previews and progress.
 - `question_revisions.change_kind` and `substantive_revision_id`: the revision whose substantive content a revision carries, its own unless the change is cosmetic. Coverage compares these instead of publication times.
@@ -103,9 +116,9 @@ The score is the share of correct answers among the scored questions, so unanswe
 
 `GET /sessions/:sessionId/next-step` suggests one step after a session ([ADR-0002](adr/0002-study-session-lifecycle.md#favourites-and-continuing)), from the learner's state when it is read, so it changes as they study. The first that applies wins:
 
-1. `review` (`document`, `dueQuestionCount`): after a review session, its scope while questions there are due, then the whole path while anything is due; after regular study, the whole path once 25 questions are due, a full review session.
+1. `review` (`document`, `dueQuestionCount`): after a review session, its scope while questions there are due, then the whole path while anything is due; after regular study, the whole path once 25 questions are due, a full review session. After a favourites session never.
 2. `continue-study` (`session`): the most recently used unfinished regular-study session of the path, in any document.
-3. `start-study` (`preview`): the next regular-study preview after the session's document, or after the latest regular-study document when the session was a review.
+3. `start-study` (`preview`): the next regular-study preview after the session's document, or after the latest regular-study document when the session was a review or favourites session.
 
 It is `null` when nothing applies or the session belongs to another account. The client keys it under the progress group, so an answer refreshes it.
 
@@ -116,9 +129,12 @@ Routes:
 - `/nauka/start` shows the preview and keeps the V1 search fields `akt-prawny`, `obecny-akt-prawny` and `liczba-pytan`. For a category with an active session it links to that session instead.
 - `/nauka/sesja/$sessionId/$questionNumber` shows one question. Its header reads only the session and the question card only the question.
 - `/nauka/powtorka` shows the review preview of the path, or of one category with `akt-prawny`, and keeps `liczba-pytan`. With nothing due it says reviews come later, or, with none scheduled, how they get scheduled; it does not show the next due time. With an unfinished review session of the scope it links to that session instead.
-- `/nauka/sesja/$sessionId/$questionNumber` and the summary serve both kinds.
+- `/nauka/ulubione` shows the favourites preview of the path, or of one category with `akt-prawny`, and keeps `liczba-pytan`. With nothing marked it explains how to mark questions and creates no session. With an unfinished favourites session of the scope it links to that session instead.
+- `/nauka/sesja/$sessionId/$questionNumber` and the summary serve every kind.
 - `/nauka/sesja/$sessionId/podsumowanie` shows an ended session's score ring, its counts, the result of every position and the next step from `GET /sessions/:sessionId/next-step`.
 - The Start tile, the top of `/nauka` and the category card offer to start, continue, or start again after the latest regular-study session ended.
+- The Ulubione pytania tile on the Start screen and the Ulubione z kategorii card of a category show the unfinished favourites session to continue, otherwise the marked count with a link to `/nauka/ulubione`, or how to mark questions.
+- The star on the question screen marks or unmarks the question and shows the change at once.
 - The Powtórka tile on the Start screen and the Powtórka card of a category show the unfinished review session to continue, otherwise the due count with a link to the review preview, or the same message as the preview with nothing due.
 
 Navigation: starting replaces the preview's history entry and moving between questions replaces the current one, so back returns to where the preview was opened.
@@ -132,14 +148,15 @@ On a question:
 
 Caching:
 
-- Session queries sit under `studyKeys.session(userId, pathId, sessionId)` inside the path group.
+- Session queries sit under `studyKeys.session(userId, pathId, sessionId)` inside the path group, except session questions, which sit in `studyKeys.favorites(userId)` because they show the mark.
 - Answering and recording assistance update the question and session caches in `onMutate`, replace them with the response on success and refetch them on error. The answer then refreshes `studyKeys.progress(userId, pathId)`: documents, preview and latest session.
 - A submission refused because the question was withdrawn shows the question as withdrawn at once, with no error toast and no second attempt.
 - Ending a session refreshes the whole path group.
+- The favourites session read sits in the progress group. The favourites previews and session questions sit in `studyKeys.favorites(userId)`, outside any path, because a mark changes them on every path. Marking or unmarking sets the question read in `onMutate`, replaces it with the response on success and refetches it on error, then marks the favourites group stale without refetching: the previews and the question in other sessions refetch when shown again, and the session and progress reads are left alone.
 
 ## SRS
 
-Every SRS-feeding answer updates the question's UserReviewState in the answer transaction ([ADR-0005](adr/0005-srs-evidence-and-written-oral-separation.md#initial-mapping)): regular study and review sessions today, favourites later. Reviews and favourites never move coverage or rounds. Review sessions read the states as described above.
+Every SRS-feeding answer updates the question's UserReviewState in the answer transaction ([ADR-0005](adr/0005-srs-evidence-and-written-oral-separation.md#initial-mapping)): regular study, review sessions and favourites sessions. Reviews and favourites never move coverage or rounds. Review sessions read the states as described above.
 
 - The scheduler is the pinned `ts-fsrs` 6 with its default model (FSRS-7) and parameters, desired retention 0.9 and no fuzzing, so replaying the same LearningEvents gives the same state. `rules_version` names the mapping and algorithm; a change to either gets a new version.
 - The answer's assistance level comes from the backend's records: `explanation` when the explanation was opened, otherwise `none`. `note` arrives with personal notes.
