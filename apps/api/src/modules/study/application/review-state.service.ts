@@ -1,3 +1,4 @@
+import type { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import { Context, DateTime, Effect, Layer, Option } from 'effect'
 import { DefaultScheduler, Rating } from 'ts-fsrs'
@@ -26,7 +27,7 @@ export class ReviewScheduler extends Context.Service<
   ReviewScheduler,
   {
     readonly review: (
-      questionId: WrittenQuestionId,
+      questionId: WrittenQuestionId | OralQuestionId,
       card: Option.Option<ReviewCard>,
       rating: ReviewRating,
       at: DateTime.Utc,

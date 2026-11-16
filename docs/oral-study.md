@@ -1,6 +1,6 @@
 # Oral study
 
-How oral material is stored, how the oral catalogue is read and how an oral study session runs from preview to summary. Oral SRS, reviews, favourites, notes and the mini-quiz follow in later stages of [#56](https://github.com/InzynierPROTeam/inzynierpro/issues/56). The decisions are [ADR-0002](adr/0002-study-session-lifecycle.md) (session lifecycle and rounds), [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal), [ADR-0005](adr/0005-srs-evidence-and-written-oral-separation.md) (separate oral tables), [ADR-0006](adr/0006-oral-study-and-knowledge-check-quiz.md) (oral study) and [ADR-0008](adr/0008-written-document-groups-and-oral-categories.md) (oral categories). Endpoints below sit under `/study/paths/:qualificationPathId/oral` and require oral access.
+How oral material is stored, how the oral catalogue is read and how an oral study session runs from preview to summary. Oral reviews, favourites, notes and the mini-quiz follow in later stages of [#56](https://github.com/InzynierPROTeam/inzynierpro/issues/56). The decisions are [ADR-0002](adr/0002-study-session-lifecycle.md) (session lifecycle and rounds), [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal), [ADR-0005](adr/0005-srs-evidence-and-written-oral-separation.md) (separate oral tables), [ADR-0006](adr/0006-oral-study-and-knowledge-check-quiz.md) (oral study) and [ADR-0008](adr/0008-written-document-groups-and-oral-categories.md) (oral categories). Endpoints below sit under `/study/paths/:qualificationPathId/oral` and require oral access.
 
 ## Content model
 
@@ -61,7 +61,7 @@ The next step continues from the session's category as `fromCategoryId` does. Or
 
 ## Self-assessment
 
-`POST .../questions/:pos/self-assessment` takes the revision the client showed and `selfAssessment` on a three-step difficulty scale: `hard` („Trudne”), `medium` („Średnie”) or `easy` („Łatwe”); see [ADR-0006](adr/0006-oral-study-and-knowledge-check-quiz.md). In one transaction under the account lock it checks access, ownership, session state, revision and withdrawal, then stores the self-assessment (`oral_study_self_assessments`), coverage in the current round, the next round when this covers the last question, and the continue point: the first open question after this one, wrapping around.
+`POST .../questions/:pos/self-assessment` takes the revision the client showed and `selfAssessment` on a three-step difficulty scale: `hard` („Trudne”), `medium` („Średnie”) or `easy` („Łatwe”); see [ADR-0006](adr/0006-oral-study-and-knowledge-check-quiz.md). In one transaction under the account lock it checks access, ownership, session state, revision and withdrawal, then stores the self-assessment (`oral_study_self_assessments`), its learning event and FSRS state, coverage in the current round, the next round when this covers the last question, and the continue point: the first open question after this one, wrapping around.
 
 - Repeating the stored value returns it, so a retry after a lost response is safe.
 - A different value is refused with `OralSelfAssessmentAlreadySubmitted` (409) and never overwrites the first.
@@ -82,3 +82,13 @@ Oral session reads sit in `studyKeys.oralSession(userId, pathId, sessionId)` and
 ## Seed
 
 The technical seed has three oral categories with four questions each, assigned to every catalogue path except the first technical path, which keeps the empty state. Answers use headings, lists and tables, and the question on the expiry of a building permit has a substantive second revision.
+
+## SRS
+
+Every accepted self-assessment records its raw value, session mode (`study`, `review`, `favourites`), revision, goal version and backend answer time in `oral_learning_events`. Regular sessions currently produce `study`; reviews and favourites will use the same evidence operation. The event, self-assessment, review state and round progress commit together under the account lock. Retrying an already stored self-assessment returns the original result without recording another event or applying FSRS again.
+
+`oral_review_states` stores a card per user, path and oral question, separate from written cards. Both use the pinned `ts-fsrs` scheduler with default parameters, desired retention 0.9 and fuzz disabled; the oral interpretation is versioned as `oral-1/fsrs-7`. This follows ADR-0005 rather than V1’s SM-2 scheduler, which has no oral self-assessment mapping.
+
+„Trudne” maps to Again, „Średnie” to Hard and „Łatwe” to Good. Only the first self-assessment of current substantive content on a Europe/Warsaw day changes the card, except that a later „Trudne” still applies Again. Later successes remain in history without changing the schedule. Revealing the oral answer is never assistance.
+
+A substantive revision makes the stored card obsolete on every path: reads treat it as a new card and the next current-content self-assessment starts from new. Cosmetic revisions keep the card and share its study-day history. A session pinned to replaced substantive content still records its self-assessments, but cannot update the new card or consume its first self-assessment of the day. The same substantive-revision identity uncovers the question in the current round. History is preserved.

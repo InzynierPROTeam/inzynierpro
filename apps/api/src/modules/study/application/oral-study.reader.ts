@@ -1,4 +1,8 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import type {
+  OralQuestionId,
+  OralRevisionId,
+} from '@inzpro/domain/modules/learning-content/oral-question'
 import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -18,12 +22,27 @@ import type {
   OralSessionResultCounts,
   OralStudySession,
 } from '~api/modules/study/domain/oral-study-session.model.js'
+import type { ReviewCard, StudyDay } from '~api/modules/study/domain/review-state.model.js'
 
 import type { StudyReadError } from './errors.js'
 
 export class OralStudyReader extends Context.Service<
   OralStudyReader,
   {
+    readonly reviewState: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      questionId: OralQuestionId,
+    ) => Effect.Effect<Option.Option<ReviewCard>, StudyReadError>
+    readonly carriesCurrentContent: (
+      oralRevisionId: OralRevisionId,
+    ) => Effect.Effect<boolean, StudyReadError>
+    readonly answeredContentOnStudyDay: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      oralRevisionId: OralRevisionId,
+      day: StudyDay,
+    ) => Effect.Effect<boolean, StudyReadError>
     readonly learningRound: (
       userId: UserId,
       pathId: QualificationPathId,

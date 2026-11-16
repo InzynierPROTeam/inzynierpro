@@ -17,7 +17,7 @@ import {
 } from '@inzpro/domain/modules/study/oral-study-session'
 import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
 import { RichContent } from '@inzpro/rich-content/rich-content'
-import { Array as Arr, Effect, Layer, Option, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { makeCursorPaginator, mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { StudyReadError } from '~api/modules/study/application/errors.js'
@@ -32,6 +32,7 @@ import {
   OralSessionResultCounts,
   OralStudySession,
 } from '~api/modules/study/domain/oral-study-session.model.js'
+import { ReviewCard } from '~api/modules/study/domain/review-state.model.js'
 
 const OralCategoryRow = Schema.Struct({
   id: OralQuestionCategoryId,
@@ -134,6 +135,52 @@ export const OralStudyReaderLive = Layer.effect(
     )
 
     return OralStudyReader.of({
+      reviewState: Effect.fn('OralStudyReader.reviewState')(
+        function* (userId, pathId, questionId) {
+          const rows =
+            yield* sql`SELECT s.due_at,s.last_review_at,s.stability,s.stability_fast,s.difficulty,s.state,s.schedule_status,s.reps,s.lapses,s.scheduled_days,s.learning_step
+ FROM oral_review_states s JOIN oral_questions q ON q.id=s.question_id JOIN oral_revisions r ON r.id=q.current_revision_id
+ WHERE s.user_id=${userId} AND s.qualification_path_id=${pathId} AND s.question_id=${questionId} AND s.substantive_revision_id=r.substantive_revision_id
+ LIMIT 1`
+
+          return Arr.head(yield* Schema.decodeUnknownEffect(Schema.Array(ReviewCard))(rows))
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      carriesCurrentContent: Effect.fn('OralStudyReader.carriesCurrentContent')(
+        function* (oralRevisionId) {
+          const rows =
+            yield* sql`SELECT r.substantive_revision_id=cr.substantive_revision_id AS is_current
+ FROM oral_revisions r JOIN oral_questions q ON q.id=r.question_id JOIN oral_revisions cr ON cr.id=q.current_revision_id
+ WHERE r.id=${oralRevisionId} LIMIT 1`
+
+          const [{ isCurrent }] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ isCurrent: Schema.Boolean })]),
+          )(rows)
+
+          return isCurrent
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      answeredContentOnStudyDay: Effect.fn('OralStudyReader.answeredContentOnStudyDay')(
+        function* (userId, pathId, oralRevisionId, day) {
+          const start = DateTime.formatIso(day.start)
+          const end = DateTime.formatIso(day.end)
+
+          const rows = yield* sql`SELECT EXISTS (SELECT 1 FROM oral_revisions ar
+ JOIN oral_learning_events e ON e.user_id=${userId} AND e.qualification_path_id=${pathId} AND e.question_id=ar.question_id AND e.answered_at>=${start} AND e.answered_at<${end}
+ JOIN oral_revisions er ON er.id=e.oral_revision_id AND er.substantive_revision_id=ar.substantive_revision_id
+ WHERE ar.id=${oralRevisionId}) AS answered`
+
+          const [{ answered }] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ answered: Schema.Boolean })]),
+          )(rows)
+
+          return answered
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+
       learningRound: Effect.fn('OralStudyReader.learningRound')(
         function* (userId, pathId) {
           const rows =

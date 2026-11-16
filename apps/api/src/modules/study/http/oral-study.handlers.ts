@@ -24,6 +24,7 @@ import {
   getOralSessionResults,
   getOralSessionSummary,
 } from '~api/modules/study/application/oral-session.query.js'
+import { ReviewSchedulerLive } from '~api/modules/study/application/review-state.service.js'
 import { startOralSession } from '~api/modules/study/application/start-oral-session.command.js'
 import { submitOralSelfAssessment } from '~api/modules/study/application/submit-oral-self-assessment.command.js'
 import { OralStudyReaderLive } from '~api/modules/study/infrastructure/oral-study.reader.postgres.js'
@@ -276,4 +277,5 @@ export const OralStudyRequestServices = Layer.mergeAll(
   OralStudyReaderLive,
   OralStudyRepositoryLive,
   StudyRepositoryLive,
+  ReviewSchedulerLive,
 )
