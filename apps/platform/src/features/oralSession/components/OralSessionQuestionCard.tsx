@@ -21,6 +21,8 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { oralSessionQuestionRouteApi } from '../utils'
 import { OralAnswerReveal } from './OralAnswerReveal'
+import { OralFavoriteToggleButton } from './OralFavoriteToggleButton'
+import { OralQuestionNoteDialog } from './OralQuestionNoteDialog'
 import { OralSelfAssessmentActions } from './OralSelfAssessmentActions'
 
 export const OralSessionQuestionCard = () => {
@@ -44,6 +46,13 @@ export const OralSessionQuestionCard = () => {
           {question => (
             <>
               <CardHeader>
+                <div className="flex justify-end gap-2">
+                  <OralFavoriteToggleButton question={question} />
+                  <OralQuestionNoteDialog
+                    key={question.questionId}
+                    question={question}
+                  />
+                </div>
                 <h2 className="sr-only">Treść pytania</h2>
                 <div className="text-base leading-relaxed font-medium">
                   <RichText

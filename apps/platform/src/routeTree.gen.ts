@@ -27,6 +27,7 @@ import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from '.
 import { Route as appAuthenticatedOnboardedOralValidUstnyIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/index'
 import { Route as appAuthenticatedOnboardedOralValidUstnyPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
 import { Route as appAuthenticatedOnboardedOralValidUstnyStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
+import { Route as appAuthenticatedOnboardedOralValidUstnyUlubioneRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/index'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
@@ -134,6 +135,12 @@ const appAuthenticatedOnboardedOralValidUstnyStartRoute =
     path: '/ustny/start',
     getParentRoute: () => appAuthenticatedOnboardedOralValidRoute,
   } as any)
+const appAuthenticatedOnboardedOralValidUstnyUlubioneRoute =
+  appAuthenticatedOnboardedOralValidUstnyUlubioneRouteImport.update({
+    id: '/ustny/ulubione',
+    path: '/ustny/ulubione',
+    getParentRoute: () => appAuthenticatedOnboardedOralValidRoute,
+  } as any)
 const appAuthenticatedOnboardedWrittenValidNaukaIndexRoute =
   appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport.update({
     id: '/nauka/',
@@ -209,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
+  '/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
   '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka/ulubione': typeof appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute
@@ -232,6 +240,7 @@ export interface FileRoutesByTo {
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
+  '/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
   '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka/ulubione': typeof appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute
@@ -262,6 +271,7 @@ export interface FileRoutesById {
   '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
+  '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/ulubione': typeof appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/zweryfikuj-otp'
     | '/ustny/powtorka'
     | '/ustny/start'
+    | '/ustny/ulubione'
     | '/nauka/powtorka'
     | '/nauka/start'
     | '/nauka/ulubione'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/zweryfikuj-otp'
     | '/ustny/powtorka'
     | '/ustny/start'
+    | '/ustny/ulubione'
     | '/nauka/powtorka'
     | '/nauka/start'
     | '/nauka/ulubione'
@@ -339,6 +351,7 @@ export interface FileRouteTypes {
     | '/(public)/_layout/_notauthenticated/'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
+    | '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/ulubione'
@@ -485,6 +498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAuthenticatedOnboardedOralValidUstnyStartRouteImport
       parentRoute: typeof appAuthenticatedOnboardedOralValidRoute
     }
+    '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione': {
+      id: '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione'
+      path: '/ustny/ulubione'
+      fullPath: '/ustny/ulubione'
+      preLoaderRoute: typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedOralValidRoute
+    }
     '/(app)/_authenticated/_onboarded/_writtenValid/nauka/': {
       id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/'
       path: '/nauka'
@@ -554,6 +574,7 @@ declare module '@tanstack/react-router' {
 interface appAuthenticatedOnboardedOralValidRouteChildren {
   appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute: typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   appAuthenticatedOnboardedOralValidUstnyStartRoute: typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
+  appAuthenticatedOnboardedOralValidUstnyUlubioneRoute: typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
   appAuthenticatedOnboardedOralValidUstnyIndexRoute: typeof appAuthenticatedOnboardedOralValidUstnyIndexRoute
   appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute: typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute
   appAuthenticatedOnboardedOralValidUstnySesjaSessionIdPodsumowanieRoute: typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdPodsumowanieRoute
@@ -565,6 +586,8 @@ const appAuthenticatedOnboardedOralValidRouteChildren: appAuthenticatedOnboarded
       appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute,
     appAuthenticatedOnboardedOralValidUstnyStartRoute:
       appAuthenticatedOnboardedOralValidUstnyStartRoute,
+    appAuthenticatedOnboardedOralValidUstnyUlubioneRoute:
+      appAuthenticatedOnboardedOralValidUstnyUlubioneRoute,
     appAuthenticatedOnboardedOralValidUstnyIndexRoute:
       appAuthenticatedOnboardedOralValidUstnyIndexRoute,
     appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute:
