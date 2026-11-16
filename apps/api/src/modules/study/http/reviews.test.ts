@@ -3,6 +3,7 @@ import {
   DocumentResponse,
   LatestStudySessionResponse,
   ReviewPreview,
+  SessionNextStepResponse,
   SessionPreview,
   SessionQuestion,
   StudySession,
@@ -157,6 +158,18 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
 
   const end = (sessionId: string) => request(`/sessions/${sessionId}/end`, {})
 
+  const nextStep = async (sessionId: string) =>
+    decode(SessionNextStepResponse)(await request(`/sessions/${sessionId}/next-step`))
+
+  // Answers every question of a session now and ends it.
+  const finish = async (session: StudySession) => {
+    for (let position = 1; position <= session.progress.total; position++) {
+      expect((await answerNow(session.id, position)).status).toBe(200)
+    }
+
+    await end(session.id)
+  }
+
   return {
     visitor,
     request,
@@ -170,6 +183,8 @@ const learnerFor = async (pathId: QualificationPathId, config: CompleteOnboardin
     answerAt,
     answerNow,
     end,
+    nextStep,
+    finish,
   }
 }
 
@@ -475,5 +490,117 @@ describe('the review summary', () => {
       document: null,
       result: { correct: 1, incorrect: 0, correctPercent: 100 },
     })
+  })
+})
+
+describe('the next step after a session', () => {
+  test('reviews continue while questions are due, then regular study starts again', async () => {
+    const learner = await learnerWithQuestions(3)
+    const study = await learner.startStudy(learner.fixture.documentId)
+
+    for (const position of [1, 2, 3]) {
+      await learner.answerAt(daysBeforeNow(2), study.id, position, false)
+    }
+
+    await learner.end(study.id)
+
+    const first = await learner.decode(StudySession)(await learner.startReview(2))
+
+    await learner.finish(first)
+
+    expect(await learner.nextStep(first.id)).toEqual({
+      type: 'review',
+      document: null,
+      dueQuestionCount: 1,
+    })
+
+    const second = await learner.decode(StudySession)(await learner.startReview(1))
+
+    await learner.finish(second)
+
+    // Questions answered today wait for the next study day, so study moves on.
+    expect(await learner.nextStep(second.id)).toMatchObject({ type: 'start-study' })
+  })
+
+  test('a finished document review moves on to the rest of the path', async () => {
+    const learner = await learnerWithQuestions(1)
+    const other = await createStudyFixture(studySessionSpecialization)
+
+    await addFixtureQuestion(other.pathId, other.documentId)
+
+    for (const documentId of [learner.fixture.documentId, other.documentId]) {
+      const study = await learner.startStudy(documentId)
+
+      await learner.answerAt(daysBeforeNow(1), study.id, 1, false)
+      await learner.end(study.id)
+    }
+
+    const review = await learner.decode(StudySession)(
+      await learner.startReview(1, learner.fixture.documentId),
+    )
+
+    await learner.finish(review)
+
+    expect(await learner.nextStep(review.id)).toEqual({
+      type: 'review',
+      document: null,
+      dueQuestionCount: 1,
+    })
+  })
+
+  test('with nothing left to review an unfinished regular-study session is continued', async () => {
+    const learner = await learnerWithQuestions(2)
+    const study = await learner.startStudy(learner.fixture.documentId)
+
+    await learner.answerAt(daysBeforeNow(1), study.id, 1, false)
+
+    const review = await learner.decode(StudySession)(await learner.startReview(1))
+
+    await learner.finish(review)
+
+    expect(await learner.nextStep(review.id)).toMatchObject({
+      type: 'continue-study',
+      session: {
+        id: study.id,
+        kind: 'study',
+        status: 'active',
+        document: { id: learner.fixture.documentId },
+      },
+    })
+  })
+
+  test('regular study suggests a review once a full review session is due', async () => {
+    const learner = await learnerWithQuestions(26)
+    const study = await learner.startStudy(learner.fixture.documentId)
+
+    for (let position = 1; position <= 25; position++) {
+      await learner.answerAt(daysBeforeNow(1), study.id, position, false)
+    }
+
+    await learner.end(study.id)
+
+    expect(await learner.nextStep(study.id)).toEqual({
+      type: 'review',
+      document: null,
+      dueQuestionCount: 25,
+    })
+  })
+
+  test('regular study with few questions due goes on with study', async () => {
+    const learner = await learnerWithQuestions(1)
+    const study = await learner.startStudy(learner.fixture.documentId)
+
+    await learner.answerAt(daysBeforeNow(1), study.id, 1, false)
+    await learner.end(study.id)
+
+    expect(await learner.nextStep(study.id)).toMatchObject({ type: 'start-study' })
+  })
+
+  test('another account’s session has no next step', async () => {
+    const learner = await learnerWithQuestions(1)
+    const study = await learner.startStudy(learner.fixture.documentId)
+    const stranger = await learnerFor(learner.fixture.pathId, learner.fixture.config)
+
+    expect(await stranger.nextStep(study.id)).toBeNull()
   })
 })

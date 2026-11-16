@@ -40,6 +40,7 @@ import {
   LatestStudySessionResponse,
   OralMaterialsResponse,
   ReviewPreviewResponse,
+  SessionNextStepResponse,
   SessionPreviewResponse,
   SessionQuestionResponse,
   SessionResultsResponse,
@@ -188,6 +189,17 @@ export const GetSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
+// What to do after the session, by the learner's state now; another account's session reads as null.
+export const GetSessionNextStepEndpoint = HttpApiEndpoint.get(
+  'GetSessionNextStep',
+  '/paths/:qualificationPathId/sessions/:sessionId/next-step',
+  {
+    params: SessionParams,
+    success: SessionNextStepResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
 // Only an ended session has a summary; an unfinished one reads as null.
 export const GetSessionSummaryEndpoint = HttpApiEndpoint.get(
   'GetSessionSummary',
@@ -276,6 +288,7 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(GetLatestSessionEndpoint)
   .add(GetSessionEndpoint)
   .add(GetSessionSummaryEndpoint)
+  .add(GetSessionNextStepEndpoint)
   .add(GetSessionResultsEndpoint)
   .add(EndSessionEndpoint)
   .add(GetSessionQuestionEndpoint)

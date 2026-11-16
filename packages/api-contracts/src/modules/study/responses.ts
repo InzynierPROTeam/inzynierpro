@@ -12,11 +12,14 @@ import {
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
+  continueStudyNextStep,
+  reviewNextStep,
   SessionQuestionPosition,
   SessionQuestionSelection,
   StudySessionId,
   StudySessionKind,
   StudySessionStatus,
+  startStudyNextStep,
 } from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
 import { CursorPaginatedResponse } from '~api-contracts/utils/pagination.js'
@@ -132,6 +135,26 @@ export const LatestStudySession = Schema.Struct({
 export type LatestStudySession = typeof LatestStudySession.Type
 
 export const LatestStudySessionResponse = Schema.NullOr(LatestStudySession)
+
+/**
+ * The one step a finished session suggests next: a review of due questions, continuing the most
+ * recently used unfinished regular-study session, or starting the next one. Null when the path has
+ * nothing left to suggest.
+ */
+export const SessionNextStep = Schema.Union([
+  Schema.Struct({
+    type: Schema.Literal(reviewNextStep),
+    // Null for a review of the whole path.
+    document: Schema.NullOr(SessionDocument),
+    dueQuestionCount: QuestionCount,
+  }),
+  Schema.Struct({ type: Schema.Literal(continueStudyNextStep), session: LatestStudySession }),
+  Schema.Struct({ type: Schema.Literal(startStudyNextStep), preview: SessionPreview }),
+])
+
+export type SessionNextStep = typeof SessionNextStep.Type
+
+export const SessionNextStepResponse = Schema.NullOr(SessionNextStep)
 
 export const EndSessionResponse = StudySession
 

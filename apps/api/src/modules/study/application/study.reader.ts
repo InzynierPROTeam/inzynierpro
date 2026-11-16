@@ -95,6 +95,14 @@ export class StudyReader extends Context.Service<
       pathId: QualificationPathId,
       documentId: Option.Option<ReferenceDocumentId>,
     ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
+    /**
+     * The most recently used unfinished regular-study session of the path. Each document has at most
+     * one, so another document's may be older than the latest session.
+     */
+    readonly latestUnfinishedSession: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<Option.Option<StudySession>, StudyReadError>
     /** The document when it is on the path. */
     readonly pathDocument: (
       pathId: QualificationPathId,

@@ -22,6 +22,7 @@ import { recordAssistance } from '~api/modules/study/application/record-assistan
 import { getReviewPreview } from '~api/modules/study/application/review-preview.query.js'
 import { getReviewSession } from '~api/modules/study/application/review-session.query.js'
 import { ReviewSchedulerLive } from '~api/modules/study/application/review-state.service.js'
+import { getSessionNextStep } from '~api/modules/study/application/session-next-step.query.js'
 import { getSessionPreview } from '~api/modules/study/application/session-preview.query.js'
 import { getSessionQuestion } from '~api/modules/study/application/session-question.query.js'
 import { getSessionResults } from '~api/modules/study/application/session-results.query.js'
@@ -53,6 +54,7 @@ import {
   toSessionQuestionResultDto,
   toStudySessionDto,
   toStudySessionSummaryDto,
+  toSessionNextStepDto,
 } from './mappers.js'
 
 export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
@@ -256,6 +258,22 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
           ),
         ),
         Effect.map(Option.map(toStudySessionSummaryDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('GetSessionNextStep', ({ params }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getSessionNextStep(user.id, params.qualificationPathId, params.sessionId),
+          ),
+        ),
+        Effect.map(Option.flatMap(toSessionNextStepDto)),
         Effect.map(Option.getOrNull),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,

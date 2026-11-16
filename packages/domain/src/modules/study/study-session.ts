@@ -69,3 +69,21 @@ export const studySessionKindValues = [regularStudySession, reviewStudySession] 
 export const StudySessionKind = Schema.Literals(studySessionKindValues)
 
 export type StudySessionKind = typeof StudySessionKind.Type
+
+export const reviewNextStep = 'review'
+export const continueStudyNextStep = 'continue-study'
+export const startStudyNextStep = 'start-study'
+
+export const sessionNextStepValues = [
+  reviewNextStep,
+  continueStudyNextStep,
+  startStudyNextStep,
+] as const
+
+/**
+ * What a finished written session suggests next: a review of due questions, continuing an
+ * unfinished regular-study session, or starting the next one (ADR-0002).
+ */
+export const SessionNextStepType = Schema.Literals(sessionNextStepValues)
+
+export type SessionNextStepType = typeof SessionNextStepType.Type

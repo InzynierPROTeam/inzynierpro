@@ -1,4 +1,5 @@
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
   coveredQuestions,
   type SessionQuestionSelection,
@@ -14,6 +15,16 @@ export type SessionCountSettings = {
   readonly canChangeQuestionCount: boolean
   readonly minimumQuestionCount: QuestionCount
   readonly maximumQuestionCount: QuestionCount
+}
+
+/** What a new regular-study session of a document would hold; the start confirms it. */
+export type SessionPreview = {
+  readonly qualificationPathId: QualificationPathId
+  readonly document: DocumentQuestionPool
+  readonly mode: 'written-study'
+  readonly questionSelection: SessionQuestionSelection
+  readonly availableQuestionCount: QuestionCount
+  readonly settings: SessionCountSettings
 }
 
 export const writtenStudySettings = (availableCount: QuestionCount): SessionCountSettings => ({

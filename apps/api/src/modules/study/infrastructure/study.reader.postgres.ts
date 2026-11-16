@@ -315,6 +315,12 @@ export const StudyReaderLive = Layer.effect(
           }),
         ]),
       ),
+      latestUnfinishedSession: Effect.fn('StudyReader.latestUnfinishedSession')((userId, pathId) =>
+        findLatestSession(userId, pathId, [
+          sql`s.kind=${regularStudySession}`,
+          sql`s.ended_at IS NULL`,
+        ]),
+      ),
       pathDocument: Effect.fn('StudyReader.pathDocument')(
         function* (pathId, documentId) {
           const rows =

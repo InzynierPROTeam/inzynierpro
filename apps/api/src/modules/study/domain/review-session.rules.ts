@@ -4,7 +4,7 @@ import { Option } from 'effect'
 import type { SessionCountSettings } from './session-preview.rules.js'
 
 /** A review session holds at most this many due questions unless the learner changes it (ADR-0002). */
-const defaultReviewQuestionCount = 25
+export const defaultReviewQuestionCount = 25
 
 /**
  * The counts a review session may hold for the questions due now: up to 25 by default, any count
