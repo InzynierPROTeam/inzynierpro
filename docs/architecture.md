@@ -8,6 +8,7 @@ Application behaviour has its own documents:
 
 - [platform.md](platform.md): the web platform's authentication, route guards, assignment selection, back navigation and data loading.
 - [written-study.md](written-study.md): written study sessions from preview to summary, including withdrawn questions.
+- [oral-study.md](oral-study.md): the oral content model, its revision guards and the oral catalogue.
 - [rich-content.md](rich-content.md): the versioned rich content format, its validation and the web renderer.
 - [background-jobs.md](background-jobs.md): durable background jobs, the worker process and its diagnosis.
 - [deployment.md](deployment.md): images, CI/CD to staging and production through Dokploy, operator setup and backups.
