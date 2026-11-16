@@ -4,7 +4,10 @@ import { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
 import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
-import { ExamSessionOption } from '~api-contracts/modules/exam-calendar/responses.js'
+import {
+  DistrictChamber,
+  ExamSessionOption,
+} from '~api-contracts/modules/exam-calendar/responses.js'
 import {
   QualificationKind,
   QualificationPath,
@@ -33,6 +36,7 @@ export const UserQualificationPath = Schema.Struct({
   qualificationScope: QualificationScope,
   accessScope: ExamAccessScope,
   archived: Schema.Boolean,
+  districtChamber: Schema.NullOr(DistrictChamber),
   goal: UserExamGoal,
 })
 

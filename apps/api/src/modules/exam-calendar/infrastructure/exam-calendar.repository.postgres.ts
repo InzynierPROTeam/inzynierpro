@@ -33,6 +33,12 @@ export const ExamCalendarRepositoryLive = Layer.effect(
           Effect.mapError(cause => new ExamCalendarWriteError({ cause })),
         )
       }),
+      lockDistrictChamber: Effect.fn('ExamCalendarRepository.lockDistrictChamber')(function* (id) {
+        return yield* sql`SELECT id FROM district_chambers WHERE id=${id} LIMIT 1 FOR SHARE`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new ExamCalendarWriteError({ cause })),
+        )
+      }),
     })
   }),
 )

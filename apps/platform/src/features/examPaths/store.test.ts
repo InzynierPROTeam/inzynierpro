@@ -31,6 +31,7 @@ const first = Schema.decodeSync(UserQualificationPath)({
   },
   accessScope: 'written',
   archived: false,
+  districtChamber: null,
   goal: {
     version: 1,
     examSessionId: '0190f6a2-9c1d-7c3e-8a4b-1f2e3d4c5b6d',

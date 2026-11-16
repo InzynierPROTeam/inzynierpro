@@ -3,6 +3,7 @@ import { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session
 import { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
 import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import { type DateTime, type Option, Schema } from 'effect'
+import { DistrictChamber } from '~api/modules/exam-calendar/domain/district-chamber.model.js'
 import {
   type PathSelection,
   QualificationKind,
@@ -31,6 +32,7 @@ export const UserQualificationPath = Schema.Struct({
   qualificationScope: QualificationScope,
   accessScope: ExamAccessScope,
   archived: Schema.Boolean,
+  districtChamber: Schema.OptionFromNullOr(DistrictChamber),
   goal: UserExamGoal,
 })
 

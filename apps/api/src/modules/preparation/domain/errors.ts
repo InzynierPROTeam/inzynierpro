@@ -7,3 +7,5 @@ export class StalePathConfiguration extends Data.TaggedError('StalePathConfigura
 export class StaleExamGoal extends Data.TaggedError('StaleExamGoal') {}
 
 export class UserPathLimitReached extends Data.TaggedError('UserPathLimitReached') {}
+
+export class DistrictChamberUnavailable extends Data.TaggedError('DistrictChamberUnavailable') {}

@@ -11,18 +11,30 @@ import { failExamCalendarRead } from './errors.js'
 import { toExamSessionOptionDto } from './mappers.js'
 
 export const ExamCalendarLive = HttpApiBuilder.group(Api, 'ExamCalendar', handlers =>
-  handlers.handle('ListExamSessions', ({ query }) =>
-    limitByClient(publicReadLimit).pipe(
-      Effect.andThen(
-        ExamCalendarReader.use(reader => reader.sessions(query.specializationId, query)),
+  handlers
+    .handle('ListExamSessions', ({ query }) =>
+      limitByClient(publicReadLimit).pipe(
+        Effect.andThen(
+          ExamCalendarReader.use(reader => reader.sessions(query.specializationId, query)),
+        ),
+        Effect.map(page => mapCursorPage(page, toExamSessionOptionDto)),
+        Effect.catchTags({
+          ExamCalendarReadError: failExamCalendarRead,
+          InvalidCursor: () => invalidCursor,
+        }),
       ),
-      Effect.map(page => mapCursorPage(page, toExamSessionOptionDto)),
-      Effect.catchTags({
-        ExamCalendarReadError: failExamCalendarRead,
-        InvalidCursor: () => invalidCursor,
-      }),
+    )
+    .handle('ListDistrictChambers', ({ query }) =>
+      limitByClient(publicReadLimit).pipe(
+        Effect.andThen(
+          ExamCalendarReader.use(reader => reader.districtChambers(query.generalChamberId, query)),
+        ),
+        Effect.catchTags({
+          ExamCalendarReadError: failExamCalendarRead,
+          InvalidCursor: () => invalidCursor,
+        }),
+      ),
     ),
-  ),
 )
 
 export const ExamCalendarRequestServices = ExamCalendarReaderLive

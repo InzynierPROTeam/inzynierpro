@@ -1,4 +1,5 @@
 import { UtcIsoDateTime } from '@inzpro/domain/common/date-time'
+import { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
 import { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
 import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
@@ -29,6 +30,12 @@ export const ChangeGoalPayload = Schema.Struct({
 })
 
 export type ChangeGoalPayload = typeof ChangeGoalPayload.Type
+
+export const SetDistrictChamberPayload = Schema.Struct({
+  districtChamberId: Schema.NullOr(DistrictChamberId),
+})
+
+export type SetDistrictChamberPayload = typeof SetDistrictChamberPayload.Type
 
 export const PathsQuery = CursorPagination
 export const GoalHistoryQuery = CursorPagination

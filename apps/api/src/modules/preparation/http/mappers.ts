@@ -48,5 +48,6 @@ export const toUserQualificationPathDto = (
 ): UserQualificationPathDto => ({
   ...path,
   specialization: toSpecializationDto(path.specialization),
+  districtChamber: Option.getOrNull(path.districtChamber),
   goal: toUserExamGoalDto(path.goal),
 })
