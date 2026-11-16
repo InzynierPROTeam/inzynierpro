@@ -314,6 +314,7 @@ test('oral review queries forward category scope and invalidate with oral progre
 
           return HttpServerResponse.jsonUnsafe({
             qualificationPathId: pathA,
+            questionScope: 'path',
             category: { id: oralCategoryId, name: 'Test category' },
             dueQuestionCount: 2,
             nextDueAt: null,

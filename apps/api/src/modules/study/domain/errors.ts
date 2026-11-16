@@ -48,3 +48,5 @@ export class OralQuizCheckMissing extends Data.TaggedError('OralQuizCheckMissing
 export class OralQuizSelectionNotAllowed extends Data.TaggedError('OralQuizSelectionNotAllowed') {}
 
 export class OralQuizCheckAlreadyChecked extends Data.TaggedError('OralQuizCheckAlreadyChecked') {}
+
+export class DistrictChamberNotChosen extends Data.TaggedError('DistrictChamberNotChosen') {}

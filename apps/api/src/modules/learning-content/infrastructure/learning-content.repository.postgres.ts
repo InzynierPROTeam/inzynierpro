@@ -3,7 +3,7 @@ import type {
   OralKnowledgeCheckRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
-import { Array as Arr, Effect, Layer } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { LearningContentWriteError } from '~api/modules/learning-content/application/errors.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
@@ -170,6 +170,16 @@ export const LearningContentRepositoryLive = Layer.effect(
       assignOralQuestion: Effect.fn('LearningContentRepository.assignOralQuestion')(
         function* (pathId, questionId) {
           return yield* sql`INSERT INTO path_oral_questions (qualification_path_id,question_id) VALUES (${pathId},${questionId})`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
+      linkOralQuestionToChamber: Effect.fn('LearningContentRepository.linkOralQuestionToChamber')(
+        function* (link) {
+          const recordedAt = DateTime.formatIso(link.recordedAt)
+
+          return yield* sql`INSERT INTO oral_question_regional_links (question_id,district_chamber_id,source_kind,recorded_at) VALUES (${link.questionId},${link.districtChamberId},${link.sourceKind},${recordedAt})`.pipe(
             Effect.asVoid,
             Effect.mapError(cause => new LearningContentWriteError({ cause })),
           )

@@ -1,5 +1,6 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
+import { pathOralQuestionScope } from '@inzpro/domain/modules/study/oral-study-session'
 import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
@@ -54,6 +55,7 @@ import { OralStudyRepositoryLive } from '~api/modules/study/infrastructure/oral-
 import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
 import {
+  districtChamberNotChosen,
   failQuestionNoteWrite,
   invalidOralQuizSelection,
   oralQuizCheckAlreadyAnswered,
@@ -218,6 +220,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
               user.id,
               params.qualificationPathId,
               Option.fromNullishOr(query.categoryId),
+              query.questionScope ?? pathOralQuestionScope,
             ),
           ),
         ),
@@ -227,6 +230,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           StudyReadError: failStudyRead,
+          DistrictChamberNotChosen: () => districtChamberNotChosen,
         }),
       ),
     )
@@ -259,6 +263,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
               params.qualificationPathId,
               Option.fromNullishOr(payload.categoryId),
               payload.questionCount,
+              payload.questionScope ?? pathOralQuestionScope,
             ),
           ),
         ),
@@ -268,6 +273,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
           PreparationWriteError: failPreparationWrite,
           PathPermissionDenied: () => pathAccessDenied,
           StudyReadError: failStudyRead,
+          DistrictChamberNotChosen: () => districtChamberNotChosen,
           StudyWriteError: failStudyWrite,
           OralCategoryNotOnPath: () => oralCategoryNotFound,
           StaleSessionScope: () => staleSessionPreview,
@@ -299,6 +305,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
               params.qualificationPathId,
               Option.fromNullishOr(query.categoryId),
               Option.fromNullishOr(query.fromCategoryId),
+              query.questionScope ?? pathOralQuestionScope,
             ),
           ),
         ),
@@ -307,6 +314,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           StudyReadError: failStudyRead,
+          DistrictChamberNotChosen: () => districtChamberNotChosen,
         }),
       ),
     )
@@ -319,6 +327,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
               params.qualificationPathId,
               payload.categoryId,
               payload.questionCount,
+              payload.questionScope ?? pathOralQuestionScope,
             ),
           ),
         ),
@@ -328,6 +337,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
           PreparationWriteError: failPreparationWrite,
           PathPermissionDenied: () => pathAccessDenied,
           StudyReadError: failStudyRead,
+          DistrictChamberNotChosen: () => districtChamberNotChosen,
           StudyWriteError: failStudyWrite,
           OralCategoryNotOnPath: () => oralCategoryNotFound,
           StaleSessionScope: () => staleSessionPreview,

@@ -257,6 +257,7 @@ export const toOralSessionNextStepDto = (step: OralSessionNextStep): OralSession
 
 export const toOralReviewPreviewDto = (preview: OralReviewPreview): OralReviewPreviewDto => ({
   qualificationPathId: preview.qualificationPathId,
+  questionScope: preview.questionScope,
   category: Option.match(preview.category, {
     onNone: () => null,
     onSome: ({ id, name }) => ({ id, name }),

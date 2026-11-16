@@ -29,6 +29,9 @@ import {
   OralDraftEdit,
   OralQuestionCategory,
   OralRevisionWithdrawal,
+  RegionalQuestionLink,
+  type RegionalSourceKind,
+  recollectionRegionalSource,
   QuestionRevisionWithdrawal,
   type RevisionChangeKind,
   substantiveChange,
@@ -390,6 +393,27 @@ export const publishFixtureOralRevision = (
       yield* learningContentRepository.publishOralRevision(revision)
 
       return revision
+    }),
+  )
+
+export const linkFixtureOralQuestionToChamber = (
+  questionId: OralQuestionId,
+  districtChamberId: string,
+  sourceKind: RegionalSourceKind = recollectionRegionalSource,
+  recordedAt = '2026-06-12T10:00:00.000Z',
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const link = yield* Schema.decodeEffect(RegionalQuestionLink)({
+        questionId,
+        districtChamberId,
+        sourceKind,
+        recordedAt,
+      })
+
+      yield* learningContentRepository.linkOralQuestionToChamber(link)
     }),
   )
 

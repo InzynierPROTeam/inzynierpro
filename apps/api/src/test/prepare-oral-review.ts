@@ -3,6 +3,7 @@ import { UserId } from '@inzpro/domain/modules/identity/user'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { pathOralQuestionScope } from '@inzpro/domain/modules/study/oral-study-session'
 import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
 import { DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
@@ -33,7 +34,14 @@ const services = Layer.mergeAll(
 
 await Effect.runPromise(
   Effect.gen(function* () {
-    const session = yield* startOralSession(userId, pathId, categoryId, QuestionCount.make(4))
+    const session = yield* startOralSession(
+      userId,
+      pathId,
+      categoryId,
+      QuestionCount.make(4),
+      pathOralQuestionScope,
+    )
+
     const oralStudyReader = yield* OralStudyReader
 
     for (let index = 1; index <= session.questionCount; index++) {

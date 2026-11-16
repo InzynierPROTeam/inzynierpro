@@ -1,11 +1,13 @@
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { OralQuestionScope } from '@inzpro/domain/modules/study/oral-study-session'
 
 import type { OralCategoryQuestionPool } from './oral-category.model.js'
 import type { SessionCountSettings } from './session-preview.rules.js'
 
 export type OralSessionPreview = {
   readonly qualificationPathId: QualificationPathId
+  readonly questionScope: OralQuestionScope
   readonly category: OralCategoryQuestionPool
   readonly settings: SessionCountSettings
 }

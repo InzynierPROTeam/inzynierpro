@@ -3,6 +3,7 @@ import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-con
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { OralQuestionScope } from '@inzpro/domain/modules/study/oral-study-session'
 import { regularStudySession } from '@inzpro/domain/modules/study/study-session'
 import { Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
@@ -13,6 +14,7 @@ import {
   UnfinishedOralSessionExists,
 } from '~api/modules/study/domain/errors.js'
 import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
+import { oralQuestionFilter } from '~api/modules/study/domain/oral-question-scope.rules.js'
 import { oralStudySettings } from '~api/modules/study/domain/oral-session-preview.rules.js'
 import { isAllowedQuestionCount } from '~api/modules/study/domain/session-preview.rules.js'
 
@@ -25,6 +27,7 @@ export const startOralSession = Effect.fn('Study.startOralSession')(function* (
   pathId: QualificationPathId,
   categoryId: OralQuestionCategoryId,
   questionCount: QuestionCount,
+  questionScope: OralQuestionScope,
 ) {
   const oralStudyReader = yield* OralStudyReader
   const oralStudyRepository = yield* OralStudyRepository
@@ -35,6 +38,7 @@ export const startOralSession = Effect.fn('Study.startOralSession')(function* (
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
       const assignment = yield* requirePathAccess(userId, pathId, oralExamAccess)
+      const { reportedIn } = yield* oralQuestionFilter(questionScope, assignment.districtChamber)
       const unfinished = yield* oralStudyReader.unfinishedSession(userId, pathId, categoryId)
 
       if (Option.isSome(unfinished)) {
@@ -45,10 +49,23 @@ export const startOralSession = Effect.fn('Study.startOralSession')(function* (
       }
 
       const round = currentLearningRound(yield* oralStudyReader.learningRound(userId, pathId))
-      const category = yield* oralStudyReader.category(userId, pathId, round, categoryId)
+
+      const category = yield* oralStudyReader.category(
+        userId,
+        pathId,
+        round,
+        categoryId,
+        reportedIn,
+      )
 
       if (Option.isNone(category)) {
-        return yield* new OralCategoryNotOnPath()
+        const onPath =
+          Option.isSome(reportedIn) &&
+          Option.isSome(
+            yield* oralStudyReader.category(userId, pathId, round, categoryId, Option.none()),
+          )
+
+        return yield* onPath ? new StaleSessionScope() : new OralCategoryNotOnPath()
       }
 
       if (
@@ -66,6 +83,7 @@ export const startOralSession = Effect.fn('Study.startOralSession')(function* (
         round,
         categoryId,
         questionCount,
+        reportedIn,
       )
 
       if (questions.length !== questionCount) {

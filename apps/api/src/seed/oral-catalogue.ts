@@ -14,6 +14,7 @@ import {
 
 import { catalogueId } from './catalogue.js'
 import { seedOralKnowledgeChecks } from './oral-knowledge-checks.js'
+import { seedOralRegionalLinks } from './oral-regional-links.js'
 import { bold, italic, plain } from './rich-text.js'
 
 // EXTERNAL: Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 20, 22, 29–30, 34, 35, 37, 54) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 12, 62, 68, 72, 298).
@@ -352,4 +353,5 @@ export const seedOralCatalogue = Effect.fn('seedOralCatalogue')(function* (
   yield* sql`UPDATE oral_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id=${previousId}`
 
   yield* seedOralKnowledgeChecks()
+  yield* seedOralRegionalLinks()
 })

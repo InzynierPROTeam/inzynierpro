@@ -81,7 +81,7 @@ Oral session reads sit in `studyKeys.oralSession(userId, pathId, sessionId)` and
 
 ## Seed
 
-The technical seed has three oral categories with four questions each, assigned to every catalogue path except the first technical path, which keeps the empty state. Answers use headings, lists and tables, and the question on the expiry of a building permit has a substantive second revision.
+The technical seed has three oral categories with four questions each, assigned to every catalogue path except the first technical path, which keeps the empty state. Answers use headings, lists and tables, and the question on the expiry of a building permit has a substantive second revision. Regional links report several questions in the Mazowiecka and Małopolska engineers' chambers and in the Mazowiecka and Śląska architects' chambers.
 
 ## SRS
 
@@ -137,3 +137,13 @@ A wrong answer applies Again to the linked oral question's review state when the
 The quiz lives in the session summary. Before it starts, „Sprawdź swoją wiedzę” offers „Sprawdź wiedzę” when the web formats match. Starting draws the checks in place, without navigation, and lists them one below another, loading further pages with „Pokaż kolejne pytania”. Each check keeps its selection in the form until „Sprawdź”, then shows correctness, missed correct options, wrong selections and the explanation instead of the button. A check can be skipped and answered later; the summary keeps showing this view. The quiz and its checks sit in `studyKeys.oralSession(userId, pathId, sessionId)`; an answer replaces the quiz and the answered check in the loaded pages and refreshes the oral progress group.
 
 The technical seed adds checks in all three formats to the first oral category, and a true/false check linked to the replaced wording of the building-permit expiry question, which is never offered.
+
+## Regional links and the chamber filter
+
+`oral_question_regional_links`, owned by `learning-content`, links an oral question to a district chamber where it was reported ([ADR-0008](adr/0008-written-document-groups-and-oral-categories.md)). Each link records its `source_kind`, `recollection` for an exam-taker's recollection or `official` for an official pool source, and `recorded_at`. A link never copies question content. A question may have several links, so it can be reported in many chambers and more than once in one chamber.
+
+`GET /preview`, `POST /sessions`, `GET /review-preview` and `POST /review-sessions` accept `questionScope`: `path`, the default, covers every question on the path, while `reported_in_my_chamber` narrows to questions linked to the district chamber chosen on the learner's path assignment. Both previews echo `questionScope`, and their counts and settings apply to the narrowed set. A session preview chooses only categories with questions in the scope: a requested category without any previews as `null`, and starting it is `StaleSessionPreview`. A review preview of such a category shows it with no due questions, as without the filter.
+
+- `DistrictChamberNotChosen` (409, `district_chamber_not_chosen`): `reported_in_my_chamber` was requested while the path assignment has no district chamber.
+
+The filter only selects questions. Coverage, rounds, oral SRS and history stay shared for the path, and the next step always uses the whole path. A started session keeps its pinned set when the chamber changes or is cleared; the change affects new previews and sessions only. There are no parallel sessions per chamber: the unfinished session of a category or review scope blocks a new one in any question scope. The visible filter arrives with the chamber UI in stage 3.

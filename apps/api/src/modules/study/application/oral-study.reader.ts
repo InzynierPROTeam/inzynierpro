@@ -1,4 +1,5 @@
 import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import type { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type {
   OralQuestionId,
@@ -53,6 +54,7 @@ export class OralStudyReader extends Context.Service<
       pathId: QualificationPathId,
       categoryId: Option.Option<OralQuestionCategoryId>,
       now: DateTimeUtc,
+      reportedIn: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<ReviewQueue, StudyReadError>
     readonly reviewCandidates: (
       userId: UserId,
@@ -60,6 +62,7 @@ export class OralStudyReader extends Context.Service<
       categoryId: Option.Option<OralQuestionCategoryId>,
       now: DateTimeUtc,
       limit: QuestionCount,
+      reportedIn: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<ReadonlyArray<OralSessionCandidate>, StudyReadError>
     readonly unfinishedReviewSession: (
       userId: UserId,
@@ -95,6 +98,7 @@ export class OralStudyReader extends Context.Service<
       pathId: QualificationPathId,
       round: LearningRoundNumber,
       categoryId: OralQuestionCategoryId,
+      reportedIn: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<Option.Option<OralCategoryQuestionPool>, StudyReadError>
     readonly nextCategory: (
       userId: UserId,
@@ -104,6 +108,7 @@ export class OralStudyReader extends Context.Service<
         readonly fromCategoryId: Option.Option<OralQuestionCategoryId>
         readonly skipsStartCategory: boolean
       },
+      reportedIn: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<Option.Option<OralCategoryQuestionPool>, StudyReadError>
     readonly sessionCandidates: (
       userId: UserId,
@@ -111,6 +116,7 @@ export class OralStudyReader extends Context.Service<
       round: LearningRoundNumber,
       categoryId: OralQuestionCategoryId,
       limit: QuestionCount,
+      reportedIn: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<ReadonlyArray<OralSessionCandidate>, StudyReadError>
     readonly unfinishedSession: (
       userId: UserId,
