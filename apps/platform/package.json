@@ -19,6 +19,7 @@
     "@inzpro/domain": "workspace:*",
     "@inzpro/queries": "workspace:*",
     "@inzpro/react-utils": "workspace:*",
+    "@inzpro/rich-content": "workspace:*",
     "@inzpro/ui": "workspace:*",
     "@inzpro/utils": "workspace:*",
     "@tanstack/react-form": "catalog:",

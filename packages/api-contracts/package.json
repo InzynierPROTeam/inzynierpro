@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@inzpro/domain": "workspace:*",
+    "@inzpro/rich-content": "workspace:*",
     "effect": "catalog:"
   }
 }
