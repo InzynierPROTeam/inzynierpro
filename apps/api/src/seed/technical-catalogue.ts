@@ -1,13 +1,7 @@
 import { POLAND_TIME_ZONE, POLISH_LANGUAGE } from '@inzpro/config/localization'
 import { unrestrictedQualificationScopeCode } from '@inzpro/domain/modules/qualification-paths/qualification-scope'
 import { demolitionSpecializationCode } from '@inzpro/domain/modules/qualification-paths/specialization'
-import {
-  boldMark,
-  italicMark,
-  RichContent,
-  richContentVersion,
-  type Text,
-} from '@inzpro/rich-content/rich-content'
+import { RichContent, richContentVersion, type Text } from '@inzpro/rich-content/rich-content'
 import { DateTime, Effect, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 import {
@@ -28,10 +22,8 @@ import {
   catalogueScopes,
   catalogueSessions,
 } from './catalogue.js'
-
-const plain = (text: string): Text => ({ type: 'text', text })
-const bold = (text: string): Text => ({ type: 'text', text, marks: [{ type: boldMark }] })
-const italic = (text: string): Text => ({ type: 'text', text, marks: [{ type: italicMark }] })
+import { seedOralCatalogue } from './oral-catalogue.js'
+import { bold, italic, plain } from './rich-text.js'
 
 const explanationJson = (paragraph: ReadonlyArray<Text>) =>
   Schema.decodeEffect(RichContent)({
@@ -376,6 +368,8 @@ export const seedTechnicalCatalogue = Effect.gen(function* () {
 
         yield* sql`INSERT INTO path_questions (qualification_path_id,document_id,question_id) SELECT ${pathId},q.document_id,q.id FROM written_questions q WHERE q.id IN ${sql.in(questions.map((_, index) => catalogueId('30', index + 1)))} ON CONFLICT DO NOTHING`
       }
+
+      yield* seedOralCatalogue(cataloguePathIds)
     }),
   )
 })

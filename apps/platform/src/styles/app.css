@@ -25,7 +25,7 @@
 
 @layer components {
   .gradient-page {
-    @apply from-primary/10 to-indigo-600/10;
+    @apply from-primary/10 to-indigo-500/10;
   }
   .gradient-text-brand {
     @apply from-primary bg-linear-to-r to-indigo-500 bg-clip-text text-transparent;
@@ -33,13 +33,10 @@
   .gradient-brand {
     @apply from-primary to-indigo-500;
   }
-  .gradient-brand-purple {
-    @apply from-indigo-500 to-purple-600;
-  }
-  .gradient-brand-pink {
-    @apply from-purple-500 to-pink-600;
-  }
   .gradient-brand-blue {
-    @apply from-blue-400 to-blue-600;
+    @apply from-primary to-blue-700;
+  }
+  .gradient-brand-blue-light {
+    @apply from-blue-400 to-blue-500;
   }
 }

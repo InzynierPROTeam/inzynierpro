@@ -1,6 +1,11 @@
 import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { databaseLayerFromConfig } from '@inzpro/db'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import type {
+  OralQuestionId,
+  OralRevisionId,
+} from '@inzpro/domain/modules/learning-content/oral-question'
+import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import type {
   QuestionRevisionId,
@@ -15,8 +20,13 @@ import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastru
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import {
   ContentAsset,
+  NewOralQuestion,
+  NewOralRevision,
   NewQuestion,
   NewQuestionRevision,
+  OralDraftEdit,
+  OralQuestionCategory,
+  OralRevisionWithdrawal,
   QuestionRevisionWithdrawal,
   type RevisionChangeKind,
   substantiveChange,
@@ -259,5 +269,116 @@ export const currentReviewState = (
       const studyReader = yield* StudyReader
 
       return yield* studyReader.reviewState(userId, pathId, questionId)
+    }),
+  )
+
+export const addFixtureOralCategory = (name = 'Test-only oral category', sortOrder = 0) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const category = yield* Schema.decodeEffect(OralQuestionCategory)({
+        id: crypto.randomUUID(),
+        name,
+        sortOrder,
+      })
+
+      yield* learningContentRepository.createOralCategory(category)
+
+      return category.id
+    }),
+  )
+
+export const addFixtureOralQuestion = (
+  pathId: QualificationPathId,
+  categoryId: OralQuestionCategoryId,
+  position: number,
+  published = true,
+  answer: typeof RichContent.Encoded = paragraphs('Test-only oral answer'),
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const question = yield* Schema.decodeEffect(NewOralQuestion)({
+        id: crypto.randomUUID(),
+        revisionId: crypto.randomUUID(),
+        categoryId,
+        position,
+        qualificationPathId: pathId,
+        body: paragraphs('Test-only oral question'),
+        answer,
+        published,
+      })
+
+      yield* learningContentRepository.createOralQuestion(question)
+
+      return question
+    }),
+  )
+
+export const assignFixtureOralQuestion = (
+  pathId: QualificationPathId,
+  questionId: OralQuestionId,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      yield* learningContentRepository.assignOralQuestion(pathId, questionId)
+    }),
+  )
+
+export const editFixtureOralDraft = (
+  revisionId: OralRevisionId,
+  answer: typeof RichContent.Encoded = paragraphs('Edited oral answer'),
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const edit = yield* Schema.decodeEffect(OralDraftEdit)({
+        revisionId,
+        body: paragraphs('Edited oral question'),
+        answer,
+      })
+
+      yield* learningContentRepository.editOralDraft(edit)
+    }),
+  )
+
+export const publishFixtureOralRevision = (
+  questionId: OralQuestionId,
+  changeKind: RevisionChangeKind = substantiveChange,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const revision = yield* Schema.decodeEffect(NewOralRevision)({
+        questionId,
+        revisionId: crypto.randomUUID(),
+        changeKind,
+        body: paragraphs('Test-only revised oral question'),
+        answer: paragraphs('Test-only revised oral answer'),
+      })
+
+      yield* learningContentRepository.publishOralRevision(revision)
+
+      return revision
+    }),
+  )
+
+export const withdrawFixtureOralRevision = (
+  revisionId: OralRevisionId,
+  reason = 'Test-only fault in the oral answer',
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      const withdrawal = yield* Schema.decodeEffect(OralRevisionWithdrawal)({ revisionId, reason })
+
+      yield* learningContentRepository.withdrawOralRevision(withdrawal)
     }),
   )

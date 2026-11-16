@@ -144,6 +144,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           InvalidCursor: () => invalidCursor,
+          StudyReadError: failStudyRead,
         }),
       ),
     )

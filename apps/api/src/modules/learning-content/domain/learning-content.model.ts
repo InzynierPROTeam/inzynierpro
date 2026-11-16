@@ -4,6 +4,15 @@ import {
   ContentAssetMediaType,
   ImageDimension,
 } from '@inzpro/domain/modules/learning-content/content-asset'
+import {
+  OralCategoryPosition,
+  OralQuestionId,
+  OralRevisionId,
+} from '@inzpro/domain/modules/learning-content/oral-question'
+import {
+  OralQuestionCategoryId,
+  OralQuestionCategorySortOrder,
+} from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
@@ -98,3 +107,53 @@ export const QuestionRevisionWithdrawal = Schema.Struct({
 })
 
 export type QuestionRevisionWithdrawal = typeof QuestionRevisionWithdrawal.Type
+
+export const OralQuestionCategory = Schema.Struct({
+  id: OralQuestionCategoryId,
+  name: Schema.NonEmptyString,
+  sortOrder: OralQuestionCategorySortOrder,
+})
+
+export type OralQuestionCategory = typeof OralQuestionCategory.Type
+
+/**
+ * An oral question in its primary category with its first revision. It is assigned to one path
+ * here; further paths are assigned per question, never per category (ADR-0008).
+ */
+export const NewOralQuestion = Schema.Struct({
+  id: OralQuestionId,
+  revisionId: OralRevisionId,
+  categoryId: OralQuestionCategoryId,
+  position: OralCategoryPosition,
+  qualificationPathId: QualificationPathId,
+  body: RichContent,
+  answer: RichContent,
+  published: Schema.Boolean,
+})
+
+export type NewOralQuestion = typeof NewOralQuestion.Type
+
+export const OralDraftEdit = Schema.Struct({
+  revisionId: OralRevisionId,
+  body: RichContent,
+  answer: RichContent,
+})
+
+export type OralDraftEdit = typeof OralDraftEdit.Type
+
+export const NewOralRevision = Schema.Struct({
+  questionId: OralQuestionId,
+  revisionId: OralRevisionId,
+  changeKind: RevisionChangeKind,
+  body: RichContent,
+  answer: RichContent,
+})
+
+export type NewOralRevision = typeof NewOralRevision.Type
+
+export const OralRevisionWithdrawal = Schema.Struct({
+  revisionId: OralRevisionId,
+  reason: Schema.NonEmptyString,
+})
+
+export type OralRevisionWithdrawal = typeof OralRevisionWithdrawal.Type
