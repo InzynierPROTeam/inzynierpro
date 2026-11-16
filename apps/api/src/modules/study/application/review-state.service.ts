@@ -22,11 +22,7 @@ const grades = {
   [goodRating]: Rating.Good,
 } as const
 
-/**
- * FSRS through the pinned ts-fsrs scheduler with its default model and parameters and a desired
- * retention of 0.9, without fuzzing or per-user optimisation (ADR-0005), so replaying the same
- * LearningEvents reproduces the same state.
- */
+// Disable fuzzing so replaying LearningEvents reproduces the same state (ADR-0005).
 export class ReviewScheduler extends Context.Service<
   ReviewScheduler,
   {
@@ -82,12 +78,7 @@ export const ReviewSchedulerLive = Layer.effect(
   ),
 )
 
-/**
- * Appends a written answer's LearningEvent and applies it to the question's UserReviewState on
- * the path, in the caller's answer transaction (ADR-0012). The rating follows the written strategy
- * (ADR-0005); an answer it does not rate, including one to replaced content, stays in history only.
- * The stored state therefore always belongs to the question's current substantive content.
- */
+/** Runs in the caller's answer transaction; unrated answers remain in history only (ADR-0005). */
 export const recordWrittenEvidence = Effect.fn('Study.recordWrittenEvidence')(function* (
   answer: NewSessionAnswer,
   context: LearningEventContext,

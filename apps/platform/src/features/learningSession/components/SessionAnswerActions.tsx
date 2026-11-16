@@ -15,12 +15,10 @@ import { sessionNextStep } from '../utils'
 
 type SessionAnswerActionsProps = {
   question: SessionQuestion
-  // Answered, withdrawn or in an ended session: nothing to check, only to move on.
   isClosed: boolean
   isSubmitting: boolean
 }
 
-/** Checks an unanswered question; once answered or withdrawn, moves on to the next one or the summary. */
 export const SessionAnswerActions: React.FC<SessionAnswerActionsProps> = ({
   question,
   isClosed,
@@ -40,7 +38,6 @@ export const SessionAnswerActions: React.FC<SessionAnswerActionsProps> = ({
       }),
     }) > 0
 
-  // A withdrawn question is skipped rather than answered.
   if (isClosed) {
     return <NextQuestionButton question={question} />
   }
@@ -93,8 +90,6 @@ const NextQuestionButton: React.FC<NextQuestionButtonProps> = ({ question }) => 
     )
   }
 
-  // As in V1, the last question ends the session on the way to its summary; so does a session whose
-  // remaining questions were all withdrawn.
   if (step === 'end') {
     return <EndSessionButton sessionId={question.sessionId} />
   }

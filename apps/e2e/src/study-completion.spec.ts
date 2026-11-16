@@ -14,14 +14,12 @@ const answers = (page: Page) =>
 const questionHeading = (page: Page, position: number, total = categoryQuestions) =>
   page.getByRole('heading', { level: 1, name: `Pytanie ${position} z ${total}` })
 
-// Checks the first option of the question on screen and waits for its stored result.
 const answerQuestion = async (page: Page) => {
   await answers(page).first().click()
   await page.getByRole('button', { name: 'Sprawdź' }).click()
   await expect(answers(page).first()).toBeDisabled()
 }
 
-// Answers the session's questions in order, from the given one on screen to the last.
 const answerQuestionsFrom = async (page: Page, first = 1, total = categoryQuestions) => {
   for (let position = first; position <= total; position++) {
     await expect(questionHeading(page, position, total)).toBeVisible()
@@ -36,7 +34,6 @@ const answerQuestionsFrom = async (page: Page, first = 1, total = categoryQuesti
 const writtenStudyTile = (page: Page) =>
   page.getByRole('region', { name: 'Nauka do egzaminu pisemnego' })
 
-// Opens a category from the written study list and starts what its preview offers.
 const startCategorySession = async (page: Page, title: string) => {
   await page.goto('/nauka')
   await page.getByRole('link', { name: new RegExp(title) }).click()
@@ -47,7 +44,6 @@ const startCategorySession = async (page: Page, title: string) => {
   return page.url()
 }
 
-// The last question ends the session on the way to its summary.
 const finishSession = async (page: Page) => {
   await page.getByRole('button', { name: 'Zobacz podsumowanie' }).click()
   await expect(page).toHaveURL(/\/podsumowanie$/)
@@ -88,7 +84,6 @@ test('a new learner chooses a path, studies, reloads an answer and completes the
     categoryQuestions,
   )
 
-  // Every Building Law question is answered, so study continues with the next category.
   await expect(page.getByText(technicalConditions)).toBeVisible()
   await page.getByRole('button', { name: 'Kontynuuj naukę' }).click()
   await expect(page.getByRole('heading', { name: 'Zacznij sesję nauki' })).toBeVisible()
@@ -107,7 +102,6 @@ test('a question opened from the summary shows its stored answer', async ({
   await expect(answers(page).first()).toBeChecked()
   await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeHidden()
 
-  // An ended session's menu leads back to its summary instead of ending it.
   await page.getByRole('button', { name: 'Opcje sesji' }).click()
   await expect(page.getByRole('menuitem', { name: 'Zakończ sesję' })).toBeHidden()
   await page.getByRole('menuitem', { name: 'Zobacz podsumowanie' }).click()
@@ -139,7 +133,6 @@ test('an answered category can be started again', async ({ onboarded: { page } }
   await finishSession(page)
   const summaryUrl = page.url()
 
-  // The start page's ended session leads back to its summary.
   await page.goto('/start')
   await writtenStudyTile(page).getByRole('button', { name: 'Zobacz podsumowanie' }).click()
   await expect(page).toHaveURL(summaryUrl)
@@ -166,7 +159,6 @@ test('a finished session suggests continuing the unfinished session of another c
 
   await expect(page.getByText(`Odpowiedziano 1 / ${categoryQuestions}`)).toBeVisible()
   await page.getByRole('button', { name: 'Kontynuuj sesję' }).click()
-  // It continues from the question still open.
   await expect(page).toHaveURL(buildingLawSession.replace(/\/1$/, '/2'))
 })
 
@@ -184,17 +176,14 @@ test('continue opens the most recently used session and each category keeps its 
   await continueFromStart()
   await expect(page).toHaveURL(conditionsSession)
 
-  // Answering in the earlier session makes it the most recently used one.
   await page.goto(buildingLawSession)
   await answerQuestion(page)
   await page.reload()
   await expect(answers(page).first()).toBeChecked()
 
   await continueFromStart()
-  // It continues from the question still open.
   await expect(page).toHaveURL(buildingLawSession.replace(/\/1$/, '/2'))
 
-  // The other category still resumes its own session.
   await page.goto('/nauka')
   await page.getByRole('link', { name: new RegExp(technicalConditions) }).click()
   await page.getByRole('button', { name: 'Kontynuuj' }).click()
@@ -210,15 +199,12 @@ test('after every category is answered, study starts again from the first one', 
   await answerQuestionsFrom(page)
   await finishSession(page)
 
-  // The next category in order still has unanswered questions.
   await page.getByRole('button', { name: 'Kontynuuj naukę' }).click()
   await expect(page.getByRole('definition').filter({ hasText: technicalConditions })).toBeVisible()
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
   await answerQuestionsFrom(page)
   await finishSession(page)
 
-  // The learning round is complete, so the summary and the start page begin the next one with
-  // the first category.
   await expect(page.getByRole('heading', { level: 2, name: 'Co dalej?' })).toBeVisible()
   await expect(page.getByText(buildingLaw)).toBeVisible()
 
@@ -251,7 +237,6 @@ test.describe('on the small seeded path', () => {
     await finishSession(page)
     await expect(page.getByText(`${roundQuestions} z ${roundQuestions} pytań`)).toBeVisible()
 
-    // Every question was covered, so the next round offers all of them again.
     await page.getByRole('button', { name: 'Kontynuuj naukę' }).click()
     await expect(page.getByRole('heading', { name: 'Zacznij sesję nauki' })).toBeVisible()
     await expect(page.getByRole('definition').filter({ hasText: buildingLaw })).toBeVisible()
@@ -259,7 +244,6 @@ test.describe('on the small seeded path', () => {
     await expect(questionHeading(page, 1, roundQuestions)).toBeVisible()
     await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeVisible()
 
-    // Category progress counts the new round.
     await page.goto('/nauka')
     await expect(buildingLawCategory(page)).toContainText(`Ukończone: 0 / ${roundQuestions} pytań`)
   })

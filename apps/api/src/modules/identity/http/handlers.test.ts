@@ -56,7 +56,6 @@ describe('signing in with an email code', () => {
       user: { email, name: expect.stringMatching(/^Inżynier#[0-9A-F]{6}$/) },
     })
 
-    // The request's span names the account by id only.
     const traceId = session.headers.get('x-request-id')
     const serverSpan = api.spans.find(span => span.traceId === traceId && span.kind === 'server')
     const attributes = JSON.stringify([...(serverSpan?.attributes ?? [])])

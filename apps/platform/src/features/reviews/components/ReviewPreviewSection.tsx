@@ -36,7 +36,6 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { noDueReviewsMessage, reviewPreviewRouteApi } from '../utils'
 import { StartReviewSessionButton } from './StartReviewSessionButton'
 
-/** The review preview: the scope and count of due questions, confirmed before a session starts. */
 export const ReviewPreviewSection = () => {
   const {
     selectedPath,

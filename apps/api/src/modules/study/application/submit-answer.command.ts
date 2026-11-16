@@ -35,10 +35,6 @@ import { recordWrittenEvidence } from './review-state.service.js'
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Stores the learner's current LearningRound when it moved past the stored one, which happens once
- * every question of the path is covered in it, and returns it.
- */
 const syncLearningRound = Effect.fn('Study.syncLearningRound')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -55,7 +51,6 @@ const syncLearningRound = Effect.fn('Study.syncLearningRound')(function* (
   return round
 })
 
-// The LearningEvent mode of an answer in a session of each kind (ADR-0005).
 const sessionLearningModes = {
   [regularStudySession]: studyMode,
   [reviewStudySession]: reviewMode,
@@ -63,15 +58,8 @@ const sessionLearningModes = {
 } satisfies Record<StudySessionKind, LearningMode>
 
 /**
- * Scores and stores the session's one answer to a question (ADR-0002). The answer, its LearningEvent
- * in the session's mode, the question's UserReviewState, for regular study the path's coverage in
- * the current LearningRound and the next round once this answer covers the last question of the
- * path, and the session's continue point commit together (ADR-0012). The session
- * continues from the next question still open; only the learner ends it. The account lock
- * serializes submissions with each other, with recording assistance and with assignment changes, so
- * the first answer wins: retrying it returns the stored result, and a different answer is refused.
- * Assistance comes from the recorded openings of the explanation and the note, never from the
- * client, and the study day from backend time.
+ * The account lock orders answers against assistance and assignment changes. The answer, evidence,
+ * review state, round coverage and continue point commit together (ADR-0012).
  */
 export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
   userId: UserId,
@@ -149,7 +137,6 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         answeredAt,
       })
 
-      // Review and favourites answers feed SRS only; they never cover questions or move rounds (ADR-0005).
       if (isRegularStudy) {
         // A withdrawal may have completed the stored round since the last answer, so it is synced first.
         const round = yield* syncLearningRound(userId, pathId)
@@ -161,11 +148,9 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
           questionRevisionId,
           round,
         )
-        // Covering the last uncovered question starts the next round (ADR-0002).
         yield* syncLearningRound(userId, pathId)
       }
 
-      // With nothing left open the session stays on this question until the learner ends it.
       const next = yield* studyReader.nextOpenPosition(sessionId, position)
 
       const moved = yield* studyRepository.moveSession(

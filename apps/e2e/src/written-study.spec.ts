@@ -68,7 +68,6 @@ test('a started session keeps its question and answer order and every entry poin
   const answers = page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
   await expect(answers).toHaveCount(3)
 
-  // Checking requires a selected answer.
   await page.getByRole('button', { name: 'Sprawdź' }).click()
   await expect(page.getByRole('alert')).toHaveText('Wybierz odpowiedź.')
 
@@ -83,10 +82,8 @@ test('a started session keeps its question and answer order and every entry poin
 
   await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
   await expect(answers).toHaveText(order)
-  // An unchecked selection is only a draft in the form, so a reload clears it.
   await expect(answers.first()).not.toBeChecked()
 
-  // The session replaced the preview, so going back returns to the category.
   await page.getByRole('button', { name: 'Kategoria' }).click()
   await expect(page).toHaveURL(categoryUrl)
 
@@ -110,7 +107,6 @@ test('a started session keeps its question and answer order and every entry poin
   await expect(page).toHaveURL(sessionUrl)
 })
 
-// Starts a session over the Building Law category and returns the first question's options.
 const startBuildingLawSession = async (page: Page) => {
   await page.goto('/nauka')
   await page.getByRole('link', { name: new RegExp(buildingLaw) }).click()
@@ -121,7 +117,6 @@ const startBuildingLawSession = async (page: Page) => {
   return page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
 }
 
-// The hint's text, read from its dialog, is the explanation shown after answering.
 const readHint = async (page: Page) => {
   await page.getByRole('button', { name: 'Podpowiedź' }).click()
   const dialog = page.getByRole('dialog', { name: 'Podpowiedź' })
@@ -141,13 +136,11 @@ test('checking an answer locks it and shows its result and explanation, also aft
   await answers.nth(1).click()
   await page.getByRole('button', { name: 'Sprawdź' }).click()
 
-  // The chosen option is marked correct or incorrect, and the correct one is always marked.
   await expect(answers.nth(1)).toHaveAttribute('data-tone', /^(correct|incorrect)$/)
   await expect(answers.and(page.locator('[data-tone="correct"]'))).toHaveCount(1)
   const tone = await answers.nth(1).getAttribute('data-tone')
   await expect(answers.nth(1)).toBeChecked()
   await expect(answers.nth(1)).toBeDisabled()
-  // The question was answered once, so it cannot be checked again.
   await expect(page.getByRole('button', { name: 'Sprawdź' })).toBeHidden()
 
   const hint = await readHint(page)

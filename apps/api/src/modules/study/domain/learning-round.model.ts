@@ -8,10 +8,7 @@ export const LearningRoundNumber = Schema.Int.check(Schema.isGreaterThan(0)).pip
 
 export type LearningRoundNumber = typeof LearningRoundNumber.Type
 
-/**
- * The stored round of a learner's path with the path's published, non-withdrawn questions and how
- * many of them are covered in that round.
- */
+/** Counts only published, non-withdrawn questions on the path. */
 export const LearningRoundProgress = Schema.Struct({
   round: LearningRoundNumber,
   questionCount: QuestionCount,

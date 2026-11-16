@@ -24,7 +24,6 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-// A signed-in learner with a started session over a fresh document of the given size.
 const learnerInSession = async (questionCount: number, accessScope: ExamAccessScope = 'both') => {
   const visitor = await loginForPreparation(api)
   const fixture = await createStudyFixture(studySessionSpecialization)
@@ -123,7 +122,6 @@ test('a wrong answer is stored as wrong and still covers the question in its cat
     isCorrect: false,
     isAssisted: false,
   })
-  // A single-question session has nowhere further to go, so it stays on the answered question.
   expect(result.session.progress).toMatchObject({ answered: 1, percent: 100, currentQuestion: 1 })
   expect(await (await request(`/documents/${fixture.documentId}`)).json()).toMatchObject({
     document: { availableQuestionCount: 1, completedQuestionCount: 1 },
@@ -142,7 +140,6 @@ test('opening the explanation before answering marks the answer assisted, once',
 
   expect(assisted.explanationOpenedAt).not.toBeNull()
   expect(assisted.answer).toBeNull()
-  // Opening it again keeps the first recorded opening.
   expect(
     Schema.decodeUnknownSync(SessionQuestion)(await (await openExplanation(1)).json()),
   ).toEqual(assisted)
@@ -156,7 +153,6 @@ test('opening the explanation before answering marks the answer assisted, once',
 
   expect(result.question.answer).toMatchObject({ isCorrect: true, isAssisted: true })
 
-  // Opening the explanation after answering is feedback and does not change the stored answer.
   const second = await question(2)
 
   const independent = await decodeResult(
@@ -205,7 +201,6 @@ test('a different second answer is refused and never overwrites the first', asyn
   expect(second.status).toBe(409)
   expect(await second.json()).toMatchObject({ type: 'session_answer_already_submitted' })
 
-  // Opening the explanation afterwards cannot turn the stored answer into an assisted one.
   await openExplanation(1)
 
   expect((await question(1)).answer).toEqual(stored.question.answer)
@@ -351,7 +346,6 @@ test('extending access, changing the goal, archiving and restoring keep the stor
   expect((await question(1)).answer).toEqual(stored.question.answer)
   expect(await progress()).toEqual(stored.session.progress)
   expect(await completed()).toMatchObject({ document: { completedQuestionCount: 1 } })
-  // Sending the answer again still returns the one stored result instead of a second attempt.
   expect(await decodeResult(await submit(1, body))).toEqual(stored)
   expect((await progress()).answered).toBe(1)
 })

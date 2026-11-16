@@ -181,7 +181,6 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
     ),
 ).pipe(Layer.provide(AuthenticationLive))
 
-/** Services the preparation handlers need per request; the API layer provides them where routes are registered. */
 export const PreparationRequestServices = Layer.mergeAll(
   PreparationReaderLive,
   PreparationRepositoryLive,

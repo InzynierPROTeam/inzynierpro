@@ -13,6 +13,5 @@ type CallerOptions = Omit<BetterAuthClientOptions, 'plugins' | 'basePath'>
 
 export type AuthClient = ReturnType<typeof createAuthClient<CallerOptions & typeof BASE_OPTIONS>>
 
-// Each application supplies its API URL and fetch options; the endpoints and plugins are shared.
 export const getAuthClient = (options: CallerOptions): AuthClient =>
   createAuthClient({ ...options, ...BASE_OPTIONS })

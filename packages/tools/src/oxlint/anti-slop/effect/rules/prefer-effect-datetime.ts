@@ -70,7 +70,6 @@ function isGlobalBuiltin(sourceCode: SourceCode, expression: ESTree.Node, name: 
   )
 }
 
-/** Keep native date creation, clocks, parsing and formatting behind Effect's date/time APIs. */
 export const preferEffectDateTimeRule = defineRule({
   meta: {
     type: 'problem',

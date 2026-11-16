@@ -15,7 +15,6 @@ import { ContinueSessionButton } from './ContinueSessionButton'
 import { SessionProgress } from './SessionProgress'
 import { SessionSummaryLink } from './SessionSummaryLink'
 
-/** Card body for the learner's latest written session on the path; the card and its title belong to the caller. */
 export const LatestSessionContent = () => {
   const {
     selectedPath,

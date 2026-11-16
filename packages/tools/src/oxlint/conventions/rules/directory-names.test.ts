@@ -12,15 +12,12 @@ tester.run('conventions/directory-names', directoryNamesRule, {
     { code, filename: '/repo/packages/ui/src/components/containers/in-view.tsx' },
     { code, filename: '/repo/packages/api-client/src/modules/health.ts' },
     { code, filename: '/repo/apps/e2e/src/test/fixtures.ts' },
-    // Feature folders keep the V1 camelCase names.
     { code, filename: '/repo/apps/platform/src/features/learningSession/actions.ts' },
     { code, filename: '/repo/apps/platform/src/features/auth/components/SignInForm.tsx' },
-    // TanStack Router derives route groups, pathless layouts and parameters from folder names.
     { code, filename: '/repo/apps/platform/src/routes/(app)/_authenticated/index.tsx' },
     { code, filename: '/repo/apps/platform/src/routes/(public)/_layout/_oralValid/a.tsx' },
     { code, filename: '/repo/apps/platform/src/routes/kategoria/$id/index.tsx' },
     { code, filename: '/repo/apps/platform/src/routes/__root.tsx' },
-    // Files outside workspaces and the workspace folder names themselves are out of scope.
     { code, filename: '/repo/scripts/coverage-summary.ts' },
     { code, filename: 'C:\\repo\\packages\\react-utils\\src\\web\\query-client.ts' },
   ],
@@ -50,7 +47,6 @@ tester.run('conventions/directory-names', directoryNamesRule, {
       filename: '/repo/apps/platform/src/features/auth/Components/SignInForm.tsx',
       errors: [error('Components')],
     },
-    // Route syntax is only accepted inside routes/.
     {
       code,
       filename: '/repo/apps/platform/src/lib/_internal/x.ts',

@@ -28,15 +28,7 @@ import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rul
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Starts the document's written study session after confirming its preview. An unfinished session
- * of the document refuses the start and is reported so the client can continue it; restarting is a
- * separate action. The session draws the questions the preview selected in the current
- * LearningRound: uncovered ones, or all of a document already covered in it, so going over covered
- * questions is never started by a stale preview. The account
- * lock serializes concurrent starts with each other, with answers and with assignment changes, so
- * access, coverage and settings are checked against committed state.
- */
+// The account lock keeps preview validation consistent with answers and assignment changes.
 export const startSession = Effect.fn('Study.startSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

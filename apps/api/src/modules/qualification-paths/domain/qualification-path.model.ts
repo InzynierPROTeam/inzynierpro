@@ -45,7 +45,6 @@ export const QualificationPath = Schema.Struct({
 
 export type QualificationPath = typeof QualificationPath.Type
 
-/** The three choices that identify exactly one qualification path. */
 export type PathSelection = {
   readonly specializationId: SpecializationId
   readonly qualificationKindId: QualificationKindId

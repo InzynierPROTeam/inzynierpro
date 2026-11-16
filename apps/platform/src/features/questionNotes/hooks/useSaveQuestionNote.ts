@@ -9,10 +9,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { clearNote, saveNote } from '../actions'
 
-/**
- * Saves the note on the question shown, or clears it when the text is blank, and shows the stored
- * note on this question at once. Saving never records assistance: only opening a saved note does.
- */
+// Saving is not assistance; only opening an existing note records it.
 export const useSaveQuestionNote = (userId: UserId, req: GetSessionQuestionRequest) => {
   const client = useQueryClient()
   const question = sessionQuestionQueryOptions(apiHttpClient, userId, req)
@@ -32,8 +29,7 @@ export const useSaveQuestionNote = (userId: UserId, req: GetSessionQuestionReque
         current === undefined || current === null ? current : { ...current, note: result.note },
       )
     },
-    // The note also shows in this question's reads in other sessions and on other paths. They are
-    // only marked stale and refetch when shown again; this read is set above.
+    // Other sessions and paths share the note; refresh their copies when next shown.
     onSettled: () =>
       client.invalidateQueries({ queryKey: studyKeys.questions(userId), refetchType: 'none' }),
   })

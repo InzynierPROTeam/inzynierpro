@@ -9,7 +9,6 @@ export const SessionQuestionSection = () => (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <BackLink fallback={{ to: '/nauka' }} />
-        {/* Pulled up with the back link so the two stay centred on one line. */}
         <div className="max-lg:-mt-8">
           <SessionActionsMenu />
         </div>

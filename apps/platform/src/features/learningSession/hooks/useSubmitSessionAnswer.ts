@@ -36,12 +36,6 @@ const submitErrorMessage = (error: SubmitSessionAnswerError | Error) =>
     ? 'Odpowiedź na to pytanie została już zapisana.'
     : 'Nie udało się zapisać odpowiedzi. Spróbuj ponownie.'
 
-/**
- * Submits the selected answer and shows its result at once, scored from the options the question
- * read already holds. The backend's stored result then replaces the optimistic one; on failure the
- * question and session are refetched, so the screen returns to what the backend actually stored.
- * A refusal because the question was withdrawn meanwhile is no error: it is shown as withdrawn.
- */
 export const useSubmitSessionAnswer = (userId: UserId) => {
   const client = useQueryClient()
 
@@ -96,8 +90,7 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
     onError: async (error, req) => {
       const { question, session } = sessionQueries(userId, req)
 
-      // A question withdrawn while it was open is skipped, not failed: the screen shows it as
-      // withdrawn at once, without the optimistic result, an error or a way to answer again (ADR-0003).
+      // Withdrawal skips the question without penalising the learner (ADR-0003).
       if (Predicate.isTagged(error, 'SessionQuestionWithdrawn')) {
         client.setQueryData(question.queryKey, current =>
           current === undefined || current === null ? current : withdrawnQuestion(current),
@@ -108,8 +101,7 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
 
       await Promise.all([client.invalidateQueries(question), client.invalidateQueries(session)])
     },
-    // Category progress, the preview and the latest-session tiles count the answer; this
-    // session's reads are set above.
+    // Refresh progress outside this session; its own reads are updated above.
     onSettled: (_result, _error, { params }) =>
       client.invalidateQueries({
         queryKey: studyKeys.progress(userId, params.qualificationPathId),

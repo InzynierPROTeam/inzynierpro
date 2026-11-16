@@ -134,7 +134,6 @@ const makeAuth = (
     plugins: [
       emailOTP({
         expiresIn: Duration.toSeconds(signInCodeLifetime),
-        // Storage keeps only a hash, never a usable code.
         storeOTP: 'hashed',
         sendVerificationOTP: async ({ email, otp, type }) => {
           if (type !== 'sign-in') {
@@ -188,7 +187,6 @@ const makeAuth = (
     },
     session: {
       modelName: 'auth_sessions',
-      // PostgreSQL keeps sessions durable; Redis caches them.
       storeSessionInDatabase: true,
       fields: {
         userId: 'user_id',

@@ -39,7 +39,6 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { favoritesPreviewRouteApi, noFavoritesMessage } from '../utils'
 import { StartFavoritesSessionButton } from './StartFavoritesSessionButton'
 
-/** The favourites preview (V1's `StartFavoriteQuestionsSessionPage`), confirmed before a session starts. */
 export const FavoritesPreviewSection = () => {
   const {
     selectedPath,
@@ -172,7 +171,6 @@ const FavoritesPreviewCard: React.FC<FavoritesPreviewCardProps> = ({ preview, se
   )
 }
 
-// With nothing marked no session is created; the learner learns how to mark questions instead.
 const NoFavorites = () => (
   <Card>
     <CardContent>

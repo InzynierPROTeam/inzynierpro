@@ -10,7 +10,6 @@ import type { SessionPreview } from './session-preview.rules.js'
 import type { SessionDocument } from './study-document.model.js'
 import type { StudySession } from './study-session.model.js'
 
-/** The one step a finished written session suggests next (ADR-0002). */
 export type SessionNextStep =
   | {
       readonly type: typeof reviewNextStep

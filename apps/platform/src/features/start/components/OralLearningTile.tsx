@@ -13,7 +13,6 @@ export const OralLearningTile = () => {
     <Card
       role="region"
       aria-label="Nauka do egzaminu ustnego"
-      // Written study and reviews fill the row above it; favourites sit beside it.
       className={cx(
         '@max-3xl:col-span-full',
         hasExamAccess(selectedPath.accessScope, writtenExamAccess) ? 'col-span-8' : 'col-span-full',

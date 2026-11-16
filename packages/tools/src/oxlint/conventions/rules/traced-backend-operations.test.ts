@@ -22,7 +22,6 @@ tester.run('conventions/traced-backend-operations', tracedBackendOperationsRule,
       code: "StudyReader.of({ documents: Effect.fn('StudyReader.documents')(function* () {}) })",
       filename: reader,
     },
-    // Helpers outside the backend roles are free to stay plain functions.
     { code: 'export const policy = () => Effect.void', filename: '/repo/apps/api/src/lib/x.ts' },
     {
       code: 'export const requirePathAccess = () => Effect.void',

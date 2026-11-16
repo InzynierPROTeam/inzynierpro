@@ -131,7 +131,6 @@ const learnerWithQuestion = async () => {
       ),
     )
 
-  // Saves the learner's note on the question; notes are written with PUT.
   const saveNote = (text: string) =>
     visitor.jar.fetch(
       new URL(`/api/v1/study/paths/${fixture.pathId}/notes/${question.id}`, api.baseUrl),
@@ -142,7 +141,6 @@ const learnerWithQuestion = async () => {
       },
     )
 
-  // Answers the question in a new session at the given backend time, then ends the session.
   const answerAt = async (
     at: string,
     {
@@ -422,7 +420,6 @@ describe('revisions', () => {
     const learner = await learnerWithQuestion()
 
     await learner.answerAt(day1, { isCorrect: true })
-    // The session pins the revision current at its start.
     const session = await learner.startSession()
     const shown = await learner.readQuestion(session.id)
     await publishFixtureRevision(learner.question.id)

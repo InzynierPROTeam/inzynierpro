@@ -18,7 +18,6 @@ type QuestionNoteFormProps = {
   onDone: () => void
 }
 
-/** V1's `QuestionAddNotesForm`: the whole note in one field; saving a blank note clears it. */
 export const QuestionNoteForm: React.FC<QuestionNoteFormProps> = ({ question, onDone }) => {
   const {
     selectedPath,

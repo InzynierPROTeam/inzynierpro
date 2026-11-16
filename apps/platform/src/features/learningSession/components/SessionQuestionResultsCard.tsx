@@ -24,7 +24,6 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 type SessionQuestionResultsCardProps = { sessionId: StudySessionId }
 
-/** The summary details (V1's `SessionSummaryQuestionsSection`, as a card): every question of the session with its result, linking to the question. */
 export const SessionQuestionResultsCard: React.FC<SessionQuestionResultsCardProps> = ({
   sessionId,
 }) => {
@@ -100,7 +99,6 @@ const resultLabel = (result: SessionQuestionResult) =>
 
 type QuestionResultLinkProps = { sessionId: StudySessionId; result: SessionQuestionResult }
 
-// V1's answer circles: a soft tint of the result colour with a matching border.
 const QuestionResultLink: React.FC<QuestionResultLinkProps> = ({ sessionId, result }) => (
   <Link
     to="/nauka/sesja/$sessionId/$questionNumber"

@@ -2,7 +2,6 @@ import { defineRule } from '@oxlint/plugins'
 
 import { normalizedPath } from './path.ts'
 
-/** Schema constructors that describe objects rather than single values. */
 const objectSchemas = new Set([
   'Struct',
   'TaggedStruct',
@@ -12,7 +11,6 @@ const objectSchemas = new Set([
   'ErrorClass',
 ])
 
-/** `@inzpro/domain` holds vocabulary: identifiers, codes, value primitives and shared pure rules. */
 export const domainVocabularyRule = defineRule({
   meta: {
     type: 'problem',

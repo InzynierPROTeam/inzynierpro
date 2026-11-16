@@ -15,14 +15,9 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { noDueReviewsMessage } from '../utils'
 
 type ReviewTileContentProps = {
-  // Without a category, reviews span the whole path.
   documentId?: ReferenceDocumentId
 }
 
-/**
- * Card body for reviews of the path or one category: the unfinished review session to continue,
- * otherwise the questions due now or that reviews come later. The card belongs to the caller.
- */
 export const ReviewTileContent: React.FC<ReviewTileContentProps> = ({ documentId }) => {
   const {
     selectedPath,

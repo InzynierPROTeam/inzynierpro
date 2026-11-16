@@ -53,7 +53,6 @@ export const runFixture = <A, E>(
 // first-document preview, so the documents they add cannot disturb one another.
 export const studySessionSpecialization = '60000000-0000-4000-8000-000000000011'
 
-// The seeded path an onboarding configuration resolves to, without adding content to it.
 const resolveSeededPath = (configuration: typeof CompleteOnboardingPayload.Encoded) =>
   Effect.gen(function* () {
     const qualificationPathsReader = yield* QualificationPathsReader
@@ -139,7 +138,6 @@ export const addFixtureQuestion = (
     }),
   )
 
-// Places a question on another path too, with its document, as a catalogue shared between paths does.
 export const attachFixtureQuestion = (
   pathId: QualificationPathId,
   documentId: ReferenceDocumentId,
@@ -154,7 +152,6 @@ export const attachFixtureQuestion = (
     }),
   )
 
-// Publishes a newer revision with its own answer IDs, as an editor's change of the given kind would.
 export const publishFixtureRevision = (
   questionId: WrittenQuestionId,
   changeKind: RevisionChangeKind = substantiveChange,
@@ -184,7 +181,6 @@ export const publishFixtureRevision = (
     }),
   )
 
-// Withdraws a faulty revision, as an editor's emergency decision would, even in started sessions.
 export const withdrawFixtureRevision = (
   revisionId: QuestionRevisionId,
   reason = 'Test-only fault in the answer key',

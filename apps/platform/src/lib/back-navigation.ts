@@ -2,13 +2,10 @@ import { getItem, setItem } from '@inzpro/browser-utils/session-storage'
 import type { HistoryLocation, RouterHistory } from '@tanstack/react-router'
 import { Effect, Option, Schema } from 'effect'
 
-// Remembers, per browser history entry, the in-app entry the user came from. Nothing goes into the
-// URL: entries are identified by the key TanStack Router keeps in `history.state`, and the map
-// lives in sessionStorage, so it survives reloads and back/forward within the tab.
-
+// Persist origins across reloads without adding navigation state to the URL.
 const BackOrigin = Schema.Struct({
   href: Schema.String,
-  /** The history index of the origin entry, used to step back to it. */
+  /** TanStack Router's history index, not an index in the stored origins. */
   index: Schema.Int,
 })
 
@@ -44,10 +41,6 @@ const storeOrigins = () =>
 
 let tracking = false
 
-/**
- * Records the origin of every history entry. A push to another page comes from the current page;
- * a push within the same page (search changes) and a replace (redirects) keep the current origin.
- */
 export const trackBackNavigation = (history: RouterHistory) => {
   if (tracking) {
     return
@@ -59,6 +52,7 @@ export const trackBackNavigation = (history: RouterHistory) => {
 
   history.subscribe(({ location, action }) => {
     if (action.type === 'PUSH' || action.type === 'REPLACE') {
+      // Search changes and redirects keep the page's original back target.
       const origin =
         action.type === 'PUSH' && location.pathname !== previous.pathname
           ? Option.some({ href: previous.href, index: previous.state.__TSR_index })

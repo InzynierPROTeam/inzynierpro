@@ -49,8 +49,6 @@ export const StudyRepositoryLive = Layer.effect(
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
 
-    // Runs a session UPDATE and returns the session in its read shape in the same round trip, so
-    // commands need no read-back.
     const updateSession = (update: Statement.Fragment) =>
       sql`WITH s AS (${update} RETURNING id,kind,document_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
  SELECT s.*,d.title AS document_title,(SELECT count(*)::integer FROM written_study_answers a WHERE a.study_session_id=s.id) AS answered_count,
@@ -78,7 +76,6 @@ export const StudyRepositoryLive = Layer.effect(
         function* (session) {
           const documentId = Option.getOrNull(session.documentId)
 
-          // One round trip returns the session in its read shape, so the command needs no read-back.
           const inserted =
             yield* sql`WITH s AS (INSERT INTO written_study_sessions (user_id,qualification_path_id,kind,document_id,user_exam_goal_version,question_count)
  VALUES (${session.userId},${session.qualificationPathId},${session.kind},${documentId},${session.goalVersion},${session.questions.length})
@@ -111,7 +108,6 @@ export const StudyRepositoryLive = Layer.effect(
               })),
           )
 
-          // An empty session fails the question_count check on insert above.
           if (Arr.isReadonlyArrayNonEmpty(questions)) {
             yield* sql`INSERT INTO written_study_session_questions ${sql.insert(questions)}`
           }

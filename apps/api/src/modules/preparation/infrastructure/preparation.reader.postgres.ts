@@ -95,12 +95,10 @@ export const PreparationReaderLive = Layer.effect(
   PreparationReader,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
-    // Reused SQL contains only column selection and joins; object assembly stays in TypeScript.
     const assignmentColumns = sql`p.id,p.name,s.id AS specialization_id,s.name AS specialization_name,s.code AS specialization_code,s.description AS specialization_description,k.id AS qualification_kind_id,k.name AS qualification_kind_name,k.code AS qualification_kind_code,q.id AS qualification_scope_id,q.name AS qualification_scope_name,q.code AS qualification_scope_code,up.access_scope,up.archived_at,g.version,g.exam_session_id,e.name AS session_name,e.is_confirmed AS session_is_confirmed,e.written_at,e.oral_planning_at,g.oral_exam_date`
     const assignmentTables = sql`FROM user_qualification_paths up JOIN qualification_paths p ON p.id=up.qualification_path_id JOIN specializations s ON s.id=p.specialization_id JOIN qualification_kinds k ON k.id=p.qualification_kind_id JOIN qualification_scopes q ON q.id=p.qualification_scope_id JOIN user_exam_goals g ON g.user_id=up.user_id AND g.qualification_path_id=p.id JOIN exam_sessions e ON e.id=g.exam_session_id`
     const latestGoal = sql`g.version=(SELECT max(h.version) FROM user_exam_goals h WHERE h.user_id=up.user_id AND h.qualification_path_id=p.id)`
 
-    // Recently updated assignments first.
     const pathsPage = makeCursorPaginator(
       sql,
       Schema.Struct({ updatedAt: DateTimeUtc, id: QualificationPathId }),
@@ -110,7 +108,6 @@ export const PreparationReaderLive = Layer.effect(
       ],
     )
 
-    // Newest goal version first.
     const goalsPage = makeCursorPaginator(sql, Schema.Struct({ version: UserExamGoalVersion }), [
       ['version', sql`g.version`, 'desc'],
     ])

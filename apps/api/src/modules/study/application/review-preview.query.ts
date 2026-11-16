@@ -9,10 +9,6 @@ import { reviewSessionSettings } from '~api/modules/study/domain/review-session.
 
 import { StudyReader } from './study.reader.js'
 
-/**
- * The review scope's due questions with the count settings, or when the next review becomes due.
- * Like the study preview it creates no session. A document that is not on the path reads as none.
- */
 export const getReviewPreview = Effect.fn('Study.getReviewPreview')(function* (
   userId: UserId,
   pathId: QualificationPathId,

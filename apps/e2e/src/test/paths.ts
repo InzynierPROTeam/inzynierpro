@@ -1,7 +1,5 @@
 import type { Page } from '@playwright/test'
 
-// Answers the first four onboarding steps (building construction, site management, full scope,
-// both exams) and picks the spring exam session.
 export const chooseTechnicalPath = async (page: Page) => {
   const choices = [
     ['Wybierz specjalność', 'Konstrukcyjno-budowlana'],

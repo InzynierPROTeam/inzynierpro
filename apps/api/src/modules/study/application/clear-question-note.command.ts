@@ -8,11 +8,7 @@ import type { QuestionNote } from '~api/modules/study/domain/question-note.model
 
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Clears the learner's PersonalQuestionNote, and so on every path (ADR-0002). The note is the
- * learner's own, so it can be cleared even after the question left the path; clearing a question
- * without a note changes nothing. Openings already recorded in sessions stay.
- */
+// Notes remain clearable after a question leaves the path; recorded session openings stay.
 export const clearQuestionNote = Effect.fn('Study.clearQuestionNote')(function* (
   userId: UserId,
   pathId: QualificationPathId,

@@ -1,5 +1,3 @@
-// Prints one Markdown row per workspace from Vitest `json-summary` reports, for the CI job summary.
-// Usage: tsx scripts/coverage-summary.ts >> "$GITHUB_STEP_SUMMARY"
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 

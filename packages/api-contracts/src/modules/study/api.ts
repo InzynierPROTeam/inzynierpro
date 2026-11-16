@@ -136,7 +136,6 @@ export const StartSessionEndpoint = HttpApiEndpoint.post(
   },
 )
 
-// The questions due for review now on the path or one document, or when the next review is due.
 export const GetReviewPreviewEndpoint = HttpApiEndpoint.get(
   'GetReviewPreview',
   '/paths/:qualificationPathId/review-preview',
@@ -148,7 +147,7 @@ export const GetReviewPreviewEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// The unfinished review session of the path or one document, which its tile resumes.
+// Returns the unfinished review session, if any.
 export const GetReviewSessionEndpoint = HttpApiEndpoint.get(
   'GetReviewSession',
   '/paths/:qualificationPathId/review-session',
@@ -160,7 +159,7 @@ export const GetReviewSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Starts a review session of the most overdue questions; its reads and answers use the session endpoints.
+// Selects the most overdue questions; subsequent operations use the shared session endpoints.
 export const StartReviewSessionEndpoint = HttpApiEndpoint.post(
   'StartReviewSession',
   '/paths/:qualificationPathId/review-sessions',
@@ -226,7 +225,6 @@ export const ClearQuestionNoteEndpoint = HttpApiEndpoint.delete(
   },
 )
 
-// The FavoriteQuestions of the path or one document a favourites session may hold, with the count settings.
 export const GetFavoritesPreviewEndpoint = HttpApiEndpoint.get(
   'GetFavoritesPreview',
   '/paths/:qualificationPathId/favorites-preview',
@@ -238,7 +236,7 @@ export const GetFavoritesPreviewEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// The unfinished favourites session of the path or one document, which its tile resumes.
+// Returns the unfinished favourites session, if any.
 export const GetFavoritesSessionEndpoint = HttpApiEndpoint.get(
   'GetFavoritesSession',
   '/paths/:qualificationPathId/favorites-session',
@@ -250,7 +248,7 @@ export const GetFavoritesSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Starts a favourites session with its set fixed; its reads and answers use the session endpoints.
+// Fixes the question set; subsequent operations use the shared session endpoints.
 export const StartFavoritesSessionEndpoint = HttpApiEndpoint.post(
   'StartFavoritesSession',
   '/paths/:qualificationPathId/favorites-sessions',
@@ -290,7 +288,7 @@ export const GetSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// What to do after the session, by the learner's state now; another account's session reads as null.
+// Uses current learner state; another account's session reads as null.
 export const GetSessionNextStepEndpoint = HttpApiEndpoint.get(
   'GetSessionNextStep',
   '/paths/:qualificationPathId/sessions/:sessionId/next-step',
@@ -312,7 +310,7 @@ export const GetSessionSummaryEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// The per-question details of an ended session's summary, in session order.
+// Results follow session order.
 export const GetSessionResultsEndpoint = HttpApiEndpoint.get(
   'GetSessionResults',
   '/paths/:qualificationPathId/sessions/:sessionId/results',

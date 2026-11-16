@@ -17,12 +17,6 @@ import { suggestedReview } from '~api/modules/study/domain/session-next-step.rul
 import { getSessionPreview } from './session-preview.query.js'
 import { StudyReader } from './study.reader.js'
 
-/**
- * The step a session suggests next, by the learner's state now (ADR-0002): a review while the
- * rules call for one, otherwise the most recently used unfinished regular-study session, otherwise
- * the next regular-study preview after the latest studied document. Another account's session
- * reads as none, and so does a path with nothing left to suggest.
- */
 export const getSessionNextStep = Effect.fn('Study.getSessionNextStep')(function* (
   userId: UserId,
   pathId: QualificationPathId,

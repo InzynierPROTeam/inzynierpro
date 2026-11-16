@@ -5,10 +5,6 @@ import type { Option } from 'effect'
 import type { SessionCountSettings } from './session-preview.rules.js'
 import type { SessionDocument } from './study-document.model.js'
 
-/**
- * The learner's FavoriteQuestions on the path or in one document with the counts a new favourites
- * session may hold.
- */
 export type FavoritesPreview = {
   readonly qualificationPathId: QualificationPathId
   // None for favourites of the whole path.

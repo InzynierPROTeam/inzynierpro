@@ -3,7 +3,6 @@ import { Config, type Effect, Schema } from 'effect'
 
 config({ path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env', quiet: true })
 
-// Shared by every backend process: the HTTP server, the worker and operator scripts.
 const processVariables = {
   NODE_ENV: Config.Literals(['development', 'test', 'production'], 'NODE_ENV'),
   LOG_LEVEL: Config.LogLevel('LOG_LEVEL').pipe(Config.withDefault('Info')),

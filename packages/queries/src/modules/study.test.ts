@@ -223,7 +223,6 @@ test('the favourites group covers the favourites previews on every path, and not
       ).toBe(true)
     }
 
-    // A note leaves the previews alone, so session questions sit in their own group.
     expect(
       startsWith(
         studyKeys.getSessionQuestion(userId, {
@@ -255,7 +254,6 @@ test('the questions group a mark or a note refreshes covers every session questi
         questions,
       ),
     ).toBe(true)
-    // The session itself shows neither a mark nor a note, so they leave it alone.
     expect(
       startsWith(
         studyKeys.getSession(userId, { params: { qualificationPathId, sessionId } }),

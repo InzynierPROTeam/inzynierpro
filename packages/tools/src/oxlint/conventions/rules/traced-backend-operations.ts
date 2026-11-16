@@ -13,7 +13,6 @@ const pascalCase = (kebab: string) =>
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join('')
 
-/** The span name of `Effect.fn('Name')(function* () {})`; undefined for any other expression. */
 const effectFnSpanName = (node: ESTree.Node | null | undefined) => {
   if (node?.type !== 'CallExpression' || node.callee.type !== 'CallExpression') {
     return undefined
@@ -98,7 +97,6 @@ export const tracedBackendOperationsRule = defineRule({
     }
 
     return {
-      // `ServiceName.of({ method: Effect.fn('ServiceName.method')(...) })`
       CallExpression(node) {
         const { callee } = node
         const [implementation] = node.arguments

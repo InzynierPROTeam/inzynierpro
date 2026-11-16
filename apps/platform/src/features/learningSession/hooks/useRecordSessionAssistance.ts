@@ -11,22 +11,14 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { recordStudySessionAssistance } from '../actions'
 
-/**
- * Lets the answer form wait for any pending record on the question, the explanation's or the
- * note's, so the answer is stored as assisted.
- */
+// Shared by hints and notes so submitting an answer can wait for both assistance records.
 export const recordAssistanceMutationKey = ({
   params,
 }: Pick<RecordSessionAssistanceRequest, 'params'>) => ['recordSessionAssistance', params] as const
 
-// The question read field each kind of opening sets.
 const openedAtField = (kind: SessionAssistanceKind) =>
   kind === explanationAssistanceKind ? 'explanationOpenedAt' : 'noteOpenedAt'
 
-/**
- * Records that the hint or a saved note was opened before answering; the backend marks the answer
- * assisted from it.
- */
 export const useRecordSessionAssistance = (userId: UserId, req: RecordSessionAssistanceRequest) => {
   const client = useQueryClient()
   const question = sessionQuestionQueryOptions(apiHttpClient, userId, { params: req.params })
@@ -46,7 +38,7 @@ export const useRecordSessionAssistance = (userId: UserId, req: RecordSessionAss
     onSuccess: result => {
       client.setQueryData(question.queryKey, result)
     },
-    // The next opening sends the record again.
+    // Restore server state so opening again can retry the failed record.
     onError: () => client.invalidateQueries(question),
   })
 }

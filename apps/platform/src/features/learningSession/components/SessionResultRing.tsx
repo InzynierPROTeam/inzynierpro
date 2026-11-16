@@ -42,7 +42,6 @@ export const SessionResultRing: React.FC<SessionResultRingProps> = ({
           entered={entered}
         />
         <RingArc
-          // The correct arc follows the answered one a beat later, layering the result on it.
           className="stroke-success delay-150"
           share={total > 0 ? correct / total : 0}
           entered={entered}
@@ -67,7 +66,6 @@ export const SessionResultRing: React.FC<SessionResultRingProps> = ({
 
 type RingArcProps = { className: string; share: number; entered: boolean }
 
-// pathLength makes the dash offset a percentage of the circle.
 const RingArc: React.FC<RingArcProps> = ({ className, share, entered }) => (
   <circle
     cx="60"

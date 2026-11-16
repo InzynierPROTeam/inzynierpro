@@ -14,8 +14,6 @@ afterEach(async () => {
   }
 })
 
-// Renders into a container attached to the document and unmounted after the test. Rendering again
-// in the same test updates the same root.
 export const render = async (element: ReactNode) => {
   if (mounted === undefined) {
     const container = document.createElement('div')

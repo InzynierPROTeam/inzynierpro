@@ -1,4 +1,3 @@
-// jsdom setup shared by every ui test: React `act` support and a light-scheme media query.
 Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', { value: true, configurable: true })
 
 window.matchMedia = query => ({

@@ -3,13 +3,11 @@ import { cn, tv, type VariantProps } from 'tailwind-variants'
 
 import { Skeleton } from './skeleton.js'
 
-// Parts read the tone from `data-tone` and the selection from `data-checked` on the option.
 // The indicator hides in narrow containers, so place options inside an `@container` (the radio group).
 const answerOptionVariants = tv({
   base: 'group/answer-option bg-card text-card-foreground focus-visible:ring-ring flex w-full items-center gap-4 rounded-xl border-2 p-4 pr-6 text-left text-sm leading-relaxed transition-all outline-none focus-visible:ring-2 data-disabled:cursor-not-allowed',
   variants: {
     tone: {
-      // Before checking: the chosen option is highlighted; hover only previews the others.
       neutral:
         'data-checked:border-primary/30 data-checked:bg-primary/10 not-data-disabled:cursor-pointer not-data-checked:not-data-disabled:hover:border-primary/15 not-data-checked:not-data-disabled:hover:bg-primary/5',
       correct: 'border-success/30 bg-success/5',
@@ -33,7 +31,6 @@ type AnswerOptionTone = NonNullable<AnswerOptionVariants['tone']>
 type AnswerOptionProps = Omit<RadioPrimitive.Root.Props, 'className'> &
   AnswerOptionVariants & { className?: string }
 
-/** One selectable answer of a question; render it inside a RadioGroup. */
 function AnswerOption({ className, tone = 'neutral', ...props }: AnswerOptionProps) {
   return (
     <RadioPrimitive.Root
@@ -45,7 +42,6 @@ function AnswerOption({ className, tone = 'neutral', ...props }: AnswerOptionPro
   )
 }
 
-/** The answer's letter, or a check or cross icon once the answer is checked. */
 function AnswerOptionIndicator({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
@@ -67,7 +63,6 @@ function AnswerOptionText({ className, ...props }: React.ComponentProps<'span'>)
 }
 
 type AnswerOptionSkeletonProps = React.ComponentProps<'div'> & {
-  /** Sizes the text line, e.g. `max-w-40`, so placeholders differ like real answers. */
   textClassName?: string
 }
 

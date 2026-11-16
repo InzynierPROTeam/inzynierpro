@@ -8,7 +8,6 @@ const camel = /^[a-z][a-zA-Z0-9]*$/
 // TanStack Router reads `(group)`, `_pathless` and `$param` folders as route syntax.
 const route = /^(?:\([a-z0-9-]+\)|_{1,2}[a-zA-Z0-9]+|\$[a-zA-Z0-9]+|[a-z0-9-]+)$/
 
-/** Keeps workspace folders kebab-case, except V1 camelCase features and TanStack route folders. */
 export const directoryNamesRule = defineRule({
   meta: {
     type: 'suggestion',
@@ -37,7 +36,6 @@ export const directoryNamesRule = defineRule({
     }
 
     const isApp = segments[workspace] === 'apps'
-    // Folders between the workspace folder and the file itself.
     const folders = segments.slice(workspace + 2, -1)
 
     const violation = () => {

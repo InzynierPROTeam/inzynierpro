@@ -7,7 +7,6 @@ const require = createRequire(import.meta.url)
 
 const readCss = (specifier: string) => readFileSync(require.resolve(specifier), 'utf8')
 
-// The shared platform theme first, then the email overrides that replace its rem sizes.
 export const themeCss = [readCss('@inzpro/ui/theme.css'), readCss('@inzpro/email/theme.css')].join(
   '\n',
 )

@@ -8,7 +8,6 @@ type ContinueSessionButtonProps = {
   children: React.ReactNode
 }
 
-/** Opens the question the session continues from. */
 export const ContinueSessionButton: React.FC<ContinueSessionButtonProps> = ({
   session,
   children,

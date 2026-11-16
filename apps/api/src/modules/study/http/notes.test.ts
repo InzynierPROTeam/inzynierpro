@@ -39,7 +39,6 @@ const otherPathSpecialization = '60000000-0000-4000-8000-000000000006'
 const noteUrl = (pathId: QualificationPathId, questionId: string) =>
   new URL(`/api/v1/study/paths/${pathId}/notes/${questionId}`, api.baseUrl)
 
-// Notes are written with PUT and DELETE, which the shared POST/GET helper does not send.
 const putNote = (
   visitor: TestVisitor,
   pathId: QualificationPathId,
@@ -55,7 +54,6 @@ const putNote = (
 const deleteNote = (visitor: TestVisitor, pathId: QualificationPathId, questionId: string) =>
   visitor.jar.fetch(noteUrl(pathId, questionId), { method: 'DELETE' })
 
-// A learner in a regular-study session over a fresh document with the given number of questions.
 const learnerInSession = async (questionCount: number) => {
   const visitor = await loginForPreparation(api)
   const fixture = await createStudyFixture(studySessionSpecialization)
@@ -160,7 +158,6 @@ describe('personal notes', () => {
     ).toBe(200)
     expect((await learner.question(1)).note).toMatchObject({ text: 'Written on another path.' })
 
-    // Clearing on the other path removes the one note.
     expect((await deleteNote(learner.visitor, other.pathId, questionId)).status).toBe(200)
     expect((await learner.question(1)).note).toBeNull()
   })
@@ -183,7 +180,6 @@ describe('personal notes', () => {
         type: 'invalid_request',
         message: 'The request contains invalid data.',
       })
-      // The refusal never echoes the note.
       expect(body).not.toContain('aaaaaaaaaa')
     }
 
@@ -196,7 +192,6 @@ describe('personal notes', () => {
 
     await owner.save(questionId, 'Private memory aid.')
 
-    // Another learner on the same path sees no note on the question and cannot change the owner's.
     const other = await loginForPreparation(api)
 
     await learningRequest(
@@ -226,7 +221,6 @@ describe('personal notes', () => {
     expect((await deleteNote(other, owner.fixture.pathId, questionId)).status).toBe(200)
     expect((await owner.question(1)).note).toMatchObject({ text: 'Private memory aid.' })
 
-    // An account without the path cannot write notes on it.
     const stranger = await loginForPreparation(api)
 
     expect((await putNote(stranger, owner.fixture.pathId, questionId, 'Mine.')).status).toBe(403)
@@ -265,7 +259,6 @@ describe('personal notes', () => {
       refersToEarlierWording: true,
     })
 
-    // Editing the note stores the current revision, so it refers to the current wording again.
     expect(
       await decode(QuestionNoteResult)(await learner.save(questionId, 'About the new wording.')),
     ).toMatchObject({ note: { refersToEarlierWording: false } })
@@ -318,7 +311,6 @@ describe('note assistance', () => {
 
     expect(opened.noteOpenedAt).not.toBeNull()
     expect(opened.explanationOpenedAt).toBeNull()
-    // Opening it again keeps the first recorded opening.
     expect(await decode(SessionQuestion)(await learner.open(1))).toEqual(opened)
 
     // Clearing the note afterwards keeps the record: the learner saw it before answering.

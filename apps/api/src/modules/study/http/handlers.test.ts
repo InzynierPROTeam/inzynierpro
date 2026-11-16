@@ -104,7 +104,6 @@ test('documents return one cursor page of private coverage and archive preserves
     ).json(),
   )
 
-  // One of the five questions is answered, so the next session offers the other four.
   expect(preview).toMatchObject({ questionSelection: 'uncovered', availableQuestionCount: 4 })
   expect(preview.settings).toEqual({
     defaultQuestionCount: 4,
@@ -250,7 +249,6 @@ test('preview continues from a category until its questions are answered, then m
     document: { id: technicalDocumentB },
   })
 
-  // Answering every question of the first category moves study on to the next one.
   const session = Schema.decodeUnknownSync(StudySession)(
     await (
       await learningRequest(api, visitor, `/paths/${technicalPathA}/sessions`, {
@@ -285,7 +283,6 @@ test('preview continues from a category until its questions are answered, then m
     questionSelection: 'uncovered',
   })
   expect(await (await preview()).json()).toMatchObject({ document: { id: technicalDocumentB } })
-  // The category covered in this round offers all its questions again when chosen.
   expect(await (await preview(`?documentId=${technicalDocumentA}`)).json()).toMatchObject({
     document: { id: technicalDocumentA },
     questionSelection: 'covered',
@@ -310,7 +307,6 @@ test('covering the whole path starts a new round that continues from the categor
   const preview = async (query = '') =>
     Schema.decodeUnknownSync(SessionPreview)(await (await request(`/preview${query}`)).json())
 
-  // Answers every question of a category in one session and ends it.
   const answerCategory = async (documentId: string) => {
     const offered = await preview(`?documentId=${documentId}`)
 
@@ -341,8 +337,6 @@ test('covering the whole path starts a new round that continues from the categor
   await answerCategory(technicalDocumentA)
   await answerCategory(technicalDocumentB)
 
-  // Every question of the path is covered, so the next round starts with all of them uncovered:
-  // after the last category study starts from the first.
   expect(await preview(`?fromDocumentId=${technicalDocumentB}`)).toMatchObject({
     document: { id: technicalDocumentA },
     questionSelection: 'uncovered',

@@ -7,12 +7,7 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyRepository } from './study.repository.js'
 
-/**
- * Removes the learner's FavoriteQuestion mark from a question, and so from every path (ADR-0002).
- * The mark is the learner's own, so it can be removed even after the question left the path, for
- * example from an older session's results. Unmarking an unmarked question changes nothing, and a
- * started favourites session keeps the question.
- */
+// Unmarking remains allowed after the question leaves the path.
 export const unmarkFavorite = Effect.fn('Study.unmarkFavorite')(function* (
   userId: UserId,
   pathId: QualificationPathId,

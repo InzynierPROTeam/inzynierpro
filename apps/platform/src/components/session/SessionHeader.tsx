@@ -6,8 +6,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type React from 'react'
 import { cn } from 'tailwind-variants'
 
-// Session-agnostic: written, oral and review sessions compose it with their own links and progress.
-
 export const SessionHeader: React.FC<React.ComponentProps<'header'>> = ({
   className,
   ...props
@@ -88,7 +86,6 @@ const SessionTraverseAnchor: React.FC<SessionTraverseAnchorProps> = ({
   </a>
 )
 
-/** A typed router link to the previous or next question of any session route. */
 export const SessionTraverseLink = createLink(SessionTraverseAnchor)
 
 export const SessionHeaderSkeleton: React.FC = () => (

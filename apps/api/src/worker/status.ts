@@ -1,4 +1,3 @@
-// Logs the backlog of every queue and the most recently failed jobs.
 // Usage: pnpm --filter @inzpro/api worker:status
 import { NodeRuntime } from '@effect/platform-node'
 import { Effect, Layer } from 'effect'

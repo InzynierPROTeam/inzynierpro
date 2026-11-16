@@ -46,7 +46,7 @@ export const DocumentResponse = Schema.Struct({ document: DocumentQuestionPool }
 
 export const DocumentsResponse = CursorPaginatedResponse(DocumentQuestionPool)
 
-/** The question counts a new session may hold; the backend validates the choice again on start. */
+/** The backend revalidates these limits when starting the session. */
 export const SessionCountSettings = Schema.Struct({
   defaultQuestionCount: QuestionCount,
   canChangeQuestionCount: Schema.Boolean,
@@ -56,7 +56,6 @@ export const SessionCountSettings = Schema.Struct({
 
 export type SessionCountSettings = typeof SessionCountSettings.Type
 
-/** The material a session covers. */
 export const SessionDocument = Schema.Struct({
   id: ReferenceDocumentId,
   title: Schema.NonEmptyString,
@@ -68,7 +67,6 @@ export const SessionPreview = Schema.Struct({
   mode: Schema.Literal('written-study'),
   // Questions uncovered in the current round; a scope covered in this round offers all of them again.
   questionSelection: SessionQuestionSelection,
-  // The questions the selection draws from.
   availableQuestionCount: QuestionCount,
   settings: SessionCountSettings,
 })
@@ -77,7 +75,6 @@ export type SessionPreview = typeof SessionPreview.Type
 
 export const SessionPreviewResponse = Schema.NullOr(SessionPreview)
 
-/** The questions due for review in a scope; with nothing due no review session can start. */
 export const ReviewPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
   // Null for reviews of the whole path.
@@ -94,7 +91,6 @@ export type ReviewPreview = typeof ReviewPreview.Type
 // Null for a document that is not on the path.
 export const ReviewPreviewResponse = Schema.NullOr(ReviewPreview)
 
-/** The learner's FavoriteQuestions in a scope; with none marked no favourites session can start. */
 export const FavoritesPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
   // Null for favourites of the whole path.
@@ -110,7 +106,7 @@ export type FavoritesPreview = typeof FavoritesPreview.Type
 // Null for a document that is not on the path.
 export const FavoritesPreviewResponse = Schema.NullOr(FavoritesPreview)
 
-/** Whether the learner marked the question; the mark is shared across their paths. */
+/** Marks are shared across the learner's paths. */
 export const FavoriteQuestion = Schema.Struct({
   questionId: WrittenQuestionId,
   isFavorite: Schema.Boolean,
@@ -120,7 +116,7 @@ export type FavoriteQuestion = typeof FavoriteQuestion.Type
 
 export const FavoriteQuestionResponse = FavoriteQuestion
 
-/** The learner's PersonalQuestionNote, shared across their paths. */
+/** Notes are shared across the learner's paths. */
 export const QuestionNote = Schema.Struct({
   text: QuestionNoteText,
   updatedAt: UtcIsoDateTime,
@@ -131,7 +127,7 @@ export const QuestionNote = Schema.Struct({
 
 export type QuestionNote = typeof QuestionNote.Type
 
-/** The question's note after saving or clearing it; null once cleared. */
+/** Null after clearing the note. */
 export const QuestionNoteResult = Schema.Struct({
   questionId: WrittenQuestionId,
   note: Schema.NullOr(QuestionNote),
@@ -143,14 +139,12 @@ export const QuestionNoteResponse = QuestionNoteResult
 
 export const OralMaterialsResponse = CursorPaginatedResponse(OralQuestionCategory)
 
-/** How far a session got: what the progress bar and the continue link need. */
 export const StudySessionProgress = Schema.Struct({
   total: QuestionCount,
   answered: QuestionCount,
   // Questions withdrawn before an answer: skipped without penalty and left out of the percent and score (ADR-0003).
   skipped: QuestionCount,
   percent: Percent,
-  // The question to continue from.
   currentQuestion: SessionQuestionPosition,
 })
 
@@ -158,7 +152,7 @@ export type StudySessionProgress = typeof StudySessionProgress.Type
 
 export const StudySession = Schema.Struct({
   id: StudySessionId,
-  // Regular study, a review or a favourites session; only regular study is continued from "Continue learning".
+  // Only regular study is resumed from "Continue learning".
   kind: StudySessionKind,
   status: StudySessionStatus,
   progress: StudySessionProgress,
@@ -176,7 +170,7 @@ export const StartFavoritesSessionResponse = StudySession
 
 export const StudySessionResponse = Schema.NullOr(StudySession)
 
-/** The most recent regular-study session with its document, for continue tiles outside the session. */
+/** Includes regular study only. */
 export const LatestStudySession = Schema.Struct({
   ...StudySession.fields,
   document: SessionDocument,
@@ -186,11 +180,7 @@ export type LatestStudySession = typeof LatestStudySession.Type
 
 export const LatestStudySessionResponse = Schema.NullOr(LatestStudySession)
 
-/**
- * The one step a finished session suggests next: a review of due questions, continuing the most
- * recently used unfinished regular-study session, or starting the next one. Null when the path has
- * nothing left to suggest.
- */
+/** Continuing selects the most recently used unfinished regular-study session. */
 export const SessionNextStep = Schema.Union([
   Schema.Struct({
     type: Schema.Literal(reviewNextStep),
@@ -204,11 +194,11 @@ export const SessionNextStep = Schema.Union([
 
 export type SessionNextStep = typeof SessionNextStep.Type
 
+// Null when the path has nothing left to suggest.
 export const SessionNextStepResponse = Schema.NullOr(SessionNextStep)
 
 export const EndSessionResponse = StudySession
 
-/** How the session went, over the questions it answered. */
 export const StudySessionResult = Schema.Struct({
   correct: QuestionCount,
   incorrect: QuestionCount,
@@ -220,7 +210,6 @@ export const StudySessionResult = Schema.Struct({
 
 export type StudySessionResult = typeof StudySessionResult.Type
 
-/** A session with its material and result, for the summary after it ends. */
 export const StudySessionSummary = Schema.Struct({
   ...StudySession.fields,
   // Null for a review or favourites session of the whole path.
@@ -232,7 +221,6 @@ export type StudySessionSummary = typeof StudySessionSummary.Type
 
 export const StudySessionSummaryResponse = Schema.NullOr(StudySessionSummary)
 
-/** One question of a session in the summary details: its result, or why it has none. */
 export const SessionQuestionResult = Schema.Struct({
   position: SessionQuestionPosition,
   answer: Schema.NullOr(Schema.Struct({ isCorrect: Schema.Boolean, isAssisted: Schema.Boolean })),
@@ -243,7 +231,6 @@ export type SessionQuestionResult = typeof SessionQuestionResult.Type
 
 export const SessionResultsResponse = CursorPaginatedResponse(SessionQuestionResult)
 
-/** One option of a session question in the session's stored order. */
 export const SessionAnswerOption = Schema.Struct({
   id: QuestionAnswerId,
   text: Schema.NonEmptyString,
@@ -251,7 +238,6 @@ export const SessionAnswerOption = Schema.Struct({
   isCorrect: Schema.Boolean,
 })
 
-/** The learner's single submitted answer to a session question, scored by the backend. */
 export const SessionAnswer = Schema.Struct({
   answerId: QuestionAnswerId,
   isCorrect: Schema.Boolean,
@@ -269,6 +255,7 @@ export const SessionQuestion = Schema.Struct({
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
   explanation: Schema.NonEmptyString,
+  // The session's stored presentation order.
   answers: Schema.Array(SessionAnswerOption),
   // A withdrawn revision accepts no answer, even in a started session (ADR-0003).
   isWithdrawn: Schema.Boolean,
@@ -277,9 +264,7 @@ export const SessionQuestion = Schema.Struct({
   // When the backend recorded opening a saved note; before submitting it gives the note level.
   noteOpenedAt: Schema.NullOr(UtcIsoDateTime),
   answer: Schema.NullOr(SessionAnswer),
-  // The learner's FavoriteQuestion mark now, shared across their paths.
   isFavorite: Schema.Boolean,
-  // The learner's note on the question now, shared across their paths.
   note: Schema.NullOr(QuestionNote),
 })
 
@@ -287,7 +272,6 @@ export type SessionQuestion = typeof SessionQuestion.Type
 
 export const SessionQuestionResponse = Schema.NullOr(SessionQuestion)
 
-/** The question with its stored answer and the session progress after answering. */
 export const SubmitSessionAnswerResponse = Schema.Struct({
   question: SessionQuestion,
   session: StudySession,

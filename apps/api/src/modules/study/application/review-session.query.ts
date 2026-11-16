@@ -8,7 +8,6 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyReader } from './study.reader.js'
 
-/** The unfinished review session of the whole path or one document, which its tile resumes. */
 export const getReviewSession = Effect.fn('Study.getReviewSession')(function* (
   userId: UserId,
   pathId: QualificationPathId,

@@ -6,7 +6,6 @@ export type CookieJar = {
 const isRemoval = (value: string, attributes: ReadonlyArray<string>) =>
   value === '' || attributes.some(attribute => /^\s*max-age=0\s*$/i.test(attribute))
 
-// A fetch that keeps cookies between requests like a browser, plus fixed headers such as Origin.
 export const makeCookieJar = (headers: Record<string, string> = {}): CookieJar => {
   const cookies = new Map<string, string>()
 

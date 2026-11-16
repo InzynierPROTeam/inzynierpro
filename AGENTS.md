@@ -8,6 +8,8 @@ Before changing code, read [CODING_STANDARDS.md](CODING_STANDARDS.md), including
 
 Leave changes uncommitted for the user to review in the editor. Commit, push, or open a PR only when explicitly requested. Run `pnpm check` before handing back completed code changes.
 
+Before handing back code changes, use [no-comments](.agents/skills/no-comments/SKILL.md) for an independent review of comments in the change, including staged, unstaged and new files. Address verified findings before handoff.
+
 ### Product context
 
 Before product planning or implementation, read `docs/specifications.md` for the system spec, feature specs, and the decision map.

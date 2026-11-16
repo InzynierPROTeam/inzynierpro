@@ -12,7 +12,6 @@ import {
 
 const specializationId = '60000000-0000-4000-8000-000000000001'
 
-// The messages a step form shows, read through the same Standard Schema interface as the form.
 const stepMessages = async (
   schema: Parameters<typeof Schema.toStandardSchemaV1>[0],
   input: Record<string, string>,

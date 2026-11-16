@@ -23,7 +23,6 @@ type DocumentSessionContentProps = {
   availableQuestionCount: QuestionCount
 }
 
-/** Card body for the learner's latest session of one category; the card belongs to the caller. */
 export const DocumentSessionContent: React.FC<DocumentSessionContentProps> = ({
   documentId,
   availableQuestionCount,

@@ -8,7 +8,6 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { StudyReader } from './study.reader.js'
 
-// The summary details of an ended session; an unfinished or another account's session lists nothing.
 export const getSessionResults = Effect.fn('Study.getSessionResults')(function* (
   userId: UserId,
   pathId: QualificationPathId,

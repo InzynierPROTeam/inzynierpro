@@ -42,14 +42,12 @@ import {
   StudySessionResultCounts,
 } from '~api/modules/study/domain/study-session.model.js'
 
-// One row per answer option of a candidate question; options are grouped in TypeScript.
 const CandidateRow = Schema.Struct({
   questionId: WrittenQuestionId,
   questionRevisionId: QuestionRevisionId,
   answerId: QuestionAnswerId,
 })
 
-// One row per answer option of a session question, in the session's stored option order.
 const SessionQuestionRow = Schema.Struct({
   sessionId: StudySessionId,
   position: SessionQuestionPosition,
@@ -75,7 +73,6 @@ const SessionQuestionRow = Schema.Struct({
   isFavorite: Schema.Boolean,
 })
 
-// A session question with its result; the answer columns are null until it is answered.
 const SessionQuestionResultRow = Schema.Struct({
   position: SessionQuestionPosition,
   isCorrect: Schema.NullOr(Schema.Boolean),
@@ -169,7 +166,6 @@ export const StudyReaderLive = Layer.effect(
       sql`LEFT JOIN written_question_coverage c ON c.user_id=${userId} AND c.qualification_path_id=pq.qualification_path_id AND c.question_id=q.id AND c.round_number=${round}
  LEFT JOIN question_revisions cr ON cr.id=c.question_revision_id AND cr.substantive_revision_id=r.substantive_revision_id`
 
-    // The path's documents with their published, non-withdrawn questions and the round's coverage.
     const documentPools = (
       userId: UserId,
       pathId: QualificationPathId,
@@ -182,7 +178,6 @@ export const StudyReaderLive = Layer.effect(
  ${roundCoverage(userId, round)}
  WHERE pd.qualification_path_id=${pathId}`
 
-    // The most recently used of the user's sessions on the path that meet the conditions.
     const findLatestSession = (
       userId: UserId,
       pathId: QualificationPathId,
@@ -231,8 +226,6 @@ export const StudyReaderLive = Layer.effect(
  ])}`
     }
 
-    // The learner's FavoriteQuestions on the path, optionally in one document, whose current
-    // revision `r` is published and not withdrawn.
     const favoriteQuestions = (
       userId: UserId,
       pathId: QualificationPathId,

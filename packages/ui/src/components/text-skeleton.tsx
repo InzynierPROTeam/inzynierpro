@@ -2,10 +2,7 @@ import { cx, tv, type VariantProps } from 'tailwind-variants'
 
 import { Skeleton } from './skeleton.js'
 
-// Each line is one line box tall: a bar as tall as the font size (1em), centred by margins that
-// take up the rest of the line height (1lh). Sizes resolve against the text styles on the root,
-// so an unset size or leading inherits the surrounding text and still matches it exactly.
-// The root is a flex column, so the line margins never collapse into each other or the parent.
+// Font-relative bars match inherited text metrics; flex prevents their line-height margins collapsing.
 const textSkeletonVariants = tv({
   slots: {
     root: 'flex w-full flex-col',
@@ -37,7 +34,7 @@ const textSkeletonVariants = tv({
 
 type TextSkeletonProps = Omit<React.ComponentProps<'div'>, 'children'> &
   VariantProps<typeof textSkeletonVariants> & {
-    /** Number of text lines. The last of several lines takes three fifths of the width. */
+    /** The last of several lines is shortened to three fifths of the width. */
     lines?: number
     lineClassName?: string
   }

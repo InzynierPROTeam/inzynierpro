@@ -34,13 +34,10 @@ const answerSchema = Schema.Struct({
 
 type AnswerSchema = typeof answerSchema.Encoded
 
-// No answer is selected until the user picks one; the schema rejects the empty value.
-// The selection is a draft kept only in the form: it is not an attempt, and a reload clears it.
 const noSelection: AnswerSchema = { answerId: '' }
 
 const answerLabelId = 'session-answer-label'
 
-// Once answered, the correct option and a wrong choice show their result; before that all are neutral.
 const answerTone = (
   answer: SessionQuestion['answers'][number],
   submitted: SessionAnswer | null,
@@ -55,7 +52,6 @@ const answerTone = (
 
 type SessionAnswerFormProps = { question: SessionQuestion }
 
-/** Choose an option and check it once; an answered question shows the stored answer and its result. */
 export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }) => {
   const {
     selectedPath,
@@ -92,7 +88,6 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
     }),
   )
 
-  // An ended session keeps its answers but accepts no new ones.
   const isClosed =
     submitted !== null || question.isWithdrawn || session?.status === endedStudySession
 
@@ -120,7 +115,6 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
                 value={submitted?.answerId ?? field.state.value}
                 onValueChange={(value: string) => field.handleChange(value)}
                 disabled={isClosed}
-                // Options keep the order stored when the session started; letters follow that order.
                 className="@container flex flex-col gap-4"
               >
                 {withAnswerLetters(question.answers).map(([answer, letter]) => {
