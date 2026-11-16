@@ -19,6 +19,8 @@ A key object is flat: `all`, named domain groups, and concrete operations. Each 
 - `path(id)` groups queries about one path: its details, statistics, documents and preview.
 - `session(userId, pathId, id)` groups the reads of one study session inside its path group (the session, its summary and results), so starting or answering can refresh one session without touching others. Its questions sit in `questions(userId)` instead.
 - `progress(userId, pathId)` groups the path's reads that show the learner's progress (documents, preview, latest session, review preview and the unfinished review and favourites sessions), so an answer refreshes them without refetching the session reads it already updated.
+- `oralProgress(userId, pathId)` groups the path's oral reads that show the learner's oral progress (oral categories, oral preview, latest oral session and its next step), so a self-assessment refreshes them.
+- `oralSession(userId, pathId, id)` groups the reads of one oral session: the session, its questions, summary and results.
 - `account(userId)` groups everything the account reads about its own study: every path group, the favourites group and the questions group.
 - `favorites(userId)` groups the favourites previews of every path. A mark is shared across paths and nothing else in a path changes them, so marking or unmarking marks this group stale (`refetchType: 'none'`) without refetching the session or progress.
 - `questions(userId)` groups every session question on any path. A question shows the learner's FavoriteQuestion mark and PersonalQuestionNote, both shared across paths, so marking, unmarking, saving or clearing a note marks this group stale (`refetchType: 'none'`); a note leaves the favourites previews alone.
