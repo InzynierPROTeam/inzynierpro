@@ -15,6 +15,8 @@ The command starts throwaway PostgreSQL and Redis, migrates them, then Playwrigh
 - the API from `apps/api/src/test/e2e-server.ts` on port 4100: production HTTP composition, the technical catalogue, the catalogue test date, and sent e-mails appended to `.outbox/emails.jsonl`;
 - a production build of the platform served by `vite preview` in the Cloudflare runtime on port 8101.
 
+CI runs two workers on one runner; unique accounts and client addresses isolate the tests. A retry records diagnostics but a flaky pass still fails CI.
+
 The ports differ from local development, so the suite runs beside `pnpm dev`. After a failure, open the trace with `pnpm --filter @inzpro/e2e exec playwright show-trace <trace.zip>`.
 
 ## Writing tests

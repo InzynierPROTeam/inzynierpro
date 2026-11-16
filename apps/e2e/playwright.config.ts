@@ -19,6 +19,7 @@ export default defineConfig({
   testDir: './src',
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
+  workers: isCI ? 2 : undefined,
   forbidOnly: isCI,
   // In CI the retry only records a trace; a test that passes on retry still fails the run.
   retries: isCI ? 1 : 0,
