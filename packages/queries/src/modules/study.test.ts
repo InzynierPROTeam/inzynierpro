@@ -1,12 +1,15 @@
 import { SessionPreview } from '@inzpro/api-contracts/modules/study/responses'
 import { UserId } from '@inzpro/domain/modules/identity/user'
+import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { withHttpServer } from '@inzpro/testing/http'
-import { Schema } from 'effect'
-import { HttpRouter, HttpServerResponse } from 'effect/http'
+import { Effect, Schema } from 'effect'
+import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { preparationKeys, pathsQueryOptions } from '~queries/modules/preparation.js'
 import {
+  oralReviewPreviewQueryOptions,
+  oralReviewSessionQueryOptions,
   documentQueryOptions,
   documentsInfiniteQueryOptions,
   sessionPreviewQueryOptions,
@@ -14,6 +17,8 @@ import {
 import { withQueryClient } from '~queries/test/query-client.js'
 
 import { studyKeys } from './study.js'
+
+const oralCategoryId = OralQuestionCategoryId.make('32000000-0000-4000-8000-000000000001')
 
 const pathA = Schema.decodeSync(SessionPreview.fields.qualificationPathId)(
   '10000000-0000-4000-8000-000000000001',
@@ -287,3 +292,72 @@ test('the unfinished favourites session refreshes with the progress group of its
 
   expect(studyKeys.progress(userId, pathA).every((part, index) => key[index] === part)).toBe(true)
 })
+
+test('oral review queries forward category scope and invalidate with oral progress while preserving other accounts and paths', () =>
+  withHttpServer(
+    [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/oral/review-preview`,
+        Effect.gen(function* () {
+          const request = yield* HttpServerRequest.HttpServerRequest
+          expect(new URL(request.url, 'http://localhost').searchParams.get('categoryId')).toBe(
+            oralCategoryId,
+          )
+
+          return HttpServerResponse.jsonUnsafe({
+            qualificationPathId: pathA,
+            category: { id: oralCategoryId, name: 'Test category' },
+            dueQuestionCount: 2,
+            nextDueAt: null,
+            settings: {
+              defaultQuestionCount: 2,
+              minimumQuestionCount: 1,
+              maximumQuestionCount: 2,
+              canChangeQuestionCount: true,
+            },
+          })
+        }),
+      ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/oral/review-session`,
+        HttpServerResponse.jsonUnsafe(null),
+      ),
+    ],
+    ({ httpClient }) =>
+      withQueryClient(async client => {
+        const request = {
+          params: { qualificationPathId: pathA },
+          query: { categoryId: oralCategoryId },
+        }
+
+        const preview = oralReviewPreviewQueryOptions(httpClient, userId, request)
+        const session = oralReviewSessionQueryOptions(httpClient, userId, request)
+        const otherUser = UserId.make('a0000000-0000-4000-8000-000000000002')
+        const otherAccount = oralReviewPreviewQueryOptions(httpClient, otherUser, request)
+
+        const otherPath = oralReviewPreviewQueryOptions(httpClient, userId, {
+          ...request,
+          params: { qualificationPathId: pathB },
+        })
+
+        const global = oralReviewPreviewQueryOptions(httpClient, userId, { ...request, query: {} })
+        expect(preview.queryKey).not.toEqual(global.queryKey)
+        expect(await client.query(preview)).toMatchObject({
+          dueQuestionCount: 2,
+          category: { id: oralCategoryId },
+        })
+        expect(await client.query(session)).toBeNull()
+        client.setQueryData(otherAccount.queryKey, null)
+        client.setQueryData(otherPath.queryKey, null)
+        await client.invalidateQueries({
+          queryKey: studyKeys.oralProgress(userId, pathA),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(preview.queryKey)?.isInvalidated).toBe(true)
+        expect(client.getQueryState(session.queryKey)?.isInvalidated).toBe(true)
+        expect(client.getQueryState(otherAccount.queryKey)?.isInvalidated).toBe(false)
+        expect(client.getQueryState(otherPath.queryKey)?.isInvalidated).toBe(false)
+      }),
+  ))

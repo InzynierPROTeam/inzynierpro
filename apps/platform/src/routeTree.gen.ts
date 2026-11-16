@@ -25,6 +25,7 @@ import { Route as publicLayoutNotauthenticatedIndexRouteImport } from './routes/
 import { Route as publicLayoutNotauthenticatedLogowanieRouteImport } from './routes/(public)/_layout/_notauthenticated/logowanie'
 import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
 import { Route as appAuthenticatedOnboardedOralValidUstnyIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/index'
+import { Route as appAuthenticatedOnboardedOralValidUstnyPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
 import { Route as appAuthenticatedOnboardedOralValidUstnyStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/index'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
@@ -121,6 +122,12 @@ const appAuthenticatedOnboardedOralValidUstnyIndexRoute =
     path: '/ustny/',
     getParentRoute: () => appAuthenticatedOnboardedOralValidRoute,
   } as any)
+const appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute =
+  appAuthenticatedOnboardedOralValidUstnyPowtorkaRouteImport.update({
+    id: '/ustny/powtorka',
+    path: '/ustny/powtorka',
+    getParentRoute: () => appAuthenticatedOnboardedOralValidRoute,
+  } as any)
 const appAuthenticatedOnboardedOralValidUstnyStartRoute =
   appAuthenticatedOnboardedOralValidUstnyStartRouteImport.update({
     id: '/ustny/start',
@@ -200,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/start': typeof appAuthenticatedOnboardedStartRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
@@ -222,6 +230,7 @@ export interface FileRoutesByTo {
   '/start': typeof appAuthenticatedOnboardedStartRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
@@ -251,6 +260,7 @@ export interface FileRoutesById {
   '/(public)/_layout/_notauthenticated/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/logowanie'
     | '/zweryfikuj-otp'
+    | '/ustny/powtorka'
     | '/ustny/start'
     | '/nauka/powtorka'
     | '/nauka/start'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/logowanie'
     | '/zweryfikuj-otp'
+    | '/ustny/powtorka'
     | '/ustny/start'
     | '/nauka/powtorka'
     | '/nauka/start'
@@ -325,6 +337,7 @@ export interface FileRouteTypes {
     | '/(public)/_layout/_notauthenticated/logowanie'
     | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
     | '/(public)/_layout/_notauthenticated/'
+    | '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
@@ -458,6 +471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAuthenticatedOnboardedOralValidUstnyIndexRouteImport
       parentRoute: typeof appAuthenticatedOnboardedOralValidRoute
     }
+    '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka': {
+      id: '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
+      path: '/ustny/powtorka'
+      fullPath: '/ustny/powtorka'
+      preLoaderRoute: typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedOralValidRoute
+    }
     '/(app)/_authenticated/_onboarded/_oralValid/ustny/start': {
       id: '/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
       path: '/ustny/start'
@@ -532,6 +552,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface appAuthenticatedOnboardedOralValidRouteChildren {
+  appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute: typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   appAuthenticatedOnboardedOralValidUstnyStartRoute: typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   appAuthenticatedOnboardedOralValidUstnyIndexRoute: typeof appAuthenticatedOnboardedOralValidUstnyIndexRoute
   appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute: typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute
@@ -540,6 +561,8 @@ interface appAuthenticatedOnboardedOralValidRouteChildren {
 
 const appAuthenticatedOnboardedOralValidRouteChildren: appAuthenticatedOnboardedOralValidRouteChildren =
   {
+    appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute:
+      appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute,
     appAuthenticatedOnboardedOralValidUstnyStartRoute:
       appAuthenticatedOnboardedOralValidUstnyStartRoute,
     appAuthenticatedOnboardedOralValidUstnyIndexRoute:

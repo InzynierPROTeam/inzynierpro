@@ -6,6 +6,7 @@ import { ExamSessionTile } from './ExamSessionTile'
 import { FavoritesTile } from './FavoritesTile'
 import { MobileAppBanner } from './MobileAppBanner'
 import { OralLearningTile } from './OralLearningTile'
+import { OralReviewTile } from './OralReviewTile'
 import { ReviewTile } from './ReviewTile'
 import { SelectedPathTile } from './SelectedPathTile'
 import { WrittenLearningTile } from './WrittenLearningTile'
@@ -27,7 +28,12 @@ export const StartSection = () => {
             <FavoritesTile />
           </>
         )}
-        {hasExamAccess(selectedPath.accessScope, oralExamAccess) && <OralLearningTile />}
+        {hasExamAccess(selectedPath.accessScope, oralExamAccess) && (
+          <>
+            <OralLearningTile />
+            <OralReviewTile />
+          </>
+        )}
       </div>
     </section>
   )

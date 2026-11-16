@@ -1,6 +1,7 @@
 import type { GetOralMaterialsRes } from '@inzpro/api-client/modules/study'
 import { ratioToPercent } from '@inzpro/domain/common/percent'
 import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
+import { Button } from '@inzpro/ui/components/button'
 import {
   Item,
   ItemActions,
@@ -17,38 +18,56 @@ import type React from 'react'
 type OralCategoryItemProps = { category: GetOralMaterialsRes['data'][number] }
 
 export const OralCategoryItem: React.FC<OralCategoryItemProps> = ({ category }) => (
-  <Item
-    variant="background-soft"
-    render={
-      <Link
-        to="/ustny/start"
-        search={{ kategoria: category.id }}
-      />
-    }
+  <div
+    role="region"
+    aria-label={category.name}
+    className="flex flex-col gap-2"
   >
-    <ItemContent>
-      <ItemTitle>
-        <h2>{category.name}</h2>
-      </ItemTitle>
-      <ItemDescription>
-        Ukończone: {category.completedQuestionCount} / {category.availableQuestionCount} pytań
-      </ItemDescription>
-      <Progress
-        variant="primary"
-        size="sm"
-        aria-label={`Postęp nauki: ${category.name}`}
-        value={ratioToPercent(
-          calculateCompletionRatio(
-            category.completedQuestionCount,
-            category.availableQuestionCount,
-          ),
-        )}
-      />
-    </ItemContent>
-    <ItemActions>
-      <ChevronRight aria-hidden="true" />
-    </ItemActions>
-  </Item>
+    <Item
+      variant="background-soft"
+      render={
+        <Link
+          to="/ustny/start"
+          search={{ kategoria: category.id }}
+        />
+      }
+    >
+      <ItemContent>
+        <ItemTitle>
+          <h2>{category.name}</h2>
+        </ItemTitle>
+        <ItemDescription>
+          Ukończone: {category.completedQuestionCount} / {category.availableQuestionCount} pytań
+        </ItemDescription>
+        <Progress
+          variant="primary"
+          size="sm"
+          aria-label={`Postęp nauki: ${category.name}`}
+          value={ratioToPercent(
+            calculateCompletionRatio(
+              category.completedQuestionCount,
+              category.availableQuestionCount,
+            ),
+          )}
+        />
+      </ItemContent>
+      <ItemActions>
+        <ChevronRight aria-hidden="true" />
+      </ItemActions>
+    </Item>
+    <Button
+      variant="outline"
+      nativeButton={false}
+      render={
+        <Link
+          to="/ustny/powtorka"
+          search={{ kategoria: category.id }}
+        />
+      }
+    >
+      Powtórz pytania
+    </Button>
+  </div>
 )
 
 export const OralCategoryItemSkeleton = () => (

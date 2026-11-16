@@ -32,7 +32,9 @@ export const OralSessionResultCard: React.FC<OralSessionResultCardProps> = ({ su
         <CardTitle>
           <h2>Twoja samoocena</h2>
         </CardTitle>
-        <CardDescription className="line-clamp-2">{summary.category.name}</CardDescription>
+        <CardDescription className="line-clamp-2">
+          {summary.category?.name ?? 'Wszystkie kategorie'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ItemGroup>

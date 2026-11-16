@@ -93,8 +93,9 @@ const ActiveOralSessionNotice: React.FC<ActiveOralSessionNoticeProps> = ({ sessi
             <h1>Masz trwającą sesję</h1>
           </EmptyTitle>
           <EmptyDescription>
-            Sesja z kategorii „{session.category.name}” jest w toku. Wróć do niej, aby kontynuować
-            od pytania {session.progress.currentQuestion} z {session.progress.total}.
+            Sesja z kategorii „{session.category?.name ?? 'Wszystkie kategorie'}” jest w toku. Wróć
+            do niej, aby kontynuować od pytania {session.progress.currentQuestion} z{' '}
+            {session.progress.total}.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
