@@ -4,7 +4,7 @@
 
 An oral answer is hidden at first; the user may reveal it without a forced wait or recording. The visibility choice is remembered locally per client across questions and sessions, not stored on the account or synced. Revealing the answer is a normal oral step and never makes an answer "assisted".
 
-Oral self-assessment has three levels: cannot answer, partially, and fully, labelled „Nie umiem”, „Częściowo” and „Umiem”. Submitting it moves to the next question, or to the summary after the last one, without confirmation. We do not carry over V1's independent manual "know / don't know" flag; we store self-assessments of individual attempts and the computed learning state. Favourite remains an independent mark; there is no separate difficult mark.
+Oral self-assessment is a three-step difficulty scale the user applies to their own answer: hard (cannot yet answer sufficiently on their own), medium (answers on their own, but with effort) and easy (answers confidently), labelled „Trudne”, „Średnie” and „Łatwe”. The question screen explains the scale and that harder questions return sooner in reviews, so the user steers their own reviews. It replaced the earlier „Nie umiem” / „Częściowo” / „Umiem” wording, which read as a verdict on the user rather than on the question. Submitting it moves to the next question, or to the summary after the last one, without confirmation. We do not carry over V1's independent manual "know / don't know" flag; we store self-assessments of individual attempts and the computed learning state. Favourite remains an independent mark; there is no separate difficult mark.
 
 ## Optional mini-quiz
 

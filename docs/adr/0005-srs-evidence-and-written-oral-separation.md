@@ -19,7 +19,7 @@ We keep an immutable log of learning events with the actual result, context, tim
 ## Initial mapping
 
 - An independent correct written answer is Good and a wrong one is Again. Ease is not inferred from click speed, there is no extra self-assessment after written answers, and Easy is not part of the initial strategy.
-- In oral study, "cannot answer" and "partially" both map to Again, because the user cannot yet answer sufficiently on their own; "fully" maps to Good. All three self-assessments are kept in history. An incomplete answer is not Hard, which means a successful but difficult recall.
+- In oral study, "hard" maps to Again, because the user cannot yet answer sufficiently on their own; "medium" maps to Hard, a successful but effortful recall; "easy" maps to Good. All three self-assessments are kept in history. An answer the user could not give on their own is never Hard.
 - A correct written answer given after opening the user's own note is Hard: a successful recall with a memory aid, which extends the interval less than Good.
 - A correct written answer given after opening the explanation is kept as correct but does not earn the standard interval extension. A new question is rated Again, so it gets an early independent check. An existing state is not changed: the event is kept, but the due time is not pushed out.
 - A wrong written answer is Again regardless of assistance.

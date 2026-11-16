@@ -30,7 +30,6 @@ import {
   RecordSessionAssistancePayload,
   SaveQuestionNotePayload,
   SessionPreviewQuery,
-  OralMaterialsQuery,
   ReviewScopeQuery,
   SessionParams,
   SessionQuestionParams,
@@ -47,7 +46,6 @@ import {
   FavoriteQuestionResponse,
   FavoritesPreviewResponse,
   LatestStudySessionResponse,
-  OralMaterialsResponse,
   QuestionNoteResponse,
   ReviewPreviewResponse,
   SessionNextStepResponse,
@@ -98,23 +96,6 @@ export const GetSessionPreviewEndpoint = HttpApiEndpoint.get(
     query: SessionPreviewQuery,
     success: SessionPreviewResponse,
     error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
-  },
-)
-
-export const GetOralMaterialsEndpoint = HttpApiEndpoint.get(
-  'GetOralMaterials',
-  '/paths/:qualificationPathId/oral',
-  {
-    params: GetDocumentsParams,
-    query: OralMaterialsQuery,
-    success: OralMaterialsResponse,
-    error: [
-      InternalServerError,
-      RateLimitExceeded,
-      InvalidRequest,
-      PathAccessDenied,
-      DocumentNotFound,
-    ],
   },
 )
 
@@ -381,7 +362,6 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(GetDocumentsEndpoint)
   .add(GetDocumentEndpoint)
   .add(GetSessionPreviewEndpoint)
-  .add(GetOralMaterialsEndpoint)
   .add(StartSessionEndpoint)
   .add(GetReviewPreviewEndpoint)
   .add(GetReviewSessionEndpoint)

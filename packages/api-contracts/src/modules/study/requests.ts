@@ -1,3 +1,5 @@
+import { OralRevisionId } from '@inzpro/domain/modules/learning-content/oral-question'
+import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import {
   QuestionCount,
@@ -8,6 +10,10 @@ import {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import {
+  OralSelfAssessment,
+  OralStudySessionId,
+} from '@inzpro/domain/modules/study/oral-study-session'
 import { QuestionNoteText } from '@inzpro/domain/modules/study/question-note'
 import {
   SessionAssistanceKind,
@@ -110,3 +116,45 @@ export type SubmitSessionAnswerPayload = typeof SubmitSessionAnswerPayload.Type
 export const RecordSessionAssistancePayload = Schema.Struct({ kind: SessionAssistanceKind })
 
 export type RecordSessionAssistancePayload = typeof RecordSessionAssistancePayload.Type
+
+export const OralPathParams = Schema.Struct({ qualificationPathId: QualificationPathId })
+
+export const OralSessionPreviewQuery = Schema.Struct({
+  categoryId: Schema.optional(OralQuestionCategoryId),
+  // Without a category, oral study continues from this one: it, or the next in catalogue order,
+  // with questions uncovered in the current oral round.
+  fromCategoryId: Schema.optional(OralQuestionCategoryId),
+})
+
+export const StartOralSessionPayload = Schema.Struct({
+  categoryId: OralQuestionCategoryId,
+  questionCount: QuestionCount,
+})
+
+export type StartOralSessionPayload = typeof StartOralSessionPayload.Type
+
+export const LatestOralSessionQuery = Schema.Struct({
+  // Without a category the latest oral session of the whole path is returned.
+  categoryId: Schema.optional(OralQuestionCategoryId),
+})
+
+export const OralSessionParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  sessionId: OralStudySessionId,
+})
+
+export const OralSessionQuestionParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  sessionId: OralStudySessionId,
+  position: Schema.FiniteFromString.pipe(Schema.decodeTo(SessionQuestionPosition)),
+})
+
+export const OralSessionResultsQuery = CursorPagination
+
+export const SubmitOralSelfAssessmentPayload = Schema.Struct({
+  // The revision the client showed; the backend refuses a self-assessment of any other one.
+  oralRevisionId: OralRevisionId,
+  selfAssessment: OralSelfAssessment,
+})
+
+export type SubmitOralSelfAssessmentPayload = typeof SubmitOralSelfAssessmentPayload.Type

@@ -5,18 +5,22 @@ import { cn, tv, type VariantProps } from 'tailwind-variants'
 
 import { Separator } from './separator.js'
 
-function ItemGroup({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      role="list"
-      data-slot="item-group"
-      className={cn(
-        'group/item-group flex w-full flex-col gap-4 has-[>[data-slot=item][data-size=lg]]:gap-4.5 has-[>[data-slot=item][data-size=sm]]:gap-3 has-[>[data-slot=item][data-size=xl]]:gap-5 has-[>[data-slot=item][data-size=xs]]:gap-2.5',
-        className,
-      )}
-      {...props}
-    />
-  )
+function ItemGroup({ className, render, ...props }: useRender.ComponentProps<'div'>) {
+  return useRender({
+    defaultTagName: 'div',
+    props: mergeProps<'div'>(
+      {
+        role: render === undefined ? 'list' : undefined,
+        className: cn(
+          'group/item-group flex w-full flex-col gap-4 has-[>[data-slot=item][data-size=lg]]:gap-4.5 has-[>[data-slot=item][data-size=sm]]:gap-3 has-[>[data-slot=item][data-size=xl]]:gap-5 has-[>[data-slot=item][data-size=xs]]:gap-2.5',
+          className,
+        ),
+      },
+      props,
+    ),
+    render,
+    state: { slot: 'item-group' },
+  })
 }
 
 function ItemSeparator({ className, ...props }: React.ComponentProps<typeof Separator>) {
@@ -95,30 +99,38 @@ function ItemContent({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function ItemTitle({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="item-title"
-      className={cn(
-        'line-clamp-1 flex w-fit items-center gap-2 text-sm leading-snug font-medium underline-offset-4 group-data-[size=lg]/item:text-base group-data-[size=xl]/item:text-lg',
-        className,
-      )}
-      {...props}
-    />
-  )
+function ItemTitle({ className, render, ...props }: useRender.ComponentProps<'div'>) {
+  return useRender({
+    defaultTagName: 'div',
+    props: mergeProps<'div'>(
+      {
+        className: cn(
+          'line-clamp-1 flex w-fit items-center gap-2 text-sm leading-snug font-medium underline-offset-4 group-data-[size=lg]/item:text-base group-data-[size=xl]/item:text-lg',
+          className,
+        ),
+      },
+      props,
+    ),
+    render,
+    state: { slot: 'item-title' },
+  })
 }
 
-function ItemDescription({ className, ...props }: React.ComponentProps<'p'>) {
-  return (
-    <p
-      data-slot="item-description"
-      className={cn(
-        'text-muted-foreground line-clamp-2 text-start text-sm font-normal group-data-[size=xl]/item:text-base [&>a]:underline [&>a]:underline-offset-4',
-        className,
-      )}
-      {...props}
-    />
-  )
+function ItemDescription({ className, render, ...props }: useRender.ComponentProps<'p'>) {
+  return useRender({
+    defaultTagName: 'p',
+    props: mergeProps<'p'>(
+      {
+        className: cn(
+          'text-muted-foreground line-clamp-2 text-start text-sm font-normal group-data-[size=xl]/item:text-base [&>a]:underline [&>a]:underline-offset-4',
+          className,
+        ),
+      },
+      props,
+    ),
+    render,
+    state: { slot: 'item-description' },
+  })
 }
 
 function ItemActions({ className, ...props }: React.ComponentProps<'div'>) {

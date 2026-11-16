@@ -7,6 +7,20 @@ import {
   type GetSessionPreviewRequest,
   getOralMaterials,
   type GetOralMaterialsRequest,
+  getOralSessionPreview,
+  type GetOralSessionPreviewRequest,
+  getLatestOralSession,
+  type GetLatestOralSessionRequest,
+  getOralSession,
+  type GetOralSessionRequest,
+  getOralSessionNextStep,
+  type GetOralSessionNextStepRequest,
+  getOralSessionSummary,
+  type GetOralSessionSummaryRequest,
+  getOralSessionResults,
+  type GetOralSessionResultsRequest,
+  getOralSessionQuestion,
+  type GetOralSessionQuestionRequest,
   getLatestSession,
   type GetLatestSessionRequest,
   getReviewPreview,
@@ -30,6 +44,7 @@ import {
 } from '@inzpro/api-client/modules/study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
 import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import type { HttpClient } from 'effect/http'
 import {
@@ -55,8 +70,6 @@ export const studyKeys = {
       'getSessionPreview',
       req,
     ] as const,
-  getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
-    [...studyKeys.path(userId, req.params.qualificationPathId), 'getOralMaterials', req] as const,
   getLatestSession: (userId: UserId, req: GetLatestSessionRequest) =>
     [
       ...studyKeys.progress(userId, req.params.qualificationPathId),
@@ -118,6 +131,59 @@ export const studyKeys = {
   // Outside session keys so account-wide mark/note invalidation reaches it; answers update it directly.
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
     [...studyKeys.questions(userId), 'getSessionQuestion', req] as const,
+  // Oral reads that show the learner's oral progress on the path, which every self-assessment changes.
+  oralProgress: (userId: UserId, pathId: QualificationPathId) =>
+    [...studyKeys.path(userId, pathId), 'oralProgress'] as const,
+  getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
+    [
+      ...studyKeys.oralProgress(userId, req.params.qualificationPathId),
+      'getOralMaterials',
+      req,
+    ] as const,
+  getOralSessionPreview: (userId: UserId, req: GetOralSessionPreviewRequest) =>
+    [
+      ...studyKeys.oralProgress(userId, req.params.qualificationPathId),
+      'getOralSessionPreview',
+      req,
+    ] as const,
+  getLatestOralSession: (userId: UserId, req: GetLatestOralSessionRequest) =>
+    [
+      ...studyKeys.oralProgress(userId, req.params.qualificationPathId),
+      'getLatestOralSession',
+      req,
+    ] as const,
+  getOralSessionNextStep: (userId: UserId, req: GetOralSessionNextStepRequest) =>
+    [
+      ...studyKeys.oralProgress(userId, req.params.qualificationPathId),
+      'getOralSessionNextStep',
+      req,
+    ] as const,
+  oralSession: (userId: UserId, pathId: QualificationPathId, id: OralStudySessionId) =>
+    [...studyKeys.path(userId, pathId), 'oralSession', id] as const,
+  getOralSession: (userId: UserId, req: GetOralSessionRequest) =>
+    [
+      ...studyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getOralSession',
+      req,
+    ] as const,
+  getOralSessionSummary: (userId: UserId, req: GetOralSessionSummaryRequest) =>
+    [
+      ...studyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getOralSessionSummary',
+      req,
+    ] as const,
+  getOralSessionResultsInfinite: (userId: UserId, req: GetOralSessionResultsRequest) =>
+    [
+      ...studyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getOralSessionResultsInfinite',
+      req,
+    ] as const,
+  getOralSessionQuestion: (userId: UserId, req: GetOralSessionQuestionRequest) =>
+    [
+      ...studyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),
+      'getOralSessionQuestion',
+      req,
+    ] as const,
 }
 
 export const documentsInfiniteQueryOptions = (
@@ -232,6 +298,79 @@ export const sessionResultsInfiniteQueryOptions = (
   effectInfiniteQueryOptions(
     studyKeys.getSessionResultsInfinite(userId, req),
     cursor => getSessionResults({ ...req, query: { ...req.query, cursor } }),
+    httpClient,
+    req.query.cursor,
+  )
+
+export const oralSessionPreviewQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralSessionPreviewRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralSessionPreview(userId, req),
+    getOralSessionPreview(req),
+    httpClient,
+  )
+
+export const latestOralSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetLatestOralSessionRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getLatestOralSession(userId, req),
+    getLatestOralSession(req),
+    httpClient,
+  )
+
+export const oralSessionNextStepQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralSessionNextStepRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralSessionNextStep(userId, req),
+    getOralSessionNextStep(req),
+    httpClient,
+  )
+
+export const oralSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralSessionRequest,
+) => effectQueryOptions(studyKeys.getOralSession(userId, req), getOralSession(req), httpClient)
+
+export const oralSessionQuestionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralSessionQuestionRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralSessionQuestion(userId, req),
+    getOralSessionQuestion(req),
+    httpClient,
+  )
+
+export const oralSessionSummaryQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralSessionSummaryRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralSessionSummary(userId, req),
+    getOralSessionSummary(req),
+    httpClient,
+  )
+
+export const oralSessionResultsInfiniteQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralSessionResultsRequest,
+) =>
+  effectInfiniteQueryOptions(
+    studyKeys.getOralSessionResultsInfinite(userId, req),
+    cursor => getOralSessionResults({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
   )

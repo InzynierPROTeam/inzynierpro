@@ -1,7 +1,7 @@
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { Schema } from 'effect'
 
-/** The 1-based number of a LearningRound of written regular study on a path (ADR-0002). */
+/** The 1-based number of a LearningRound of written or oral regular study on a path (ADR-0002). */
 export const LearningRoundNumber = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
   Schema.brand('LearningRoundNumber'),
 )

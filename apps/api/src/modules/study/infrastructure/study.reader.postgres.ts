@@ -1,10 +1,6 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { Uuid } from '@inzpro/domain/common/id'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import {
-  OralQuestionCategoryId,
-  OralQuestionCategorySortOrder,
-} from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import {
   QuestionCount,
@@ -32,7 +28,6 @@ import {
   type LearningRoundNumber,
   LearningRoundProgress,
 } from '~api/modules/study/domain/learning-round.model.js'
-import type { OralCategoryQuestionPool } from '~api/modules/study/domain/oral-category.model.js'
 import { ReviewQueue } from '~api/modules/study/domain/review-session.model.js'
 import { ReviewCard } from '~api/modules/study/domain/review-state.model.js'
 import { studyDayOf } from '~api/modules/study/domain/review-state.rules.js'
@@ -159,13 +154,6 @@ const toCandidates = (
   return [...candidates.values()]
 }
 
-const OralCategoryRow = Schema.Struct({
-  id: OralQuestionCategoryId,
-  name: Schema.NonEmptyString,
-  sortOrder: OralQuestionCategorySortOrder,
-  availableQuestionCount: QuestionCount,
-})
-
 export const StudyReaderLive = Layer.effect(
   StudyReader,
   Effect.gen(function* () {
@@ -257,15 +245,6 @@ export const StudyReaderLive = Layer.effect(
       ['id', sql`d.id`, 'asc'],
     ])
 
-    const oralCategoriesPage = makeCursorPaginator(
-      sql,
-      Schema.Struct({ sortOrder: OralQuestionCategorySortOrder, id: Uuid }),
-      [
-        ['sortOrder', sql`c.sort_order`, 'asc'],
-        ['id', sql`c.id`, 'asc'],
-      ],
-    )
-
     const resultsPage = makeCursorPaginator(
       sql,
       Schema.Struct({ position: SessionQuestionPosition }),
@@ -301,36 +280,6 @@ export const StudyReaderLive = Layer.effect(
                 Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))),
               ),
             row => ({ id: row.id }),
-          )
-        },
-        Effect.catchTags({
-          SqlError: cause => Effect.fail(new StudyReadError({ cause })),
-          SchemaError: cause => Effect.fail(new StudyReadError({ cause })),
-        }),
-      ),
-      oralCategories: Effect.fn('StudyReader.oralCategories')(
-        function* (_userId, pathId, req) {
-          return yield* oralCategoriesPage(
-            req,
-            page =>
-              sql`SELECT c.id,c.name,c.sort_order,count(*)::integer AS available_question_count FROM path_oral_questions pq
- JOIN oral_questions q ON q.id=pq.question_id
- JOIN oral_question_categories c ON c.id=q.category_id
- JOIN oral_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
- WHERE pq.qualification_path_id=${pathId} AND ${page.after} GROUP BY c.id ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
-                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(OralCategoryRow))),
-              ),
-            row => ({ sortOrder: row.sortOrder, id: row.id }),
-          ).pipe(
-            Effect.map(page =>
-              mapCursorPage(page, (row): OralCategoryQuestionPool => ({
-                id: row.id,
-                name: row.name,
-                availableQuestionCount: row.availableQuestionCount,
-                // TODO(#59): count the learner's coverage in the current oral round.
-                completedQuestionCount: QuestionCount.make(0),
-              })),
-            ),
           )
         },
         Effect.catchTags({

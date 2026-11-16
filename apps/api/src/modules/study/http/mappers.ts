@@ -1,4 +1,9 @@
 import type {
+  OralSessionNextStep as OralSessionNextStepDto,
+  OralSessionQuestion as OralSessionQuestionDto,
+  OralSessionQuestionResult as OralSessionQuestionResultDto,
+  OralStudySession as OralStudySessionDto,
+  OralStudySessionSummary,
   FavoritesPreview,
   LatestStudySession,
   ReviewPreview,
@@ -19,6 +24,13 @@ import {
 import { Match, Option } from 'effect'
 import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
 import type { FavoritesPreview as FavoritesPreviewModel } from '~api/modules/study/domain/favorites-session.model.js'
+import type { OralSessionNextStep } from '~api/modules/study/domain/oral-session-next-step.model.js'
+import type {
+  OralSessionQuestion,
+  OralSessionQuestionResult,
+  OralSessionResultCounts,
+  OralStudySession,
+} from '~api/modules/study/domain/oral-study-session.model.js'
 import type { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import type { ReviewPreview as ReviewPreviewModel } from '~api/modules/study/domain/review-session.model.js'
 import type { SessionNextStep } from '~api/modules/study/domain/session-next-step.model.js'
@@ -160,5 +172,71 @@ export const toSessionNextStepDto = (step: SessionNextStep): Option.Option<Sessi
         })),
       [startStudyNextStep]: ({ preview }) =>
         Option.some<SessionNextStepDto>({ type: startStudyNextStep, preview }),
+    }),
+  )
+
+export const toOralStudySessionDto = (session: OralStudySession): OralStudySessionDto => ({
+  id: session.id,
+  category: { id: session.categoryId, name: session.categoryName },
+  status: studySessionStatus(session),
+  progress: {
+    total: session.questionCount,
+    answered: session.answeredCount,
+    skipped: session.skippedCount,
+    percent: answeredPercent(session),
+    currentQuestion: session.currentPosition,
+  },
+  createdAt: dateTimeUtcToUtcIsoDateTime(session.createdAt),
+  endedAt: Option.match(session.endedAt, {
+    onNone: () => null,
+    onSome: dateTimeUtcToUtcIsoDateTime,
+  }),
+})
+
+export const toOralSessionQuestionDto = ({
+  body,
+  answer,
+  selfAssessment,
+  ...question
+}: OralSessionQuestion): OralSessionQuestionDto => ({
+  ...question,
+  body: toResolvedRichContentDto(body),
+  answer: toResolvedRichContentDto(answer),
+  selfAssessment: Option.match(selfAssessment, {
+    onNone: () => null,
+    onSome: ({ value, assessedAt }) => ({
+      value,
+      assessedAt: dateTimeUtcToUtcIsoDateTime(assessedAt),
+    }),
+  }),
+})
+
+export const toOralStudySessionSummaryDto = ({
+  session,
+  result,
+}: {
+  session: OralStudySession
+  result: OralSessionResultCounts
+}): OralStudySessionSummary => ({ ...toOralStudySessionDto(session), result })
+
+export const toOralSessionQuestionResultDto = ({
+  selfAssessment,
+  ...question
+}: OralSessionQuestionResult): OralSessionQuestionResultDto => ({
+  ...question,
+  selfAssessment: Option.getOrNull(selfAssessment),
+})
+
+export const toOralSessionNextStepDto = (step: OralSessionNextStep): OralSessionNextStepDto =>
+  Match.value(step).pipe(
+    Match.discriminatorsExhaustive('type')({
+      [continueStudyNextStep]: ({ session }): OralSessionNextStepDto => ({
+        type: continueStudyNextStep,
+        session: toOralStudySessionDto(session),
+      }),
+      [startStudyNextStep]: ({ preview }): OralSessionNextStepDto => ({
+        type: startStudyNextStep,
+        preview,
+      }),
     }),
   )

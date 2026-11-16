@@ -1,3 +1,4 @@
+import { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
 import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
 import {
@@ -75,5 +76,44 @@ export class SessionAnswerAlreadySubmitted extends Schema.TaggedError<
 >()(
   'SessionAnswerAlreadySubmitted',
   errorFields('session_answer_already_submitted'),
+  ConflictAnnotations(),
+) {}
+
+export class OralCategoryNotFound extends Schema.TaggedError<
+  OralCategoryNotFound,
+  { readonly brand: unique symbol }
+>()('OralCategoryNotFound', errorFields('oral_category_not_found'), NotFoundAnnotations()) {}
+
+/** The oral category already has an unfinished session; the client offers to continue it instead. */
+export class OralSessionAlreadyStarted extends Schema.TaggedError<
+  OralSessionAlreadyStarted,
+  { readonly brand: unique symbol }
+>()(
+  'OralSessionAlreadyStarted',
+  {
+    ...errorFields('oral_session_already_started'),
+    sessionId: OralStudySessionId,
+    currentPosition: SessionQuestionPosition,
+  },
+  ConflictAnnotations(),
+) {}
+
+/** The self-assessment refers to another revision than the one this session pinned for the question. */
+export class InvalidOralSelfAssessment extends Schema.TaggedError<
+  InvalidOralSelfAssessment,
+  { readonly brand: unique symbol }
+>()(
+  'InvalidOralSelfAssessment',
+  errorFields('invalid_oral_self_assessment'),
+  UnprocessableEntityAnnotations(),
+) {}
+
+/** The question already has another self-assessment in this session; the client rereads the stored one. */
+export class OralSelfAssessmentAlreadySubmitted extends Schema.TaggedError<
+  OralSelfAssessmentAlreadySubmitted,
+  { readonly brand: unique symbol }
+>()(
+  'OralSelfAssessmentAlreadySubmitted',
+  errorFields('oral_self_assessment_already_submitted'),
   ConflictAnnotations(),
 ) {}

@@ -21,7 +21,6 @@ import type {
   LearningRoundNumber,
   LearningRoundProgress,
 } from '~api/modules/study/domain/learning-round.model.js'
-import type { OralCategoryQuestionPool } from '~api/modules/study/domain/oral-category.model.js'
 import type { ReviewQueue } from '~api/modules/study/domain/review-session.model.js'
 import type { ReviewCard, StudyDay } from '~api/modules/study/domain/review-state.model.js'
 import type {
@@ -56,15 +55,6 @@ export class StudyReader extends Context.Service<
       round: LearningRoundNumber,
       page: CursorPageRequest,
     ) => Effect.Effect<CursorPage<DocumentQuestionPool>, StudyReadError | InvalidCursor>
-    /**
-     * Oral categories in catalogue order that have published, non-withdrawn questions assigned to
-     * the path; a category is never assigned to a path as a whole (ADR-0008).
-     */
-    readonly oralCategories: (
-      userId: UserId,
-      pathId: QualificationPathId,
-      page: CursorPageRequest,
-    ) => Effect.Effect<CursorPage<OralCategoryQuestionPool>, StudyReadError | InvalidCursor>
     /**
      * The document to continue regular study with: the first one in catalogue order, starting from
      * `fromDocumentId` and wrapping around, that still has questions uncovered in the round. With

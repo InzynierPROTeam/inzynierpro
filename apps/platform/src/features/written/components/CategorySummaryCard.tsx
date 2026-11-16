@@ -8,6 +8,13 @@ import {
   CardDescription,
   CardContent,
 } from '@inzpro/ui/components/card'
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemTitle,
+} from '@inzpro/ui/components/item'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import type React from 'react'
 
@@ -22,30 +29,40 @@ export const CategorySummaryCard: React.FC<CategorySummaryCardProps> = ({ docume
       <CardDescription>Pytania do egzaminu pisemnego</CardDescription>
     </CardHeader>
     <CardContent>
-      <dl className="grid grid-cols-3 gap-4 @max-sm:grid-cols-1">
-        <div className="flex flex-col gap-1">
-          <dt className="text-muted-foreground text-sm">Ukończone</dt>
-          <dd className="text-2xl font-semibold">{document.completedQuestionCount}</dd>
-        </div>
-        <div className="flex flex-col gap-1">
-          <dt className="text-muted-foreground text-sm">Wszystkie</dt>
-          <dd className="text-2xl font-semibold">{document.availableQuestionCount}</dd>
-        </div>
-        <div className="flex flex-col gap-1">
-          <dt className="text-muted-foreground text-sm">Postęp</dt>
-          <dd className="text-2xl font-semibold">
-            {ratioToPercent(
-              calculateCompletionRatio(
-                document.completedQuestionCount,
-                document.availableQuestionCount,
-              ),
-            )}
-            %
-          </dd>
-        </div>
-      </dl>
+      <ItemGroup
+        render={<dl />}
+        className="grid grid-cols-3 gap-4 @max-sm:grid-cols-1"
+      >
+        <SummaryStat label="Ukończone">{document.completedQuestionCount}</SummaryStat>
+        <SummaryStat label="Wszystkie">{document.availableQuestionCount}</SummaryStat>
+        <SummaryStat label="Postęp">
+          {ratioToPercent(
+            calculateCompletionRatio(
+              document.completedQuestionCount,
+              document.availableQuestionCount,
+            ),
+          )}
+          %
+        </SummaryStat>
+      </ItemGroup>
     </CardContent>
   </Card>
+)
+
+type SummaryStatProps = { label: string; children: React.ReactNode }
+
+const SummaryStat: React.FC<SummaryStatProps> = ({ label, children }) => (
+  <Item className="p-0">
+    <ItemContent className="gap-1">
+      <ItemDescription render={<dt />}>{label}</ItemDescription>
+      <ItemTitle
+        render={<dd />}
+        className="text-2xl font-semibold"
+      >
+        {children}
+      </ItemTitle>
+    </ItemContent>
+  </Item>
 )
 
 export const CategorySummaryCardSkeleton = () => (

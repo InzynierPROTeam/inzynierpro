@@ -26,9 +26,14 @@ import {
 } from '@inzpro/ui/components/empty'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Link } from '@tanstack/react-router'
-import { BookOpenCheck, List, Scale, Split, Star } from 'lucide-react'
+import { BookOpenCheck, List, Scale, Star } from 'lucide-react'
 import type React from 'react'
 import { BackLink } from '~platform/components/BackLink'
+import {
+  SessionDetail,
+  SessionDetails,
+  SessionPathDetail,
+} from '~platform/components/session/SessionDetails'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { QuestionCountDialog } from '~platform/features/learningSession/components/QuestionCountDialog'
 import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCard'
@@ -88,7 +93,6 @@ export const FavoritesPreviewSection = () => {
 type FavoritesPreviewCardProps = { preview: FavoritesPreview; settings: SessionCountSettings }
 
 const FavoritesPreviewCard: React.FC<FavoritesPreviewCardProps> = ({ preview, settings }) => {
-  const { selectedPath } = onboardedRouteApi.useRouteContext()
   const search = favoritesPreviewRouteApi.useSearch()
   const navigate = favoritesPreviewRouteApi.useNavigate()
   const count = getSessionQuestionCount(settings, search['liczba-pytan'])
@@ -105,61 +109,39 @@ const FavoritesPreviewCard: React.FC<FavoritesPreviewCardProps> = ({ preview, se
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <dl className="flex flex-col gap-8">
-          <div className="flex items-start gap-4">
-            <IconWrapper>
-              <Split />
-            </IconWrapper>
-            <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground text-sm">Specjalność</dt>
-              <dd>
-                {selectedPath.specialization.name} • {selectedPath.qualificationKind.name} •{' '}
-                {selectedPath.qualificationScope.name}
-              </dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <IconWrapper>
-              <Scale />
-            </IconWrapper>
-            <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground text-sm">Kategoria</dt>
-              <dd>{preview.document?.title ?? 'Wszystkie kategorie'}</dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <IconWrapper>
-              <Star />
-            </IconWrapper>
-            <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground text-sm">Ulubione pytania</dt>
-              <dd>{preview.favoriteQuestionCount}</dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <IconWrapper>
-              <List />
-            </IconWrapper>
-            <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground text-sm">Liczba pytań</dt>
-              <dd className="flex items-center gap-2">
-                {count}
-                {settings.canChangeQuestionCount && (
-                  <QuestionCountDialog
-                    settings={settings}
-                    count={count}
-                    onCountChange={questionCount =>
-                      navigate({
-                        search: previous => ({ ...previous, 'liczba-pytan': questionCount }),
-                        replace: true,
-                      })
-                    }
-                  />
-                )}
-              </dd>
-            </div>
-          </div>
-        </dl>
+        <SessionDetails>
+          <SessionPathDetail />
+          <SessionDetail
+            icon={<Scale />}
+            label="Kategoria"
+          >
+            {preview.document?.title ?? 'Wszystkie kategorie'}
+          </SessionDetail>
+          <SessionDetail
+            icon={<Star />}
+            label="Ulubione pytania"
+          >
+            {preview.favoriteQuestionCount}
+          </SessionDetail>
+          <SessionDetail
+            icon={<List />}
+            label="Liczba pytań"
+          >
+            {count}
+            {settings.canChangeQuestionCount && (
+              <QuestionCountDialog
+                settings={settings}
+                count={count}
+                onCountChange={questionCount =>
+                  navigate({
+                    search: previous => ({ ...previous, 'liczba-pytan': questionCount }),
+                    replace: true,
+                  })
+                }
+              />
+            )}
+          </SessionDetail>
+        </SessionDetails>
       </CardContent>
       <CardFooter>
         <StartFavoritesSessionButton

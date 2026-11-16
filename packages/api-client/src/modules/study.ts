@@ -2,7 +2,6 @@ import type {
   GetDocumentsEndpoint,
   GetDocumentEndpoint,
   GetSessionPreviewEndpoint,
-  GetOralMaterialsEndpoint,
   StartSessionEndpoint,
   GetReviewPreviewEndpoint,
   GetReviewSessionEndpoint,
@@ -24,6 +23,19 @@ import type {
   RecordSessionAssistanceEndpoint,
   SubmitSessionAnswerEndpoint,
 } from '@inzpro/api-contracts/modules/study/api'
+import type {
+  EndOralSessionEndpoint,
+  GetLatestOralSessionEndpoint,
+  GetOralMaterialsEndpoint,
+  GetOralSessionEndpoint,
+  GetOralSessionNextStepEndpoint,
+  GetOralSessionPreviewEndpoint,
+  GetOralSessionQuestionEndpoint,
+  GetOralSessionResultsEndpoint,
+  GetOralSessionSummaryEndpoint,
+  StartOralSessionEndpoint,
+  SubmitOralSelfAssessmentEndpoint,
+} from '@inzpro/api-contracts/modules/study/oral-api'
 import type { Effect } from 'effect'
 import { apiAction } from '~api-client/lib/api-action.js'
 import type { InferEndpointRequest } from '~api-client/lib/types.js'
@@ -45,15 +57,6 @@ export type GetSessionPreviewRequest = InferEndpointRequest<typeof GetSessionPre
 export type GetSessionPreviewRes = Effect.Success<ReturnType<typeof getSessionPreview>>
 
 export type GetSessionPreviewError = Effect.Error<ReturnType<typeof getSessionPreview>>
-
-export const getOralMaterials = (req: GetOralMaterialsRequest) =>
-  apiAction(api => api.Study.GetOralMaterials(req))
-
-export type GetOralMaterialsRequest = InferEndpointRequest<typeof GetOralMaterialsEndpoint>
-
-export type GetOralMaterialsRes = Effect.Success<ReturnType<typeof getOralMaterials>>
-
-export type GetOralMaterialsError = Effect.Error<ReturnType<typeof getOralMaterials>>
 
 export const getDocument = (req: GetDocumentRequest) => apiAction(api => api.Study.GetDocument(req))
 
@@ -246,3 +249,118 @@ export type SubmitSessionAnswerRequest = InferEndpointRequest<typeof SubmitSessi
 export type SubmitSessionAnswerRes = Effect.Success<ReturnType<typeof submitSessionAnswer>>
 
 export type SubmitSessionAnswerError = Effect.Error<ReturnType<typeof submitSessionAnswer>>
+
+export const getOralMaterials = (req: GetOralMaterialsRequest) =>
+  apiAction(api => api.OralStudy.GetOralMaterials(req))
+
+export type GetOralMaterialsRequest = InferEndpointRequest<typeof GetOralMaterialsEndpoint>
+
+export type GetOralMaterialsRes = Effect.Success<ReturnType<typeof getOralMaterials>>
+
+export type GetOralMaterialsError = Effect.Error<ReturnType<typeof getOralMaterials>>
+
+export const getOralSessionPreview = (req: GetOralSessionPreviewRequest) =>
+  apiAction(api => api.OralStudy.GetOralSessionPreview(req))
+
+export type GetOralSessionPreviewRequest = InferEndpointRequest<
+  typeof GetOralSessionPreviewEndpoint
+>
+
+export type GetOralSessionPreviewRes = Effect.Success<ReturnType<typeof getOralSessionPreview>>
+
+export type GetOralSessionPreviewError = Effect.Error<ReturnType<typeof getOralSessionPreview>>
+
+export const startOralSession = (req: StartOralSessionRequest) =>
+  apiAction(api => api.OralStudy.StartOralSession(req))
+
+export type StartOralSessionRequest = InferEndpointRequest<typeof StartOralSessionEndpoint>
+
+export type StartOralSessionRes = Effect.Success<ReturnType<typeof startOralSession>>
+
+export type StartOralSessionError = Effect.Error<ReturnType<typeof startOralSession>>
+
+export const getLatestOralSession = (req: GetLatestOralSessionRequest) =>
+  apiAction(api => api.OralStudy.GetLatestOralSession(req))
+
+export type GetLatestOralSessionRequest = InferEndpointRequest<typeof GetLatestOralSessionEndpoint>
+
+export type GetLatestOralSessionRes = Effect.Success<ReturnType<typeof getLatestOralSession>>
+
+export type GetLatestOralSessionError = Effect.Error<ReturnType<typeof getLatestOralSession>>
+
+export const getOralSession = (req: GetOralSessionRequest) =>
+  apiAction(api => api.OralStudy.GetOralSession(req))
+
+export type GetOralSessionRequest = InferEndpointRequest<typeof GetOralSessionEndpoint>
+
+export type GetOralSessionRes = Effect.Success<ReturnType<typeof getOralSession>>
+
+export type GetOralSessionError = Effect.Error<ReturnType<typeof getOralSession>>
+
+export const getOralSessionNextStep = (req: GetOralSessionNextStepRequest) =>
+  apiAction(api => api.OralStudy.GetOralSessionNextStep(req))
+
+export type GetOralSessionNextStepRequest = InferEndpointRequest<
+  typeof GetOralSessionNextStepEndpoint
+>
+
+export type GetOralSessionNextStepRes = Effect.Success<ReturnType<typeof getOralSessionNextStep>>
+
+export type GetOralSessionNextStepError = Effect.Error<ReturnType<typeof getOralSessionNextStep>>
+
+export const getOralSessionSummary = (req: GetOralSessionSummaryRequest) =>
+  apiAction(api => api.OralStudy.GetOralSessionSummary(req))
+
+export type GetOralSessionSummaryRequest = InferEndpointRequest<
+  typeof GetOralSessionSummaryEndpoint
+>
+
+export type GetOralSessionSummaryRes = Effect.Success<ReturnType<typeof getOralSessionSummary>>
+
+export type GetOralSessionSummaryError = Effect.Error<ReturnType<typeof getOralSessionSummary>>
+
+export const getOralSessionResults = (req: GetOralSessionResultsRequest) =>
+  apiAction(api => api.OralStudy.GetOralSessionResults(req))
+
+export type GetOralSessionResultsRequest = InferEndpointRequest<
+  typeof GetOralSessionResultsEndpoint
+>
+
+export type GetOralSessionResultsRes = Effect.Success<ReturnType<typeof getOralSessionResults>>
+
+export type GetOralSessionResultsError = Effect.Error<ReturnType<typeof getOralSessionResults>>
+
+export const endOralSession = (req: EndOralSessionRequest) =>
+  apiAction(api => api.OralStudy.EndOralSession(req))
+
+export type EndOralSessionRequest = InferEndpointRequest<typeof EndOralSessionEndpoint>
+
+export type EndOralSessionRes = Effect.Success<ReturnType<typeof endOralSession>>
+
+export type EndOralSessionError = Effect.Error<ReturnType<typeof endOralSession>>
+
+export const getOralSessionQuestion = (req: GetOralSessionQuestionRequest) =>
+  apiAction(api => api.OralStudy.GetOralSessionQuestion(req))
+
+export type GetOralSessionQuestionRequest = InferEndpointRequest<
+  typeof GetOralSessionQuestionEndpoint
+>
+
+export type GetOralSessionQuestionRes = Effect.Success<ReturnType<typeof getOralSessionQuestion>>
+
+export type GetOralSessionQuestionError = Effect.Error<ReturnType<typeof getOralSessionQuestion>>
+
+export const submitOralSelfAssessment = (req: SubmitOralSelfAssessmentRequest) =>
+  apiAction(api => api.OralStudy.SubmitOralSelfAssessment(req))
+
+export type SubmitOralSelfAssessmentRequest = InferEndpointRequest<
+  typeof SubmitOralSelfAssessmentEndpoint
+>
+
+export type SubmitOralSelfAssessmentRes = Effect.Success<
+  ReturnType<typeof submitOralSelfAssessment>
+>
+
+export type SubmitOralSelfAssessmentError = Effect.Error<
+  ReturnType<typeof submitOralSelfAssessment>
+>
