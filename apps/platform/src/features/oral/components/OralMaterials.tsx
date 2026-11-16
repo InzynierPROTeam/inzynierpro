@@ -9,8 +9,7 @@ import {
   EmptyDescription,
 } from '@inzpro/ui/components/empty'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
-import { Item, ItemContent, ItemTitle, ItemGroup } from '@inzpro/ui/components/item'
-import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
+import { ItemGroup } from '@inzpro/ui/components/item'
 import { LoaderCircle, Mic2 } from 'lucide-react'
 import {
   SuspenseInfiniteQuery,
@@ -18,6 +17,8 @@ import {
 } from '~platform/components/SuspenseQueryBoundary'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
+
+import { OralCategoryItem, OralCategoryItemSkeleton } from './OralCategoryItem'
 
 export const OralMaterials = () => {
   const {
@@ -28,15 +29,11 @@ export const OralMaterials = () => {
   return (
     <SuspenseQueryWrapper
       fallback={
-        <Item variant="background-soft">
-          <ItemContent>
-            <TextSkeleton
-              size="sm"
-              leading="snug"
-              className="w-64"
-            />
-          </ItemContent>
-        </Item>
+        <ItemGroup>
+          <OralCategoryItemSkeleton />
+          <OralCategoryItemSkeleton />
+          <OralCategoryItemSkeleton />
+        </ItemGroup>
       }
     >
       <SuspenseInfiniteQuery
@@ -52,16 +49,10 @@ export const OralMaterials = () => {
             {data.pages
               .flatMap(page => page.data)
               .map(category => (
-                <Item
+                <OralCategoryItem
                   key={category.id}
-                  variant="background-soft"
-                >
-                  <ItemContent>
-                    <ItemTitle>
-                      <h2>{category.name}</h2>
-                    </ItemTitle>
-                  </ItemContent>
-                </Item>
+                  category={category}
+                />
               ))}
             {hasNextPage && !isFetchingNextPage && !isFetchNextPageError && (
               <InView fetchNextPage={() => void fetchNextPage()} />
