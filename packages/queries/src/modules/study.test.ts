@@ -13,6 +13,8 @@ import {
   oralFavoritesSessionQueryOptions,
   oralSessionQuestionQueryOptions,
   oralSessionQueryOptions,
+  oralSessionQuizQueryOptions,
+  oralQuizChecksInfiniteQueryOptions,
   oralReviewPreviewQueryOptions,
   oralReviewSessionQueryOptions,
   documentQueryOptions,
@@ -465,6 +467,59 @@ test('oral favourites and question queries isolate accounts and invalidate share
         })
         expect(client.getQueryState(queries[0]!.unfinished.queryKey)?.isInvalidated).toBe(true)
         expect(client.getQueryState(queries[1]!.unfinished.queryKey)?.isInvalidated).toBe(false)
+      }),
+  )
+})
+
+test('oral quiz queries belong to their oral session, page through checks and leave other sessions alone', () => {
+  const sessionId = OralStudySessionId.make('b0000000-0000-4000-8000-000000000001')
+  const otherSessionId = OralStudySessionId.make('b0000000-0000-4000-8000-000000000002')
+
+  return withHttpServer(
+    [sessionId, otherSessionId].flatMap(id => [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/oral/sessions/${id}/quiz`,
+        HttpServerResponse.jsonUnsafe({ quiz: null, availableFormats: ['true_false'] }),
+      ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/oral/sessions/${id}/quiz/checks`,
+        Effect.gen(function* () {
+          const request = yield* HttpServerRequest.HttpServerRequest
+          const cursor = new URL(request.url, 'http://localhost').searchParams.get('cursor')
+
+          return HttpServerResponse.jsonUnsafe(
+            cursor === null
+              ? { data: [], meta: { hasMore: true, nextCursor: 'next' } }
+              : { data: [], meta: { hasMore: false } },
+          )
+        }),
+      ),
+    ]),
+    ({ httpClient }) =>
+      withQueryClient(async client => {
+        const params = { qualificationPathId: pathA, sessionId }
+        const quiz = oralSessionQuizQueryOptions(httpClient, userId, { params })
+        const checks = oralQuizChecksInfiniteQueryOptions(httpClient, userId, { params, query: {} })
+
+        const other = oralSessionQuizQueryOptions(httpClient, userId, {
+          params: { ...params, sessionId: otherSessionId },
+        })
+
+        expect(await client.query(quiz)).toEqual({ quiz: null, availableFormats: ['true_false'] })
+        expect((await client.infiniteQuery({ ...checks, pages: 2 })).pageParams).toEqual([
+          undefined,
+          'next',
+        ])
+        await client.query(other)
+        await client.invalidateQueries({
+          queryKey: studyKeys.oralSession(userId, pathA, sessionId),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(quiz.queryKey)?.isInvalidated).toBe(true)
+        expect(client.getQueryState(checks.queryKey)?.isInvalidated).toBe(true)
+        expect(client.getQueryState(other.queryKey)?.isInvalidated).toBe(false)
       }),
   )
 })

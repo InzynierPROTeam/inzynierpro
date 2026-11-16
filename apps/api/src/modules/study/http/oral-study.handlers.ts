@@ -13,6 +13,7 @@ import {
 } from '~api/modules/preparation/http/errors.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { answerOralQuizCheck } from '~api/modules/study/application/answer-oral-quiz-check.command.js'
 import { clearOralQuestionNote } from '~api/modules/study/application/clear-oral-question-note.command.js'
 import { endOralSession } from '~api/modules/study/application/end-oral-session.command.js'
 import { markOralFavorite } from '~api/modules/study/application/mark-oral-favorite.command.js'
@@ -28,6 +29,10 @@ import {
 import { getOralSessionNextStep } from '~api/modules/study/application/oral-session-next-step.query.js'
 import { getOralSessionPreview } from '~api/modules/study/application/oral-session-preview.query.js'
 import {
+  getOralQuizChecks,
+  getOralSessionQuizState,
+} from '~api/modules/study/application/oral-session-quiz.query.js'
+import {
   getLatestOralSession,
   getOralSession,
   getOralSessionQuestion,
@@ -38,15 +43,23 @@ import { ReviewSchedulerLive } from '~api/modules/study/application/review-state
 import { saveOralQuestionNote } from '~api/modules/study/application/save-oral-question-note.command.js'
 import { startOralFavoritesSession } from '~api/modules/study/application/start-oral-favorites-session.command.js'
 import { startOralReviewSession } from '~api/modules/study/application/start-oral-review-session.command.js'
+import { startOralSessionQuiz } from '~api/modules/study/application/start-oral-session-quiz.command.js'
 import { startOralSession } from '~api/modules/study/application/start-oral-session.command.js'
 import { submitOralSelfAssessment } from '~api/modules/study/application/submit-oral-self-assessment.command.js'
 import { unmarkOralFavorite } from '~api/modules/study/application/unmark-oral-favorite.command.js'
+import { OralSessionQuizReaderLive } from '~api/modules/study/infrastructure/oral-session-quiz.reader.postgres.js'
+import { OralSessionQuizRepositoryLive } from '~api/modules/study/infrastructure/oral-session-quiz.repository.postgres.js'
 import { OralStudyReaderLive } from '~api/modules/study/infrastructure/oral-study.reader.postgres.js'
 import { OralStudyRepositoryLive } from '~api/modules/study/infrastructure/oral-study.repository.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
 import {
   failQuestionNoteWrite,
+  invalidOralQuizSelection,
+  oralQuizCheckAlreadyAnswered,
+  oralQuizCheckNotFound,
+  oralQuizFormatUnsupported,
+  oralQuizUnavailable,
   questionNotFound,
   failStudyRead,
   failStudyWrite,
@@ -61,6 +74,8 @@ import {
   studySessionNotFound,
 } from './errors.js'
 import {
+  toOralQuizCheckDto,
+  toOralSessionQuizDto,
   toQuestionNoteDto,
   toOralReviewPreviewDto,
   toOralSessionNextStepDto,
@@ -443,6 +458,99 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
         }),
       ),
     )
+    .handle('GetOralSessionQuiz', ({ params }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getOralSessionQuizState(user.id, params.qualificationPathId, params.sessionId),
+          ),
+        ),
+        Effect.map(
+          Option.match({
+            onNone: () => null,
+            onSome: ({ quiz, availableFormats }) => ({
+              quiz: Option.match(quiz, { onNone: () => null, onSome: toOralSessionQuizDto }),
+              availableFormats,
+            }),
+          }),
+        ),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('GetOralQuizChecks', ({ params, query }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getOralQuizChecks(user.id, params.qualificationPathId, params.sessionId, query),
+          ),
+        ),
+        Effect.map(page => mapCursorPage(page, toOralQuizCheckDto)),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          InvalidCursor: () => invalidCursor,
+        }),
+      ),
+    )
+    .handle('StartOralSessionQuiz', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            startOralSessionQuiz(
+              user.id,
+              params.qualificationPathId,
+              params.sessionId,
+              payload.formats,
+            ),
+          ),
+        ),
+        Effect.map(toOralSessionQuizDto),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          StudySessionMissing: () => studySessionNotFound,
+          OralQuizNotOffered: () => oralQuizUnavailable,
+          OralQuizFormatNotSupported: () => oralQuizFormatUnsupported,
+        }),
+      ),
+    )
+    .handle('AnswerOralQuizCheck', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            answerOralQuizCheck(
+              user.id,
+              params.qualificationPathId,
+              params.sessionId,
+              params.position,
+              payload.optionIds,
+            ),
+          ),
+        ),
+        Effect.map(({ check, quiz }) => ({
+          check: toOralQuizCheckDto(check),
+          quiz: toOralSessionQuizDto(quiz),
+        })),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          OralQuizCheckMissing: () => oralQuizCheckNotFound,
+          OralQuizCheckAlreadyChecked: () => oralQuizCheckAlreadyAnswered,
+          OralQuizSelectionNotAllowed: () => invalidOralQuizSelection,
+        }),
+      ),
+    )
     .handle('SubmitOralSelfAssessment', ({ params, payload }) =>
       limitByUser(accountWriteLimit).pipe(
         Effect.andThen(
@@ -482,6 +590,8 @@ export const OralStudyRequestServices = Layer.mergeAll(
   PreparationRepositoryLive,
   OralStudyReaderLive,
   OralStudyRepositoryLive,
+  OralSessionQuizReaderLive,
+  OralSessionQuizRepositoryLive,
   StudyRepositoryLive,
   ReviewSchedulerLive,
 )

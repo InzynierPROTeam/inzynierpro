@@ -1,3 +1,7 @@
+import {
+  KnowledgeCheckFormat,
+  OralKnowledgeCheckOptionId,
+} from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralRevisionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
@@ -11,6 +15,7 @@ import {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { OralQuizCheckPosition } from '@inzpro/domain/modules/study/oral-session-quiz'
 import {
   OralSelfAssessment,
   OralStudySessionId,
@@ -169,3 +174,21 @@ export const OralFavoriteQuestionParams = Schema.Struct({
   qualificationPathId: QualificationPathId,
   questionId: OralQuestionId,
 })
+
+export const StartOralSessionQuizPayload = Schema.Struct({
+  formats: Schema.NonEmptyArray(KnowledgeCheckFormat),
+})
+
+export const OralQuizChecksQuery = CursorPagination
+
+export const OralQuizCheckParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  sessionId: OralStudySessionId,
+  position: Schema.FiniteFromString.pipe(Schema.decodeTo(OralQuizCheckPosition)),
+})
+
+export const AnswerOralQuizCheckPayload = Schema.Struct({
+  optionIds: Schema.Array(OralKnowledgeCheckOptionId),
+})
+
+export type AnswerOralQuizCheckPayload = typeof AnswerOralQuizCheckPayload.Type

@@ -1,6 +1,15 @@
-import { OralSessionAlreadyStarted } from '@inzpro/api-contracts/modules/study/errors'
-import { SaveQuestionNotePayload } from '@inzpro/api-contracts/modules/study/requests'
 import {
+  OralQuizFormatUnsupported,
+  OralSessionAlreadyStarted,
+} from '@inzpro/api-contracts/modules/study/errors'
+import {
+  AnswerOralQuizCheckPayload,
+  OralQuizCheckParams,
+  OralQuizChecksQuery,
+  SaveQuestionNotePayload,
+} from '@inzpro/api-contracts/modules/study/requests'
+import {
+  OralSessionQuiz,
   OralFavoriteQuestion,
   OralReviewPreview,
   OralStudySession,
@@ -22,6 +31,9 @@ import {
   getOralReviewPreview,
   getOralReviewSession,
   startOralReviewSession,
+  startOralSessionQuiz,
+  answerOralQuizCheck,
+  getOralQuizChecks,
 } from './study.js'
 
 const preview = Schema.decodeSync(OralReviewPreview)({
@@ -254,6 +266,145 @@ test('competing oral favourites starts preserve the typed resume location', () =
           httpClient,
         ),
       ).rejects.toMatchObject({ sessionId: session.id, currentPosition: 1 })
+    },
+  )
+})
+
+const selectedOptionId = 'd0000000-0000-4000-8000-000000000001'
+
+const quiz = Schema.decodeSync(OralSessionQuiz)({
+  id: 'c0000000-0000-4000-8000-000000000001',
+  sessionId: session.id,
+  checkCount: 1,
+  answeredCount: 0,
+  isCompleted: false,
+})
+
+const check = {
+  position: 1,
+  format: 'multiple_choice',
+  prompt: 'Test check',
+  options: [
+    { id: selectedOptionId, text: 'A' },
+    { id: 'd0000000-0000-4000-8000-000000000002', text: 'B' },
+  ],
+  result: null,
+}
+
+const pageLimit = (limit: number) =>
+  Schema.decodeSync(OralQuizChecksQuery)({ limit: String(limit) }).limit
+
+const quizPath = `${path}/sessions/${session.id}/quiz` as const
+
+test('oral quiz actions forward the supported formats and the checked options', () =>
+  withHttpServer(
+    [
+      HttpRouter.route(
+        'POST',
+        quizPath,
+        Effect.gen(function* () {
+          const request = yield* HttpServerRequest.HttpServerRequest
+          expect(yield* request.json.pipe(Effect.orDie)).toEqual({
+            formats: ['single_choice', 'true_false', 'multiple_choice'],
+          })
+
+          return HttpServerResponse.jsonUnsafe(quiz)
+        }),
+      ),
+      HttpRouter.route(
+        'GET',
+        `${quizPath}/checks`,
+        Effect.gen(function* () {
+          const request = yield* HttpServerRequest.HttpServerRequest
+          expect(new URL(request.url, 'http://localhost').searchParams.get('limit')).toBe('1')
+
+          return HttpServerResponse.jsonUnsafe({ data: [check], meta: { hasMore: false } })
+        }),
+      ),
+      HttpRouter.route(
+        'POST',
+        `${quizPath}/checks/1/answer`,
+        Effect.gen(function* () {
+          const request = yield* HttpServerRequest.HttpServerRequest
+          expect(yield* request.json.pipe(Effect.orDie)).toEqual({ optionIds: [selectedOptionId] })
+
+          return HttpServerResponse.jsonUnsafe({
+            quiz: { ...quiz, answeredCount: 1, isCompleted: true },
+            check: {
+              ...check,
+              result: {
+                isCorrect: true,
+                selectedOptionIds: [selectedOptionId],
+                correctOptionIds: [selectedOptionId],
+                explanation: {
+                  content: { version: 1, doc: { type: 'doc', content: [] } },
+                  assets: [],
+                },
+                answeredAt: '2026-11-13T12:00:00.000Z',
+              },
+            },
+          })
+        }),
+      ),
+    ],
+    async ({ httpClient }) => {
+      const params = { qualificationPathId: preview.qualificationPathId, sessionId: session.id }
+
+      const payload = Schema.decodeSync(AnswerOralQuizCheckPayload)({
+        optionIds: [selectedOptionId],
+      })
+
+      expect(
+        await runApi(
+          startOralSessionQuiz({
+            params,
+            payload: { formats: ['single_choice', 'true_false', 'multiple_choice'] },
+          }),
+          httpClient,
+        ),
+      ).toEqual(quiz)
+      expect(
+        (await runApi(getOralQuizChecks({ params, query: { limit: pageLimit(1) } }), httpClient))
+          .data,
+      ).toEqual([check])
+      expect(
+        await runApi(
+          answerOralQuizCheck({
+            params: Schema.decodeSync(OralQuizCheckParams)({ ...params, position: '1' }),
+            payload,
+          }),
+          httpClient,
+        ),
+      ).toMatchObject({ quiz: { isCompleted: true }, check: { result: { isCorrect: true } } })
+    },
+  ))
+
+test('resuming a quiz with an unsupported format fails with its dedicated error', () => {
+  const failure = new OralQuizFormatUnsupported({
+    type: 'oral_quiz_format_unsupported',
+    message: 'Unsupported format.',
+  })
+
+  return withHttpServer(
+    [
+      HttpRouter.route(
+        'POST',
+        quizPath,
+        HttpServerResponse.jsonUnsafe(Schema.encodeSync(OralQuizFormatUnsupported)(failure), {
+          status: 422,
+        }),
+      ),
+    ],
+    async ({ httpClient }) => {
+      await expect(
+        runApi(
+          startOralSessionQuiz({
+            params: { qualificationPathId: preview.qualificationPathId, sessionId: session.id },
+            payload: { formats: ['true_false'] },
+          }),
+          httpClient,
+        ),
+      ).rejects.toMatchObject({ type: 'oral_quiz_format_unsupported' })
     },
   )
 })

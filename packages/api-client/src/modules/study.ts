@@ -45,6 +45,10 @@ import type {
   GetOralSessionSummaryEndpoint,
   StartOralSessionEndpoint,
   SubmitOralSelfAssessmentEndpoint,
+  GetOralSessionQuizEndpoint,
+  StartOralSessionQuizEndpoint,
+  GetOralQuizChecksEndpoint,
+  AnswerOralQuizCheckEndpoint,
 } from '@inzpro/api-contracts/modules/study/oral-api'
 import type { Effect } from 'effect'
 import { apiAction } from '~api-client/lib/api-action.js'
@@ -490,3 +494,39 @@ export type ClearOralQuestionNoteRequest = InferEndpointRequest<
 export type ClearOralQuestionNoteRes = Effect.Success<ReturnType<typeof clearOralQuestionNote>>
 
 export type ClearOralQuestionNoteError = Effect.Error<ReturnType<typeof clearOralQuestionNote>>
+
+export const getOralSessionQuiz = (req: GetOralSessionQuizRequest) =>
+  apiAction(api => api.OralStudy.GetOralSessionQuiz(req))
+
+export type GetOralSessionQuizRequest = InferEndpointRequest<typeof GetOralSessionQuizEndpoint>
+
+export type GetOralSessionQuizRes = Effect.Success<ReturnType<typeof getOralSessionQuiz>>
+
+export type GetOralSessionQuizError = Effect.Error<ReturnType<typeof getOralSessionQuiz>>
+
+export const startOralSessionQuiz = (req: StartOralSessionQuizRequest) =>
+  apiAction(api => api.OralStudy.StartOralSessionQuiz(req))
+
+export type StartOralSessionQuizRequest = InferEndpointRequest<typeof StartOralSessionQuizEndpoint>
+
+export type StartOralSessionQuizRes = Effect.Success<ReturnType<typeof startOralSessionQuiz>>
+
+export type StartOralSessionQuizError = Effect.Error<ReturnType<typeof startOralSessionQuiz>>
+
+export const getOralQuizChecks = (req: GetOralQuizChecksRequest) =>
+  apiAction(api => api.OralStudy.GetOralQuizChecks(req))
+
+export type GetOralQuizChecksRequest = InferEndpointRequest<typeof GetOralQuizChecksEndpoint>
+
+export type GetOralQuizChecksRes = Effect.Success<ReturnType<typeof getOralQuizChecks>>
+
+export type GetOralQuizChecksError = Effect.Error<ReturnType<typeof getOralQuizChecks>>
+
+export const answerOralQuizCheck = (req: AnswerOralQuizCheckRequest) =>
+  apiAction(api => api.OralStudy.AnswerOralQuizCheck(req))
+
+export type AnswerOralQuizCheckRequest = InferEndpointRequest<typeof AnswerOralQuizCheckEndpoint>
+
+export type AnswerOralQuizCheckRes = Effect.Success<ReturnType<typeof answerOralQuizCheck>>
+
+export type AnswerOralQuizCheckError = Effect.Error<ReturnType<typeof answerOralQuizCheck>>

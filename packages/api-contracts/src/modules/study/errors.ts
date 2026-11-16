@@ -111,3 +111,43 @@ export class OralSelfAssessmentAlreadySubmitted extends Schema.TaggedError<
   errorFields('oral_self_assessment_already_submitted'),
   ConflictAnnotations(),
 ) {}
+
+// CONTRACT: OralQuizUnavailable means the session is unfinished or has no knowledge checks in the requested formats.
+export class OralQuizUnavailable extends Schema.TaggedError<
+  OralQuizUnavailable,
+  { readonly brand: unique symbol }
+>()('OralQuizUnavailable', errorFields('oral_quiz_unavailable'), ConflictAnnotations()) {}
+
+// CONTRACT: OralQuizFormatUnsupported means the started quiz contains a format the client did not list; the quiz keeps its checks.
+export class OralQuizFormatUnsupported extends Schema.TaggedError<
+  OralQuizFormatUnsupported,
+  { readonly brand: unique symbol }
+>()(
+  'OralQuizFormatUnsupported',
+  errorFields('oral_quiz_format_unsupported'),
+  UnprocessableEntityAnnotations(),
+) {}
+
+export class OralQuizCheckNotFound extends Schema.TaggedError<
+  OralQuizCheckNotFound,
+  { readonly brand: unique symbol }
+>()('OralQuizCheckNotFound', errorFields('oral_quiz_check_not_found'), NotFoundAnnotations()) {}
+
+// CONTRACT: InvalidOralQuizSelection means an option is not offered by the check, repeats, or the count does not fit its format.
+export class InvalidOralQuizSelection extends Schema.TaggedError<
+  InvalidOralQuizSelection,
+  { readonly brand: unique symbol }
+>()(
+  'InvalidOralQuizSelection',
+  errorFields('invalid_oral_quiz_selection'),
+  UnprocessableEntityAnnotations(),
+) {}
+
+export class OralQuizCheckAlreadyAnswered extends Schema.TaggedError<
+  OralQuizCheckAlreadyAnswered,
+  { readonly brand: unique symbol }
+>()(
+  'OralQuizCheckAlreadyAnswered',
+  errorFields('oral_quiz_check_already_answered'),
+  ConflictAnnotations(),
+) {}

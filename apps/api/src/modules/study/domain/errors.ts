@@ -38,3 +38,13 @@ export class UnfinishedOralSessionExists extends Data.TaggedError('UnfinishedOra
   readonly sessionId: OralStudySessionId
   readonly currentPosition: SessionQuestionPosition
 }> {}
+
+export class OralQuizNotOffered extends Data.TaggedError('OralQuizNotOffered') {}
+
+export class OralQuizFormatNotSupported extends Data.TaggedError('OralQuizFormatNotSupported') {}
+
+export class OralQuizCheckMissing extends Data.TaggedError('OralQuizCheckMissing') {}
+
+export class OralQuizSelectionNotAllowed extends Data.TaggedError('OralQuizSelectionNotAllowed') {}
+
+export class OralQuizCheckAlreadyChecked extends Data.TaggedError('OralQuizCheckAlreadyChecked') {}

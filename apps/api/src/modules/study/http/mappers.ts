@@ -1,5 +1,7 @@
 import type { OralReviewPreview as OralReviewPreviewDto } from '@inzpro/api-contracts/modules/study/responses'
 import type {
+  OralQuizCheck as OralQuizCheckDto,
+  OralSessionQuiz as OralSessionQuizDto,
   OralSessionNextStep as OralSessionNextStepDto,
   OralSessionQuestion as OralSessionQuestionDto,
   OralSessionQuestionResult as OralSessionQuestionResultDto,
@@ -26,6 +28,10 @@ import { Match, Option } from 'effect'
 import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
 import type { FavoritesPreview as FavoritesPreviewModel } from '~api/modules/study/domain/favorites-session.model.js'
 import type { OralSessionNextStep } from '~api/modules/study/domain/oral-session-next-step.model.js'
+import type {
+  OralQuizCheck,
+  OralSessionQuiz,
+} from '~api/modules/study/domain/oral-session-quiz.model.js'
 import type {
   OralSessionQuestion,
   OralSessionQuestionResult,
@@ -261,4 +267,41 @@ export const toOralReviewPreviewDto = (preview: OralReviewPreview): OralReviewPr
     onSome: dateTimeUtcToUtcIsoDateTime,
   }),
   settings: Option.getOrNull(preview.settings),
+})
+
+export const toOralQuizCheckDto = ({
+  position,
+  format,
+  prompt,
+  options,
+  explanation,
+  answer,
+}: OralQuizCheck): OralQuizCheckDto => ({
+  position,
+  format,
+  prompt,
+  options: options.map(({ id, text }) => ({ id, text })),
+  result: Option.match(answer, {
+    onNone: () => null,
+    onSome: ({ isCorrect, selectedOptionIds, answeredAt }) => ({
+      isCorrect,
+      selectedOptionIds,
+      correctOptionIds: options.filter(option => option.isCorrect).map(option => option.id),
+      explanation: toResolvedRichContentDto(explanation),
+      answeredAt: dateTimeUtcToUtcIsoDateTime(answeredAt),
+    }),
+  }),
+})
+
+export const toOralSessionQuizDto = ({
+  id,
+  sessionId,
+  checkCount,
+  answeredCount,
+}: OralSessionQuiz): OralSessionQuizDto => ({
+  id,
+  sessionId,
+  checkCount,
+  answeredCount,
+  isCompleted: answeredCount === checkCount,
 })
