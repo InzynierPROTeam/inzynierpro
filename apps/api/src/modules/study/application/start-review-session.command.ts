@@ -6,7 +6,7 @@ import type {
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { reviewStudySession } from '@inzpro/domain/modules/study/study-session'
-import { DateTime, Effect, Option, Random } from 'effect'
+import { DateTime, Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 import {
@@ -16,6 +16,7 @@ import {
 } from '~api/modules/study/domain/errors.js'
 import { reviewSessionSettings } from '~api/modules/study/domain/review-session.rules.js'
 import { isAllowedQuestionCount } from '~api/modules/study/domain/session-preview.rules.js'
+import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rules.js'
 
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
@@ -86,12 +87,7 @@ export const startReviewSession = Effect.fn('Study.startReviewSession')(function
         return yield* new StaleSessionScope()
       }
 
-      const questions = yield* Effect.forEach(candidates, candidate =>
-        Effect.map(Random.shuffle(candidate.answerIds), answerIds => ({
-          ...candidate,
-          answerIds,
-        })),
-      )
+      const questions = yield* shuffleAnswerOrders(candidates)
 
       return yield* studyRepository.createSession({
         userId,

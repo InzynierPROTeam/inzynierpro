@@ -9,7 +9,7 @@ import {
   regularStudySession,
   type SessionQuestionSelection,
 } from '@inzpro/domain/modules/study/study-session'
-import { Effect, Option, Random } from 'effect'
+import { Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 import {
@@ -23,6 +23,7 @@ import {
   sessionQuestionPool,
   writtenStudySettings,
 } from '~api/modules/study/domain/session-preview.rules.js'
+import { shuffleAnswerOrders } from '~api/modules/study/domain/study-session.rules.js'
 
 import { StudyReader } from './study.reader.js'
 import { StudyRepository } from './study.repository.js'
@@ -96,12 +97,7 @@ export const startSession = Effect.fn('Study.startSession')(function* (
         return yield* new StaleSessionScope()
       }
 
-      const questions = yield* Effect.forEach(candidates, candidate =>
-        Effect.map(Random.shuffle(candidate.answerIds), answerIds => ({
-          ...candidate,
-          answerIds,
-        })),
-      )
+      const questions = yield* shuffleAnswerOrders(candidates)
 
       return yield* studyRepository.createSession({
         userId,

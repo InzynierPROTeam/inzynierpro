@@ -6,9 +6,13 @@ import {
   scoredQuestionCount,
   type StudySessionStatus,
 } from '@inzpro/domain/modules/study/study-session'
-import { Option } from 'effect'
+import { Effect, Option, Random } from 'effect'
 
-import type { StudySession, StudySessionResultCounts } from './study-session.model.js'
+import type {
+  SessionCandidate,
+  StudySession,
+  StudySessionResultCounts,
+} from './study-session.model.js'
 
 export const studySessionStatus = (session: Pick<StudySession, 'endedAt'>): StudySessionStatus =>
   Option.isSome(session.endedAt) ? endedStudySession : activeStudySession
@@ -37,4 +41,9 @@ export const correctPercent = (
       result.correct,
       scoredQuestionCount({ total: session.questionCount, skipped: session.skippedCount }),
     ),
+  )
+
+export const shuffleAnswerOrders = (candidates: ReadonlyArray<SessionCandidate>) =>
+  Effect.forEach(candidates, candidate =>
+    Effect.map(Random.shuffle(candidate.answerIds), answerIds => ({ ...candidate, answerIds })),
   )
