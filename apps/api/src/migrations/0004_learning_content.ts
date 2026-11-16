@@ -173,6 +173,16 @@ created_at timestamptz(3) NOT NULL DEFAULT now(),
 updated_at timestamptz(3) NOT NULL DEFAULT now()
 )`
   yield* sql`CREATE TRIGGER path_oral_questions_updated_at BEFORE UPDATE ON path_oral_questions FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
+  yield* sql`CREATE TABLE oral_question_regional_links (
+    id uuid PRIMARY KEY DEFAULT uuidv7(),
+    question_id uuid NOT NULL REFERENCES oral_questions(id),
+    district_chamber_id uuid NOT NULL REFERENCES district_chambers(id),
+    source_kind text NOT NULL CHECK (source_kind IN ('recollection','official')),
+    recorded_at timestamptz(3) NOT NULL,
+    UNIQUE (question_id, district_chamber_id, source_kind, recorded_at),
+    created_at timestamptz(3) NOT NULL DEFAULT now()
+  )`
+  yield* sql`CREATE INDEX oral_question_regional_links_chamber_question ON oral_question_regional_links (district_chamber_id, question_id)`
 
   yield* sql`CREATE FUNCTION protect_published_oral_revision() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN

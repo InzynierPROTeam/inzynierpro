@@ -1,3 +1,5 @@
+import { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import {
   ByteSize,
   ContentAssetId,
@@ -127,6 +129,27 @@ export const NewOralQuestion = Schema.Struct({
 })
 
 export type NewOralQuestion = typeof NewOralQuestion.Type
+
+export const recollectionRegionalSource = 'recollection'
+export const officialRegionalSource = 'official'
+
+export const regionalSourceKindValues = [
+  recollectionRegionalSource,
+  officialRegionalSource,
+] as const
+
+export const RegionalSourceKind = Schema.Literals(regionalSourceKindValues)
+
+export type RegionalSourceKind = typeof RegionalSourceKind.Type
+
+export const RegionalQuestionLink = Schema.Struct({
+  questionId: OralQuestionId,
+  districtChamberId: DistrictChamberId,
+  sourceKind: RegionalSourceKind,
+  recordedAt: DateTimeUtc,
+})
+
+export type RegionalQuestionLink = typeof RegionalQuestionLink.Type
 
 export const OralDraftEdit = Schema.Struct({
   revisionId: OralRevisionId,

@@ -16,6 +16,7 @@ import type {
   OralRevisionWithdrawal,
   QuestionRevisionWithdrawal,
   ReferenceDocument,
+  RegionalQuestionLink,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
 import type { LearningContentWriteError } from './errors.js'
@@ -54,6 +55,9 @@ export class LearningContentRepository extends Context.Service<
     readonly assignOralQuestion: (
       pathId: QualificationPathId,
       questionId: OralQuestionId,
+    ) => Effect.Effect<void, LearningContentWriteError>
+    readonly linkOralQuestionToChamber: (
+      link: RegionalQuestionLink,
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly editOralDraft: (
       edit: OralDraftEdit,
