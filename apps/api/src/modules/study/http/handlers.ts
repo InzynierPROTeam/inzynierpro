@@ -16,7 +16,10 @@ import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructu
 import { getDocument } from '~api/modules/study/application/document.query.js'
 import { getDocuments } from '~api/modules/study/application/documents.query.js'
 import { endSession } from '~api/modules/study/application/end-session.command.js'
+import { getFavoritesPreview } from '~api/modules/study/application/favorites-preview.query.js'
+import { getFavoritesSession } from '~api/modules/study/application/favorites-session.query.js'
 import { getLatestSession } from '~api/modules/study/application/latest-session.query.js'
+import { markFavorite } from '~api/modules/study/application/mark-favorite.command.js'
 import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
 import { recordAssistance } from '~api/modules/study/application/record-assistance.command.js'
 import { getReviewPreview } from '~api/modules/study/application/review-preview.query.js'
@@ -28,9 +31,11 @@ import { getSessionQuestion } from '~api/modules/study/application/session-quest
 import { getSessionResults } from '~api/modules/study/application/session-results.query.js'
 import { getSessionSummary } from '~api/modules/study/application/session-summary.query.js'
 import { getSession } from '~api/modules/study/application/session.query.js'
+import { startFavoritesSession } from '~api/modules/study/application/start-favorites-session.command.js'
 import { startReviewSession } from '~api/modules/study/application/start-review-session.command.js'
 import { startSession } from '~api/modules/study/application/start-session.command.js'
 import { submitAnswer } from '~api/modules/study/application/submit-answer.command.js'
+import { unmarkFavorite } from '~api/modules/study/application/unmark-favorite.command.js'
 import { StudyReaderLive } from '~api/modules/study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
@@ -39,6 +44,7 @@ import {
   failStudyRead,
   failStudyWrite,
   invalidSessionAnswer,
+  questionNotFound,
   sessionAnswerAlreadySubmitted,
   sessionQuestionNotFound,
   sessionQuestionWithdrawn,
@@ -48,6 +54,7 @@ import {
   studySessionNotFound,
 } from './errors.js'
 import {
+  toFavoritesPreviewDto,
   toLatestStudySessionDto,
   toReviewPreviewDto,
   toSessionQuestionDto,
@@ -194,6 +201,101 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
         Effect.andThen(
           Effect.flatMap(CurrentUser, user =>
             startReviewSession(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(payload.documentId),
+              payload.questionCount,
+            ),
+          ),
+        ),
+        Effect.map(toStudySessionDto),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PreparationWriteError: failPreparationWrite,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          StudyDocumentNotFound: () => documentNotFound,
+          StaleSessionScope: () => staleSessionPreview,
+          UnfinishedSessionExists: studySessionAlreadyStarted,
+        }),
+      ),
+    )
+    .handle('MarkFavoriteQuestion', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            markFavorite(user.id, params.qualificationPathId, params.questionId),
+          ),
+        ),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          QuestionNotOnPath: () => questionNotFound,
+        }),
+      ),
+    )
+    .handle('UnmarkFavoriteQuestion', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            unmarkFavorite(user.id, params.qualificationPathId, params.questionId),
+          ),
+        ),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyWriteError: failStudyWrite,
+        }),
+      ),
+    )
+    .handle('GetFavoritesPreview', ({ params, query }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getFavoritesPreview(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(query.documentId),
+            ),
+          ),
+        ),
+        Effect.map(Option.map(toFavoritesPreviewDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('GetFavoritesSession', ({ params, query }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getFavoritesSession(
+              user.id,
+              params.qualificationPathId,
+              Option.fromNullishOr(query.documentId),
+            ),
+          ),
+        ),
+        Effect.map(Option.map(toStudySessionDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('StartFavoritesSession', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            startFavoritesSession(
               user.id,
               params.qualificationPathId,
               Option.fromNullishOr(payload.documentId),

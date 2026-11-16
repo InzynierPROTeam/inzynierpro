@@ -93,6 +93,32 @@ export type ReviewPreview = typeof ReviewPreview.Type
 // Null for a document that is not on the path.
 export const ReviewPreviewResponse = Schema.NullOr(ReviewPreview)
 
+/** The learner's FavoriteQuestions in a scope; with none marked no favourites session can start. */
+export const FavoritesPreview = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  // Null for favourites of the whole path.
+  document: Schema.NullOr(SessionDocument),
+  // Marked questions in the scope whose current revision is published and not withdrawn.
+  favoriteQuestionCount: QuestionCount,
+  // Null when nothing is marked.
+  settings: Schema.NullOr(SessionCountSettings),
+})
+
+export type FavoritesPreview = typeof FavoritesPreview.Type
+
+// Null for a document that is not on the path.
+export const FavoritesPreviewResponse = Schema.NullOr(FavoritesPreview)
+
+/** Whether the learner marked the question; the mark is shared across their paths. */
+export const FavoriteQuestion = Schema.Struct({
+  questionId: WrittenQuestionId,
+  isFavorite: Schema.Boolean,
+})
+
+export type FavoriteQuestion = typeof FavoriteQuestion.Type
+
+export const FavoriteQuestionResponse = FavoriteQuestion
+
 export const OralMaterialsResponse = CursorPaginatedResponse(OralQuestionCategory)
 
 /** How far a session got: what the progress bar and the continue link need. */
@@ -110,7 +136,7 @@ export type StudySessionProgress = typeof StudySessionProgress.Type
 
 export const StudySession = Schema.Struct({
   id: StudySessionId,
-  // Regular study or a review session; only regular study is continued from "Continue learning".
+  // Regular study, a review or a favourites session; only regular study is continued from "Continue learning".
   kind: StudySessionKind,
   status: StudySessionStatus,
   progress: StudySessionProgress,
@@ -123,6 +149,8 @@ export type StudySession = typeof StudySession.Type
 export const StartSessionResponse = StudySession
 
 export const StartReviewSessionResponse = StudySession
+
+export const StartFavoritesSessionResponse = StudySession
 
 export const StudySessionResponse = Schema.NullOr(StudySession)
 
@@ -173,7 +201,7 @@ export type StudySessionResult = typeof StudySessionResult.Type
 /** A session with its material and result, for the summary after it ends. */
 export const StudySessionSummary = Schema.Struct({
   ...StudySession.fields,
-  // Null for a review session of the whole path.
+  // Null for a review or favourites session of the whole path.
   document: Schema.NullOr(SessionDocument),
   result: StudySessionResult,
 })
@@ -225,6 +253,8 @@ export const SessionQuestion = Schema.Struct({
   // When the backend recorded opening the explanation; before submitting it marks the answer assisted.
   explanationOpenedAt: Schema.NullOr(UtcIsoDateTime),
   answer: Schema.NullOr(SessionAnswer),
+  // The learner's FavoriteQuestion mark now, shared across their paths.
+  isFavorite: Schema.Boolean,
 })
 
 export type SessionQuestion = typeof SessionQuestion.Type

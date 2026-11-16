@@ -3,7 +3,10 @@ import {
   QuestionCount,
   ReferenceDocumentId,
 } from '@inzpro/domain/modules/learning-content/reference-document'
-import { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/written-question'
+import {
+  QuestionRevisionId,
+  WrittenQuestionId,
+} from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
   SessionQuestionPosition,
@@ -49,6 +52,23 @@ export const StartReviewSessionPayload = Schema.Struct({
 })
 
 export type StartReviewSessionPayload = typeof StartReviewSessionPayload.Type
+
+// Without a document favourites span the whole path; with one only that document's marked questions.
+export const FavoritesScopeQuery = Schema.Struct({
+  documentId: Schema.optional(ReferenceDocumentId),
+})
+
+export const StartFavoritesSessionPayload = Schema.Struct({
+  documentId: Schema.optional(ReferenceDocumentId),
+  questionCount: QuestionCount,
+})
+
+export type StartFavoritesSessionPayload = typeof StartFavoritesSessionPayload.Type
+
+export const FavoriteQuestionParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  questionId: WrittenQuestionId,
+})
 
 export const LatestSessionQuery = Schema.Struct({
   // Without a document the latest session of the whole path is returned.

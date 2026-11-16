@@ -25,13 +25,14 @@ created_at timestamptz(3) NOT NULL DEFAULT now(),
 updated_at timestamptz(3) NOT NULL DEFAULT now()
 )`
   yield* sql`CREATE TRIGGER written_question_coverage_updated_at BEFORE UPDATE ON written_question_coverage FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
-  // Regular study covers one document; a review session covers one document or, without one, the whole path.
+  // Regular study covers one document; a review or favourites session covers one document or,
+  // without one, the whole path.
   yield* sql`CREATE TABLE written_study_sessions (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     user_id uuid NOT NULL,
     qualification_path_id uuid NOT NULL,
-    kind text NOT NULL CHECK (kind IN ('study','review')),
-    document_id uuid CHECK (kind='review' OR document_id IS NOT NULL),
+    kind text NOT NULL CHECK (kind IN ('study','review','favourites')),
+    document_id uuid CHECK (kind<>'study' OR document_id IS NOT NULL),
     user_exam_goal_version integer NOT NULL,
     question_count integer NOT NULL CHECK (question_count > 0),
     current_position integer NOT NULL DEFAULT 1 CHECK (current_position BETWEEN 1 AND question_count),
@@ -46,7 +47,7 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
   )`
   yield* sql`CREATE TRIGGER written_study_sessions_updated_at BEFORE UPDATE ON written_study_sessions FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   // At most one unfinished session per user, path, kind and scope (ADR-0002, ADR-0005); a review
-  // session of the whole path has no document, which counts as one scope.
+  // or favourites session of the whole path has no document, which counts as one scope.
   yield* sql`CREATE UNIQUE INDEX written_study_sessions_one_unfinished ON written_study_sessions (user_id, qualification_path_id, kind, document_id) NULLS NOT DISTINCT WHERE ended_at IS NULL`
   yield* sql`CREATE INDEX written_study_sessions_last_activity ON written_study_sessions (user_id, qualification_path_id, last_activity_at DESC, id DESC)`
   yield* sql`CREATE TABLE written_study_session_questions (
@@ -143,4 +144,10 @@ updated_at timestamptz(3) NOT NULL DEFAULT now()
   )`
   yield* sql`CREATE TRIGGER written_review_states_updated_at BEFORE UPDATE ON written_review_states FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`CREATE INDEX written_review_states_due ON written_review_states (user_id, qualification_path_id, due_at)`
+  yield* sql`CREATE TABLE written_favorite_questions (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    question_id uuid NOT NULL REFERENCES written_questions(id),
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, question_id)
+  )`
 })

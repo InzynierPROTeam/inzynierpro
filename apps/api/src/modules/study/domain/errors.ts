@@ -6,6 +6,9 @@ import { Data } from 'effect'
 
 export class StudyDocumentNotFound extends Data.TaggedError('StudyDocumentNotFound') {}
 
+/** The question is not on the path, so the learner cannot mark or unmark it from there. */
+export class QuestionNotOnPath extends Data.TaggedError('QuestionNotOnPath') {}
+
 /** The requested session no longer fits the material or settings the preview offered. */
 export class StaleSessionScope extends Data.TaggedError('StaleSessionScope') {}
 

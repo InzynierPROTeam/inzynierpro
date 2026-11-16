@@ -27,6 +27,14 @@ export const LearningContentRepositoryLive = Layer.effect(
           )
         },
       ),
+      attachQuestion: Effect.fn('LearningContentRepository.attachQuestion')(
+        function* (pathId, documentId, questionId) {
+          return yield* sql`INSERT INTO path_questions (qualification_path_id,document_id,question_id) VALUES (${pathId},${documentId},${questionId})`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
       createQuestion: Effect.fn('LearningContentRepository.createQuestion')(function* (question) {
         return yield* sql
           .withTransaction(

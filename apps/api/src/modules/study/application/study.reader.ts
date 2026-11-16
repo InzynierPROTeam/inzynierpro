@@ -78,7 +78,7 @@ export class StudyReader extends Context.Service<
     ) => Effect.Effect<Option.Option<DocumentQuestionPool>, StudyReadError>
     /**
      * The user's unfinished written session of the kind and scope, if any: a document, or for a
-     * review session without one, the whole path.
+     * review or favourites session without one, the whole path.
      */
     readonly unfinishedSession: (
       userId: UserId,
@@ -127,6 +127,27 @@ export class StudyReader extends Context.Service<
       pathId: QualificationPathId,
       documentId: Option.Option<ReferenceDocumentId>,
       now: DateTimeUtc,
+      limit: QuestionCount,
+    ) => Effect.Effect<ReadonlyArray<SessionCandidate>, StudyReadError>
+    /** Whether the question is on the path, which marking it from there requires. */
+    readonly isPathQuestion: (
+      pathId: QualificationPathId,
+      questionId: WrittenQuestionId,
+    ) => Effect.Effect<boolean, StudyReadError>
+    /**
+     * How many of the learner's FavoriteQuestions a favourites session of the path, or of one
+     * document on it, may hold: those whose current revision is published and not withdrawn.
+     */
+    readonly favoriteQuestionCount: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: Option.Option<ReferenceDocumentId>,
+    ) => Effect.Effect<QuestionCount, StudyReadError>
+    /** The current revisions of the learner's FavoriteQuestions in the scope, in catalogue order. */
+    readonly favoriteCandidates: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: Option.Option<ReferenceDocumentId>,
       limit: QuestionCount,
     ) => Effect.Effect<ReadonlyArray<SessionCandidate>, StudyReadError>
     readonly session: (

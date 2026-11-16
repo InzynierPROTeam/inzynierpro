@@ -12,6 +12,12 @@ export class DocumentNotFound extends Schema.TaggedError<
   { readonly brand: unique symbol }
 >()('DocumentNotFound', errorFields('document_not_found'), NotFoundAnnotations()) {}
 
+/** The question is not on the path, so it cannot be marked or unmarked from it. */
+export class QuestionNotFound extends Schema.TaggedError<
+  QuestionNotFound,
+  { readonly brand: unique symbol }
+>()('QuestionNotFound', errorFields('question_not_found'), NotFoundAnnotations()) {}
+
 export class StaleSessionPreview extends Schema.TaggedError<
   StaleSessionPreview,
   { readonly brand: unique symbol }

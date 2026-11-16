@@ -2,7 +2,10 @@ import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { Uuid } from '@inzpro/domain/common/id'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
-import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import {
+  QuestionCount,
+  type ReferenceDocumentId,
+} from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   QuestionRevisionId,
   WrittenQuestionId,
@@ -63,6 +66,7 @@ const SessionQuestionRow = Schema.Struct({
   submittedIsCorrect: Schema.NullOr(Schema.Boolean),
   submittedIsAssisted: Schema.NullOr(Schema.Boolean),
   submittedAt: Schema.NullOr(DateTimeUtc),
+  isFavorite: Schema.Boolean,
 })
 
 // A session question with its result; the answer columns are null until it is answered.
@@ -100,6 +104,7 @@ const toSessionQuestion = (
       isCorrect: row.answerIsCorrect,
     })),
     isWithdrawn: first.isWithdrawn,
+    isFavorite: first.isFavorite,
     explanationOpenedAt: first.explanationOpenedAt,
     answer:
       first.submittedAnswerId === null ||
@@ -208,6 +213,22 @@ export const StudyReaderLive = Layer.effect(
    ...conditions,
  ])}`
     }
+
+    // The learner's FavoriteQuestions on the path, optionally in one document, whose current
+    // revision `r` is published and not withdrawn.
+    const favoriteQuestions = (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: Option.Option<ReferenceDocumentId>,
+    ) =>
+      sql`FROM written_favorite_questions f
+ JOIN path_questions pq ON pq.qualification_path_id=${pathId} AND pq.question_id=f.question_id
+ JOIN written_questions q ON q.id=f.question_id
+ JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
+ WHERE ${sql.and([
+   sql`f.user_id=${userId}`,
+   ...Option.match(documentId, { onNone: () => [], onSome: id => [sql`pq.document_id=${id}`] }),
+ ])}`
 
     const documentsPage = makeCursorPaginator(sql, Schema.Struct({ id: Uuid }), [
       ['id', sql`d.id`, 'asc'],
@@ -360,6 +381,45 @@ export const StudyReaderLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
+      isPathQuestion: Effect.fn('StudyReader.isPathQuestion')(
+        function* (pathId, questionId) {
+          const rows =
+            yield* sql`SELECT EXISTS (SELECT 1 FROM path_questions WHERE qualification_path_id=${pathId} AND question_id=${questionId}) AS is_on_path`
+
+          const [{ isOnPath }] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ isOnPath: Schema.Boolean })]),
+          )(rows)
+
+          return isOnPath
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      favoriteQuestionCount: Effect.fn('StudyReader.favoriteQuestionCount')(
+        function* (userId, pathId, documentId) {
+          const rows =
+            yield* sql`SELECT count(*)::integer AS favorite_question_count ${favoriteQuestions(userId, pathId, documentId)}`
+
+          const [{ favoriteQuestionCount }] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ favoriteQuestionCount: QuestionCount })]),
+          )(rows)
+
+          return favoriteQuestionCount
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      favoriteCandidates: Effect.fn('StudyReader.favoriteCandidates')(
+        function* (userId, pathId, documentId, limit) {
+          const rows =
+            yield* sql`SELECT c.question_id,c.question_revision_id,a.id AS answer_id FROM (
+ SELECT q.id AS question_id,r.id AS question_revision_id,pq.document_id,q.created_at ${favoriteQuestions(userId, pathId, documentId)}
+ ORDER BY pq.document_id,q.created_at,q.id LIMIT ${limit}
+ ) c JOIN question_answers a ON a.question_revision_id=c.question_revision_id
+ ORDER BY c.document_id,c.created_at,c.question_id,a.created_at,a.id`
+
+          return toCandidates(yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows))
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
       session: Effect.fn('StudyReader.session')((userId, pathId, sessionId) =>
         findLatestSession(userId, pathId, [sql`s.id=${sessionId}`]),
       ),
@@ -368,7 +428,8 @@ export const StudyReaderLive = Layer.effect(
           const rows =
             yield* sql`SELECT s.id AS session_id,sq.position,sq.question_id,sq.question_revision_id,r.body,r.explanation,a.id AS answer_id,a.text AS answer_text,a.is_correct AS answer_is_correct,
  r.withdrawn_at IS NOT NULL AS is_withdrawn,sq.explanation_opened_at,
- sa.question_answer_id AS submitted_answer_id,sa.is_correct AS submitted_is_correct,sa.is_assisted AS submitted_is_assisted,sa.created_at AS submitted_at
+ sa.question_answer_id AS submitted_answer_id,sa.is_correct AS submitted_is_correct,sa.is_assisted AS submitted_is_assisted,sa.created_at AS submitted_at,
+ EXISTS (SELECT 1 FROM written_favorite_questions f WHERE f.user_id=${userId} AND f.question_id=sq.question_id) AS is_favorite
  FROM written_study_sessions s JOIN written_study_session_questions sq ON sq.study_session_id=s.id
  JOIN question_revisions r ON r.id=sq.question_revision_id
  JOIN written_study_session_answer_options o ON o.study_session_id=sq.study_session_id AND o.position=sq.position

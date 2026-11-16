@@ -139,6 +139,21 @@ export const addFixtureQuestion = (
     }),
   )
 
+// Places a question on another path too, with its document, as a catalogue shared between paths does.
+export const attachFixtureQuestion = (
+  pathId: QualificationPathId,
+  documentId: ReferenceDocumentId,
+  questionId: WrittenQuestionId,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      yield* learningContentRepository.attachDocument(pathId, documentId)
+      yield* learningContentRepository.attachQuestion(pathId, documentId, questionId)
+    }),
+  )
+
 // Publishes a newer revision with its own answer IDs, as an editor's change of the given kind would.
 export const publishFixtureRevision = (
   questionId: WrittenQuestionId,

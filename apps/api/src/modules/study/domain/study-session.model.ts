@@ -22,7 +22,7 @@ import { type Option, Schema } from 'effect'
 export const StudySession = Schema.Struct({
   id: StudySessionId,
   kind: StudySessionKind,
-  // Regular study always has a document; a review session of the whole path has none.
+  // Regular study always has a document; a review or favourites session of the whole path has none.
   documentId: Schema.OptionFromNullOr(ReferenceDocumentId),
   documentTitle: Schema.OptionFromNullOr(Schema.NonEmptyString),
   // The goal version active at the start; later goal changes never reattribute this session.
@@ -64,6 +64,8 @@ export type SessionQuestion = {
   readonly isWithdrawn: boolean
   readonly explanationOpenedAt: Option.Option<DateTimeUtc>
   readonly answer: Option.Option<SessionAnswer>
+  // The learner's FavoriteQuestion mark now, shared across their paths.
+  readonly isFavorite: boolean
 }
 
 /**

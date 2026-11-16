@@ -59,12 +59,18 @@ export type SessionQuestionSelection = typeof SessionQuestionSelection.Type
 
 export const regularStudySession = 'study'
 export const reviewStudySession = 'review'
-export const studySessionKindValues = [regularStudySession, reviewStudySession] as const
+export const favoritesStudySession = 'favourites'
+
+export const studySessionKindValues = [
+  regularStudySession,
+  reviewStudySession,
+  favoritesStudySession,
+] as const
 
 /**
  * What a written session draws its questions from: regular study over one document in the current
- * LearningRound, or a ReviewSession of questions due by SRS on the whole path or one document. Only
- * regular study moves rounds; both feed SRS (ADR-0005).
+ * LearningRound, a ReviewSession of questions due by SRS on the whole path or one document, or the
+ * learner's FavoriteQuestions on the path. Only regular study moves rounds; all feed SRS (ADR-0005).
  */
 export const StudySessionKind = Schema.Literals(studySessionKindValues)
 

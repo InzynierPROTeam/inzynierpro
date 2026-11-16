@@ -1,0 +1,21 @@
+import type { UserId } from '@inzpro/domain/modules/identity/user'
+import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
+import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { favoritesStudySession } from '@inzpro/domain/modules/study/study-session'
+import { Effect, type Option } from 'effect'
+import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
+
+import { StudyReader } from './study.reader.js'
+
+/** The unfinished favourites session of the path or one document, which its tile resumes. */
+export const getFavoritesSession = Effect.fn('Study.getFavoritesSession')(function* (
+  userId: UserId,
+  pathId: QualificationPathId,
+  documentId: Option.Option<ReferenceDocumentId>,
+) {
+  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  const studyReader = yield* StudyReader
+
+  return yield* studyReader.unfinishedSession(userId, pathId, favoritesStudySession, documentId)
+})
