@@ -12,11 +12,12 @@ import {
 } from '@inzpro/domain/modules/study/study-session'
 import { Effect, Option } from 'effect'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
+import { wholePathFilter } from '~api/modules/study/domain/oral-question-scope.rules.js'
 import { defaultOralReviewQuestionCount } from '~api/modules/study/domain/oral-review-session.rules.js'
 import type { OralSessionNextStep } from '~api/modules/study/domain/oral-session-next-step.model.js'
 
-import { getOralReviewPreview } from './oral-review-preview.query.js'
-import { getOralSessionPreview } from './oral-session-preview.query.js'
+import { findOralReviewPreview } from './oral-review-preview.query.js'
+import { findOralSessionPreview } from './oral-session-preview.query.js'
 import { OralStudyReader } from './oral-study.reader.js'
 
 export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(function* (
@@ -38,7 +39,7 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
       : [Option.none()]
 
   for (const scope of scopes) {
-    const review = yield* getOralReviewPreview(userId, pathId, scope)
+    const review = yield* findOralReviewPreview(userId, pathId, scope, wholePathFilter)
 
     if (
       session.value.kind !== favoritesStudySession &&
@@ -72,7 +73,13 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
           latest => latest.categoryId,
         )
 
-  const preview = yield* getOralSessionPreview(userId, pathId, Option.none(), fromCategoryId)
+  const preview = yield* findOralSessionPreview(
+    userId,
+    pathId,
+    Option.none(),
+    fromCategoryId,
+    wholePathFilter,
+  )
 
   return Option.map(preview, (next): OralSessionNextStep => ({
     type: startStudyNextStep,

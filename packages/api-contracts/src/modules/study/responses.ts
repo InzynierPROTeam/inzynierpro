@@ -24,6 +24,7 @@ import {
   OralSessionQuizId,
 } from '@inzpro/domain/modules/study/oral-session-quiz'
 import {
+  OralQuestionScope,
   OralSelfAssessment,
   OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
@@ -292,13 +293,14 @@ export const OralSessionCategory = Schema.Struct({
 
 export const OralSessionPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
+  questionScope: OralQuestionScope,
   category: OralQuestionCategory,
   settings: SessionCountSettings,
 })
 
 export type OralSessionPreview = typeof OralSessionPreview.Type
 
-// CONTRACT: null means the category is outside the path or no category contains questions.
+// CONTRACT: null means the requested category has no questions on the path in the question scope or, when categoryId is omitted, no category has any.
 export const OralSessionPreviewResponse = Schema.NullOr(OralSessionPreview)
 
 export const OralStudySession = Schema.Struct({
@@ -394,6 +396,7 @@ export const OralSessionNextStepResponse = Schema.NullOr(OralSessionNextStep)
 
 export const OralReviewPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
+  questionScope: OralQuestionScope,
   category: Schema.NullOr(OralSessionCategory),
   dueQuestionCount: QuestionCount,
   nextDueAt: Schema.NullOr(UtcIsoDateTime),

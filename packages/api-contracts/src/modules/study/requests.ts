@@ -17,6 +17,7 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { OralQuizCheckPosition } from '@inzpro/domain/modules/study/oral-session-quiz'
 import {
+  OralQuestionScope,
   OralSelfAssessment,
   OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
@@ -125,11 +126,15 @@ export const OralSessionPreviewQuery = Schema.Struct({
   categoryId: Schema.optional(OralQuestionCategoryId),
   // CONTRACT: fromCategoryId is a continuation hint used only when categoryId is omitted.
   fromCategoryId: Schema.optional(OralQuestionCategoryId),
+  // CONTRACT: Omitting questionScope means 'path'.
+  questionScope: Schema.optional(OralQuestionScope),
 })
 
 export const StartOralSessionPayload = Schema.Struct({
   categoryId: OralQuestionCategoryId,
   questionCount: QuestionCount,
+  // CONTRACT: Omitting questionScope means 'path'.
+  questionScope: Schema.optional(OralQuestionScope),
 })
 
 export type StartOralSessionPayload = typeof StartOralSessionPayload.Type
@@ -163,9 +168,17 @@ export const OralReviewScopeQuery = Schema.Struct({
   categoryId: Schema.optional(OralQuestionCategoryId),
 })
 
+export const OralReviewPreviewQuery = Schema.Struct({
+  categoryId: Schema.optional(OralQuestionCategoryId),
+  // CONTRACT: Omitting questionScope means 'path'.
+  questionScope: Schema.optional(OralQuestionScope),
+})
+
 export const StartOralReviewSessionPayload = Schema.Struct({
   categoryId: Schema.optional(OralQuestionCategoryId),
   questionCount: QuestionCount,
+  // CONTRACT: Omitting questionScope means 'path'.
+  questionScope: Schema.optional(OralQuestionScope),
 })
 
 export const StartOralFavoritesSessionPayload = Schema.Struct({ questionCount: QuestionCount })

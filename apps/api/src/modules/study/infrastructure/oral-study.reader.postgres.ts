@@ -1,5 +1,6 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { Uuid } from '@inzpro/domain/common/id'
+import type { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import {
   OralQuestionId,
@@ -106,17 +107,25 @@ export const OralStudyReaderLive = Layer.effect(
       sql`LEFT JOIN oral_question_coverage cv ON cv.user_id=${userId} AND cv.qualification_path_id=pq.qualification_path_id AND cv.question_id=q.id AND cv.round_number=${round}
  LEFT JOIN oral_revisions cr ON cr.id=cv.oral_revision_id AND cr.substantive_revision_id=r.substantive_revision_id`
 
+    const reportedInChamber = (reportedIn: Option.Option<DistrictChamberId>) =>
+      Option.match(reportedIn, {
+        onNone: () => sql`TRUE`,
+        onSome: id =>
+          sql`EXISTS (SELECT 1 FROM oral_question_regional_links l WHERE l.question_id=q.id AND l.district_chamber_id=${id})`,
+      })
+
     const pathQuestions = (
       userId: UserId,
       pathId: QualificationPathId,
       round: LearningRoundNumber,
+      reportedIn: Option.Option<DistrictChamberId>,
     ) =>
       sql`FROM path_oral_questions pq
  JOIN oral_questions q ON q.id=pq.question_id
  JOIN oral_question_categories c ON c.id=q.category_id
  JOIN oral_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
  ${roundCoverage(userId, round)}
- WHERE pq.qualification_path_id=${pathId}`
+ WHERE pq.qualification_path_id=${pathId} AND ${reportedInChamber(reportedIn)}`
 
     const categoryColumns = sql`c.id,c.name,c.sort_order,count(r.id)::integer AS available_question_count,count(cr.id)::integer AS completed_question_count`
 
@@ -152,6 +161,7 @@ export const OralStudyReaderLive = Layer.effect(
       pathId: QualificationPathId,
       categoryId: Option.Option<OralQuestionCategoryId>,
       now: DateTimeUtc,
+      reportedIn: Option.Option<DistrictChamberId>,
     ) => {
       const today = studyDayOf(now)
       const start = DateTime.formatIso(today.start)
@@ -166,7 +176,8 @@ export const OralStudyReaderLive = Layer.effect(
  WHERE e.user_id=s.user_id AND e.qualification_path_id=s.qualification_path_id AND e.question_id=s.question_id AND e.answered_at>=${start} AND e.answered_at<${end})
  THEN greatest(s.due_at,${end}::timestamptz) ELSE s.due_at END AS available_at) v
  WHERE s.user_id=${userId} AND s.qualification_path_id=${pathId}
- AND ${Option.match(categoryId, { onNone: () => sql`TRUE`, onSome: id => sql`q.category_id=${id}` })}`
+ AND ${Option.match(categoryId, { onNone: () => sql`TRUE`, onSome: id => sql`q.category_id=${id}` })}
+ AND ${reportedInChamber(reportedIn)}`
     }
 
     const categoriesPage = makeCursorPaginator(
@@ -229,11 +240,11 @@ export const OralStudyReaderLive = Layer.effect(
           ]),
       ),
       reviewQueue: Effect.fn('OralStudyReader.reviewQueue')(
-        function* (userId, pathId, categoryId, now) {
+        function* (userId, pathId, categoryId, now, reportedIn) {
           const at = DateTime.formatIso(now)
 
           const rows =
-            yield* sql`SELECT count(*) FILTER (WHERE v.available_at<=${at})::integer AS due_count,min(v.available_at) FILTER (WHERE v.available_at>${at}) AS next_due_at ${reviewStates(userId, pathId, categoryId, now)}`
+            yield* sql`SELECT count(*) FILTER (WHERE v.available_at<=${at})::integer AS due_count,min(v.available_at) FILTER (WHERE v.available_at>${at}) AS next_due_at ${reviewStates(userId, pathId, categoryId, now, reportedIn)}`
 
           const [queue] = yield* Schema.decodeUnknownEffect(Schema.Tuple([ReviewQueue]))(rows)
 
@@ -242,11 +253,11 @@ export const OralStudyReaderLive = Layer.effect(
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
       reviewCandidates: Effect.fn('OralStudyReader.reviewCandidates')(
-        function* (userId, pathId, categoryId, now, limit) {
+        function* (userId, pathId, categoryId, now, limit, reportedIn) {
           const at = DateTime.formatIso(now)
 
           const rows =
-            yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${reviewStates(userId, pathId, categoryId, now)} AND v.available_at<=${at} ORDER BY s.due_at,q.id LIMIT ${limit}`
+            yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${reviewStates(userId, pathId, categoryId, now, reportedIn)} AND v.available_at<=${at} ORDER BY s.due_at,q.id LIMIT ${limit}`
 
           return yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows)
         },
@@ -333,7 +344,7 @@ export const OralStudyReaderLive = Layer.effect(
           const page = yield* categoriesPage(
             req,
             window =>
-              sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round)} AND ${window.after}
+              sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, Option.none())} AND ${window.after}
  GROUP BY c.id ORDER BY ${window.orderBy} LIMIT ${window.limit}`.pipe(
                 Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(OralCategoryRow))),
               ),
@@ -348,9 +359,9 @@ export const OralStudyReaderLive = Layer.effect(
         }),
       ),
       category: Effect.fn('OralStudyReader.category')(
-        function* (userId, pathId, round, categoryId) {
+        function* (userId, pathId, round, categoryId, reportedIn) {
           const rows =
-            yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round)} AND c.id=${categoryId} GROUP BY c.id LIMIT 1`
+            yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, reportedIn)} AND c.id=${categoryId} GROUP BY c.id LIMIT 1`
 
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(OralCategoryRow))(rows)
 
@@ -359,7 +370,7 @@ export const OralStudyReaderLive = Layer.effect(
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
       nextCategory: Effect.fn('OralStudyReader.nextCategory')(
-        function* (userId, pathId, { round, fromCategoryId, skipsStartCategory }) {
+        function* (userId, pathId, { round, fromCategoryId, skipsStartCategory }, reportedIn) {
           const isCovered = sql`count(r.id)<=count(cr.id)`
 
           const order = sql.csv([
@@ -382,7 +393,7 @@ export const OralStudyReaderLive = Layer.effect(
           ])
 
           const rows =
-            yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round)} GROUP BY c.id ORDER BY ${order} LIMIT 1`
+            yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, reportedIn)} GROUP BY c.id ORDER BY ${order} LIMIT 1`
 
           const data = yield* Schema.decodeUnknownEffect(Schema.Array(OralCategoryRow))(rows)
 
@@ -391,9 +402,9 @@ export const OralStudyReaderLive = Layer.effect(
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
       sessionCandidates: Effect.fn('OralStudyReader.sessionCandidates')(
-        function* (userId, pathId, round, categoryId, limit) {
+        function* (userId, pathId, round, categoryId, limit, reportedIn) {
           const rows =
-            yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${pathQuestions(userId, pathId, round)} AND q.category_id=${categoryId}
+            yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${pathQuestions(userId, pathId, round, reportedIn)} AND q.category_id=${categoryId}
  ORDER BY cr.id IS NOT NULL,q.category_position,q.id LIMIT ${limit}`
 
           return yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows)

@@ -38,6 +38,7 @@ import {
 
 const preview = Schema.decodeSync(OralReviewPreview)({
   qualificationPathId: '10000000-0000-4000-8000-000000000001',
+  questionScope: 'path',
   category: { id: '32000000-0000-4000-8000-000000000001', name: 'Test category' },
   dueQuestionCount: 3,
   nextDueAt: null,

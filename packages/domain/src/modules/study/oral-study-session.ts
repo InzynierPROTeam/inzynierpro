@@ -18,3 +18,15 @@ export const oralSelfAssessmentValues = [
 export const OralSelfAssessment = Schema.Literals(oralSelfAssessmentValues)
 
 export type OralSelfAssessment = typeof OralSelfAssessment.Type
+
+export const pathOralQuestionScope = 'path'
+export const reportedInMyChamberOralQuestionScope = 'reported_in_my_chamber'
+
+export const oralQuestionScopeValues = [
+  pathOralQuestionScope,
+  reportedInMyChamberOralQuestionScope,
+] as const
+
+export const OralQuestionScope = Schema.Literals(oralQuestionScopeValues)
+
+export type OralQuestionScope = typeof OralQuestionScope.Type

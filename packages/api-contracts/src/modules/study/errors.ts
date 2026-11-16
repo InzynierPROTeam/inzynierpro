@@ -80,6 +80,15 @@ export class OralCategoryNotFound extends Schema.TaggedError<
   { readonly brand: unique symbol }
 >()('OralCategoryNotFound', errorFields('oral_category_not_found'), NotFoundAnnotations()) {}
 
+export class DistrictChamberNotChosen extends Schema.TaggedError<
+  DistrictChamberNotChosen,
+  { readonly brand: unique symbol }
+>()(
+  'DistrictChamberNotChosen',
+  errorFields('district_chamber_not_chosen'),
+  ConflictAnnotations(),
+) {}
+
 export class OralSessionAlreadyStarted extends Schema.TaggedError<
   OralSessionAlreadyStarted,
   { readonly brand: unique symbol }

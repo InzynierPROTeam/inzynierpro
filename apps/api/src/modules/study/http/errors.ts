@@ -1,4 +1,5 @@
 import {
+  DistrictChamberNotChosen,
   DocumentNotFound,
   InvalidOralQuizSelection,
   OralQuizCheckAlreadyAnswered,
@@ -109,6 +110,13 @@ export const oralCategoryNotFound = Effect.fail(
   new OralCategoryNotFound({
     type: 'oral_category_not_found',
     message: 'The oral category was not found on this path.',
+  }),
+)
+
+export const districtChamberNotChosen = Effect.fail(
+  new DistrictChamberNotChosen({
+    type: 'district_chamber_not_chosen',
+    message: 'Choose a district chamber on this path to study questions reported in your chamber.',
   }),
 )
 

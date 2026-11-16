@@ -8,6 +8,7 @@ import {
 } from '~api-contracts/utils/api-error.js'
 
 import {
+  DistrictChamberNotChosen,
   QuestionNotFound,
   InvalidOralQuizSelection,
   InvalidOralSelfAssessment,
@@ -32,6 +33,7 @@ import {
   SaveQuestionNotePayload,
   OralFavoriteQuestionParams,
   StartOralFavoritesSessionPayload,
+  OralReviewPreviewQuery,
   OralReviewScopeQuery,
   StartOralReviewSessionPayload,
   LatestOralSessionQuery,
@@ -83,7 +85,7 @@ export const GetOralSessionPreviewEndpoint = HttpApiEndpoint.get(
     params: OralPathParams,
     query: OralSessionPreviewQuery,
     success: OralSessionPreviewResponse,
-    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, DistrictChamberNotChosen],
   },
 )
 
@@ -101,6 +103,7 @@ export const StartOralSessionEndpoint = HttpApiEndpoint.post(
       OralCategoryNotFound,
       StaleSessionPreview,
       OralSessionAlreadyStarted,
+      DistrictChamberNotChosen,
     ],
   },
 )
@@ -206,9 +209,9 @@ export const GetOralReviewPreviewEndpoint = HttpApiEndpoint.get(
   '/paths/:qualificationPathId/oral/review-preview',
   {
     params: OralPathParams,
-    query: OralReviewScopeQuery,
+    query: OralReviewPreviewQuery,
     success: OralReviewPreviewResponse,
-    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, DistrictChamberNotChosen],
   },
 )
 
@@ -237,6 +240,7 @@ export const StartOralReviewSessionEndpoint = HttpApiEndpoint.post(
       OralCategoryNotFound,
       StaleSessionPreview,
       OralSessionAlreadyStarted,
+      DistrictChamberNotChosen,
     ],
   },
 )
