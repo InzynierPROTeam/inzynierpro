@@ -281,6 +281,19 @@ export const currentReviewState = (
     }),
   )
 
+export const currentOralReviewState = (
+  userId: UserId,
+  pathId: QualificationPathId,
+  questionId: OralQuestionId,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const oralStudyReader = yield* OralStudyReader
+
+      return yield* oralStudyReader.reviewState(userId, pathId, questionId)
+    }),
+  )
+
 export const addFixtureOralCategory = (name = 'Test-only oral category', sortOrder = 0) =>
   runFixture(
     Effect.gen(function* () {
