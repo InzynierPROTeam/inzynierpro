@@ -53,23 +53,33 @@ export const runFixture = <A, E>(
 // first-document preview, so the documents they add cannot disturb one another.
 export const studySessionSpecialization = '60000000-0000-4000-8000-000000000011'
 
+// The seeded path an onboarding configuration resolves to, without adding content to it.
+const resolveSeededPath = (configuration: typeof CompleteOnboardingPayload.Encoded) =>
+  Effect.gen(function* () {
+    const qualificationPathsReader = yield* QualificationPathsReader
+    const config = yield* Schema.decodeEffect(CompleteOnboardingPayload)(configuration)
+    const path = yield* qualificationPathsReader.resolve(config)
+
+    const { id: pathId } = yield* Option.match(path, {
+      onNone: () => Effect.die(new Error('Missing seeded fixture path')),
+      onSome: Effect.succeed,
+    })
+
+    return { pathId, config }
+  })
+
+export const seededFixturePath = (configuration: typeof CompleteOnboardingPayload.Encoded) =>
+  runFixture(resolveSeededPath(configuration))
+
 export const createStudyFixture = (specializationId = '60000000-0000-4000-8000-000000000003') =>
   runFixture(
     Effect.gen(function* () {
-      const qualificationPathsReader = yield* QualificationPathsReader
       const learningContentRepository = yield* LearningContentRepository
       const documentId = yield* Schema.decodeEffect(ReferenceDocumentId)(crypto.randomUUID())
 
-      const config = yield* Schema.decodeUnknownEffect(CompleteOnboardingPayload)({
+      const { pathId, config } = yield* resolveSeededPath({
         ...technicalConfiguration,
         specializationId,
-      })
-
-      const path = yield* qualificationPathsReader.resolve(config)
-
-      const { id: pathId } = yield* Option.match(path, {
-        onNone: () => Effect.die(new Error('Missing seeded fixture path')),
-        onSome: Effect.succeed,
       })
 
       yield* learningContentRepository.createDocument({

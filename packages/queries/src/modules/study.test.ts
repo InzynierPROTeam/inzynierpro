@@ -165,3 +165,45 @@ test('a session group invalidates its own questions while the path group covers 
     ),
   ).toBe(true)
 })
+
+test('the progress group an answer refreshes covers the review preview and the unfinished review session of every scope', () => {
+  const startsWith = (key: ReadonlyArray<unknown>, parent: ReadonlyArray<unknown>) =>
+    parent.every((part, index) => key[index] === part)
+
+  const progress = studyKeys.progress(userId, pathA)
+
+  for (const query of [{}, { documentId }]) {
+    expect(
+      startsWith(
+        studyKeys.getReviewPreview(userId, { params: { qualificationPathId: pathA }, query }),
+        progress,
+      ),
+    ).toBe(true)
+    expect(
+      startsWith(
+        studyKeys.getReviewSession(userId, { params: { qualificationPathId: pathA }, query }),
+        progress,
+      ),
+    ).toBe(true)
+  }
+
+  expect(
+    startsWith(
+      studyKeys.getReviewPreview(userId, { params: { qualificationPathId: pathB }, query: {} }),
+      progress,
+    ),
+  ).toBe(false)
+})
+
+test('the next step after a session refreshes with the progress group, not only with its session', () => {
+  const key = studyKeys.getSessionNextStep(userId, {
+    params: {
+      qualificationPathId: pathA,
+      sessionId: Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000001'),
+    },
+  })
+
+  const progress = studyKeys.progress(userId, pathA)
+
+  expect(progress.every((part, index) => key[index] === part)).toBe(true)
+})

@@ -24,6 +24,8 @@ Components read route state (search params, route context) through the feature's
 
 A query or mutation hook runs in the lowest component that renders its data or triggers it, and that component owns the branches the data decides (an ended session's menu item, a footer action). A parent renders such a child without props when the child can read its inputs from the route itself.
 
+An event handler longer than a single call goes in a named `const` in the component body (`const startSession = () => toast.promise(...)`), and the JSX passes it by name (`onClick={startSession}`). A one-line arrow such as `onClick={() => void selectPath(path.id)}` may stay inline.
+
 Compose conditional classes inside `cx`. Within `cx`, prefer ternaries or logical expressions (`condition && className`, `!condition && className`); this argument style is a review preference, and other supported forms, including objects, remain allowed by lint.
 
 ## Forms

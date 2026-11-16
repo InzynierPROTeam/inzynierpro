@@ -24,6 +24,7 @@ type SessionPreviewCardProps = { preview: NonNullable<GetSessionPreviewRes> }
 export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview }) => {
   const { selectedPath } = onboardedRouteApi.useRouteContext()
   const search = sessionPreviewRouteApi.useSearch()
+  const navigate = sessionPreviewRouteApi.useNavigate()
 
   const count = getSessionQuestionCount(preview.settings, search['liczba-pytan'])
 
@@ -73,6 +74,12 @@ export const SessionPreviewCard: React.FC<SessionPreviewCardProps> = ({ preview 
                   <QuestionCountDialog
                     settings={preview.settings}
                     count={count}
+                    onCountChange={questionCount =>
+                      navigate({
+                        search: previous => ({ ...previous, 'liczba-pytan': questionCount }),
+                        replace: true,
+                      })
+                    }
                   />
                 )}
               </dd>

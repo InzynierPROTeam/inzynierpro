@@ -31,6 +31,22 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
   const selectPath = useSelectPath(user.id)
   const isPending = archive.isPending || restore.isPending
 
+  const toggleArchived = () =>
+    toast.promise(
+      (path.archived ? restore : archive).mutateAsync({
+        params: { qualificationPathId: path.id },
+      }),
+      {
+        loading: {
+          title: path.archived ? 'Przywracanie ścieżki…' : 'Archiwizowanie ścieżki…',
+        },
+        success: {
+          title: path.archived ? 'Ścieżka została przywrócona.' : 'Ścieżka została zarchiwizowana.',
+        },
+        error: { title: 'Nie udało się zaktualizować ścieżki.' },
+      },
+    )
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -54,24 +70,7 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isPending}
-          onClick={() =>
-            toast.promise(
-              (path.archived ? restore : archive).mutateAsync({
-                params: { qualificationPathId: path.id },
-              }),
-              {
-                loading: {
-                  title: path.archived ? 'Przywracanie ścieżki…' : 'Archiwizowanie ścieżki…',
-                },
-                success: {
-                  title: path.archived
-                    ? 'Ścieżka została przywrócona.'
-                    : 'Ścieżka została zarchiwizowana.',
-                },
-                error: { title: 'Nie udało się zaktualizować ścieżki.' },
-              },
-            )
-          }
+          onClick={toggleArchived}
         >
           {path.archived ? <ArchiveRestore /> : <Archive />}
           {path.archived ? 'Przywróć' : 'Archiwizuj'}

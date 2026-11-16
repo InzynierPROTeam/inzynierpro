@@ -34,46 +34,47 @@ export const StartSessionButton: React.FC<StartSessionButtonProps> = ({
   const mutation = useStartSession(user.id)
   const navigate = useNavigate()
 
+  const startSession = () =>
+    toast.promise(
+      mutation.mutateAsync({
+        params: { qualificationPathId: selectedPath.id },
+        payload: { documentId, questionCount, questionSelection },
+      }),
+      {
+        loading: { title: 'Rozpoczynanie sesji…' },
+        success: { title: 'Sesja nauki została rozpoczęta.' },
+        error: error => {
+          if (Schema.is(StudySessionAlreadyStarted)(error)) {
+            return {
+              title: 'Masz już rozpoczętą sesję z tej kategorii.',
+              actionProps: {
+                children: 'Przejdź do sesji',
+                onClick: () =>
+                  void navigate({
+                    to: '/nauka/sesja/$sessionId/$questionNumber',
+                    params: {
+                      sessionId: error.sessionId,
+                      questionNumber: error.currentPosition,
+                    },
+                    replace: true,
+                  }),
+              },
+            }
+          }
+
+          return {
+            title: Predicate.isTagged(error, 'StaleSessionPreview')
+              ? 'Dostępne pytania zmieniły się. Sprawdź szczegóły sesji i spróbuj ponownie.'
+              : 'Nie udało się rozpocząć sesji. Spróbuj ponownie.',
+          }
+        },
+      },
+    )
+
   return (
     <Button
       disabled={disabled || mutation.isPending}
-      onClick={() =>
-        toast.promise(
-          mutation.mutateAsync({
-            params: { qualificationPathId: selectedPath.id },
-            payload: { documentId, questionCount, questionSelection },
-          }),
-          {
-            loading: { title: 'Rozpoczynanie sesji…' },
-            success: { title: 'Sesja nauki została rozpoczęta.' },
-            error: error => {
-              if (Schema.is(StudySessionAlreadyStarted)(error)) {
-                return {
-                  title: 'Masz już rozpoczętą sesję z tej kategorii.',
-                  actionProps: {
-                    children: 'Przejdź do sesji',
-                    onClick: () =>
-                      void navigate({
-                        to: '/nauka/sesja/$sessionId/$questionNumber',
-                        params: {
-                          sessionId: error.sessionId,
-                          questionNumber: error.currentPosition,
-                        },
-                        replace: true,
-                      }),
-                  },
-                }
-              }
-
-              return {
-                title: Predicate.isTagged(error, 'StaleSessionPreview')
-                  ? 'Dostępne pytania zmieniły się. Sprawdź szczegóły sesji i spróbuj ponownie.'
-                  : 'Nie udało się rozpocząć sesji. Spróbuj ponownie.',
-              }
-            },
-          },
-        )
-      }
+      onClick={startSession}
     >
       Zacznij sesję
     </Button>

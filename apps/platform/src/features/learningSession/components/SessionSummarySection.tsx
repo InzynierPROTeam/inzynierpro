@@ -62,7 +62,7 @@ export const SessionSummarySection = () => {
             <>
               <SessionResultCard summary={summary} />
               <SessionQuestionResultsCard sessionId={summary.id} />
-              <SessionNextStepCard summary={summary} />
+              <SessionNextStepCard />
             </>
           )}
         </SuspenseQuery>

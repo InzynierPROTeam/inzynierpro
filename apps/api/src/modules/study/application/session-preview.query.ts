@@ -9,6 +9,7 @@ import {
   isNewLearningRound,
 } from '~api/modules/study/domain/learning-round.rules.js'
 import {
+  type SessionPreview,
   sessionQuestionPool,
   writtenStudySettings,
 } from '~api/modules/study/domain/session-preview.rules.js'
@@ -37,13 +38,13 @@ export const getSessionPreview = Effect.fn('Study.getSessionPreview')(function* 
     onSome: id => studyReader.document(userId, pathId, round, id),
   })
 
-  return Option.map(found, document => {
+  return Option.map(found, (document): SessionPreview => {
     const pool = sessionQuestionPool(document)
 
     return {
       qualificationPathId: pathId,
       document,
-      mode: 'written-study' as const,
+      mode: 'written-study',
       questionSelection: pool.selection,
       availableQuestionCount: pool.questionCount,
       settings: writtenStudySettings(pool.questionCount),

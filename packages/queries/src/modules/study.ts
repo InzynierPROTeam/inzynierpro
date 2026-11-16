@@ -9,12 +9,18 @@ import {
   type GetOralMaterialsRequest,
   getLatestSession,
   type GetLatestSessionRequest,
+  getReviewPreview,
+  type GetReviewPreviewRequest,
+  getReviewSession,
+  type GetReviewSessionRequest,
   getSession,
   type GetSessionRequest,
   getSessionQuestion,
   type GetSessionQuestionRequest,
   getSessionSummary,
   type GetSessionSummaryRequest,
+  getSessionNextStep,
+  type GetSessionNextStepRequest,
   getSessionResults,
   type GetSessionResultsRequest,
 } from '@inzpro/api-client/modules/study'
@@ -50,6 +56,26 @@ export const studyKeys = {
     [
       ...studyKeys.progress(userId, req.params.qualificationPathId),
       'getLatestSession',
+      req,
+    ] as const,
+  // Review reads sit in the progress group, because every answer can make a question due or not.
+  getReviewPreview: (userId: UserId, req: GetReviewPreviewRequest) =>
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getReviewPreview',
+      req,
+    ] as const,
+  getReviewSession: (userId: UserId, req: GetReviewSessionRequest) =>
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getReviewSession',
+      req,
+    ] as const,
+  // The step after a session depends on the whole path's progress, not on the session alone.
+  getSessionNextStep: (userId: UserId, req: GetSessionNextStepRequest) =>
+    [
+      ...studyKeys.progress(userId, req.params.qualificationPathId),
+      'getSessionNextStep',
       req,
     ] as const,
   session: (userId: UserId, pathId: QualificationPathId, id: StudySessionId) =>
@@ -122,6 +148,25 @@ export const latestSessionQueryOptions = (
   userId: UserId,
   req: GetLatestSessionRequest,
 ) => effectQueryOptions(studyKeys.getLatestSession(userId, req), getLatestSession(req), httpClient)
+
+export const reviewPreviewQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetReviewPreviewRequest,
+) => effectQueryOptions(studyKeys.getReviewPreview(userId, req), getReviewPreview(req), httpClient)
+
+export const reviewSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetReviewSessionRequest,
+) => effectQueryOptions(studyKeys.getReviewSession(userId, req), getReviewSession(req), httpClient)
+
+export const sessionNextStepQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetSessionNextStepRequest,
+) =>
+  effectQueryOptions(studyKeys.getSessionNextStep(userId, req), getSessionNextStep(req), httpClient)
 
 export const sessionQueryOptions = (
   httpClient: HttpClient.HttpClient,

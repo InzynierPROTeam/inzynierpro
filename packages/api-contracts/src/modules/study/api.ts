@@ -25,9 +25,11 @@ import {
   LatestSessionQuery,
   SessionPreviewQuery,
   OralMaterialsQuery,
+  ReviewScopeQuery,
   SessionParams,
   SessionQuestionParams,
   SessionResultsQuery,
+  StartReviewSessionPayload,
   StartSessionPayload,
   SubmitSessionAnswerPayload,
 } from './requests.js'
@@ -37,9 +39,12 @@ import {
   EndSessionResponse,
   LatestStudySessionResponse,
   OralMaterialsResponse,
+  ReviewPreviewResponse,
+  SessionNextStepResponse,
   SessionPreviewResponse,
   SessionQuestionResponse,
   SessionResultsResponse,
+  StartReviewSessionResponse,
   StartSessionResponse,
   StudySessionSummaryResponse,
   StudySessionResponse,
@@ -120,6 +125,49 @@ export const StartSessionEndpoint = HttpApiEndpoint.post(
   },
 )
 
+// The questions due for review now on the path or one document, or when the next review is due.
+export const GetReviewPreviewEndpoint = HttpApiEndpoint.get(
+  'GetReviewPreview',
+  '/paths/:qualificationPathId/review-preview',
+  {
+    params: GetDocumentsParams,
+    query: ReviewScopeQuery,
+    success: ReviewPreviewResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// The unfinished review session of the path or one document, which its tile resumes.
+export const GetReviewSessionEndpoint = HttpApiEndpoint.get(
+  'GetReviewSession',
+  '/paths/:qualificationPathId/review-session',
+  {
+    params: GetDocumentsParams,
+    query: ReviewScopeQuery,
+    success: StudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// Starts a review session of the most overdue questions; its reads and answers use the session endpoints.
+export const StartReviewSessionEndpoint = HttpApiEndpoint.post(
+  'StartReviewSession',
+  '/paths/:qualificationPathId/review-sessions',
+  {
+    params: GetDocumentsParams,
+    payload: StartReviewSessionPayload,
+    success: StartReviewSessionResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      DocumentNotFound,
+      StaleSessionPreview,
+      StudySessionAlreadyStarted,
+    ],
+  },
+)
+
 export const GetLatestSessionEndpoint = HttpApiEndpoint.get(
   'GetLatestSession',
   '/paths/:qualificationPathId/latest-session',
@@ -137,6 +185,17 @@ export const GetSessionEndpoint = HttpApiEndpoint.get(
   {
     params: SessionParams,
     success: StudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+// What to do after the session, by the learner's state now; another account's session reads as null.
+export const GetSessionNextStepEndpoint = HttpApiEndpoint.get(
+  'GetSessionNextStep',
+  '/paths/:qualificationPathId/sessions/:sessionId/next-step',
+  {
+    params: SessionParams,
+    success: SessionNextStepResponse,
     error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
   },
 )
@@ -223,9 +282,13 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(GetSessionPreviewEndpoint)
   .add(GetOralMaterialsEndpoint)
   .add(StartSessionEndpoint)
+  .add(GetReviewPreviewEndpoint)
+  .add(GetReviewSessionEndpoint)
+  .add(StartReviewSessionEndpoint)
   .add(GetLatestSessionEndpoint)
   .add(GetSessionEndpoint)
   .add(GetSessionSummaryEndpoint)
+  .add(GetSessionNextStepEndpoint)
   .add(GetSessionResultsEndpoint)
   .add(EndSessionEndpoint)
   .add(GetSessionQuestionEndpoint)

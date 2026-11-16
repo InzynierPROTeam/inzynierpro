@@ -1,5 +1,10 @@
-import type { StudySessionSummary } from '@inzpro/api-contracts/modules/study/responses'
-import { sessionPreviewQueryOptions } from '@inzpro/queries/modules/study'
+import type { SessionNextStep } from '@inzpro/api-contracts/modules/study/responses'
+import {
+  continueStudyNextStep,
+  reviewNextStep,
+  startStudyNextStep,
+} from '@inzpro/domain/modules/study/study-session'
+import { sessionNextStepQueryOptions } from '@inzpro/queries/modules/study'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@inzpro/ui/components/card'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
@@ -14,81 +19,136 @@ import {
 import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { Link } from '@tanstack/react-router'
-import { Scale } from 'lucide-react'
+import { Match } from 'effect'
+import { Play, Repeat, Scale } from 'lucide-react'
 import type React from 'react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-type SessionNextStepCardProps = { summary: StudySessionSummary }
+import { sessionSummaryRouteApi } from '../utils'
+import { ContinueSessionButton } from './ContinueSessionButton'
 
-/** One step further (V1's `NextSessionTile`): the preview the learner continues with. */
-export const SessionNextStepCard: React.FC<SessionNextStepCardProps> = ({ summary }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>
-        <h2>Co dalej?</h2>
-      </CardTitle>
-    </CardHeader>
-    <NextSessionContent summary={summary} />
-  </Card>
-)
-
-const NextSessionContent: React.FC<SessionNextStepCardProps> = ({ summary }) => {
+/**
+ * One step further (V1's `NextSessionTile`), as the backend decides it from the learner's state
+ * now (ADR-0002): a review of due questions, the unfinished regular-study session to continue, or
+ * the next regular-study session.
+ */
+export const SessionNextStepCard = () => {
   const {
     selectedPath,
     session: { user },
   } = onboardedRouteApi.useRouteContext()
 
+  const { sessionId } = sessionSummaryRouteApi.useParams()
+
   return (
-    <CardContent>
-      <SuspenseQueryWrapper fallback={<NextSessionItemSkeleton />}>
-        <SuspenseQuery
-          options={sessionPreviewQueryOptions(apiHttpClient, user.id, {
-            params: { qualificationPathId: selectedPath.id },
-            query: { fromDocumentId: summary.document.id },
-          })}
-          isDataEmpty={preview => preview === null}
-          noDataFallback={<NoNextSessionItem />}
-        >
-          {preview => (
-            <Item
-              variant="outline"
-              size="lg"
-              className="border-primary/50"
-            >
-              <ItemMedia>
-                <IconWrapper variant="primary-soft">
-                  <Scale />
-                </IconWrapper>
-              </ItemMedia>
-              <ItemContent className="gap-1">
-                <ItemTitle className="line-clamp-2">{preview.document.title}</ItemTitle>
-                <ItemDescription>Liczba pytań: {preview.availableQuestionCount}</ItemDescription>
-              </ItemContent>
-              <ItemActions className="max-sm:w-full">
-                <Button
-                  nativeButton={false}
-                  className="max-sm:flex-1"
-                  render={
-                    <Link
-                      to="/nauka/start"
-                      search={{ 'obecny-akt-prawny': summary.document.id }}
-                    />
-                  }
-                >
-                  Kontynuuj naukę
-                </Button>
-              </ItemActions>
-            </Item>
-          )}
-        </SuspenseQuery>
-      </SuspenseQueryWrapper>
-    </CardContent>
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <h2>Co dalej?</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <SuspenseQueryWrapper fallback={<NextStepItemSkeleton />}>
+          <SuspenseQuery
+            options={sessionNextStepQueryOptions(apiHttpClient, user.id, {
+              params: { qualificationPathId: selectedPath.id, sessionId },
+            })}
+            isDataEmpty={step => step === null}
+            noDataFallback={<NoNextStepItem />}
+          >
+            {step => <NextStepItem step={step} />}
+          </SuspenseQuery>
+        </SuspenseQueryWrapper>
+      </CardContent>
+    </Card>
   )
 }
 
-const NoNextSessionItem = () => (
+type NextStepItemProps = { step: SessionNextStep }
+
+const NextStepItem: React.FC<NextStepItemProps> = ({ step }) =>
+  Match.value(step).pipe(
+    Match.discriminatorsExhaustive('type')({
+      [reviewNextStep]: review => (
+        <SuggestedItem
+          icon={<Repeat />}
+          title={review.document?.title ?? 'Wszystkie kategorie'}
+          description={`Pytania do powtórki: ${review.dueQuestionCount}`}
+          action={
+            <Button
+              nativeButton={false}
+              className="max-sm:flex-1"
+              render={
+                <Link
+                  to="/nauka/powtorka"
+                  search={{ 'akt-prawny': review.document?.id }}
+                />
+              }
+            >
+              Powtórz pytania
+            </Button>
+          }
+        />
+      ),
+      [continueStudyNextStep]: ({ session }) => (
+        <SuggestedItem
+          icon={<Play />}
+          title={session.document.title}
+          description={`Odpowiedziano ${session.progress.answered} / ${session.progress.total}`}
+          action={<ContinueSessionButton session={session}>Kontynuuj sesję</ContinueSessionButton>}
+        />
+      ),
+      [startStudyNextStep]: ({ preview }) => (
+        <SuggestedItem
+          icon={<Scale />}
+          title={preview.document.title}
+          description={`Liczba pytań: ${preview.availableQuestionCount}`}
+          action={
+            <Button
+              nativeButton={false}
+              className="max-sm:flex-1"
+              render={
+                <Link
+                  to="/nauka/start"
+                  search={{ 'akt-prawny': preview.document.id }}
+                />
+              }
+            >
+              Kontynuuj naukę
+            </Button>
+          }
+        />
+      ),
+    }),
+  )
+
+type SuggestedItemProps = {
+  icon: React.ReactNode
+  title: string
+  description: string
+  action: React.ReactNode
+}
+
+const SuggestedItem: React.FC<SuggestedItemProps> = ({ icon, title, description, action }) => (
+  <Item
+    variant="outline"
+    size="lg"
+    className="border-primary/50"
+  >
+    <ItemMedia>
+      <IconWrapper variant="primary-soft">{icon}</IconWrapper>
+    </ItemMedia>
+    <ItemContent className="gap-1">
+      <ItemTitle className="line-clamp-2">{title}</ItemTitle>
+      <ItemDescription>{description}</ItemDescription>
+    </ItemContent>
+    <ItemActions className="max-sm:w-full">{action}</ItemActions>
+  </Item>
+)
+
+const NoNextStepItem = () => (
   <Item
     variant="outline"
     size="lg"
@@ -108,7 +168,7 @@ const NoNextSessionItem = () => (
   </Item>
 )
 
-const NextSessionItemSkeleton = () => (
+const NextStepItemSkeleton = () => (
   <Item
     variant="outline"
     size="lg"
@@ -126,13 +186,5 @@ const NextSessionItemSkeleton = () => (
         className="w-28"
       />
     </ItemContent>
-    <ItemActions className="max-sm:w-full">
-      <Button
-        disabled
-        className="max-sm:flex-1"
-      >
-        Kontynuuj naukę
-      </Button>
-    </ItemActions>
   </Item>
 )

@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   getSessionQuestionCount,
+  sessionScopeLabel,
   sessionNextStep,
   sessionWithdrawalNotice,
   withdrawnQuestion,
@@ -147,4 +148,24 @@ describe('the withdrawal notice of a session question', () => {
     expect(
       sessionWithdrawalNotice(shown(2, true), { ...active(1, 2), status: 'ended' as const }),
     ).toBe('question'))
+})
+
+describe('session scope label', () => {
+  const document = {
+    id: Schema.decodeSync(SessionPreview.fields.document.fields.id)(
+      '20000000-0000-4000-8000-000000000001',
+    ),
+    title: 'Prawo budowlane',
+  }
+
+  it('names the category of regular study', () =>
+    expect(sessionScopeLabel({ kind: 'study', document })).toBe('Prawo budowlane'))
+
+  it('names a review of one category', () =>
+    expect(sessionScopeLabel({ kind: 'review', document })).toBe('Powtórka: Prawo budowlane'))
+
+  it('names a review of the whole path', () =>
+    expect(sessionScopeLabel({ kind: 'review', document: null })).toBe(
+      'Powtórka: wszystkie kategorie',
+    ))
 })

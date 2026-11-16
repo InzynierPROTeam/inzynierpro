@@ -100,7 +100,14 @@ const EndedSessionContent: React.FC<SessionContentProps> = ({ session }) => (
   </>
 )
 
-export const SessionTileContentSkeleton = () => (
+type SessionTileContentSkeletonProps = {
+  // The disabled action stands in for the loaded one, so it must not repeat another card's label.
+  actionLabel?: string
+}
+
+export const SessionTileContentSkeleton: React.FC<SessionTileContentSkeletonProps> = ({
+  actionLabel = 'Kontynuuj',
+}) => (
   <>
     <CardContent className="flex flex-col gap-2">
       <TextSkeleton
@@ -122,7 +129,7 @@ export const SessionTileContentSkeleton = () => (
       </div>
     </CardContent>
     <CardFooter className="mt-auto">
-      <Button disabled>Kontynuuj</Button>
+      <Button disabled>{actionLabel}</Button>
     </CardFooter>
   </>
 )

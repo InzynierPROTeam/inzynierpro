@@ -1,4 +1,5 @@
 import { CurrentSessionResponse } from '@inzpro/api-contracts/modules/identity/responses'
+import type { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { Schema } from 'effect'
 import type { TestApi, TestVisitor } from '~api/test/api-server.js'
 
@@ -14,7 +15,7 @@ export const technicalConfiguration = {
   accessScope: 'both',
   examSessionId: '90000000-0000-4000-8000-000000000001',
   oralExamDate: null,
-}
+} satisfies typeof CompleteOnboardingPayload.Encoded
 
 export const loginForPreparation = async (api: TestApi) => {
   const visitor = api.visitor()
@@ -37,7 +38,7 @@ export const learningRequest = <Body>(
 ) =>
   visitor.jar.fetch(
     new URL(
-      `/api/v1/${/\/(documents|oral|preview|sessions|latest-session)(\/|\?|$)/.test(path) ? 'study' : 'preparation'}${path}`,
+      `/api/v1/${/\/(documents|oral|preview|sessions|latest-session|review-preview|review-session|review-sessions)(\/|\?|$)/.test(path) ? 'study' : 'preparation'}${path}`,
       api.baseUrl,
     ),
     body === undefined

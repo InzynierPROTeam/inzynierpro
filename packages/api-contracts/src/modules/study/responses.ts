@@ -12,10 +12,14 @@ import {
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
+  continueStudyNextStep,
+  reviewNextStep,
   SessionQuestionPosition,
   SessionQuestionSelection,
   StudySessionId,
+  StudySessionKind,
   StudySessionStatus,
+  startStudyNextStep,
 } from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
 import { CursorPaginatedResponse } from '~api-contracts/utils/pagination.js'
@@ -41,6 +45,22 @@ export const DocumentResponse = Schema.Struct({ document: DocumentQuestionPool }
 
 export const DocumentsResponse = CursorPaginatedResponse(DocumentQuestionPool)
 
+/** The question counts a new session may hold; the backend validates the choice again on start. */
+export const SessionCountSettings = Schema.Struct({
+  defaultQuestionCount: QuestionCount,
+  canChangeQuestionCount: Schema.Boolean,
+  minimumQuestionCount: QuestionCount,
+  maximumQuestionCount: QuestionCount,
+})
+
+export type SessionCountSettings = typeof SessionCountSettings.Type
+
+/** The material a session covers. */
+export const SessionDocument = Schema.Struct({
+  id: ReferenceDocumentId,
+  title: Schema.NonEmptyString,
+})
+
 export const SessionPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
   document: DocumentQuestionPool,
@@ -49,17 +69,29 @@ export const SessionPreview = Schema.Struct({
   questionSelection: SessionQuestionSelection,
   // The questions the selection draws from.
   availableQuestionCount: QuestionCount,
-  settings: Schema.Struct({
-    defaultQuestionCount: QuestionCount,
-    canChangeQuestionCount: Schema.Boolean,
-    minimumQuestionCount: QuestionCount,
-    maximumQuestionCount: QuestionCount,
-  }),
+  settings: SessionCountSettings,
 })
 
 export type SessionPreview = typeof SessionPreview.Type
 
 export const SessionPreviewResponse = Schema.NullOr(SessionPreview)
+
+/** The questions due for review in a scope; with nothing due no review session can start. */
+export const ReviewPreview = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  // Null for reviews of the whole path.
+  document: Schema.NullOr(SessionDocument),
+  dueQuestionCount: QuestionCount,
+  // The earliest review scheduled after now; null when none is scheduled.
+  nextDueAt: Schema.NullOr(UtcIsoDateTime),
+  // Null when nothing is due.
+  settings: Schema.NullOr(SessionCountSettings),
+})
+
+export type ReviewPreview = typeof ReviewPreview.Type
+
+// Null for a document that is not on the path.
+export const ReviewPreviewResponse = Schema.NullOr(ReviewPreview)
 
 export const OralMaterialsResponse = CursorPaginatedResponse(OralQuestionCategory)
 
@@ -78,6 +110,8 @@ export type StudySessionProgress = typeof StudySessionProgress.Type
 
 export const StudySession = Schema.Struct({
   id: StudySessionId,
+  // Regular study or a review session; only regular study is continued from "Continue learning".
+  kind: StudySessionKind,
   status: StudySessionStatus,
   progress: StudySessionProgress,
   createdAt: UtcIsoDateTime,
@@ -88,17 +122,39 @@ export type StudySession = typeof StudySession.Type
 
 export const StartSessionResponse = StudySession
 
+export const StartReviewSessionResponse = StudySession
+
 export const StudySessionResponse = Schema.NullOr(StudySession)
 
-/** The most recent session with the material it covers, for continue tiles outside the session. */
+/** The most recent regular-study session with its document, for continue tiles outside the session. */
 export const LatestStudySession = Schema.Struct({
   ...StudySession.fields,
-  document: Schema.Struct({ id: ReferenceDocumentId, title: Schema.NonEmptyString }),
+  document: SessionDocument,
 })
 
 export type LatestStudySession = typeof LatestStudySession.Type
 
 export const LatestStudySessionResponse = Schema.NullOr(LatestStudySession)
+
+/**
+ * The one step a finished session suggests next: a review of due questions, continuing the most
+ * recently used unfinished regular-study session, or starting the next one. Null when the path has
+ * nothing left to suggest.
+ */
+export const SessionNextStep = Schema.Union([
+  Schema.Struct({
+    type: Schema.Literal(reviewNextStep),
+    // Null for a review of the whole path.
+    document: Schema.NullOr(SessionDocument),
+    dueQuestionCount: QuestionCount,
+  }),
+  Schema.Struct({ type: Schema.Literal(continueStudyNextStep), session: LatestStudySession }),
+  Schema.Struct({ type: Schema.Literal(startStudyNextStep), preview: SessionPreview }),
+])
+
+export type SessionNextStep = typeof SessionNextStep.Type
+
+export const SessionNextStepResponse = Schema.NullOr(SessionNextStep)
 
 export const EndSessionResponse = StudySession
 
@@ -116,7 +172,9 @@ export type StudySessionResult = typeof StudySessionResult.Type
 
 /** A session with its material and result, for the summary after it ends. */
 export const StudySessionSummary = Schema.Struct({
-  ...LatestStudySession.fields,
+  ...StudySession.fields,
+  // Null for a review session of the whole path.
+  document: Schema.NullOr(SessionDocument),
   result: StudySessionResult,
 })
 

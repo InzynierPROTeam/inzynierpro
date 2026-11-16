@@ -1,5 +1,5 @@
 import {
-  sessionPreviewQueryOptions,
+  sessionNextStepQueryOptions,
   sessionResultsInfiniteQueryOptions,
   sessionSummaryQueryOptions,
 } from '@inzpro/queries/modules/study'
@@ -21,20 +21,12 @@ export const Route = createFileRoute(
     const sessionParams = { qualificationPathId: selectedPath.id, sessionId: params.sessionId }
 
     void Promise.all([
-      queryClient
-        .query(
-          sessionSummaryQueryOptions(apiHttpClient, session.user.id, { params: sessionParams }),
-        )
-        .then(summary =>
-          summary === null
-            ? undefined
-            : queryClient.query(
-                sessionPreviewQueryOptions(apiHttpClient, session.user.id, {
-                  params: { qualificationPathId: selectedPath.id },
-                  query: { fromDocumentId: summary.document.id },
-                }),
-              ),
-        ),
+      queryClient.query(
+        sessionSummaryQueryOptions(apiHttpClient, session.user.id, { params: sessionParams }),
+      ),
+      queryClient.query(
+        sessionNextStepQueryOptions(apiHttpClient, session.user.id, { params: sessionParams }),
+      ),
       queryClient.infiniteQuery(
         sessionResultsInfiniteQueryOptions(apiHttpClient, session.user.id, {
           params: sessionParams,

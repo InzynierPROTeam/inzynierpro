@@ -51,10 +51,10 @@ export const StudyRepositoryLive = Layer.effect(
     // Runs a session UPDATE and returns the session in its read shape in the same round trip, so
     // commands need no read-back.
     const updateSession = (update: Statement.Fragment) =>
-      sql`WITH s AS (${update} RETURNING id,document_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
+      sql`WITH s AS (${update} RETURNING id,kind,document_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
  SELECT s.*,d.title AS document_title,(SELECT count(*)::integer FROM written_study_answers a WHERE a.study_session_id=s.id) AS answered_count,
  (SELECT count(*)::integer FROM written_study_session_questions sq JOIN question_revisions r ON r.id=sq.question_revision_id WHERE sq.study_session_id=s.id AND r.withdrawn_at<coalesce(s.ended_at,'infinity') AND NOT EXISTS (SELECT 1 FROM written_study_answers a WHERE a.study_session_id=sq.study_session_id AND a.position=sq.position)) AS skipped_count
- FROM s JOIN reference_documents d ON d.id=s.document_id`.pipe(
+ FROM s LEFT JOIN reference_documents d ON d.id=s.document_id`.pipe(
         Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([StudySession]))),
         Effect.map(([session]) => session),
         Effect.mapError(cause => new StudyWriteError({ cause })),
@@ -75,12 +75,14 @@ export const StudyRepositoryLive = Layer.effect(
       }),
       createSession: Effect.fn('StudyRepository.createSession')(
         function* (session) {
+          const documentId = Option.getOrNull(session.documentId)
+
           // One round trip returns the session in its read shape, so the command needs no read-back.
           const inserted =
-            yield* sql`WITH s AS (INSERT INTO written_study_sessions (user_id,qualification_path_id,document_id,user_exam_goal_version,question_count)
- VALUES (${session.userId},${session.qualificationPathId},${session.documentId},${session.goalVersion},${session.questions.length})
- RETURNING id,document_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
- SELECT s.*,d.title AS document_title,0 AS answered_count,0 AS skipped_count FROM s JOIN reference_documents d ON d.id=s.document_id`
+            yield* sql`WITH s AS (INSERT INTO written_study_sessions (user_id,qualification_path_id,kind,document_id,user_exam_goal_version,question_count)
+ VALUES (${session.userId},${session.qualificationPathId},${session.kind},${documentId},${session.goalVersion},${session.questions.length})
+ RETURNING id,kind,document_id,user_exam_goal_version AS goal_version,question_count,current_position,created_at,ended_at)
+ SELECT s.*,d.title AS document_title,0 AS answered_count,0 AS skipped_count FROM s LEFT JOIN reference_documents d ON d.id=s.document_id`
 
           const [created] = yield* Schema.decodeUnknownEffect(Schema.Tuple([StudySession]))(
             inserted,

@@ -1,12 +1,14 @@
 import type {
-  SessionPreview,
+  SessionCountSettings,
   SessionQuestion,
   StudySession,
+  StudySessionSummary,
 } from '@inzpro/api-contracts/modules/study/responses'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   endedStudySession,
   hasOpenQuestions,
+  reviewStudySession,
   type SessionQuestionPosition,
 } from '@inzpro/domain/modules/study/study-session'
 import { getRouteApi } from '@tanstack/react-router'
@@ -16,7 +18,7 @@ export const sessionPreviewRouteApi = getRouteApi(
 )
 
 export const getSessionQuestionCount = (
-  settings: SessionPreview['settings'],
+  settings: SessionCountSettings,
   requested: number | undefined,
 ): QuestionCount =>
   settings.canChangeQuestionCount &&
@@ -81,3 +83,11 @@ export const withdrawnQuestion = (question: SessionQuestion): SessionQuestion =>
   isWithdrawn: true,
   answer: null,
 })
+
+/** What an ended session covered: its category, or for a review, the category or the whole path. */
+export const sessionScopeLabel = (
+  summary: Pick<StudySessionSummary, 'kind' | 'document'>,
+): string =>
+  summary.kind === reviewStudySession
+    ? `Powtórka: ${summary.document?.title ?? 'wszystkie kategorie'}`
+    : (summary.document?.title ?? '')

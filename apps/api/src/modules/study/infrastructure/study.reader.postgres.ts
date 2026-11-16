@@ -2,12 +2,14 @@ import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { Uuid } from '@inzpro/domain/common/id'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
+import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import {
+  regularStudySession,
   SessionQuestionPosition,
   StudySessionId,
   uncoveredQuestions,
@@ -21,8 +23,13 @@ import {
   type LearningRoundNumber,
   LearningRoundProgress,
 } from '~api/modules/study/domain/learning-round.model.js'
+import { ReviewQueue } from '~api/modules/study/domain/review-session.model.js'
 import { ReviewCard } from '~api/modules/study/domain/review-state.model.js'
-import { DocumentQuestionPool } from '~api/modules/study/domain/study-document.model.js'
+import { studyDayOf } from '~api/modules/study/domain/review-state.rules.js'
+import {
+  DocumentQuestionPool,
+  SessionDocument,
+} from '~api/modules/study/domain/study-document.model.js'
 import {
   type SessionCandidate,
   type SessionQuestion,
@@ -159,15 +166,48 @@ export const StudyReaderLive = Layer.effect(
       pathId: QualificationPathId,
       conditions: ReadonlyArray<Statement.Fragment>,
     ) =>
-      sql`SELECT s.id,s.document_id,d.title AS document_title,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,(SELECT count(*)::integer FROM written_study_answers a WHERE a.study_session_id=s.id) AS answered_count,
+      sql`SELECT s.id,s.kind,s.document_id,d.title AS document_title,s.user_exam_goal_version AS goal_version,s.question_count,s.current_position,(SELECT count(*)::integer FROM written_study_answers a WHERE a.study_session_id=s.id) AS answered_count,
  (SELECT count(*)::integer FROM written_study_session_questions sq JOIN question_revisions r ON r.id=sq.question_revision_id WHERE sq.study_session_id=s.id AND r.withdrawn_at<coalesce(s.ended_at,'infinity') AND NOT EXISTS (SELECT 1 FROM written_study_answers a WHERE a.study_session_id=sq.study_session_id AND a.position=sq.position)) AS skipped_count,s.created_at,s.ended_at
- FROM written_study_sessions s JOIN reference_documents d ON d.id=s.document_id
+ FROM written_study_sessions s LEFT JOIN reference_documents d ON d.id=s.document_id
  WHERE ${sql.and([sql`s.user_id=${userId}`, sql`s.qualification_path_id=${pathId}`, ...conditions])}
  ORDER BY s.last_activity_at DESC,s.id DESC LIMIT 1`.pipe(
         Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(StudySession))),
         Effect.map(Arr.head),
         Effect.mapError(cause => new StudyReadError({ cause })),
       )
+
+    // The learner's UserReviewStates on the path that a review may draw: the question is still on
+    // the path, optionally in one document, its current revision is published and not withdrawn,
+    // and the state belongs to that revision's substantive content. A state built on replaced
+    // content reads as a new card, which is never due. `v.available_at` is when a review may
+    // draw it: its due time, but not before the next study day once its content was answered on
+    // the study day of `now`, because a later answer that day would not rate it (ADR-0005).
+    const reviewStates = (
+      userId: UserId,
+      pathId: QualificationPathId,
+      documentId: Option.Option<ReferenceDocumentId>,
+      now: DateTimeUtc,
+      conditions: ReadonlyArray<Statement.Fragment> = [],
+    ) => {
+      const today = studyDayOf(now)
+      const start = DateTime.formatIso(today.start)
+      const end = DateTime.formatIso(today.end)
+
+      return sql`FROM written_review_states s
+ JOIN path_questions pq ON pq.qualification_path_id=s.qualification_path_id AND pq.question_id=s.question_id
+ JOIN written_questions q ON q.id=s.question_id
+ JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL AND r.substantive_revision_id=s.substantive_revision_id
+ CROSS JOIN LATERAL (SELECT CASE WHEN EXISTS (SELECT 1 FROM written_learning_events e
+ JOIN question_revisions er ON er.id=e.question_revision_id AND er.substantive_revision_id=s.substantive_revision_id
+ WHERE e.user_id=s.user_id AND e.qualification_path_id=s.qualification_path_id AND e.question_id=s.question_id AND e.answered_at>=${start} AND e.answered_at<${end})
+ THEN greatest(s.due_at,${end}::timestamptz) ELSE s.due_at END AS available_at) v
+ WHERE ${sql.and([
+   sql`s.user_id=${userId}`,
+   sql`s.qualification_path_id=${pathId}`,
+   ...Option.match(documentId, { onNone: () => [], onSome: id => [sql`pq.document_id=${id}`] }),
+   ...conditions,
+ ])}`
+    }
 
     const documentsPage = makeCursorPaginator(sql, Schema.Struct({ id: Uuid }), [
       ['id', sql`d.id`, 'asc'],
@@ -255,18 +295,70 @@ export const StudyReaderLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),
-      unfinishedSession: Effect.fn('StudyReader.unfinishedSession')((userId, pathId, documentId) =>
+      unfinishedSession: Effect.fn('StudyReader.unfinishedSession')(
+        (userId, pathId, kind, documentId) =>
+          findLatestSession(userId, pathId, [
+            sql`s.kind=${kind}`,
+            Option.match(documentId, {
+              onNone: () => sql`s.document_id IS NULL`,
+              onSome: id => sql`s.document_id=${id}`,
+            }),
+            sql`s.ended_at IS NULL`,
+          ]),
+      ),
+      latestSession: Effect.fn('StudyReader.latestSession')((userId, pathId, documentId) =>
         findLatestSession(userId, pathId, [
-          sql`s.document_id=${documentId}`,
+          sql`s.kind=${regularStudySession}`,
+          ...Option.match(documentId, {
+            onNone: () => [],
+            onSome: id => [sql`s.document_id=${id}`],
+          }),
+        ]),
+      ),
+      latestUnfinishedSession: Effect.fn('StudyReader.latestUnfinishedSession')((userId, pathId) =>
+        findLatestSession(userId, pathId, [
+          sql`s.kind=${regularStudySession}`,
           sql`s.ended_at IS NULL`,
         ]),
       ),
-      latestSession: Effect.fn('StudyReader.latestSession')((userId, pathId, documentId) =>
-        findLatestSession(
-          userId,
-          pathId,
-          Option.match(documentId, { onNone: () => [], onSome: id => [sql`s.document_id=${id}`] }),
-        ),
+      pathDocument: Effect.fn('StudyReader.pathDocument')(
+        function* (pathId, documentId) {
+          const rows =
+            yield* sql`SELECT d.id,d.title FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
+ WHERE pd.qualification_path_id=${pathId} AND pd.document_id=${documentId} LIMIT 1`
+
+          return Arr.head(yield* Schema.decodeUnknownEffect(Schema.Array(SessionDocument))(rows))
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      reviewQueue: Effect.fn('StudyReader.reviewQueue')(
+        function* (userId, pathId, documentId, now) {
+          const at = DateTime.formatIso(now)
+
+          const rows =
+            yield* sql`SELECT count(*) FILTER (WHERE v.available_at<=${at})::integer AS due_count,min(v.available_at) FILTER (WHERE v.available_at>${at}) AS next_due_at
+ ${reviewStates(userId, pathId, documentId, now)}`
+
+          const [queue] = yield* Schema.decodeUnknownEffect(Schema.Tuple([ReviewQueue]))(rows)
+
+          return queue
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      reviewCandidates: Effect.fn('StudyReader.reviewCandidates')(
+        function* (userId, pathId, documentId, now, limit) {
+          const at = DateTime.formatIso(now)
+
+          const rows =
+            yield* sql`SELECT c.question_id,c.question_revision_id,a.id AS answer_id FROM (
+ SELECT q.id AS question_id,r.id AS question_revision_id,s.due_at ${reviewStates(userId, pathId, documentId, now, [sql`v.available_at<=${at}`])}
+ ORDER BY s.due_at,q.id LIMIT ${limit}
+ ) c JOIN question_answers a ON a.question_revision_id=c.question_revision_id
+ ORDER BY c.due_at,c.question_id,a.created_at,a.id`
+
+          return toCandidates(yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows))
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
       ),
       session: Effect.fn('StudyReader.session')((userId, pathId, sessionId) =>
         findLatestSession(userId, pathId, [sql`s.id=${sessionId}`]),
