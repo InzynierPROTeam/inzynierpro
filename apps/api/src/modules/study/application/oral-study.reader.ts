@@ -31,6 +31,23 @@ import type { StudyReadError } from './errors.js'
 export class OralStudyReader extends Context.Service<
   OralStudyReader,
   {
+    readonly isPathQuestion: (
+      pathId: QualificationPathId,
+      questionId: OralQuestionId,
+    ) => Effect.Effect<boolean, StudyReadError>
+    readonly favoriteQuestionCount: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<QuestionCount, StudyReadError>
+    readonly favoriteCandidates: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      limit: QuestionCount,
+    ) => Effect.Effect<ReadonlyArray<OralSessionCandidate>, StudyReadError>
+    readonly unfinishedFavoritesSession: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<Option.Option<OralStudySession>, StudyReadError>
     readonly reviewQueue: (
       userId: UserId,
       pathId: QualificationPathId,

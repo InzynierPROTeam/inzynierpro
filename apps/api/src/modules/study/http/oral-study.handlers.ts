@@ -13,7 +13,13 @@ import {
 } from '~api/modules/preparation/http/errors.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { clearOralQuestionNote } from '~api/modules/study/application/clear-oral-question-note.command.js'
 import { endOralSession } from '~api/modules/study/application/end-oral-session.command.js'
+import { markOralFavorite } from '~api/modules/study/application/mark-oral-favorite.command.js'
+import {
+  getOralFavoritesPreview,
+  getOralFavoritesSession,
+} from '~api/modules/study/application/oral-favorites-preview.query.js'
 import { getOralMaterials } from '~api/modules/study/application/oral-materials.query.js'
 import {
   getOralReviewPreview,
@@ -29,14 +35,19 @@ import {
   getOralSessionSummary,
 } from '~api/modules/study/application/oral-session.query.js'
 import { ReviewSchedulerLive } from '~api/modules/study/application/review-state.service.js'
+import { saveOralQuestionNote } from '~api/modules/study/application/save-oral-question-note.command.js'
+import { startOralFavoritesSession } from '~api/modules/study/application/start-oral-favorites-session.command.js'
 import { startOralReviewSession } from '~api/modules/study/application/start-oral-review-session.command.js'
 import { startOralSession } from '~api/modules/study/application/start-oral-session.command.js'
 import { submitOralSelfAssessment } from '~api/modules/study/application/submit-oral-self-assessment.command.js'
+import { unmarkOralFavorite } from '~api/modules/study/application/unmark-oral-favorite.command.js'
 import { OralStudyReaderLive } from '~api/modules/study/infrastructure/oral-study.reader.postgres.js'
 import { OralStudyRepositoryLive } from '~api/modules/study/infrastructure/oral-study.repository.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/study/infrastructure/study.repository.postgres.js'
 
 import {
+  failQuestionNoteWrite,
+  questionNotFound,
   failStudyRead,
   failStudyWrite,
   invalidOralSelfAssessment,
@@ -50,6 +61,7 @@ import {
   studySessionNotFound,
 } from './errors.js'
 import {
+  toQuestionNoteDto,
   toOralReviewPreviewDto,
   toOralSessionNextStepDto,
   toOralSessionQuestionDto,
@@ -60,6 +72,129 @@ import {
 
 export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
   handlers
+    .handle('ClearOralQuestionNote', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            clearOralQuestionNote(user.id, params.qualificationPathId, params.questionId),
+          ),
+        ),
+        Effect.map(result => ({
+          questionId: result.questionId,
+          note: Option.match(result.note, { onNone: () => null, onSome: toQuestionNoteDto }),
+        })),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyWriteError: failStudyWrite,
+        }),
+      ),
+    )
+    .handle('SaveOralQuestionNote', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            saveOralQuestionNote(
+              user.id,
+              params.qualificationPathId,
+              params.questionId,
+              payload.text,
+            ),
+          ),
+        ),
+        Effect.map(result => ({
+          questionId: result.questionId,
+          note: Option.match(result.note, { onNone: () => null, onSome: toQuestionNoteDto }),
+        })),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          QuestionNoteWriteError: failQuestionNoteWrite,
+          QuestionNotOnPath: () => questionNotFound,
+        }),
+      ),
+    )
+    .handle('UnmarkOralFavoriteQuestion', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            unmarkOralFavorite(user.id, params.qualificationPathId, params.questionId),
+          ),
+        ),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyWriteError: failStudyWrite,
+        }),
+      ),
+    )
+    .handle('MarkOralFavoriteQuestion', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            markOralFavorite(user.id, params.qualificationPathId, params.questionId),
+          ),
+        ),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+          QuestionNotOnPath: () => questionNotFound,
+        }),
+      ),
+    )
+    .handle('GetOralFavoritesPreview', ({ params }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getOralFavoritesPreview(user.id, params.qualificationPathId),
+          ),
+        ),
+        Effect.map(result => ({ ...result, settings: Option.getOrNull(result.settings) })),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('GetOralFavoritesSession', ({ params }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getOralFavoritesSession(user.id, params.qualificationPathId),
+          ),
+        ),
+        Effect.map(Option.map(toOralStudySessionDto)),
+        Effect.map(Option.getOrNull),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+        }),
+      ),
+    )
+    .handle('StartOralFavoritesSession', ({ params, payload }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            startOralFavoritesSession(user.id, params.qualificationPathId, payload.questionCount),
+          ),
+        ),
+        Effect.map(toOralStudySessionDto),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          StudyReadError: failStudyRead,
+          PreparationWriteError: failPreparationWrite,
+          StudyWriteError: failStudyWrite,
+          StaleSessionScope: () => staleSessionPreview,
+          UnfinishedOralSessionExists: oralSessionAlreadyStarted,
+        }),
+      ),
+    )
     .handle('GetOralReviewPreview', ({ params, query }) =>
       limitByUser(accountReadLimit).pipe(
         Effect.andThen(

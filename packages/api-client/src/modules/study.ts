@@ -24,6 +24,13 @@ import type {
   SubmitSessionAnswerEndpoint,
 } from '@inzpro/api-contracts/modules/study/api'
 import type {
+  GetOralFavoritesPreviewEndpoint,
+  GetOralFavoritesSessionEndpoint,
+  StartOralFavoritesSessionEndpoint,
+  MarkOralFavoriteQuestionEndpoint,
+  UnmarkOralFavoriteQuestionEndpoint,
+  SaveOralQuestionNoteEndpoint,
+  ClearOralQuestionNoteEndpoint,
   GetOralReviewPreviewEndpoint,
   GetOralReviewSessionEndpoint,
   StartOralReviewSessionEndpoint,
@@ -396,3 +403,90 @@ export type StartOralReviewSessionRequest = InferEndpointRequest<
 export type StartOralReviewSessionRes = Effect.Success<ReturnType<typeof startOralReviewSession>>
 
 export type StartOralReviewSessionError = Effect.Error<ReturnType<typeof startOralReviewSession>>
+
+export const getOralFavoritesPreview = (req: GetOralFavoritesPreviewRequest) =>
+  apiAction(api => api.OralStudy.GetOralFavoritesPreview(req))
+
+export type GetOralFavoritesPreviewRequest = InferEndpointRequest<
+  typeof GetOralFavoritesPreviewEndpoint
+>
+
+export type GetOralFavoritesPreviewRes = Effect.Success<ReturnType<typeof getOralFavoritesPreview>>
+
+export type GetOralFavoritesPreviewError = Effect.Error<ReturnType<typeof getOralFavoritesPreview>>
+
+export const getOralFavoritesSession = (req: GetOralFavoritesSessionRequest) =>
+  apiAction(api => api.OralStudy.GetOralFavoritesSession(req))
+
+export type GetOralFavoritesSessionRequest = InferEndpointRequest<
+  typeof GetOralFavoritesSessionEndpoint
+>
+
+export type GetOralFavoritesSessionRes = Effect.Success<ReturnType<typeof getOralFavoritesSession>>
+
+export type GetOralFavoritesSessionError = Effect.Error<ReturnType<typeof getOralFavoritesSession>>
+
+export const startOralFavoritesSession = (req: StartOralFavoritesSessionRequest) =>
+  apiAction(api => api.OralStudy.StartOralFavoritesSession(req))
+
+export type StartOralFavoritesSessionRequest = InferEndpointRequest<
+  typeof StartOralFavoritesSessionEndpoint
+>
+
+export type StartOralFavoritesSessionRes = Effect.Success<
+  ReturnType<typeof startOralFavoritesSession>
+>
+
+export type StartOralFavoritesSessionError = Effect.Error<
+  ReturnType<typeof startOralFavoritesSession>
+>
+
+export const markOralFavoriteQuestion = (req: MarkOralFavoriteQuestionRequest) =>
+  apiAction(api => api.OralStudy.MarkOralFavoriteQuestion(req))
+
+export type MarkOralFavoriteQuestionRequest = InferEndpointRequest<
+  typeof MarkOralFavoriteQuestionEndpoint
+>
+
+export type MarkOralFavoriteQuestionRes = Effect.Success<
+  ReturnType<typeof markOralFavoriteQuestion>
+>
+
+export type MarkOralFavoriteQuestionError = Effect.Error<
+  ReturnType<typeof markOralFavoriteQuestion>
+>
+
+export const unmarkOralFavoriteQuestion = (req: UnmarkOralFavoriteQuestionRequest) =>
+  apiAction(api => api.OralStudy.UnmarkOralFavoriteQuestion(req))
+
+export type UnmarkOralFavoriteQuestionRequest = InferEndpointRequest<
+  typeof UnmarkOralFavoriteQuestionEndpoint
+>
+
+export type UnmarkOralFavoriteQuestionRes = Effect.Success<
+  ReturnType<typeof unmarkOralFavoriteQuestion>
+>
+
+export type UnmarkOralFavoriteQuestionError = Effect.Error<
+  ReturnType<typeof unmarkOralFavoriteQuestion>
+>
+
+export const saveOralQuestionNote = (req: SaveOralQuestionNoteRequest) =>
+  apiAction(api => api.OralStudy.SaveOralQuestionNote(req))
+
+export type SaveOralQuestionNoteRequest = InferEndpointRequest<typeof SaveOralQuestionNoteEndpoint>
+
+export type SaveOralQuestionNoteRes = Effect.Success<ReturnType<typeof saveOralQuestionNote>>
+
+export type SaveOralQuestionNoteError = Effect.Error<ReturnType<typeof saveOralQuestionNote>>
+
+export const clearOralQuestionNote = (req: ClearOralQuestionNoteRequest) =>
+  apiAction(api => api.OralStudy.ClearOralQuestionNote(req))
+
+export type ClearOralQuestionNoteRequest = InferEndpointRequest<
+  typeof ClearOralQuestionNoteEndpoint
+>
+
+export type ClearOralQuestionNoteRes = Effect.Success<ReturnType<typeof clearOralQuestionNote>>
+
+export type ClearOralQuestionNoteError = Effect.Error<ReturnType<typeof clearOralQuestionNote>>

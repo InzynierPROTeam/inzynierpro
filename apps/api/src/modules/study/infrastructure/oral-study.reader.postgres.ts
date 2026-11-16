@@ -15,6 +15,7 @@ import {
   OralSelfAssessment,
   OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
+import { QuestionNoteText } from '@inzpro/domain/modules/study/question-note'
 import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
 import { RichContent } from '@inzpro/rich-content/rich-content'
 import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
@@ -58,6 +59,10 @@ const SessionQuestionRow = Schema.Struct({
   oralRevisionId: OralRevisionId,
   body: RichContent,
   answer: RichContent,
+  isFavorite: Schema.Boolean,
+  noteText: Schema.NullOr(QuestionNoteText),
+  noteUpdatedAt: Schema.NullOr(DateTimeUtc),
+  noteRefersToEarlierWording: Schema.NullOr(Schema.Boolean),
   isWithdrawn: Schema.Boolean,
   selfAssessment: Schema.NullOr(OralSelfAssessment),
   assessedAt: Schema.NullOr(DateTimeUtc),
@@ -66,9 +71,20 @@ const SessionQuestionRow = Schema.Struct({
 const toSessionQuestion = ({
   selfAssessment,
   assessedAt,
+  noteText,
+  noteUpdatedAt,
+  noteRefersToEarlierWording,
   ...question
 }: typeof SessionQuestionRow.Type): OralSessionQuestion => ({
   ...question,
+  note:
+    noteText === null || noteUpdatedAt === null || noteRefersToEarlierWording === null
+      ? Option.none()
+      : Option.some({
+          text: noteText,
+          updatedAt: noteUpdatedAt,
+          refersToEarlierWording: noteRefersToEarlierWording,
+        }),
   selfAssessment:
     selfAssessment === null || assessedAt === null
       ? Option.none()
@@ -121,6 +137,16 @@ export const OralStudyReaderLive = Layer.effect(
         Effect.mapError(cause => new StudyReadError({ cause })),
       )
 
+    const favoriteQuestions = (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => sql`FROM oral_favorite_questions f
+ JOIN path_oral_questions pq ON pq.question_id=f.question_id AND pq.qualification_path_id=${pathId}
+ JOIN oral_questions q ON q.id=f.question_id
+ JOIN oral_question_categories c ON c.id=q.category_id
+ JOIN oral_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
+ WHERE f.user_id=${userId}`
+
     const reviewStates = (
       userId: UserId,
       pathId: QualificationPathId,
@@ -159,6 +185,49 @@ export const OralStudyReaderLive = Layer.effect(
     )
 
     return OralStudyReader.of({
+      isPathQuestion: Effect.fn('OralStudyReader.isPathQuestion')(
+        function* (pathId, questionId) {
+          const rows =
+            yield* sql`SELECT EXISTS (SELECT 1 FROM path_oral_questions WHERE qualification_path_id=${pathId} AND question_id=${questionId}) AS present`
+
+          const [row] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ present: Schema.Boolean })]),
+          )(rows)
+
+          return row.present
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      favoriteQuestionCount: Effect.fn('OralStudyReader.favoriteQuestionCount')(
+        function* (userId, pathId) {
+          const rows =
+            yield* sql`SELECT count(*)::integer AS count ${favoriteQuestions(userId, pathId)}`
+
+          const [row] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ count: QuestionCount })]),
+          )(rows)
+
+          return row.count
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      favoriteCandidates: Effect.fn('OralStudyReader.favoriteCandidates')(
+        function* (userId, pathId, limit) {
+          const rows =
+            yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${favoriteQuestions(userId, pathId)} ORDER BY c.sort_order,c.id,q.category_position,q.id LIMIT ${limit}`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows)
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      unfinishedFavoritesSession: Effect.fn('OralStudyReader.unfinishedFavoritesSession')(
+        (userId, pathId) =>
+          findSession(userId, pathId, [
+            sql`s.kind='favourites'`,
+            sql`s.category_id IS NULL`,
+            sql`s.ended_at IS NULL`,
+          ]),
+      ),
       reviewQueue: Effect.fn('OralStudyReader.reviewQueue')(
         function* (userId, pathId, categoryId, now) {
           const at = DateTime.formatIso(now)
@@ -359,10 +428,16 @@ export const OralStudyReaderLive = Layer.effect(
         function* (userId, pathId, sessionId, position) {
           const rows =
             yield* sql`SELECT s.id AS session_id,sq.position,sq.question_id,sq.oral_revision_id,r.body,r.answer,r.withdrawn_at IS NOT NULL AS is_withdrawn,
- a.self_assessment,a.created_at AS assessed_at
+ a.self_assessment,a.created_at AS assessed_at,
+ EXISTS (SELECT 1 FROM oral_favorite_questions f WHERE f.user_id=${userId} AND f.question_id=sq.question_id) AS is_favorite,
+ n.body AS note_text,n.updated_at AS note_updated_at,CASE WHEN n.user_id IS NOT NULL THEN coalesce(nr.substantive_revision_id<>cr.substantive_revision_id,false) END AS note_refers_to_earlier_wording
  FROM oral_study_sessions s JOIN oral_study_session_questions sq ON sq.study_session_id=s.id
  JOIN oral_revisions r ON r.id=sq.oral_revision_id
  LEFT JOIN oral_study_self_assessments a ON a.study_session_id=sq.study_session_id AND a.position=sq.position
+ LEFT JOIN oral_question_notes n ON n.user_id=${userId} AND n.question_id=sq.question_id
+ LEFT JOIN oral_revisions nr ON nr.id=n.oral_revision_id
+ LEFT JOIN oral_questions q ON q.id=sq.question_id
+ LEFT JOIN oral_revisions cr ON cr.id=q.current_revision_id
  WHERE s.id=${sessionId} AND s.user_id=${userId} AND s.qualification_path_id=${pathId} AND sq.position=${position}
  LIMIT 1`
 

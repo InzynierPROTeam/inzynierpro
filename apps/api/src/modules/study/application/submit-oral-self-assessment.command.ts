@@ -19,7 +19,6 @@ import {
   SessionQuestionMissing,
 } from '~api/modules/study/domain/errors.js'
 import { currentLearningRound } from '~api/modules/study/domain/learning-round.rules.js'
-import { studyMode, reviewMode } from '~api/modules/study/domain/review-state.model.js'
 
 import { recordOralEvidence } from './oral-review-state.service.js'
 import { OralStudyReader } from './oral-study.reader.js'
@@ -107,7 +106,7 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         sessionId,
         position,
         selfAssessment,
-        mode: session.kind === regularStudySession ? studyMode : reviewMode,
+        mode: session.kind,
         answeredAt: yield* DateTime.now,
       })
 

@@ -8,6 +8,7 @@ import {
 } from '~api-contracts/utils/api-error.js'
 
 import {
+  QuestionNotFound,
   InvalidOralSelfAssessment,
   OralCategoryNotFound,
   OralSelfAssessmentAlreadySubmitted,
@@ -19,6 +20,9 @@ import {
   StudySessionNotFound,
 } from './errors.js'
 import {
+  SaveQuestionNotePayload,
+  OralFavoriteQuestionParams,
+  StartOralFavoritesSessionPayload,
   OralReviewScopeQuery,
   StartOralReviewSessionPayload,
   LatestOralSessionQuery,
@@ -32,6 +36,9 @@ import {
   SubmitOralSelfAssessmentPayload,
 } from './requests.js'
 import {
+  OralQuestionNoteResult,
+  OralFavoriteQuestion,
+  OralFavoritesPreviewResponse,
   OralReviewPreviewResponse,
   EndOralSessionResponse,
   OralMaterialsResponse,
@@ -174,6 +181,7 @@ export const SubmitOralSelfAssessmentEndpoint = HttpApiEndpoint.post(
       SessionQuestionNotFound,
       StudySessionEnded,
       SessionQuestionWithdrawn,
+      QuestionNotFound,
       InvalidOralSelfAssessment,
       OralSelfAssessmentAlreadySubmitted,
     ],
@@ -220,7 +228,92 @@ export const StartOralReviewSessionEndpoint = HttpApiEndpoint.post(
   },
 )
 
+export const GetOralFavoritesPreviewEndpoint = HttpApiEndpoint.get(
+  'GetOralFavoritesPreview',
+  '/paths/:qualificationPathId/oral/favorites-preview',
+  {
+    params: OralPathParams,
+    success: OralFavoritesPreviewResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+export const GetOralFavoritesSessionEndpoint = HttpApiEndpoint.get(
+  'GetOralFavoritesSession',
+  '/paths/:qualificationPathId/oral/favorites-session',
+  {
+    params: OralPathParams,
+    success: OralStudySessionResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+export const StartOralFavoritesSessionEndpoint = HttpApiEndpoint.post(
+  'StartOralFavoritesSession',
+  '/paths/:qualificationPathId/oral/favorites-sessions',
+  {
+    params: OralPathParams,
+    payload: StartOralFavoritesSessionPayload,
+    success: StartOralSessionResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      StaleSessionPreview,
+      OralSessionAlreadyStarted,
+    ],
+  },
+)
+
+export const MarkOralFavoriteQuestionEndpoint = HttpApiEndpoint.put(
+  'MarkOralFavoriteQuestion',
+  '/paths/:qualificationPathId/oral/favorites/:questionId',
+  {
+    params: OralFavoriteQuestionParams,
+    success: OralFavoriteQuestion,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
+export const UnmarkOralFavoriteQuestionEndpoint = HttpApiEndpoint.delete(
+  'UnmarkOralFavoriteQuestion',
+  '/paths/:qualificationPathId/oral/favorites/:questionId',
+  {
+    params: OralFavoriteQuestionParams,
+    success: OralFavoriteQuestion,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
+export const SaveOralQuestionNoteEndpoint = HttpApiEndpoint.put(
+  'SaveOralQuestionNote',
+  '/paths/:qualificationPathId/oral/notes/:questionId',
+  {
+    params: OralFavoriteQuestionParams,
+    payload: SaveQuestionNotePayload,
+    success: OralQuestionNoteResult,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
+export const ClearOralQuestionNoteEndpoint = HttpApiEndpoint.delete(
+  'ClearOralQuestionNote',
+  '/paths/:qualificationPathId/oral/notes/:questionId',
+  {
+    params: OralFavoriteQuestionParams,
+    success: OralQuestionNoteResult,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
 export const OralStudyApi = HttpApiGroup.make('OralStudy')
+  .add(ClearOralQuestionNoteEndpoint)
+  .add(SaveOralQuestionNoteEndpoint)
+  .add(UnmarkOralFavoriteQuestionEndpoint)
+  .add(MarkOralFavoriteQuestionEndpoint)
+  .add(GetOralFavoritesPreviewEndpoint)
+  .add(GetOralFavoritesSessionEndpoint)
+  .add(StartOralFavoritesSessionEndpoint)
   .add(GetOralReviewPreviewEndpoint)
   .add(GetOralReviewSessionEndpoint)
   .add(StartOralReviewSessionEndpoint)

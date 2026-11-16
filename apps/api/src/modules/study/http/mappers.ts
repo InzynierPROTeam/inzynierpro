@@ -74,7 +74,7 @@ const sessionDocument = (session: StudySession): Option.Option<SessionDocument> 
 export const toLatestStudySessionDto = (session: StudySession): Option.Option<LatestStudySession> =>
   Option.map(sessionDocument(session), document => ({ ...toStudySessionDto(session), document }))
 
-const toQuestionNoteDto = ({ updatedAt, ...note }: QuestionNote): QuestionNoteDto => ({
+export const toQuestionNoteDto = ({ updatedAt, ...note }: QuestionNote): QuestionNoteDto => ({
   ...note,
   updatedAt: dateTimeUtcToUtcIsoDateTime(updatedAt),
 })
@@ -197,12 +197,14 @@ export const toOralStudySessionDto = (session: OralStudySession): OralStudySessi
 export const toOralSessionQuestionDto = ({
   body,
   answer,
+  note,
   selfAssessment,
   ...question
 }: OralSessionQuestion): OralSessionQuestionDto => ({
   ...question,
   body: toResolvedRichContentDto(body),
   answer: toResolvedRichContentDto(answer),
+  note: Option.match(note, { onNone: () => null, onSome: toQuestionNoteDto }),
   selfAssessment: Option.match(selfAssessment, {
     onNone: () => null,
     onSome: ({ value, assessedAt }) => ({
