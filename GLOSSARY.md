@@ -83,7 +83,7 @@ An approved, versioned question that checks understanding of a specific oral ans
 An optional set of knowledge checks covering the material of one oral study session, with feedback after each check and no overall score. It is distinct from studying oral answers and from self-assessments.
 
 **OralSelfAssessment** (UI: _samoocena odpowiedzi ustnej_):
-The user's declaration of whether they can answer an oral question on their own: cannot, partially or fully. It is distinct from the mini-quiz result.
+The user's rating of how hard answering an oral question on their own was: hard, medium or easy (UI: „Trudne”, „Średnie”, „Łatwe”). Harder questions return sooner in oral reviews. It is distinct from the mini-quiz result.
 
 **QuestionRevision** (UI: _rewizja pytania_):
 A specific version of a question's content and scoring data, immutable once published. A historical result refers to the revision used when answering.
