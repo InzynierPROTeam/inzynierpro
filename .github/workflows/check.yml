@@ -27,7 +27,6 @@ jobs:
       WORKER_DOCKERHUB_TOKEN_CONFIGURED: ${{ secrets.WORKER_DOCKERHUB_TOKEN != '' }}
       CLOUDFLARE_API_TOKEN_CONFIGURED: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     steps:
-      # No checkout, dependency installation or credentials needed for this early gate.
       - name: Check required deployment settings
         run: |
           missing=false
@@ -65,7 +64,6 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Turbo replays unchanged tasks; integration tests against PostgreSQL and Redis never cache.
       - name: Restore Turbo cache
         uses: actions/cache@v4
         with:
@@ -136,7 +134,6 @@ jobs:
             apps/e2e/playwright-report/
             apps/e2e/test-results/
           retention-days: 14
-  # Builds never change a live environment and run alongside the quality gates.
   build-images:
     needs: preflight
     if: github.event_name == 'push'
@@ -149,7 +146,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v4
       - run: mkdir -p "$RUNNER_TEMP/images"
-      # Bake shares the builder graph instead of building it on two runners.
       - uses: docker/bake-action@v7
         env:
           RELEASE_SHA: ${{ github.sha }}
@@ -217,8 +213,6 @@ jobs:
           if-no-files-found: error
           retention-days: 2
 
-  # One release owns API, worker and platform until the matching API is ready
-  # and the prebuilt platform is deployed. New pushes never cancel a release.
   deploy:
     if: github.event_name == 'push'
     needs: [check, e2e, build-images, build-platform]

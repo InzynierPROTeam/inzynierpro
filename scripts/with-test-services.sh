@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Runs a command against fresh test PostgreSQL and Redis, then removes them.
-# Usage: scripts/with-test-services.sh <command...>
 set -euo pipefail
 
 api() { pnpm --filter @inzpro/api "$@"; }

@@ -27,7 +27,6 @@
     "typescript/no-deprecated": "error",
     "import/no-cycle": ["error", { "ignoreTypes": false }],
     "import/first": "error",
-    // anti-slop custom rules
     "oxc/no-accumulating-spread": "error",
     "anti-slop/no-array-filter-map": "error",
     "anti-slop/no-reduce-accumulator-copy": "error",
@@ -47,8 +46,6 @@
     "anti-slop/no-unsafe-dictionary-type": "error",
     "anti-slop/no-widen-then-assert": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
-    // end of anti-slop custom rules
-    // conventions custom rules
     "conventions/query-keys": "error",
     "conventions/api-client-contracts": "error",
     "conventions/backend-boundaries": "error",
@@ -72,7 +69,6 @@
     "conventions/prefer-cx": "error",
     "conventions/page-sections": "error",
     "conventions/queries-read-only": "error",
-    // end of conventions custom rules
     // The workspace deliberately builds on effect/http and effect/http-api.
     "effecttsgo/unstable-api-usage": "off",
     "anti-slop-effect/no-manual-effect-error-tag": "error",
@@ -81,7 +77,6 @@
     "anti-slop-effect/no-service-constructor-imports": "error",
     "anti-slop-effect/prefer-effect-datetime": "error",
     "anti-slop-effect/prefer-effect-match": "error",
-    // React Compiler recommended rules
     "react/error-boundaries": "error",
     "react/globals": "error",
     "react/immutability": "error",
@@ -95,7 +90,6 @@
     "react/unsupported-syntax": "error",
     "react/use-memo": "error",
     "react/void-use-memo": "error",
-    // end of React Compiler recommended rules
     "curly": ["error", "all"],
     "constructor-super": "warn",
     "for-direction": "warn",
@@ -202,7 +196,6 @@
     "unicorn/prefer-set-size": "warn",
     "unicorn/prefer-string-starts-ends-with": "warn",
 
-    // Files are kebab-case; overrides cover app components, hooks and framework-owned names.
     "unicorn/filename-case": ["error", { "case": "kebabCase" }],
     "typescript/no-explicit-any": "error",
     "no-restricted-imports": [
