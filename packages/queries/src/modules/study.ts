@@ -83,10 +83,13 @@ export const studyKeys = {
       'getFavoritesSession',
       req,
     ] as const,
-  // Every read that shows a FavoriteQuestion mark, on any path. A mark is shared across the
-  // account's paths and nothing else changes it, so these reads sit outside the path groups and a
-  // mark refreshes only them.
+  // The favourites previews of every path. A mark is shared across the account's paths and nothing
+  // else changes them, so they sit outside the path groups and a mark refreshes only them and the
+  // session questions.
   favorites: (userId: UserId) => [...studyKeys.account(userId), 'favorites'] as const,
+  // Every session question, on any path. A question shows the learner's FavoriteQuestion mark and
+  // PersonalQuestionNote, both shared across paths, so a mark or a note refreshes this group.
+  questions: (userId: UserId) => [...studyKeys.account(userId), 'questions'] as const,
   getFavoritesPreview: (userId: UserId, req: GetFavoritesPreviewRequest) =>
     [...studyKeys.favorites(userId), 'getFavoritesPreview', req] as const,
   // The step after a session depends on the whole path's progress, not on the session alone.
@@ -116,10 +119,10 @@ export const studyKeys = {
       'getSessionResultsInfinite',
       req,
     ] as const,
-  // A session question shows the mark, so it sits in the favourites group rather than in its
-  // session. Answering and assistance set it directly; its content never changes otherwise.
+  // A session question shows the mark and the note, so it sits in the questions group rather than
+  // in its session. Answering and assistance set it directly; its content never changes otherwise.
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
-    [...studyKeys.favorites(userId), 'getSessionQuestion', req] as const,
+    [...studyKeys.questions(userId), 'getSessionQuestion', req] as const,
 }
 
 export const documentsInfiniteQueryOptions = (

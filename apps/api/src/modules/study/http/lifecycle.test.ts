@@ -209,7 +209,7 @@ test('an assisted answer counts in the summary result', async () => {
   const { start, answer, summary, request } = await learnerWithDocument(1)
   const started = await start()
 
-  await request(`/sessions/${started.id}/questions/1/assistance`, {})
+  await request(`/sessions/${started.id}/questions/1/assistance`, { kind: 'explanation' })
   await answer(started.id, 1)
   await request(`/sessions/${started.id}/end`, {})
 

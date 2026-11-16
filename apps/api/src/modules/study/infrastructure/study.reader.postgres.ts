@@ -11,6 +11,7 @@ import {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { QuestionNoteText } from '@inzpro/domain/modules/study/question-note'
 import {
   regularStudySession,
   SessionQuestionPosition,
@@ -61,6 +62,11 @@ const SessionQuestionRow = Schema.Struct({
   answerIsCorrect: Schema.Boolean,
   isWithdrawn: Schema.Boolean,
   explanationOpenedAt: Schema.OptionFromNullOr(DateTimeUtc),
+  noteOpenedAt: Schema.OptionFromNullOr(DateTimeUtc),
+  // The note's columns are all null without a saved note.
+  noteText: Schema.NullOr(QuestionNoteText),
+  noteUpdatedAt: Schema.NullOr(DateTimeUtc),
+  noteRefersToEarlierWording: Schema.NullOr(Schema.Boolean),
   // The submitted answer's columns are all null until the question is answered.
   submittedAnswerId: Schema.NullOr(QuestionAnswerId),
   submittedIsCorrect: Schema.NullOr(Schema.Boolean),
@@ -105,7 +111,18 @@ const toSessionQuestion = (
     })),
     isWithdrawn: first.isWithdrawn,
     isFavorite: first.isFavorite,
+    note:
+      first.noteText === null ||
+      first.noteUpdatedAt === null ||
+      first.noteRefersToEarlierWording === null
+        ? Option.none()
+        : Option.some({
+            text: first.noteText,
+            updatedAt: first.noteUpdatedAt,
+            refersToEarlierWording: first.noteRefersToEarlierWording,
+          }),
     explanationOpenedAt: first.explanationOpenedAt,
+    noteOpenedAt: first.noteOpenedAt,
     answer:
       first.submittedAnswerId === null ||
       first.submittedIsCorrect === null ||
@@ -427,11 +444,17 @@ export const StudyReaderLive = Layer.effect(
         function* (userId, pathId, sessionId, position) {
           const rows =
             yield* sql`SELECT s.id AS session_id,sq.position,sq.question_id,sq.question_revision_id,r.body,r.explanation,a.id AS answer_id,a.text AS answer_text,a.is_correct AS answer_is_correct,
- r.withdrawn_at IS NOT NULL AS is_withdrawn,sq.explanation_opened_at,
+ r.withdrawn_at IS NOT NULL AS is_withdrawn,sq.explanation_opened_at,sq.note_opened_at,
  sa.question_answer_id AS submitted_answer_id,sa.is_correct AS submitted_is_correct,sa.is_assisted AS submitted_is_assisted,sa.created_at AS submitted_at,
- EXISTS (SELECT 1 FROM written_favorite_questions f WHERE f.user_id=${userId} AND f.question_id=sq.question_id) AS is_favorite
+ EXISTS (SELECT 1 FROM written_favorite_questions f WHERE f.user_id=${userId} AND f.question_id=sq.question_id) AS is_favorite,
+ n.body AS note_text,n.updated_at AS note_updated_at,
+ CASE WHEN n.user_id IS NOT NULL THEN COALESCE(nr.substantive_revision_id<>cr.substantive_revision_id,false) END AS note_refers_to_earlier_wording
  FROM written_study_sessions s JOIN written_study_session_questions sq ON sq.study_session_id=s.id
  JOIN question_revisions r ON r.id=sq.question_revision_id
+ JOIN written_questions q ON q.id=sq.question_id
+ LEFT JOIN question_revisions cr ON cr.id=q.current_revision_id
+ LEFT JOIN written_question_notes n ON n.user_id=${userId} AND n.question_id=sq.question_id
+ LEFT JOIN question_revisions nr ON nr.id=n.question_revision_id
  JOIN written_study_session_answer_options o ON o.study_session_id=sq.study_session_id AND o.position=sq.position
  JOIN question_answers a ON a.id=o.question_answer_id
  LEFT JOIN written_study_answers sa ON sa.study_session_id=sq.study_session_id AND sa.position=sq.position

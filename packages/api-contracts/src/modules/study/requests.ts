@@ -8,7 +8,9 @@ import {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { QuestionNoteText } from '@inzpro/domain/modules/study/question-note'
 import {
+  SessionAssistanceKind,
   SessionQuestionPosition,
   SessionQuestionSelection,
   StudySessionId,
@@ -70,6 +72,16 @@ export const FavoriteQuestionParams = Schema.Struct({
   questionId: WrittenQuestionId,
 })
 
+export const QuestionNoteParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  questionId: WrittenQuestionId,
+})
+
+// The whole note replaces the saved one; clearing it is a DELETE.
+export const SaveQuestionNotePayload = Schema.Struct({ text: QuestionNoteText })
+
+export type SaveQuestionNotePayload = typeof SaveQuestionNotePayload.Type
+
 export const LatestSessionQuery = Schema.Struct({
   // Without a document the latest session of the whole path is returned.
   documentId: Schema.optional(ReferenceDocumentId),
@@ -94,3 +106,8 @@ export const SubmitSessionAnswerPayload = Schema.Struct({
 })
 
 export type SubmitSessionAnswerPayload = typeof SubmitSessionAnswerPayload.Type
+
+// What the learner opened before answering; the backend records each kind once (ADR-0002).
+export const RecordSessionAssistancePayload = Schema.Struct({ kind: SessionAssistanceKind })
+
+export type RecordSessionAssistancePayload = typeof RecordSessionAssistancePayload.Type

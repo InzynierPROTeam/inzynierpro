@@ -70,8 +70,8 @@ const sessionLearningModes = {
  * continues from the next question still open; only the learner ends it. The account lock
  * serializes submissions with each other, with recording assistance and with assignment changes, so
  * the first answer wins: retrying it returns the stored result, and a different answer is refused.
- * Assistance comes from the recorded opening of the explanation, never from the client, and the
- * study day from backend time.
+ * Assistance comes from the recorded openings of the explanation and the note, never from the
+ * client, and the study day from backend time.
  */
 export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
   userId: UserId,

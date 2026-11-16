@@ -205,12 +205,11 @@ test('the next step after a session refreshes with the progress group, not only 
   expect(progress.every((part, index) => key[index] === part)).toBe(true)
 })
 
-test('the favourites group a mark refreshes covers every read showing a mark, on every path, and nothing else', () => {
+test('the favourites group covers the favourites previews on every path, and nothing else', () => {
   const startsWith = (key: ReadonlyArray<unknown>, parent: ReadonlyArray<unknown>) =>
     parent.every((part, index) => key[index] === part)
 
   const favorites = studyKeys.favorites(userId)
-  const otherUserId = Schema.decodeSync(UserId)('a0000000-0000-4000-8000-000000000002')
   const sessionId = Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000001')
   const position = Schema.decodeSync(SessionQuestionPosition)(1)
 
@@ -224,6 +223,7 @@ test('the favourites group a mark refreshes covers every read showing a mark, on
       ).toBe(true)
     }
 
+    // A note leaves the previews alone, so session questions sit in their own group.
     expect(
       startsWith(
         studyKeys.getSessionQuestion(userId, {
@@ -231,12 +231,41 @@ test('the favourites group a mark refreshes covers every read showing a mark, on
         }),
         favorites,
       ),
+    ).toBe(false)
+  }
+
+  expect(startsWith(favorites, studyKeys.account(userId))).toBe(true)
+})
+
+test('the questions group a mark or a note refreshes covers every session question, on every path, and nothing else', () => {
+  const startsWith = (key: ReadonlyArray<unknown>, parent: ReadonlyArray<unknown>) =>
+    parent.every((part, index) => key[index] === part)
+
+  const questions = studyKeys.questions(userId)
+  const otherUserId = Schema.decodeSync(UserId)('a0000000-0000-4000-8000-000000000002')
+  const sessionId = Schema.decodeSync(StudySessionId)('b0000000-0000-4000-8000-000000000001')
+  const position = Schema.decodeSync(SessionQuestionPosition)(1)
+
+  for (const qualificationPathId of [pathA, pathB]) {
+    expect(
+      startsWith(
+        studyKeys.getSessionQuestion(userId, {
+          params: { qualificationPathId, sessionId, position },
+        }),
+        questions,
+      ),
     ).toBe(true)
-    // The session itself shows no mark, so a mark leaves it alone.
+    // The session itself shows neither a mark nor a note, so they leave it alone.
     expect(
       startsWith(
         studyKeys.getSession(userId, { params: { qualificationPathId, sessionId } }),
-        favorites,
+        questions,
+      ),
+    ).toBe(false)
+    expect(
+      startsWith(
+        studyKeys.getFavoritesPreview(userId, { params: { qualificationPathId }, query: {} }),
+        questions,
       ),
     ).toBe(false)
   }
@@ -246,10 +275,10 @@ test('the favourites group a mark refreshes covers every read showing a mark, on
       studyKeys.getSessionQuestion(otherUserId, {
         params: { qualificationPathId: pathA, sessionId, position },
       }),
-      favorites,
+      questions,
     ),
   ).toBe(false)
-  expect(startsWith(favorites, studyKeys.account(userId))).toBe(true)
+  expect(startsWith(questions, studyKeys.account(userId))).toBe(true)
 })
 
 test('the unfinished favourites session refreshes with the progress group of its path', () => {

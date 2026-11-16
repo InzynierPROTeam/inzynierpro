@@ -131,15 +131,35 @@ const learnerWithQuestion = async () => {
       ),
     )
 
+  // Saves the learner's note on the question; notes are written with PUT.
+  const saveNote = (text: string) =>
+    visitor.jar.fetch(
+      new URL(`/api/v1/study/paths/${fixture.pathId}/notes/${question.id}`, api.baseUrl),
+      {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text }),
+      },
+    )
+
   // Answers the question in a new session at the given backend time, then ends the session.
   const answerAt = async (
     at: string,
-    { isCorrect, afterExplanation = false }: { isCorrect: boolean; afterExplanation?: boolean },
+    {
+      isCorrect,
+      afterExplanation = false,
+      afterNote = false,
+    }: { isCorrect: boolean; afterExplanation?: boolean; afterNote?: boolean },
   ) => {
     const session = await startSession()
 
+    if (afterNote) {
+      await saveNote('Memory aid.')
+      await request(`/sessions/${session.id}/questions/1/assistance`, { kind: 'note' })
+    }
+
     if (afterExplanation) {
-      await request(`/sessions/${session.id}/questions/1/assistance`, {})
+      await request(`/sessions/${session.id}/questions/1/assistance`, { kind: 'explanation' })
     }
 
     const exit = await submitAt(at, session, await readQuestion(session.id), isCorrect)
@@ -184,6 +204,30 @@ describe('a new card', () => {
     })
   })
 
+  test('a correct answer after the note rates it Hard', async () => {
+    const learner = await learnerWithQuestion()
+
+    await learner.answerAt(day1, { isCorrect: true, afterNote: true })
+
+    const state = Option.getOrThrow(await learner.state())
+
+    // Hard keeps a new card learning, unlike Good, but later than Again's one minute.
+    expect(state).toMatchObject({ scheduleStatus: 'learning', reps: 1, lapses: 0 })
+    expect(DateTime.isGreaterThan(state.dueAt, minutesAfter(day1, 1))).toBe(true)
+  })
+
+  test('the explanation wins over the note', async () => {
+    const learner = await learnerWithQuestion()
+
+    await learner.answerAt(day1, { isCorrect: true, afterNote: true, afterExplanation: true })
+
+    expect(Option.getOrThrow(await learner.state())).toMatchObject({
+      scheduleStatus: 'learning',
+      reps: 1,
+      dueAt: minutesAfter(day1, 1),
+    })
+  })
+
   test('a wrong answer rates it Again', async () => {
     const learner = await learnerWithQuestion()
 
@@ -209,6 +253,26 @@ describe('an existing card', () => {
 
     expect(after).toMatchObject({ scheduleStatus: 'review', reps: 2, lapses: 0 })
     expect(after.stability).toBeGreaterThan(before.stability)
+  })
+
+  test('a correct answer after the note on a later day rates it Hard', async () => {
+    const learner = await learnerWithQuestion()
+
+    await learner.answerAt(day1, { isCorrect: true })
+    const good = Option.getOrThrow(await learner.state())
+
+    await learner.answerAt(day2, { isCorrect: true, afterNote: true })
+
+    // Hard extends the interval less than Good would have, and is no lapse.
+    expect(Option.getOrThrow(await learner.state())).toMatchObject({
+      scheduleStatus: 'review',
+      reps: 2,
+      lapses: 0,
+      lastReviewAt: Option.some(DateTime.makeUnsafe(day2)),
+    })
+    expect(Option.getOrThrow(await learner.state()).scheduledDays).toBeGreaterThanOrEqual(
+      good.scheduledDays,
+    )
   })
 
   test('a correct answer after the explanation keeps the state', async () => {

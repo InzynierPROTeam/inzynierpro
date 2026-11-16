@@ -67,7 +67,7 @@ const learnerInSession = async (questionCount: number, accessScope: ExamAccessSc
     request(`${sessionPath}/questions/${position}/answer`, body)
 
   const openExplanation = (position: number) =>
-    request(`${sessionPath}/questions/${position}/assistance`, {})
+    request(`${sessionPath}/questions/${position}/assistance`, { kind: 'explanation' })
 
   return { visitor, fixture, session, request, question, progress, submit, openExplanation }
 }
@@ -312,7 +312,7 @@ test("another learner's session, a missing question and a guest cannot answer or
   const sessionPath = `/paths/${fixture.pathId}/sessions/${session.id}/questions`
 
   for (const path of [`${sessionPath}/1/answer`, `${sessionPath}/1/assistance`]) {
-    const response = await learningRequest(api, other, path, body)
+    const response = await learningRequest(api, other, path, { ...body, kind: 'explanation' })
 
     expect(response.status).toBe(404)
     expect(await response.json()).toMatchObject({ type: 'session_question_not_found' })

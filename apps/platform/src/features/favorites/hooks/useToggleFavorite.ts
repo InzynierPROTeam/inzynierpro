@@ -43,6 +43,9 @@ export const useToggleFavorite = (userId: UserId, req: GetSessionQuestionRequest
     // The mark also shows in the favourites previews and in this question's reads in other
     // sessions. They are only marked stale and refetch when shown again; this read is set above.
     onSettled: () =>
-      client.invalidateQueries({ queryKey: studyKeys.favorites(userId), refetchType: 'none' }),
+      Promise.all([
+        client.invalidateQueries({ queryKey: studyKeys.favorites(userId), refetchType: 'none' }),
+        client.invalidateQueries({ queryKey: studyKeys.questions(userId), refetchType: 'none' }),
+      ]),
   })
 }

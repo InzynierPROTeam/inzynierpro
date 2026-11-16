@@ -8,6 +8,7 @@ import {
   goodRating,
   hardRating,
   noAssistance,
+  noteAssistance,
   type ReviewRating,
   type StudyDay,
 } from './review-state.model.js'
@@ -24,11 +25,20 @@ export const studyDayOf = (at: DateTime.Utc): StudyDay => {
   }
 }
 
-/** The assistance level of an answer from the backend's records of what was opened. */
+/**
+ * The assistance level of an answer from the backend's records of what was opened before it: the
+ * explanation wins over the learner's own note (ADR-0002).
+ */
 export const answerAssistance = (opened: {
   readonly explanationOpenedAt: Option.Option<DateTime.Utc>
-}): AssistanceLevel =>
-  Option.isSome(opened.explanationOpenedAt) ? explanationAssistance : noAssistance
+  readonly noteOpenedAt: Option.Option<DateTime.Utc>
+}): AssistanceLevel => {
+  if (Option.isSome(opened.explanationOpenedAt)) {
+    return explanationAssistance
+  }
+
+  return Option.isSome(opened.noteOpenedAt) ? noteAssistance : noAssistance
+}
 
 /**
  * The rating a written answer applies to the question's UserReviewState (ADR-0005, initial

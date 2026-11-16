@@ -26,6 +26,9 @@ import {
   GetDocumentsParams,
   GetDocumentParams,
   LatestSessionQuery,
+  QuestionNoteParams,
+  RecordSessionAssistancePayload,
+  SaveQuestionNotePayload,
   SessionPreviewQuery,
   OralMaterialsQuery,
   ReviewScopeQuery,
@@ -45,6 +48,7 @@ import {
   FavoritesPreviewResponse,
   LatestStudySessionResponse,
   OralMaterialsResponse,
+  QuestionNoteResponse,
   ReviewPreviewResponse,
   SessionNextStepResponse,
   SessionPreviewResponse,
@@ -198,6 +202,30 @@ export const UnmarkFavoriteQuestionEndpoint = HttpApiEndpoint.delete(
   },
 )
 
+// Saves the learner's note on a question of the path, shared across their paths; the whole text
+// replaces the saved one and the question's current revision is stored with it.
+export const SaveQuestionNoteEndpoint = HttpApiEndpoint.put(
+  'SaveQuestionNote',
+  '/paths/:qualificationPathId/notes/:questionId',
+  {
+    params: QuestionNoteParams,
+    payload: SaveQuestionNotePayload,
+    success: QuestionNoteResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
+// Clears the note on every path, even for a question no longer on this one; clearing again changes nothing.
+export const ClearQuestionNoteEndpoint = HttpApiEndpoint.delete(
+  'ClearQuestionNote',
+  '/paths/:qualificationPathId/notes/:questionId',
+  {
+    params: QuestionNoteParams,
+    success: QuestionNoteResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
 // The FavoriteQuestions of the path or one document a favourites session may hold, with the count settings.
 export const GetFavoritesPreviewEndpoint = HttpApiEndpoint.get(
   'GetFavoritesPreview',
@@ -317,12 +345,14 @@ export const GetSessionQuestionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Opening the explanation before submitting is recorded once; the answer is then assisted (ADR-0002).
+// Opening the explanation, or a saved note, before submitting is recorded once per kind; the answer
+// is then assisted at the note or explanation level (ADR-0002).
 export const RecordSessionAssistanceEndpoint = HttpApiEndpoint.post(
   'RecordSessionAssistance',
   '/paths/:qualificationPathId/sessions/:sessionId/questions/:position/assistance',
   {
     params: SessionQuestionParams,
+    payload: RecordSessionAssistancePayload,
     success: RecordSessionAssistanceResponse,
     error: [InternalServerError, RateLimitExceeded, PathAccessDenied, SessionQuestionNotFound],
   },
@@ -360,6 +390,8 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(StartReviewSessionEndpoint)
   .add(MarkFavoriteQuestionEndpoint)
   .add(UnmarkFavoriteQuestionEndpoint)
+  .add(SaveQuestionNoteEndpoint)
+  .add(ClearQuestionNoteEndpoint)
   .add(GetFavoritesPreviewEndpoint)
   .add(GetFavoritesSessionEndpoint)
   .add(StartFavoritesSessionEndpoint)

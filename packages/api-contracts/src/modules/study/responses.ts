@@ -11,6 +11,7 @@ import {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { QuestionNoteText } from '@inzpro/domain/modules/study/question-note'
 import {
   continueStudyNextStep,
   reviewNextStep,
@@ -118,6 +119,27 @@ export const FavoriteQuestion = Schema.Struct({
 export type FavoriteQuestion = typeof FavoriteQuestion.Type
 
 export const FavoriteQuestionResponse = FavoriteQuestion
+
+/** The learner's PersonalQuestionNote, shared across their paths. */
+export const QuestionNote = Schema.Struct({
+  text: QuestionNoteText,
+  updatedAt: UtcIsoDateTime,
+  // The question's current revision is substantively newer than the one current at the last edit,
+  // so the note may refer to earlier wording.
+  refersToEarlierWording: Schema.Boolean,
+})
+
+export type QuestionNote = typeof QuestionNote.Type
+
+/** The question's note after saving or clearing it; null once cleared. */
+export const QuestionNoteResult = Schema.Struct({
+  questionId: WrittenQuestionId,
+  note: Schema.NullOr(QuestionNote),
+})
+
+export type QuestionNoteResult = typeof QuestionNoteResult.Type
+
+export const QuestionNoteResponse = QuestionNoteResult
 
 export const OralMaterialsResponse = CursorPaginatedResponse(OralQuestionCategory)
 
@@ -233,7 +255,7 @@ export const SessionAnswerOption = Schema.Struct({
 export const SessionAnswer = Schema.Struct({
   answerId: QuestionAnswerId,
   isCorrect: Schema.Boolean,
-  // The explanation was opened before submitting, so the result is not independent mastery.
+  // The explanation or a saved note was opened before submitting, so the result is not independent mastery.
   isAssisted: Schema.Boolean,
   answeredAt: UtcIsoDateTime,
 })
@@ -252,9 +274,13 @@ export const SessionQuestion = Schema.Struct({
   isWithdrawn: Schema.Boolean,
   // When the backend recorded opening the explanation; before submitting it marks the answer assisted.
   explanationOpenedAt: Schema.NullOr(UtcIsoDateTime),
+  // When the backend recorded opening a saved note; before submitting it gives the note level.
+  noteOpenedAt: Schema.NullOr(UtcIsoDateTime),
   answer: Schema.NullOr(SessionAnswer),
   // The learner's FavoriteQuestion mark now, shared across their paths.
   isFavorite: Schema.Boolean,
+  // The learner's note on the question now, shared across their paths.
+  note: Schema.NullOr(QuestionNote),
 })
 
 export type SessionQuestion = typeof SessionQuestion.Type

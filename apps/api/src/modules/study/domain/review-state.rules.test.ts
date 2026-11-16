@@ -7,7 +7,7 @@ import {
   noteAssistance,
   type AssistanceLevel,
 } from './review-state.model.js'
-import { studyDayOf, writtenReviewRating } from './review-state.rules.js'
+import { answerAssistance, studyDayOf, writtenReviewRating } from './review-state.rules.js'
 
 const rating = (
   isCorrect: boolean,
@@ -23,6 +23,31 @@ const rating = (
     isFirstAnswerOfStudyDay,
     answersCurrentContent,
   })
+
+describe('answerAssistance', () => {
+  const openedAt = Option.some(DateTime.makeUnsafe('2026-11-13T11:00:00.000Z'))
+
+  it('is none when nothing was opened', () => {
+    expect(
+      answerAssistance({ explanationOpenedAt: Option.none(), noteOpenedAt: Option.none() }),
+    ).toBe(noAssistance)
+  })
+
+  it('is note when only the note was opened', () => {
+    expect(answerAssistance({ explanationOpenedAt: Option.none(), noteOpenedAt: openedAt })).toBe(
+      noteAssistance,
+    )
+  })
+
+  it('is explanation when the explanation was opened, even with the note', () => {
+    expect(answerAssistance({ explanationOpenedAt: openedAt, noteOpenedAt: Option.none() })).toBe(
+      explanationAssistance,
+    )
+    expect(answerAssistance({ explanationOpenedAt: openedAt, noteOpenedAt: openedAt })).toBe(
+      explanationAssistance,
+    )
+  })
+})
 
 describe('writtenReviewRating', () => {
   it('rates an independent correct answer Good', () => {

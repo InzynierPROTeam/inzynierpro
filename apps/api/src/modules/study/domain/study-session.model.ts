@@ -18,6 +18,8 @@ import {
 } from '@inzpro/domain/modules/study/study-session'
 import { type Option, Schema } from 'effect'
 
+import type { QuestionNote } from './question-note.model.js'
+
 /** A started study session: its kind and material, fixed size and how far the learner got. */
 export const StudySession = Schema.Struct({
   id: StudySessionId,
@@ -63,14 +65,18 @@ export type SessionQuestion = {
   // A withdrawn revision accepts no further answers, even in a started session (ADR-0003).
   readonly isWithdrawn: boolean
   readonly explanationOpenedAt: Option.Option<DateTimeUtc>
+  // Recorded only when a saved note was opened while an answer could still follow (ADR-0002).
+  readonly noteOpenedAt: Option.Option<DateTimeUtc>
   readonly answer: Option.Option<SessionAnswer>
   // The learner's FavoriteQuestion mark now, shared across their paths.
   readonly isFavorite: boolean
+  // The learner's PersonalQuestionNote now, shared across their paths.
+  readonly note: Option.Option<QuestionNote>
 }
 
 /**
- * A scored answer to store with its learning evidence. Assistance comes from the backend's record
- * of opening the explanation, never from the client; the goal version is the session's.
+ * A scored answer to store with its learning evidence. Assistance comes from the backend's records
+ * of opening the explanation or the note, never from the client; the goal version is the session's.
  */
 export type NewSessionAnswer = {
   readonly userId: UserId

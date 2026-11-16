@@ -28,7 +28,7 @@ export const SessionAnswerActions: React.FC<SessionAnswerActionsProps> = ({
 }) => {
   const { selectedPath } = onboardedRouteApi.useRouteContext()
 
-  // Checking waits for a pending hint record so the answer is stored as assisted.
+  // Checking waits for a pending hint or note record so the answer is stored as assisted.
   const isRecordingAssistance =
     useIsMutating({
       mutationKey: recordAssistanceMutationKey({

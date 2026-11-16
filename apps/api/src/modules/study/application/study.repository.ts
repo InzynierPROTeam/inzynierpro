@@ -5,12 +5,14 @@ import type {
   QuestionRevisionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { QuestionNoteText } from '@inzpro/domain/modules/study/question-note'
 import type {
   SessionQuestionPosition,
   StudySessionId,
 } from '@inzpro/domain/modules/study/study-session'
 import { Context, type Effect } from 'effect'
 import type { LearningRoundNumber } from '~api/modules/study/domain/learning-round.model.js'
+import type { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import type {
   LearningEventContext,
   LearningEventId,
@@ -23,7 +25,7 @@ import type {
   StudySession,
 } from '~api/modules/study/domain/study-session.model.js'
 
-import type { StudyWriteError } from './errors.js'
+import type { QuestionNoteWriteError, StudyWriteError } from './errors.js'
 
 export class StudyRepository extends Context.Service<
   StudyRepository,
@@ -39,7 +41,15 @@ export class StudyRepository extends Context.Service<
      * Records when the explanation was first opened and returns it. The caller checks under the
      * account lock that it was not recorded yet.
      */
-    readonly recordAssistance: (
+    readonly recordExplanationOpening: (
+      sessionId: StudySessionId,
+      position: SessionQuestionPosition,
+    ) => Effect.Effect<DateTimeUtc, StudyWriteError>
+    /**
+     * Records when a saved note was first opened and returns it. The caller checks under the
+     * account lock that it was not recorded yet and that the note is saved.
+     */
+    readonly recordNoteOpening: (
       sessionId: StudySessionId,
       position: SessionQuestionPosition,
     ) => Effect.Effect<DateTimeUtc, StudyWriteError>
@@ -61,6 +71,20 @@ export class StudyRepository extends Context.Service<
     ) => Effect.Effect<void, StudyWriteError>
     /** Removes the learner's FavoriteQuestion mark, if any. */
     readonly unmarkFavorite: (
+      userId: UserId,
+      questionId: WrittenQuestionId,
+    ) => Effect.Effect<void, StudyWriteError>
+    /**
+     * Replaces the learner's PersonalQuestionNote with the text and the question's current revision,
+     * and returns it as stored.
+     */
+    readonly saveNote: (
+      userId: UserId,
+      questionId: WrittenQuestionId,
+      text: QuestionNoteText,
+    ) => Effect.Effect<QuestionNote, QuestionNoteWriteError>
+    /** Deletes the learner's PersonalQuestionNote, if any. */
+    readonly clearNote: (
       userId: UserId,
       questionId: WrittenQuestionId,
     ) => Effect.Effect<void, StudyWriteError>
