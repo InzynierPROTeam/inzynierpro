@@ -18,6 +18,7 @@ import {
   StudySessionId,
   uncoveredQuestions,
 } from '@inzpro/domain/modules/study/study-session'
+import { RichContent } from '@inzpro/rich-content/rich-content'
 import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { makeCursorPaginator, mapCursorPage } from '~api/lib/cursor-pagination.js'
@@ -54,7 +55,7 @@ const SessionQuestionRow = Schema.Struct({
   questionId: WrittenQuestionId,
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
-  explanation: Schema.NonEmptyString,
+  explanation: RichContent,
   answerId: QuestionAnswerId,
   answerText: Schema.NonEmptyString,
   answerIsCorrect: Schema.Boolean,

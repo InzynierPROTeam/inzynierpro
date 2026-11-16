@@ -1,3 +1,9 @@
+import {
+  ByteSize,
+  ContentAssetId,
+  ContentAssetMediaType,
+  ImageDimension,
+} from '@inzpro/domain/modules/learning-content/content-asset'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
@@ -5,6 +11,7 @@ import {
   QuestionRevisionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { RichContent } from '@inzpro/rich-content/rich-content'
 import { Schema } from 'effect'
 
 export const ReferenceDocument = Schema.Struct({
@@ -13,6 +20,17 @@ export const ReferenceDocument = Schema.Struct({
 })
 
 export type ReferenceDocument = typeof ReferenceDocument.Type
+
+export const ContentAsset = Schema.Struct({
+  id: ContentAssetId,
+  storageKey: Schema.NonEmptyString,
+  mediaType: ContentAssetMediaType,
+  width: ImageDimension,
+  height: ImageDimension,
+  size: ByteSize,
+})
+
+export type ContentAsset = typeof ContentAsset.Type
 
 const NewQuestionAnswer = Schema.Struct({
   id: QuestionAnswerId,
@@ -39,7 +57,7 @@ export const NewQuestion = Schema.Struct({
   qualificationPathId: QualificationPathId,
   body: Schema.NonEmptyString,
   answers: Schema.Array(NewQuestionAnswer).check(Schema.isMinLength(3), Schema.isMaxLength(3)),
-  explanation: Schema.NonEmptyString,
+  explanation: RichContent,
   published: Schema.Boolean,
 }).check(Schema.makeFilter(hasValidAnswers, { message: validAnswersMessage }))
 
@@ -65,7 +83,7 @@ export const NewQuestionRevision = Schema.Struct({
   changeKind: RevisionChangeKind,
   body: Schema.NonEmptyString,
   answers: Schema.Array(NewQuestionAnswer).check(Schema.isMinLength(3), Schema.isMaxLength(3)),
-  explanation: Schema.NonEmptyString,
+  explanation: RichContent,
 }).check(Schema.makeFilter(hasValidAnswers, { message: validAnswersMessage }))
 
 export type NewQuestionRevision = typeof NewQuestionRevision.Type

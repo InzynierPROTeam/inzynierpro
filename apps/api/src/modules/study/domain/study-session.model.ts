@@ -16,6 +16,7 @@ import {
   StudySessionId,
   StudySessionKind,
 } from '@inzpro/domain/modules/study/study-session'
+import type { RichContent } from '@inzpro/rich-content/rich-content'
 import { type Option, Schema } from 'effect'
 
 import type { QuestionNote } from './question-note.model.js'
@@ -54,7 +55,7 @@ export type SessionQuestion = {
   readonly questionId: WrittenQuestionId
   readonly questionRevisionId: QuestionRevisionId
   readonly body: string
-  readonly explanation: string
+  readonly explanation: RichContent
   readonly answers: ReadonlyArray<{
     readonly id: QuestionAnswerId
     readonly text: string

@@ -4,6 +4,7 @@ import {
   StudySessionProgress,
 } from '@inzpro/api-contracts/modules/study/responses'
 import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
+import { paragraphs } from '@inzpro/rich-content/rich-content'
 import { Option, Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
@@ -99,7 +100,7 @@ const question = Schema.decodeSync(SessionQuestion)({
   questionId: '30000000-0000-4000-8000-000000000001',
   questionRevisionId: '40000000-0000-4000-8000-000000000001',
   body: 'Question',
-  explanation: 'Explanation',
+  explanation: { content: paragraphs('Explanation'), assets: [] },
   answers: [{ id: '41000000-0000-4000-8000-000000000001', text: 'A', isCorrect: true }],
   isWithdrawn: false,
   explanationOpenedAt: null,

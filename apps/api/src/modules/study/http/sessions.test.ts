@@ -87,7 +87,7 @@ test('starting a session from the preview shows its first question and restores 
 
   expect(first).toMatchObject({ sessionId: session.id, position: 1 })
   expect(first.questionRevisionId).toBe(pinned?.revisionId)
-  expect(first.explanation).toBe(pinned?.explanation)
+  expect(first.explanation.content).toEqual(pinned?.explanation)
   expect(answerIdentities(first.answers)).toEqual(answerIdentities(pinned?.answers ?? []))
   expect(await decodeQuestion(await request(`/sessions/${session.id}/questions/1`))).toEqual(first)
   expect(await decodeSession(await request(`/sessions/${session.id}`))).toEqual(session)

@@ -17,6 +17,7 @@ import {
   startStudyNextStep,
 } from '@inzpro/domain/modules/study/study-session'
 import { Match, Option } from 'effect'
+import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
 import type { FavoritesPreview as FavoritesPreviewModel } from '~api/modules/study/domain/favorites-session.model.js'
 import type { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import type { ReviewPreview as ReviewPreviewModel } from '~api/modules/study/domain/review-session.model.js'
@@ -74,6 +75,7 @@ export const toQuestionNoteResultDto = (result: {
 })
 
 export const toSessionQuestionDto = ({
+  explanation,
   explanationOpenedAt,
   noteOpenedAt,
   note,
@@ -81,6 +83,7 @@ export const toSessionQuestionDto = ({
   ...question
 }: SessionQuestion): SessionQuestionDto => ({
   ...question,
+  explanation: toResolvedRichContentDto(explanation),
   explanationOpenedAt: Option.match(explanationOpenedAt, {
     onNone: () => null,
     onSome: dateTimeUtcToUtcIsoDateTime,

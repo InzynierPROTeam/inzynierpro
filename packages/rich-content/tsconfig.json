@@ -1,0 +1,9 @@
+{
+  "extends": "@inzpro/tools/tsconfig/library.json",
+  "compilerOptions": {
+    "paths": {
+      "~rich-content/*": ["./src/*"]
+    },
+    "types": ["node"]
+  }
+}

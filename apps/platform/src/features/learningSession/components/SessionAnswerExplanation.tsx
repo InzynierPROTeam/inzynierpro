@@ -1,9 +1,11 @@
+import type { ResolvedRichContent } from '@inzpro/api-contracts/modules/learning-content/responses'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Item, ItemContent, ItemMedia } from '@inzpro/ui/components/item'
+import { RichText } from '@inzpro/ui/components/rich-text'
 import { Lightbulb } from 'lucide-react'
 import type React from 'react'
 
-type SessionAnswerExplanationProps = { explanation: string }
+type SessionAnswerExplanationProps = { explanation: ResolvedRichContent }
 
 export const SessionAnswerExplanation: React.FC<SessionAnswerExplanationProps> = ({
   explanation,
@@ -14,6 +16,11 @@ export const SessionAnswerExplanation: React.FC<SessionAnswerExplanationProps> =
         <Lightbulb />
       </IconWrapper>
     </ItemMedia>
-    <ItemContent className="leading-relaxed whitespace-pre-line">{explanation}</ItemContent>
+    <ItemContent>
+      <RichText
+        content={explanation.content}
+        assets={explanation.assets}
+      />
+    </ItemContent>
   </Item>
 )

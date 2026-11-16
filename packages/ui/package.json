@@ -17,6 +17,7 @@
     "@base-ui/react": "catalog:",
     "@fontsource-variable/nunito-sans": "catalog:",
     "@inzpro/react-utils": "workspace:*",
+    "@inzpro/rich-content": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "effect": "catalog:",

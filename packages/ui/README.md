@@ -25,6 +25,10 @@ import { ThemeProvider } from '@inzpro/ui/providers/theme-provider'
 
 The permitted workspace directions are defined in [policy.ts](../tools/src/oxlint/architecture-policy.ts). Follow the [architecture guide](../../docs/architecture.md) for imports, wildcard exports, test exceptions and verification.
 
+## Rich text
+
+`components/rich-text` renders [rich content](../../docs/rich-content.md) with the shared Typeset styles from `src/styles/typeset.css`. Callers pass the content and its asset addresses from the API response.
+
 ## Suspense queries
 
 `components/containers/suspense-query-boundary` provides a resettable `SuspenseQueryWrapper`, render-prop `SuspenseQuery` and `WithSuspenseQuery`. The wrapper coordinates React Suspense, an error boundary and TanStack Query error reset. Loading, empty and error presentations are supplied by the consumer; `undefined` fallbacks render nothing in the shared package.

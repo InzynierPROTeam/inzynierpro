@@ -23,6 +23,7 @@ import {
   startStudyNextStep,
 } from '@inzpro/domain/modules/study/study-session'
 import { Schema } from 'effect'
+import { ResolvedRichContent } from '~api-contracts/modules/learning-content/responses.js'
 import { CursorPaginatedResponse } from '~api-contracts/utils/pagination.js'
 
 export const DocumentQuestionPool = Schema.Struct({
@@ -254,7 +255,7 @@ export const SessionQuestion = Schema.Struct({
   questionId: WrittenQuestionId,
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
-  explanation: Schema.NonEmptyString,
+  explanation: ResolvedRichContent,
   // The session's stored presentation order.
   answers: Schema.Array(SessionAnswerOption),
   // A withdrawn revision accepts no answer, even in a started session (ADR-0003).
