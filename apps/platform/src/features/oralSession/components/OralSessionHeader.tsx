@@ -34,7 +34,6 @@ export const OralSessionHeader = () => {
           params: { qualificationPathId: selectedPath.id, sessionId },
         })}
         isDataEmpty={session => session === null}
-        // The question card explains a missing session.
         noDataFallback={null}
       >
         {session => <OralSessionHeaderContent session={session} />}
@@ -95,10 +94,7 @@ const QuestionTraverseLink: React.FC<QuestionTraverseLinkProps> = ({
     to="/ustny/sesja/$sessionId/$questionNumber"
     params={{ sessionId, questionNumber }}
     resetScroll={false}
-    // Moving between questions does not add history entries to step through on the way back.
     replace
-    // Loads the neighbouring question as soon as this one shows, so stepping to it is instant
-    // without a hover first (touch screens).
     preload="render"
   />
 )

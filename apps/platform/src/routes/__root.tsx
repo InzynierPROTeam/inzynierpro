@@ -34,7 +34,6 @@ function syncTrackingConsent(consent: TrackingConsent) {
   setMetaPixelConsent(env.VITE_META_PIXEL_ID, consent.advertising)
 }
 
-// Reads the request cookie during SSR, so the server renders the saved theme.
 const themeCookies: ThemeCookies = { get: getCookie, set: setCookie }
 
 type RootDocumentProps = { children: React.ReactNode }

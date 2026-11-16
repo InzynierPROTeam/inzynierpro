@@ -33,9 +33,7 @@ test('a learner studies an oral category with the answer revealed and sees their
 
   await selfAssessment.getByRole('button', { name: 'Łatwe' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 2 z 4' })).toBeVisible()
-  // The reveal choice is remembered for the next question.
   await expect(answer).toHaveAttribute('aria-expanded', 'true')
-  // After the first rating the scale is explained only on request.
   await expect(scaleExplanation).toBeHidden()
 
   await page.getByRole('button', { name: 'Jak działa skala trudności' }).click()

@@ -11,7 +11,6 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { recordStudySessionAssistance } from '../actions'
 
-// Shared by hints and notes so submitting an answer can wait for both assistance records.
 export const recordAssistanceMutationKey = ({
   params,
 }: Pick<RecordSessionAssistanceRequest, 'params'>) => ['recordSessionAssistance', params] as const
@@ -38,7 +37,6 @@ export const useRecordSessionAssistance = (userId: UserId, req: RecordSessionAss
     onSuccess: result => {
       client.setQueryData(question.queryKey, result)
     },
-    // Restore server state so opening again can retry the failed record.
     onError: () => client.invalidateQueries(question),
   })
 }

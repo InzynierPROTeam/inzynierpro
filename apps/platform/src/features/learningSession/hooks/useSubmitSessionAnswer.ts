@@ -90,7 +90,6 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
     onError: async (error, req) => {
       const { question, session } = sessionQueries(userId, req)
 
-      // Withdrawal skips the question without penalising the learner (ADR-0003).
       if (Predicate.isTagged(error, 'SessionQuestionWithdrawn')) {
         client.setQueryData(question.queryKey, current =>
           current === undefined || current === null ? current : withdrawnQuestion(current),
@@ -101,7 +100,6 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
 
       await Promise.all([client.invalidateQueries(question), client.invalidateQueries(session)])
     },
-    // Refresh progress outside this session; its own reads are updated above.
     onSettled: (_result, _error, { params }) =>
       client.invalidateQueries({
         queryKey: studyKeys.progress(userId, params.qualificationPathId),

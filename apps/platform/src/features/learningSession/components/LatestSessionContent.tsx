@@ -100,7 +100,6 @@ const EndedSessionContent: React.FC<SessionContentProps> = ({ session }) => (
 )
 
 type SessionTileContentSkeletonProps = {
-  // The disabled action stands in for the loaded one, so it must not repeat another card's label.
   actionLabel?: string
 }
 

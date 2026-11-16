@@ -21,7 +21,6 @@ export const useEndOralSession = (userId: UserId) => {
           queryKey: studyKeys.oralSession(userId, req.params.qualificationPathId, session.id),
         }),
       ])
-      // The summary replaces the question, so going back skips the ended session.
       await navigate({
         to: '/ustny/sesja/$sessionId/podsumowanie',
         params: { sessionId: session.id },

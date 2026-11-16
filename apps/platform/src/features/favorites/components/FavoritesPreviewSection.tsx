@@ -183,7 +183,6 @@ const NoFavorites = () => (
 
 type ActiveFavoritesNoticeProps = { session: StudySession }
 
-// Reached only by typing the URL: the app links an unfinished favourites session straight to its question.
 const ActiveFavoritesNotice: React.FC<ActiveFavoritesNoticeProps> = ({ session }) => (
   <Card>
     <CardContent>

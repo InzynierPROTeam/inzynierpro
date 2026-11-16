@@ -176,7 +176,6 @@ const NothingDue: React.FC<NothingDueProps> = ({ preview }) => (
 
 type ActiveReviewNoticeProps = { session: StudySession }
 
-// Reached only by typing the URL: the app links an unfinished review straight to its question.
 const ActiveReviewNotice: React.FC<ActiveReviewNoticeProps> = ({ session }) => (
   <Card>
     <CardContent>

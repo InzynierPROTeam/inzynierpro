@@ -79,7 +79,6 @@ export const StartLearningSessionSection = () => {
 
 type ActiveSessionNoticeProps = { session: StudySession }
 
-// Reached only by typing the URL: the app links an active session straight to its question.
 const ActiveSessionNotice: React.FC<ActiveSessionNoticeProps> = ({ session }) => (
   <Card>
     <CardContent>

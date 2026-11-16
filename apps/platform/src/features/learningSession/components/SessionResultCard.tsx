@@ -28,7 +28,6 @@ type SessionResultCardProps = { summary: StudySessionSummary }
 
 export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary }) => {
   const { result, progress } = summary
-  // Questions withdrawn before an answer were skipped: they are neither wrong nor scored (ADR-0003).
   const scored = scoredQuestionCount(progress)
 
   return (

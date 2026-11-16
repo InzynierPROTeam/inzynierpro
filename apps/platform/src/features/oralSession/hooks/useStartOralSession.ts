@@ -16,14 +16,12 @@ export const useStartOralSession = (userId: UserId) => {
       await client.invalidateQueries({
         queryKey: studyKeys.oralProgress(userId, req.params.qualificationPathId),
       })
-      // The session replaces the preview, so going back skips it and returns where the user came from.
       await navigate({
         to: '/ustny/sesja/$sessionId/$questionNumber',
         params: { sessionId: session.id, questionNumber: session.progress.currentQuestion },
         replace: true,
       })
     },
-    // The preview is refreshed so it shows the current scope or the unfinished session to continue.
     onError: async (error, req) => {
       if (
         Predicate.isTagged(error, 'StaleSessionPreview') ||

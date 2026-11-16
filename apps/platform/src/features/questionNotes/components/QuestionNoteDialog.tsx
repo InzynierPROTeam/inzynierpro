@@ -48,7 +48,6 @@ export const QuestionNoteDialog: React.FC<QuestionNoteDialogProps> = ({ question
     }),
   )
 
-  // Record while the session loads too; the backend ignores openings after the session ends.
   const needsAssistanceRecord =
     question.note !== null &&
     question.answer === null &&

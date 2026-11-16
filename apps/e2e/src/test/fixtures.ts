@@ -6,9 +6,6 @@ import { test as base, expect, type Page } from '@playwright/test'
 import { apiUrl, businessTime, platformUrl } from '../environment'
 import { latestSignInCode } from './outbox'
 
-// A seeded technical path: building construction, full scope, both exams, an open session.
-// Mirrors `technicalConfiguration` in `apps/api/src/test/preparation.ts`; the suite cannot import
-// API sources, so update both when the technical seed changes.
 export const technicalConfiguration = {
   specializationId: '60000000-0000-4000-8000-000000000001',
   qualificationKindId: '70000000-0000-4000-8000-000000000001',
@@ -18,8 +15,6 @@ export const technicalConfiguration = {
   oralExamDate: null,
 } satisfies typeof CompleteOnboardingPayload.Encoded
 
-// The second seeded path: architecture design in a restricted scope with three Building Law
-// questions, so its learning round can be finished in a few answers.
 export const smallPathConfiguration = {
   specializationId: '60000000-0000-4000-8000-000000000002',
   qualificationKindId: '70000000-0000-4000-8000-000000000002',
@@ -31,7 +26,6 @@ export const smallPathConfiguration = {
 
 export const uniqueEmail = (label: string) => `e2e-${label}-${crypto.randomUUID()}@example.com`
 
-// Every Node-side visitor reports its own address, so sign-in rate limits never collide.
 const uniqueAddress = () => `10.${[0, 0, 0].map(() => Math.floor(Math.random() * 255)).join('.')}`
 
 const signInThroughApi = async (email: string) => {
@@ -51,7 +45,6 @@ type Account = { readonly email: string }
 
 type SignedInPage = { readonly page: Page; readonly account: Account }
 
-// Declines optional cookies up front, so the consent banner never covers the page.
 const declineOptionalCookies = (page: Page) =>
   page.context().addCookies([
     {
@@ -82,15 +75,11 @@ export const test = base.extend<{
   visitor: async ({ page }, use) => {
     const address = uniqueAddress()
 
-    // Each test is its own client, as separate people are, so rate limits never collide. The
-    // header is set below the page, so it adds no CORS preflight.
     await page
       .context()
       .route(`${apiUrl}/**`, route =>
         route.continue({ headers: { ...route.request().headers(), 'x-forwarded-for': address } }),
       )
-    // Browser code sees the same date as the API. Server rendering in the Cloudflare runtime keeps
-    // the real clock, so pages must take dates from the API rather than compute them.
     await page.clock.setFixedTime(businessTime)
     await declineOptionalCookies(page)
     await use(page)

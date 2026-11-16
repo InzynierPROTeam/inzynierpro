@@ -3,9 +3,6 @@ import { test } from '~e2e/test/fixtures'
 
 const buildingLaw = 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'
 
-// The E2E API keeps a fixed business time, so an answer schedules its review for later and no
-// question becomes due here; selecting and answering due questions is covered by the API tests.
-
 test('before any answer the reviews tile and a category explain how reviews get scheduled', async ({
   onboarded: { page },
 }) => {

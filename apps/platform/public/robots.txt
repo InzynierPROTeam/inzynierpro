@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 
-# AI search engine bots
 User-agent: GPTBot
 Allow: /
 

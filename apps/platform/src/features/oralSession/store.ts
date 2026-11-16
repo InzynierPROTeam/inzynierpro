@@ -5,7 +5,6 @@ import { Duration } from 'effect'
 const answerVisibleKey = `${appNameKebabCase}.oral-answer-visible`
 export const ORAL_ANSWER_VISIBILITY_EVENT_NAME = 'oral_answer_visibility_update'
 
-// The choice stays on this device and is never study assistance (ADR-0006).
 export const oralAnswerVisibilityStore = {
   get: () => getCookie(answerVisibleKey) === 'true',
   set: (visible: boolean) => {

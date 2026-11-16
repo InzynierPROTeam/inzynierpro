@@ -51,7 +51,6 @@ export const OralSelfAssessmentActions: React.FC<OralSelfAssessmentActionsProps>
           to: '/ustny/sesja/$sessionId/$questionNumber',
           params: { sessionId: session.id, questionNumber: session.progress.currentQuestion },
           resetScroll: false,
-          // Moving between questions does not add history entries to step through on the way back.
           replace: true,
         })
       : ending.mutate({
@@ -123,8 +122,6 @@ export const OralSelfAssessmentActions: React.FC<OralSelfAssessmentActionsProps>
 
 type ClosedQuestionActionProps = { sessionId: OralSessionQuestion['sessionId'] }
 
-// A question that can no longer be assessed leads on: to the open question to continue from, or to
-// the summary once nothing is left open.
 const ClosedQuestionAction: React.FC<ClosedQuestionActionProps> = ({ sessionId }) => {
   const {
     selectedPath,

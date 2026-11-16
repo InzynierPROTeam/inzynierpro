@@ -49,8 +49,6 @@ export const sessionNextStep = (
       ? 'end'
       : 'next'
 
-// A terminal withdrawal notice replaces the question notice, except after a regular final answer
-// which already ends the session (ADR-0003).
 export const sessionWithdrawalNotice = (
   question: Pick<SessionQuestion, 'position' | 'isWithdrawn' | 'answer'>,
   session: Pick<StudySession, 'status' | 'progress'> | null | undefined,

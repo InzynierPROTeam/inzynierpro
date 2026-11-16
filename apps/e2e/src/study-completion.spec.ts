@@ -5,7 +5,6 @@ import { chooseTechnicalPath } from '~e2e/test/paths'
 const buildingLaw = 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'
 const technicalConditions = 'Warunki techniczne, jakim powinny odpowiadać budynki i ich usytuowanie'
 
-// Every category of the technical seed has this many questions.
 const categoryQuestions = 5
 
 const answers = (page: Page) =>
@@ -77,7 +76,6 @@ test('a new learner chooses a path, studies, reloads an answer and completes the
   await finishSession(page)
   await page.reload()
 
-  // The ring's label carries the score; the first option is not always the correct one.
   await expect(page.getByRole('img', { name: /^Wynik \d+%/ })).toBeVisible()
   await expect(page.getByText(`${categoryQuestions} z ${categoryQuestions} pytań`)).toBeVisible()
   await expect(page.getByRole('list', { name: 'Pytania sesji' }).getByRole('link')).toHaveCount(
@@ -218,7 +216,6 @@ test('after every category is answered, study starts again from the first one', 
 test.describe('on the small seeded path', () => {
   test.use({ pathConfiguration: smallPathConfiguration })
 
-  // The small path has one category with three questions.
   const roundQuestions = 3
 
   const buildingLawCategory = (page: Page) =>

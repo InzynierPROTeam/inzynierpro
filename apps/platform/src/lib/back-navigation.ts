@@ -2,10 +2,8 @@ import { getItem, setItem } from '@inzpro/browser-utils/session-storage'
 import type { HistoryLocation, RouterHistory } from '@tanstack/react-router'
 import { Effect, Option, Schema } from 'effect'
 
-// Persist origins across reloads without adding navigation state to the URL.
 const BackOrigin = Schema.Struct({
   href: Schema.String,
-  /** TanStack Router's history index, not an index in the stored origins. */
   index: Schema.Int,
 })
 
@@ -52,7 +50,6 @@ export const trackBackNavigation = (history: RouterHistory) => {
 
   history.subscribe(({ location, action }) => {
     if (action.type === 'PUSH' || action.type === 'REPLACE') {
-      // Search changes and redirects keep the page's original back target.
       const origin =
         action.type === 'PUSH' && location.pathname !== previous.pathname
           ? Option.some({ href: previous.href, index: previous.state.__TSR_index })

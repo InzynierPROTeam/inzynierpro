@@ -26,7 +26,6 @@ export const SessionAnswerActions: React.FC<SessionAnswerActionsProps> = ({
 }) => {
   const { selectedPath } = onboardedRouteApi.useRouteContext()
 
-  // Checking waits for a pending hint or note record so the answer is stored as assisted.
   const isRecordingAssistance =
     useIsMutating({
       mutationKey: recordAssistanceMutationKey({
@@ -105,7 +104,6 @@ const NextQuestionButton: React.FC<NextQuestionButtonProps> = ({ question }) => 
             questionNumber: nextQuestionPosition(question.position, session.progress.total),
           }}
           resetScroll={false}
-          // Moving between questions does not add history entries to step through on the way back.
           replace
         />
       }

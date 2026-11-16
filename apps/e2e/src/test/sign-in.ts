@@ -12,7 +12,6 @@ export const requestSignInCode = async (page: Page, email: string) => {
   return latestSignInCode(email, previousEmailCount)
 }
 
-// Entering all six digits submits the code.
 export const enterSignInCode = (page: Page, code: string) =>
   page.getByRole('textbox', { name: 'Kod weryfikacyjny' }).fill(code)
 

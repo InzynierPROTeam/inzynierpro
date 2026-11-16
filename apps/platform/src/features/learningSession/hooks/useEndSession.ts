@@ -16,7 +16,6 @@ export const useEndSession = (userId: UserId) => {
       await client.invalidateQueries({
         queryKey: studyKeys.path(userId, req.params.qualificationPathId),
       })
-      // The summary replaces the question, so going back skips the ended session.
       await navigate({
         to: '/nauka/sesja/$sessionId/podsumowanie',
         params: { sessionId: session.id },

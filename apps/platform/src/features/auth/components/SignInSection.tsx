@@ -24,7 +24,6 @@ import { useSignInWithGoogle } from '../hooks/useSignInWithGoogle'
 import { signInPageRouteApi } from '../utils'
 import { SignInForm } from './SignInForm'
 
-// The user agent is constant for the page lifetime, so there is nothing to subscribe to.
 const subscribeToBrowser = () => () => undefined
 
 export const SignInSection = () => {

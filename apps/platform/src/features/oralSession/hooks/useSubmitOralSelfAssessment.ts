@@ -33,7 +33,6 @@ export const useSubmitOralSelfAssessment = (userId: UserId) => {
     onError: async (error, req) => {
       const { question, session } = sessionQueries(userId, req)
 
-      // Withdrawal skips the question without penalising the learner (ADR-0003).
       if (Predicate.isTagged(error, 'SessionQuestionWithdrawn')) {
         client.setQueryData(question.queryKey, current =>
           current === undefined || current === null

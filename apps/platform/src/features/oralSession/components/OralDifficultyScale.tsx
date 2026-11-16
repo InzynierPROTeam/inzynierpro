@@ -28,7 +28,6 @@ export const OralDifficultyScaleExplanation = () => (
   </div>
 )
 
-// A popover opens on tap as well as click, so the explanation stays reachable on touch screens.
 export const OralDifficultyScaleHelp = () => (
   <Popover>
     <PopoverTrigger

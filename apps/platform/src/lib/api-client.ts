@@ -6,7 +6,6 @@ import { Effect } from 'effect'
 import { FetchHttpClient, HttpClient, HttpClientRequest } from 'effect/http'
 import { env } from '~platform/lib/env'
 
-// During SSR only the visitor's cookie is forwarded; other request headers stay on the server.
 const getVisitorCookie = createServerOnlyFn(() => getRequestHeader('cookie'))
 
 const withVisitorCookie = (request: HttpClientRequest.HttpClientRequest) => {
@@ -20,7 +19,6 @@ export const apiHttpClient = Effect.runSync(
     Effect.map(client =>
       client.pipe(
         HttpClient.mapRequest(withVisitorCookie),
-        // The browser sends the cross-origin session cookie only with credentials included.
         HttpClient.transform(effect =>
           Effect.provideService(effect, FetchHttpClient.RequestInit, { credentials: 'include' }),
         ),

@@ -47,7 +47,6 @@ export const SessionQuestionResultsCard: React.FC<SessionQuestionResultsCardProp
               params: { qualificationPathId: selectedPath.id, sessionId },
               query: {},
             })}
-            // A missing or foreign session has no questions; the summary above already says so.
             isDataEmpty={data => data.pages.every(page => page.data.length === 0)}
             noDataFallback={null}
           >

@@ -11,7 +11,6 @@ export const Odometer: React.FC<OdometerProps> = ({ value, entered }) => {
     <span className="inline-flex tabular-nums">
       {columns.map((digit, index) => (
         <span
-          // Columns keep their place value as the number changes.
           key={columns.length - index}
           className="inline-block h-[1lh] overflow-hidden"
         >

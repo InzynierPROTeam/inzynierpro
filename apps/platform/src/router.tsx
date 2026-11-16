@@ -56,7 +56,6 @@ declare module '@tanstack/react-router' {
   }
 
   interface StaticDataRouteOption {
-    /** The page name shown on a BackLink that returns to this page. */
     backLabel?: string
   }
 }

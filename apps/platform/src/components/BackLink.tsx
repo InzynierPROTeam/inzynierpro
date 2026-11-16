@@ -22,10 +22,6 @@ const backLabelOf = (router: AnyRouter, href: string | undefined) => {
 }
 
 type BackLinkProps<TTo extends string> = {
-  /**
-   * Where to go when the user did not come from a back target of the app (direct entry, new tab,
-   * sign-in). Without a fallback the link is hidden in that case.
-   */
   fallback?: UseLinkPropsOptions<RegisteredRouter, string, TTo>
 }
 
@@ -92,7 +88,6 @@ const OriginBackLink: React.FC<OriginBackLinkProps> = ({ origin, label }) => {
             event.preventDefault()
             const steps = origin.index - location.state.__TSR_index
 
-            // Stepping back restores the origin entry together with its scroll position.
             if (steps < 0) {
               router.history.go(steps)
             } else {

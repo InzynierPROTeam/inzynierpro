@@ -40,7 +40,6 @@ export const useToggleFavorite = (userId: UserId, req: GetSessionQuestionRequest
       toast.add({ type: 'error', title: 'Nie udało się zmienić ulubionych. Spróbuj ponownie.' })
       await client.invalidateQueries(question)
     },
-    // Other sessions share the mark; refresh their copies when next shown.
     onSettled: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: studyKeys.favorites(userId), refetchType: 'none' }),

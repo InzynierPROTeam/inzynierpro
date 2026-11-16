@@ -49,7 +49,6 @@ export const OralSessionQuestionsCard: React.FC<OralSessionQuestionsCardProps> =
               params: { qualificationPathId: selectedPath.id, sessionId },
               query: {},
             })}
-            // A missing, foreign or unfinished session has no results; the summary above already says so.
             isDataEmpty={data => data.pages.every(page => page.data.length === 0)}
             noDataFallback={null}
           >

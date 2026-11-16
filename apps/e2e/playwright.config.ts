@@ -5,7 +5,6 @@ import { apiUrl, outboxPath, platformUrl } from './src/environment'
 
 const isCI = process.env.CI !== undefined
 
-// Ports differ from local development, so the suite runs beside `pnpm dev`.
 const platformEnv = {
   PORT: new URL(platformUrl).port,
   VITE_API_URL: apiUrl,
@@ -21,7 +20,6 @@ export default defineConfig({
   fullyParallel: true,
   workers: isCI ? 2 : undefined,
   forbidOnly: isCI,
-  // In CI the retry only records a trace; a test that passes on retry still fails the run.
   retries: isCI ? 1 : 0,
   failOnFlakyTests: isCI,
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list']],
@@ -41,7 +39,6 @@ export default defineConfig({
         PORT: new URL(apiUrl).port,
         BETTER_AUTH_URL: apiUrl,
         TRUSTED_ORIGINS: platformUrl,
-        // Every test reports its own client address; see the `visitor` fixture.
         TRUSTED_CLIENT_IP_HEADER: 'x-forwarded-for',
         E2E_OUTBOX: outboxPath,
       },

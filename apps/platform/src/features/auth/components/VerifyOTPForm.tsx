@@ -30,7 +30,6 @@ export const VerifyOTPForm = () => {
     mutationFn: async (data: SignInEmailOtpReq, context) => {
       await signInEmailOtp(data)
 
-      // The next route guard reads the new session instead of a cached signed-out one.
       context.client.removeQueries({ queryKey: identityKeys.all })
     },
     mutationKey: ['signInEmailOtp'],

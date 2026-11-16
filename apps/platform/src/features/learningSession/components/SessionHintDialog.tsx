@@ -43,7 +43,6 @@ export const SessionHintDialog: React.FC<SessionHintDialogProps> = ({ question }
     }),
   )
 
-  // Record while the session loads too; the backend ignores openings after the session ends.
   const needsAssistanceRecord =
     question.answer === null &&
     question.explanationOpenedAt === null &&

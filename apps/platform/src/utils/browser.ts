@@ -9,7 +9,6 @@ const isInAppUserAgent = (userAgent: string | undefined) =>
   userAgent !== undefined &&
   (UAParser(userAgent).browser.type === 'inapp' || inAppBrowserTokens.test(userAgent))
 
-// The server reads the request's user agent, so SSR renders the same state the browser hydrates.
 export const getIsInAppBrowser = createIsomorphicFn()
   .server(() => isInAppUserAgent(getRequestHeader('user-agent')))
   .client(() => isInAppUserAgent(globalThis.navigator.userAgent))
