@@ -14,7 +14,7 @@ Shared development dependencies live in the root package. Run `pnpm check` to ap
 
 Leave implementation changes uncommitted for review in the editor. Commit, push, or open a pull request only when explicitly requested.
 
-A pre-commit hook lints and formats only the staged files; it is not the quality gate. CI runs `pnpm check:ci` (format check, lint with the architecture and naming rules, types, tests with coverage against real PostgreSQL and Redis, build), fails when the checks change the working tree, and runs the E2E suite as a separate job.
+A pre-commit hook lints and formats only the staged files. Pull requests run `pnpm check:pr`: formatting, followed by lint with the architecture and naming rules and type checking in parallel on the same runner. Pushes to `dev` and `main` run `pnpm check:ci` (including tests with coverage against real PostgreSQL and Redis and builds), alongside the separate E2E job. All gates must pass before deployment; a merge can temporarily leave the branch red. Changes confined to `docs/` skip CI and deployment; files outside `docs/`, including README files, run the normal checks. See [deployment.md](docs/deployment.md#ci-work-selection) for filtering and cancellation rules.
 
 Every change gets two separate reviews before it merges to `dev`: **standards** (CODING_STANDARDS.md and the ADRs it links) and **spec** (the originating issue and its parent specification). The `code-review` agent skill runs both side by side against a base branch; reviewers read the issue itself rather than a copy of it.
 
