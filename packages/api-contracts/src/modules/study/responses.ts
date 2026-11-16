@@ -106,7 +106,7 @@ export const FavoritesPreview = Schema.Struct({
   // CONTRACT: A null document means favourites span the whole path.
   document: Schema.NullOr(SessionDocument),
   favoriteQuestionCount: QuestionCount,
-  // CONTRACT: settings is null when no question is marked.
+  // CONTRACT: settings is null when no eligible favourite question is available in this scope.
   settings: Schema.NullOr(SessionCountSettings),
 })
 
@@ -325,6 +325,8 @@ export const OralSessionQuestion = Schema.Struct({
   oralRevisionId: OralRevisionId,
   body: ResolvedRichContent,
   answer: ResolvedRichContent,
+  note: Schema.NullOr(QuestionNote),
+  isFavorite: Schema.Boolean,
   isWithdrawn: Schema.Boolean,
   selfAssessment: Schema.NullOr(StoredOralSelfAssessment),
 })
@@ -393,3 +395,25 @@ export const OralReviewPreview = Schema.Struct({
 export type OralReviewPreview = typeof OralReviewPreview.Type
 
 export const OralReviewPreviewResponse = Schema.NullOr(OralReviewPreview)
+
+export const OralFavoritesPreview = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  favoriteQuestionCount: QuestionCount,
+  settings: Schema.NullOr(SessionCountSettings),
+})
+
+export type OralFavoritesPreview = typeof OralFavoritesPreview.Type
+
+export const OralFavoritesPreviewResponse = OralFavoritesPreview
+
+export const OralFavoriteQuestion = Schema.Struct({
+  questionId: OralQuestionId,
+  isFavorite: Schema.Boolean,
+})
+
+export const OralQuestionNoteResult = Schema.Struct({
+  questionId: OralQuestionId,
+  note: Schema.NullOr(QuestionNote),
+})
+
+export type OralQuestionNoteResult = typeof OralQuestionNoteResult.Type

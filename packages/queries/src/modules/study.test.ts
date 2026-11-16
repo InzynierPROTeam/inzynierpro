@@ -1,6 +1,7 @@
 import { SessionPreview } from '@inzpro/api-contracts/modules/study/responses'
 import { UserId } from '@inzpro/domain/modules/identity/user'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
+import { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
 import { SessionQuestionPosition, StudySessionId } from '@inzpro/domain/modules/study/study-session'
 import { withHttpServer } from '@inzpro/testing/http'
 import { Effect, Schema } from 'effect'
@@ -8,6 +9,10 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { preparationKeys, pathsQueryOptions } from '~queries/modules/preparation.js'
 import {
+  oralFavoritesPreviewQueryOptions,
+  oralFavoritesSessionQueryOptions,
+  oralSessionQuestionQueryOptions,
+  oralSessionQueryOptions,
   oralReviewPreviewQueryOptions,
   oralReviewSessionQueryOptions,
   documentQueryOptions,
@@ -361,3 +366,105 @@ test('oral review queries forward category scope and invalidate with oral progre
         expect(client.getQueryState(otherPath.queryKey)?.isInvalidated).toBe(false)
       }),
   ))
+
+test('oral favourites and question queries isolate accounts and invalidate shared marks and notes across paths without refreshing sessions', () => {
+  const otherUserId = UserId.make('a0000000-0000-4000-8000-000000000002')
+  const sessionId = OralStudySessionId.make('b0000000-0000-4000-8000-000000000001')
+  const position = SessionQuestionPosition.make(1)
+
+  return withHttpServer(
+    [pathA, pathB].flatMap(qualificationPathId => [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${qualificationPathId}/oral/favorites-preview`,
+        HttpServerResponse.jsonUnsafe({
+          qualificationPathId,
+          favoriteQuestionCount: 0,
+          settings: null,
+        }),
+      ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${qualificationPathId}/oral/favorites-session`,
+        HttpServerResponse.jsonUnsafe(null),
+      ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${qualificationPathId}/oral/sessions/${sessionId}/questions/1`,
+        HttpServerResponse.jsonUnsafe(null),
+      ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${qualificationPathId}/oral/sessions/${sessionId}`,
+        HttpServerResponse.jsonUnsafe(null),
+      ),
+    ]),
+    ({ httpClient }) =>
+      withQueryClient(async client => {
+        const queries = [pathA, pathB].map(qualificationPathId => ({
+          preview: oralFavoritesPreviewQueryOptions(httpClient, userId, {
+            params: { qualificationPathId },
+          }),
+          unfinished: oralFavoritesSessionQueryOptions(httpClient, userId, {
+            params: { qualificationPathId },
+          }),
+          question: oralSessionQuestionQueryOptions(httpClient, userId, {
+            params: { qualificationPathId, sessionId, position },
+          }),
+          session: oralSessionQueryOptions(httpClient, userId, {
+            params: { qualificationPathId, sessionId },
+          }),
+        }))
+
+        const otherAccount = oralSessionQuestionQueryOptions(httpClient, otherUserId, {
+          params: { qualificationPathId: pathA, sessionId, position },
+        })
+
+        const otherFavorites = oralFavoritesPreviewQueryOptions(httpClient, otherUserId, {
+          params: { qualificationPathId: pathA },
+        })
+
+        for (const scope of queries) {
+          expect(await client.query(scope.preview)).toMatchObject({
+            favoriteQuestionCount: 0,
+            settings: null,
+          })
+          expect(await client.query(scope.unfinished)).toBeNull()
+          expect(await client.query(scope.question)).toBeNull()
+          expect(await client.query(scope.session)).toBeNull()
+        }
+
+        await client.query(otherAccount)
+        await client.query(otherFavorites)
+        await client.invalidateQueries({
+          queryKey: studyKeys.oralQuestions(userId),
+          refetchType: 'none',
+        })
+
+        for (const scope of queries) {
+          expect(client.getQueryState(scope.question.queryKey)?.isInvalidated).toBe(true)
+          expect(client.getQueryState(scope.preview.queryKey)?.isInvalidated).toBe(false)
+          expect(client.getQueryState(scope.session.queryKey)?.isInvalidated).toBe(false)
+          expect(client.getQueryState(scope.unfinished.queryKey)?.isInvalidated).toBe(false)
+        }
+
+        await client.invalidateQueries({
+          queryKey: studyKeys.oralFavorites(userId),
+          refetchType: 'none',
+        })
+
+        for (const scope of queries) {
+          expect(client.getQueryState(scope.preview.queryKey)?.isInvalidated).toBe(true)
+        }
+
+        expect(client.getQueryState(otherAccount.queryKey)?.isInvalidated).toBe(false)
+        expect(client.getQueryState(otherFavorites.queryKey)?.isInvalidated).toBe(false)
+        await client.invalidateQueries({
+          queryKey: studyKeys.oralProgress(userId, pathA),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(queries[0]!.unfinished.queryKey)?.isInvalidated).toBe(true)
+        expect(client.getQueryState(queries[1]!.unfinished.queryKey)?.isInvalidated).toBe(false)
+      }),
+  )
+})

@@ -3,6 +3,7 @@ import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
 import {
+  favoritesStudySession,
   regularStudySession,
   reviewNextStep,
   reviewStudySession,
@@ -40,6 +41,7 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
     const review = yield* getOralReviewPreview(userId, pathId, scope)
 
     if (
+      session.value.kind !== favoritesStudySession &&
       Option.isSome(review) &&
       (session.value.kind === reviewStudySession
         ? review.value.queue.dueCount > 0

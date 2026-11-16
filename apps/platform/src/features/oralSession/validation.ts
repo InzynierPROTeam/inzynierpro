@@ -15,3 +15,7 @@ export const OralSessionQuestionRouteParams = Schema.Struct({
 })
 
 export const OralSessionSummaryRouteParams = Schema.Struct({ sessionId: OralStudySessionId })
+
+export const OralFavoritesPreviewSearch = Schema.Struct({
+  'liczba-pytan': Schema.optional(Schema.Int.check(Schema.isGreaterThan(0))),
+})

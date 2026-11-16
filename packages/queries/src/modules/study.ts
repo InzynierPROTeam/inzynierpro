@@ -1,4 +1,8 @@
 import {
+  getOralFavoritesPreview,
+  type GetOralFavoritesPreviewRequest,
+  getOralFavoritesSession,
+  type GetOralFavoritesSessionRequest,
   getDocuments,
   getDocument,
   type GetDocumentRequest,
@@ -141,6 +145,16 @@ export const studyKeys = {
       'getOralReviewSession',
       req,
     ] as const,
+  oralFavorites: (userId: UserId) => [...studyKeys.account(userId), 'oralFavorites'] as const,
+  oralQuestions: (userId: UserId) => [...studyKeys.account(userId), 'oralQuestions'] as const,
+  getOralFavoritesPreview: (userId: UserId, req: GetOralFavoritesPreviewRequest) =>
+    [...studyKeys.oralFavorites(userId), 'getOralFavoritesPreview', req] as const,
+  getOralFavoritesSession: (userId: UserId, req: GetOralFavoritesSessionRequest) =>
+    [
+      ...studyKeys.oralProgress(userId, req.params.qualificationPathId),
+      'getOralFavoritesSession',
+      req,
+    ] as const,
   oralProgress: (userId: UserId, pathId: QualificationPathId) =>
     [...studyKeys.path(userId, pathId), 'oralProgress'] as const,
   getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
@@ -188,11 +202,7 @@ export const studyKeys = {
       req,
     ] as const,
   getOralSessionQuestion: (userId: UserId, req: GetOralSessionQuestionRequest) =>
-    [
-      ...studyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),
-      'getOralSessionQuestion',
-      req,
-    ] as const,
+    [...studyKeys.oralQuestions(userId), 'getOralSessionQuestion', req] as const,
 }
 
 export const documentsInfiniteQueryOptions = (
@@ -403,5 +413,27 @@ export const oralReviewSessionQueryOptions = (
   effectQueryOptions(
     studyKeys.getOralReviewSession(userId, req),
     getOralReviewSession(req),
+    httpClient,
+  )
+
+export const oralFavoritesPreviewQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralFavoritesPreviewRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralFavoritesPreview(userId, req),
+    getOralFavoritesPreview(req),
+    httpClient,
+  )
+
+export const oralFavoritesSessionQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralFavoritesSessionRequest,
+) =>
+  effectQueryOptions(
+    studyKeys.getOralFavoritesSession(userId, req),
+    getOralFavoritesSession(req),
     httpClient,
   )

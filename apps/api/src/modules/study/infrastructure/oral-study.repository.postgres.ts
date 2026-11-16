@@ -7,11 +7,12 @@ import {
   OralSelfAssessment,
   type OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
-import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option, Predicate, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
-import { StudyWriteError } from '~api/modules/study/application/errors.js'
+import { QuestionNoteWriteError, StudyWriteError } from '~api/modules/study/application/errors.js'
 import { OralStudyRepository } from '~api/modules/study/application/oral-study.repository.js'
 import { OralStudySession } from '~api/modules/study/domain/oral-study-session.model.js'
+import { QuestionNote } from '~api/modules/study/domain/question-note.model.js'
 import { LearningEventId } from '~api/modules/study/domain/review-state.model.js'
 
 const SelfAssessmentRow = Schema.Struct({ value: OralSelfAssessment, assessedAt: DateTimeUtc })
@@ -38,6 +39,44 @@ export const OralStudyRepositoryLive = Layer.effect(
       )
 
     return OralStudyRepository.of({
+      saveNote: Effect.fn('OralStudyRepository.saveNote')(
+        function* (userId, questionId, text) {
+          const rows =
+            yield* sql`INSERT INTO oral_question_notes (user_id,question_id,oral_revision_id,body)
+ SELECT ${userId},q.id,q.current_revision_id,${text} FROM oral_questions q WHERE q.id=${questionId}
+ ON CONFLICT (user_id,question_id) DO UPDATE SET body=EXCLUDED.body,oral_revision_id=EXCLUDED.oral_revision_id
+ RETURNING body AS text,updated_at,false AS refers_to_earlier_wording`
+
+          const [stored] = yield* Schema.decodeUnknownEffect(Schema.Tuple([QuestionNote]))(rows)
+
+          return stored
+        },
+        Effect.mapError(
+          error =>
+            new QuestionNoteWriteError({
+              reason: Predicate.isTagged(error, 'SqlError') ? error.reason._tag : error._tag,
+            }),
+        ),
+      ),
+      clearNote: Effect.fn('OralStudyRepository.clearNote')((userId, questionId) =>
+        sql`DELETE FROM oral_question_notes WHERE user_id=${userId} AND question_id=${questionId}`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        ),
+      ),
+
+      markFavorite: Effect.fn('OralStudyRepository.markFavorite')((userId, questionId) =>
+        sql`INSERT INTO oral_favorite_questions (user_id,question_id) VALUES (${userId},${questionId}) ON CONFLICT DO NOTHING`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        ),
+      ),
+      unmarkFavorite: Effect.fn('OralStudyRepository.unmarkFavorite')((userId, questionId) =>
+        sql`DELETE FROM oral_favorite_questions WHERE user_id=${userId} AND question_id=${questionId}`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        ),
+      ),
       recordLearningEvent: Effect.fn('OralStudyRepository.recordLearningEvent')(
         function* (evidence) {
           const answeredAt = DateTime.formatIso(evidence.answeredAt)

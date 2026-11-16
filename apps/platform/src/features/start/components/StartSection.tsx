@@ -5,6 +5,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { ExamSessionTile } from './ExamSessionTile'
 import { FavoritesTile } from './FavoritesTile'
 import { MobileAppBanner } from './MobileAppBanner'
+import { OralFavoritesTile } from './OralFavoritesTile'
 import { OralLearningTile } from './OralLearningTile'
 import { OralReviewTile } from './OralReviewTile'
 import { ReviewTile } from './ReviewTile'
@@ -32,6 +33,7 @@ export const StartSection = () => {
           <>
             <OralLearningTile />
             <OralReviewTile />
+            <OralFavoritesTile />
           </>
         )}
       </div>

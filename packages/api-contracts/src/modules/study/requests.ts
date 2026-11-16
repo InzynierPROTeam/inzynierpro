@@ -1,3 +1,4 @@
+import { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralRevisionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
@@ -160,4 +161,11 @@ export const OralReviewScopeQuery = Schema.Struct({
 export const StartOralReviewSessionPayload = Schema.Struct({
   categoryId: Schema.optional(OralQuestionCategoryId),
   questionCount: QuestionCount,
+})
+
+export const StartOralFavoritesSessionPayload = Schema.Struct({ questionCount: QuestionCount })
+
+export const OralFavoriteQuestionParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  questionId: OralQuestionId,
 })

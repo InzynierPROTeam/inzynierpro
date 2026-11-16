@@ -19,6 +19,8 @@ import {
 import type { RichContent } from '@inzpro/rich-content/rich-content'
 import { type Option, Schema } from 'effect'
 
+import type { QuestionNote } from './question-note.model.js'
+
 export const OralStudySession = Schema.Struct({
   id: OralStudySessionId,
   kind: StudySessionKind,
@@ -47,6 +49,8 @@ export type OralSessionQuestion = {
   readonly oralRevisionId: OralRevisionId
   readonly body: RichContent
   readonly answer: RichContent
+  readonly note: Option.Option<QuestionNote>
+  readonly isFavorite: boolean
   readonly isWithdrawn: boolean
   readonly selfAssessment: Option.Option<StoredOralSelfAssessment>
 }
