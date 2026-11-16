@@ -4,7 +4,7 @@ How a written study session runs from preview to summary, for regular study and 
 
 ## Reads
 
-A read that finds nothing for the learner returns HTTP 200 with `null`: preview, latest session, review preview (for a document not on the path), review session, session, question and summary. Category details keep 404. Authentication and access failures stay errors.
+A read that finds nothing for the learner returns HTTP 200 with `null`: preview, latest session, review preview (for a document not on the path), review session, session, next step, question and summary. Category details keep 404. Authentication and access failures stay errors.
 
 | Endpoint                                  | Returns                                                                                                      |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -14,6 +14,7 @@ A read that finds nothing for the learner returns HTTP 200 with `null`: preview,
 | `GET /review-preview[?documentId=]`       | The due question count, the next due time and the count settings of reviews of the path or one document.     |
 | `GET /review-session[?documentId=]`       | The unfinished review session of the path or one document.                                                   |
 | `GET /sessions/:sessionId`                | Status and progress: `total`, `answered`, `skipped`, `percent` and `currentQuestion` to continue from.       |
+| `GET /sessions/:sessionId/next-step`      | The one step after the session, decided from the learner's state now (see [Next step](#next-step)).          |
 | `GET /sessions/:sessionId/questions/:pos` | The pinned revision with options in session order, their correctness, the explanation and the stored answer. |
 | `GET /sessions/:sessionId/summary`        | An ended session's correct, incorrect and assisted counts and its score.                                     |
 | `GET /sessions/:sessionId/results`        | A cursor page of positions, each with its answer or withdrawal. Empty until the session ends.                |
@@ -98,6 +99,16 @@ Publishing a newer revision never changes a started session. A withdrawal (`with
 
 The score is the share of correct answers among the scored questions, so unanswered ones count against it and skipped ones do not. Percentages go through `calculateCompletionRatio` and `ratioToPercent`, rounded as in V1.
 
+## Next step
+
+`GET /sessions/:sessionId/next-step` suggests one step after a session ([ADR-0002](adr/0002-study-session-lifecycle.md#favourites-and-continuing)), from the learner's state when it is read, so it changes as they study. The first that applies wins:
+
+1. `review` (`document`, `dueQuestionCount`): after a review session, its scope while questions there are due, then the whole path while anything is due; after regular study, the whole path once 25 questions are due, a full review session.
+2. `continue-study` (`session`): the most recently used unfinished regular-study session of the path, in any document.
+3. `start-study` (`preview`): the next regular-study preview after the session's document, or after the latest regular-study document when the session was a review.
+
+It is `null` when nothing applies or the session belongs to another account. The client keys it under the progress group, so an answer refreshes it.
+
 ## Client
 
 Routes:
@@ -106,7 +117,7 @@ Routes:
 - `/nauka/sesja/$sessionId/$questionNumber` shows one question. Its header reads only the session and the question card only the question.
 - `/nauka/powtorka` shows the review preview of the path, or of one category with `akt-prawny`, and keeps `liczba-pytan`. With nothing due it says reviews come later, or, with none scheduled, how they get scheduled; it does not show the next due time. With an unfinished review session of the scope it links to that session instead.
 - `/nauka/sesja/$sessionId/$questionNumber` and the summary serve both kinds.
-- `/nauka/sesja/$sessionId/podsumowanie` shows an ended session's score ring, its counts, the result of every position and one next step: after regular study the next preview from the session's document; after a review, further due reviews of its scope when any remain, otherwise regular study.
+- `/nauka/sesja/$sessionId/podsumowanie` shows an ended session's score ring, its counts, the result of every position and the next step from `GET /sessions/:sessionId/next-step`.
 - The Start tile, the top of `/nauka` and the category card offer to start, continue, or start again after the latest regular-study session ended.
 - The Powtórka tile on the Start screen and the Powtórka card of a category show the unfinished review session to continue, otherwise the due count with a link to the review preview, or the same message as the preview with nothing due.
 
