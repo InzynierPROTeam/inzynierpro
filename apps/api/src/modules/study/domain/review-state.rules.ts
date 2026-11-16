@@ -1,4 +1,5 @@
 import { POLAND_TIME_ZONE } from '@inzpro/config/localization'
+import type { OralSelfAssessment } from '@inzpro/domain/modules/study/oral-study-session'
 import { DateTime, Option } from 'effect'
 
 import {
@@ -62,4 +63,24 @@ export const writtenReviewRating = (answer: {
     default:
       return Option.some(hardRating)
   }
+}
+
+export const oralReviewRating = (answer: {
+  readonly selfAssessment: OralSelfAssessment
+  readonly isFirstAnswerOfStudyDay: boolean
+  readonly answersCurrentContent: boolean
+}): Option.Option<ReviewRating> => {
+  if (!answer.answersCurrentContent) {
+    return Option.none()
+  }
+
+  if (answer.selfAssessment === 'hard') {
+    return Option.some(againRating)
+  }
+
+  if (!answer.isFirstAnswerOfStudyDay) {
+    return Option.none()
+  }
+
+  return Option.some(answer.selfAssessment === 'medium' ? hardRating : goodRating)
 }

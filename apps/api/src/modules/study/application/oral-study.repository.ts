@@ -12,16 +12,25 @@ import type { SessionQuestionPosition } from '@inzpro/domain/modules/study/study
 import { Context, type Effect } from 'effect'
 import type { LearningRoundNumber } from '~api/modules/study/domain/learning-round.model.js'
 import type {
+  NewOralEvidence,
+  NewOralReviewState,
+} from '~api/modules/study/domain/oral-review-state.model.js'
+import type {
   NewOralStudySession,
   OralStudySession,
   StoredOralSelfAssessment,
 } from '~api/modules/study/domain/oral-study-session.model.js'
+import type { LearningEventId } from '~api/modules/study/domain/review-state.model.js'
 
 import type { StudyWriteError } from './errors.js'
 
 export class OralStudyRepository extends Context.Service<
   OralStudyRepository,
   {
+    readonly recordLearningEvent: (
+      evidence: NewOralEvidence,
+    ) => Effect.Effect<LearningEventId, StudyWriteError>
+    readonly storeReviewState: (state: NewOralReviewState) => Effect.Effect<void, StudyWriteError>
     readonly createSession: (
       session: NewOralStudySession,
     ) => Effect.Effect<OralStudySession, StudyWriteError>

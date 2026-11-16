@@ -7,11 +7,12 @@ import {
   OralSelfAssessment,
   type OralStudySessionId,
 } from '@inzpro/domain/modules/study/oral-study-session'
-import { Array as Arr, Effect, Layer, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { StudyWriteError } from '~api/modules/study/application/errors.js'
 import { OralStudyRepository } from '~api/modules/study/application/oral-study.repository.js'
 import { OralStudySession } from '~api/modules/study/domain/oral-study-session.model.js'
+import { LearningEventId } from '~api/modules/study/domain/review-state.model.js'
 
 const SelfAssessmentRow = Schema.Struct({ value: OralSelfAssessment, assessedAt: DateTimeUtc })
 
@@ -37,6 +38,41 @@ export const OralStudyRepositoryLive = Layer.effect(
       )
 
     return OralStudyRepository.of({
+      recordLearningEvent: Effect.fn('OralStudyRepository.recordLearningEvent')(
+        function* (evidence) {
+          const answeredAt = DateTime.formatIso(evidence.answeredAt)
+
+          const rows =
+            yield* sql`INSERT INTO oral_learning_events (user_id,qualification_path_id,user_exam_goal_version,question_id,oral_revision_id,mode,self_assessment,answered_at,study_session_id,position)
+ VALUES (${evidence.userId},${evidence.qualificationPathId},${evidence.goalVersion},${evidence.questionId},${evidence.oralRevisionId},${evidence.mode},${evidence.selfAssessment},${answeredAt},${evidence.sessionId},${evidence.position}) RETURNING id`
+
+          const [event] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ id: LearningEventId })]),
+          )(rows)
+
+          return event.id
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
+      storeReviewState: Effect.fn('OralStudyRepository.storeReviewState')(function* (state) {
+        const { card } = state
+        const dueAt = DateTime.formatIso(card.dueAt)
+
+        const lastReviewAt = Option.map(card.lastReviewAt, DateTime.formatIso).pipe(
+          Option.getOrNull,
+        )
+
+        return yield* sql`INSERT INTO oral_review_states (user_id,qualification_path_id,question_id,substantive_revision_id,learning_event_id,rules_version,due_at,last_review_at,stability,stability_fast,difficulty,state,schedule_status,reps,lapses,scheduled_days,learning_step)
+ SELECT ${state.userId},${state.qualificationPathId},${state.questionId},r.substantive_revision_id,${state.learningEventId},${state.rulesVersion},${dueAt},${lastReviewAt},${card.stability},${card.stabilityFast},${card.difficulty},${card.state},${card.scheduleStatus},${card.reps},${card.lapses},${card.scheduledDays},${card.learningStep}
+ FROM oral_revisions r WHERE r.id=${state.oralRevisionId} AND r.question_id=${state.questionId}
+ ON CONFLICT (user_id,qualification_path_id,question_id) DO UPDATE SET substantive_revision_id=EXCLUDED.substantive_revision_id,learning_event_id=EXCLUDED.learning_event_id,rules_version=EXCLUDED.rules_version,due_at=EXCLUDED.due_at,last_review_at=EXCLUDED.last_review_at,stability=EXCLUDED.stability,stability_fast=EXCLUDED.stability_fast,difficulty=EXCLUDED.difficulty,state=EXCLUDED.state,schedule_status=EXCLUDED.schedule_status,reps=EXCLUDED.reps,lapses=EXCLUDED.lapses,scheduled_days=EXCLUDED.scheduled_days,learning_step=EXCLUDED.learning_step
+ RETURNING 1`.pipe(
+          Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([Schema.Unknown]))),
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        )
+      }),
+
       createSession: Effect.fn('OralStudyRepository.createSession')(
         function* (session) {
           const created = yield* returningSession(

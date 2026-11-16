@@ -7,7 +7,12 @@ import {
   noteAssistance,
   type AssistanceLevel,
 } from './review-state.model.js'
-import { answerAssistance, studyDayOf, writtenReviewRating } from './review-state.rules.js'
+import {
+  answerAssistance,
+  oralReviewRating,
+  studyDayOf,
+  writtenReviewRating,
+} from './review-state.rules.js'
 
 const rating = (
   isCorrect: boolean,
@@ -113,5 +118,49 @@ describe('studyDayOf', () => {
       '2026-03-28T23:00:00.000Z',
       '2026-03-29T22:00:00.000Z',
     ])
+  })
+})
+
+describe('oralReviewRating', () => {
+  it.each([
+    ['hard', 'again'],
+    ['medium', 'hard'],
+    ['easy', 'good'],
+  ] as const)('maps %s to %s on the first answer of a study day', (selfAssessment, expected) => {
+    expect(
+      oralReviewRating({
+        selfAssessment,
+        isFirstAnswerOfStudyDay: true,
+        answersCurrentContent: true,
+      }),
+    ).toEqual(Option.some(expected))
+  })
+  it('keeps later successes in history but still rates a later hard answer Again', () => {
+    for (const selfAssessment of ['medium', 'easy'] as const) {
+      expect(
+        oralReviewRating({
+          selfAssessment,
+          isFirstAnswerOfStudyDay: false,
+          answersCurrentContent: true,
+        }),
+      ).toEqual(Option.none())
+    }
+
+    expect(
+      oralReviewRating({
+        selfAssessment: 'hard',
+        isFirstAnswerOfStudyDay: false,
+        answersCurrentContent: true,
+      }),
+    ).toEqual(Option.some('again'))
+  })
+  it.each(['hard', 'medium', 'easy'] as const)('ignores %s on replaced content', selfAssessment => {
+    expect(
+      oralReviewRating({
+        selfAssessment,
+        isFirstAnswerOfStudyDay: true,
+        answersCurrentContent: false,
+      }),
+    ).toEqual(Option.none())
   })
 })
