@@ -1,14 +1,62 @@
 name: Check
 on:
   pull_request:
+    paths-ignore: ['docs/**']
   push:
     branches: [dev, main]
+    paths-ignore: ['docs/**']
 permissions:
   contents: read
 jobs:
+  preflight:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      VITE_APP_BASE_URL: ${{ vars.VITE_APP_BASE_URL }}
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
+      VITE_MAIN_PAGE_BASE_URL: ${{ vars.VITE_MAIN_PAGE_BASE_URL }}
+      COOKIES_DOMAIN: ${{ vars.COOKIES_DOMAIN }}
+      API_IMAGE: ${{ vars.API_IMAGE }}
+      WORKER_IMAGE: ${{ vars.WORKER_IMAGE }}
+      API_DOCKERHUB_USERNAME_CONFIGURED: ${{ secrets.API_DOCKERHUB_USERNAME != '' }}
+      API_DOCKERHUB_TOKEN_CONFIGURED: ${{ secrets.API_DOCKERHUB_TOKEN != '' }}
+      WORKER_DOCKERHUB_USERNAME_CONFIGURED: ${{ secrets.WORKER_DOCKERHUB_USERNAME != '' }}
+      WORKER_DOCKERHUB_TOKEN_CONFIGURED: ${{ secrets.WORKER_DOCKERHUB_TOKEN != '' }}
+      CLOUDFLARE_API_TOKEN_CONFIGURED: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      # No checkout, dependency installation or credentials needed for this early gate.
+      - name: Check required deployment settings
+        run: |
+          missing=false
+          for name in CLOUDFLARE_ACCOUNT_ID VITE_APP_BASE_URL VITE_API_URL VITE_MAIN_PAGE_BASE_URL COOKIES_DOMAIN API_IMAGE WORKER_IMAGE; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub environment variable: $name"
+              missing=true
+            fi
+          done
+          for name in API_DOCKERHUB_USERNAME API_DOCKERHUB_TOKEN WORKER_DOCKERHUB_USERNAME WORKER_DOCKERHUB_TOKEN CLOUDFLARE_API_TOKEN; do
+            configured="${name}_CONFIGURED"
+            if [ "${!configured}" != true ]; then
+              echo "::error::Missing GitHub environment secret: $name"
+              missing=true
+            fi
+          done
+          if [ "$missing" = true ]; then
+            exit 1
+          fi
+
   check:
+    needs: preflight
+    # PRs have no deployment configuration; skipped preflight must not skip their checks.
+    if: ${{ !cancelled() && (github.event_name == 'pull_request' || needs.preflight.result == 'success') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: check-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -22,8 +70,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo/cache
-          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
-          restore-keys: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-check-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-check-
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
       # Only committed example values: no repository secret reaches the checks or their artifacts.
       - name: Configure local environments
         run: |
@@ -31,17 +81,27 @@ jobs:
           cp apps/api/.env.test.example apps/api/.env.test
           cp apps/platform/.env.example apps/platform/.env
           cp packages/db/.env.test.example packages/db/.env.test
-      - run: pnpm check:ci
+      - name: Check pull request
+        if: github.event_name == 'pull_request'
+        run: pnpm check:pr
+      - name: Run full verification
+        if: github.event_name == 'push'
+        run: pnpm check:ci
       - name: Publish test coverage
-        if: always()
+        if: always() && github.event_name == 'push'
         run: pnpm exec tsx scripts/coverage-summary.ts >> "$GITHUB_STEP_SUMMARY"
       - name: Verify checks left the working tree unchanged
         run: |
           git status --porcelain
           test -z "$(git status --porcelain)"
   e2e:
+    needs: preflight
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: e2e-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -55,8 +115,17 @@ jobs:
           cp apps/api/.env.example apps/api/.env
           cp apps/api/.env.test.example apps/api/.env.test
           cp apps/platform/.env.example apps/platform/.env
-      - name: Install Chromium
-        run: pnpm --filter @inzpro/e2e exec playwright install --with-deps chromium
+          cp packages/db/.env.test.example packages/db/.env.test
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-e2e-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-e2e-
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+      - name: Install Chromium headless shell
+        run: pnpm --filter @inzpro/e2e exec playwright install --with-deps --only-shell chromium
       - run: pnpm test:e2e
       - name: Upload Playwright report and traces
         if: failure()
@@ -69,39 +138,42 @@ jobs:
           retention-days: 14
   # Builds never change a live environment and run alongside the quality gates.
   build-images:
+    needs: preflight
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    strategy:
-      matrix:
-        include:
-          - image: api
-            target: runner
-          - image: worker
-            target: worker
+    concurrency:
+      group: build-images-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v4
-      - uses: docker/build-push-action@v7
+      - run: mkdir -p "$RUNNER_TEMP/images"
+      # Bake shares the builder graph instead of building it on two runners.
+      - uses: docker/bake-action@v7
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+          OUTPUT_DIR: ${{ runner.temp }}/images
         with:
-          context: .
-          file: apps/api/Dockerfile
-          target: ${{ matrix.target }}
-          platforms: linux/amd64
-          build-args: RELEASE_SHA=${{ github.sha }}
-          tags: inzpro-${{ matrix.image }}:${{ github.sha }}
-          outputs: type=docker,dest=${{ runner.temp }}/${{ matrix.image }}.tar
+          source: .
+          files: .github/docker-bake.hcl
+          allow: fs.write=${{ runner.temp }}/images
       - uses: actions/upload-artifact@v4
         with:
-          name: image-${{ matrix.image }}-${{ github.sha }}
-          path: ${{ runner.temp }}/${{ matrix.image }}.tar
+          name: images-${{ github.sha }}
+          path: ${{ runner.temp }}/images/*.tar
+          if-no-files-found: error
           compression-level: 0
           retention-days: 2
 
   build-platform:
+    needs: preflight
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: build-platform-${{ github.ref }}
+      cancel-in-progress: true
     environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
@@ -119,6 +191,21 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Match check/E2E file inputs so shared TypeScript builds can reuse their cache.
+      - name: Configure local environments
+        run: |
+          cp apps/api/.env.example apps/api/.env
+          cp apps/api/.env.test.example apps/api/.env.test
+          cp apps/platform/.env.example apps/platform/.env
+          cp packages/db/.env.test.example packages/db/.env.test
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-platform-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-platform-
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm cloudflare build "${{ github.ref_name == 'main' && 'prod' || 'staging' }}"
       - uses: actions/upload-artifact@v4
         with:
@@ -127,6 +214,7 @@ jobs:
             apps/platform/dist/**
             !apps/platform/dist/server/.dev.vars
           include-hidden-files: true
+          if-no-files-found: error
           retention-days: 2
 
   # One release owns API, worker and platform until the matching API is ready
@@ -152,11 +240,15 @@ jobs:
       WORKER_IMAGE: ${{ vars.WORKER_IMAGE }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Skip superseded revisions
         id: head
         run: |
-          head="$(git ls-remote origin "refs/heads/${GITHUB_REF_NAME}" | cut -f1)"
-          if [ "$head" = "$GITHUB_SHA" ]; then
+          git fetch --no-tags origin "$GITHUB_REF"
+          head="$(git rev-parse FETCH_HEAD)"
+          # A later documentation-only push must not strand this code release.
+          if git diff --quiet "$GITHUB_SHA" "$head" -- . ':!docs/**'; then
             echo 'current=true' >> "$GITHUB_OUTPUT"
           else
             echo 'Skipping the superseded revision; its successor has its own release.'
@@ -173,8 +265,7 @@ jobs:
       - if: steps.head.outputs.current == 'true'
         uses: actions/download-artifact@v4
         with:
-          pattern: image-*-${{ github.sha }}
-          merge-multiple: true
+          name: images-${{ github.sha }}
           path: ${{ runner.temp }}/images
       - if: steps.head.outputs.current == 'true'
         uses: actions/download-artifact@v4

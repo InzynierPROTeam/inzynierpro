@@ -21,7 +21,8 @@
     "test:coverage": "pnpm test:infra && scripts/with-test-services.sh turbo test -- --coverage.enabled --coverage.include=src/** --coverage.reporter=json-summary --coverage.reporter=text-summary",
     "test:e2e": "scripts/with-test-services.sh pnpm --filter @inzpro/e2e test:e2e",
     "prepare": "effect-tsgo patch --oxlint && (test -n \"$CI\" || test \"$HUSKY\" = \"0\" || husky)",
-    "check:ci": "pnpm format:check && pnpm lint && pnpm type-check && pnpm test:coverage && pnpm build",
+    "check:ci": "pnpm check:pr && pnpm test:coverage && pnpm build",
+    "check:pr": "pnpm format:check && pnpm run --no-bail --workspace-concurrency=2 \"/^(lint|type-check)$/\"",
     "cloudflare": "tsx infra/cloudflare/cli.ts",
     "test:infra": "vitest run --config infra/cloudflare/vitest.config.ts",
     "type-check:infra": "effect-tsgo tsc -p infra/cloudflare/tsconfig.json --noEmit"
