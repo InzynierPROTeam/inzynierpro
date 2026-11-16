@@ -21,8 +21,7 @@ export const make = (config: RedisConfig) =>
       const runFork = Effect.runForkWith(yield* Effect.context())
       const client: RedisClientType = createClient({ url: Redacted.value(config.url) })
 
-      // Without a listener a dropped connection crashes the process. Commands still fail
-      // while Redis is unavailable and the client keeps reconnecting.
+      // EXTERNAL: node-redis requires an error listener to avoid terminating the process on connection failure.
       client.on('error', (error: Error) => {
         runFork(Effect.logWarning('[Redis]: Connection error.', error.name))
       })
@@ -34,7 +33,7 @@ export const make = (config: RedisConfig) =>
 
       return client
     }),
-    // close() throws synchronously when the connection is already gone.
+    // EXTERNAL: node-redis close() throws synchronously when its connection has already closed.
     client => Effect.tryPromise(() => client.close()).pipe(Effect.ignore),
   )
 

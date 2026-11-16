@@ -1,8 +1,4 @@
-/*
- * Email overrides applied after the shared theme of @inzpro/ui (src/styles/theme.css). Email
- * clients handle rem inconsistently, so every size is in pixels: with --spacing: 4px a class such
- * as mt-4 renders as 16px. The font name matches the web font loaded by Layout.
- */
+/* EXTERNAL: Email clients handle rem inconsistently; use pixel dimensions. */
 
 @theme inline {
   --font-sans: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -50,8 +46,7 @@
   --breakpoint-2xs: 384px;
   --breakpoint-3xs: 320px;
 
-  /* The shared scale multiplies --radius (0.875rem). Overriding --radius in :root has no effect:
-     react-email resolves var() with the first :root definition, which is the shared one. */
+  /* EXTERNAL: react-email resolves var() from the first :root definition, so override each shared radius token directly. */
   --radius-sm: 8.4px;
   --radius-md: 11.2px;
   --radius-lg: 14px;

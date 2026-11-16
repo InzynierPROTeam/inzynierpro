@@ -103,7 +103,7 @@ export const GetOralSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Uses current learner state; another account's session reads as null.
+// CONTRACT: Another account's session returns null.
 export const GetOralSessionNextStepEndpoint = HttpApiEndpoint.get(
   'GetOralSessionNextStep',
   '/paths/:qualificationPathId/oral/sessions/:sessionId/next-step',
@@ -124,7 +124,6 @@ export const GetOralSessionSummaryEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Results follow session order.
 export const GetOralSessionResultsEndpoint = HttpApiEndpoint.get(
   'GetOralSessionResults',
   '/paths/:qualificationPathId/oral/sessions/:sessionId/results',
@@ -136,7 +135,7 @@ export const GetOralSessionResultsEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Ending an ended session changes nothing.
+// CONTRACT: Ending an already ended session is idempotent.
 export const EndOralSessionEndpoint = HttpApiEndpoint.post(
   'EndOralSession',
   '/paths/:qualificationPathId/oral/sessions/:sessionId/end',
@@ -157,7 +156,7 @@ export const GetOralSessionQuestionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Retrying the same self-assessment returns the stored one; a different one after it is refused.
+// CONTRACT: Retrying the same self-assessment returns the stored result; a different assessment conflicts.
 export const SubmitOralSelfAssessmentEndpoint = HttpApiEndpoint.post(
   'SubmitOralSelfAssessment',
   '/paths/:qualificationPathId/oral/sessions/:sessionId/questions/:position/self-assessment',

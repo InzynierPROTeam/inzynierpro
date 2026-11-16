@@ -37,21 +37,20 @@ export const SessionResultsQuery = CursorPagination
 
 export const SessionPreviewQuery = Schema.Struct({
   documentId: Schema.optional(ReferenceDocumentId),
-  // Without a document, study continues from this one: it, or the next in order, with questions
-  // not yet answered; when the whole path was answered, the next one in order.
+  // CONTRACT: fromDocumentId is a continuation hint used only when documentId is omitted.
   fromDocumentId: Schema.optional(ReferenceDocumentId),
 })
 
 export const StartSessionPayload = Schema.Struct({
   documentId: ReferenceDocumentId,
   questionCount: QuestionCount,
-  // The selection the confirmed preview showed, so going over a covered scope again is deliberate.
+  // CONTRACT: Echo questionSelection from the confirmed preview.
   questionSelection: SessionQuestionSelection,
 })
 
 export type StartSessionPayload = typeof StartSessionPayload.Type
 
-// Without a document reviews span the whole path; with one only that document's due questions.
+// CONTRACT: Omitting documentId selects reviews across the whole path.
 export const ReviewScopeQuery = Schema.Struct({ documentId: Schema.optional(ReferenceDocumentId) })
 
 export const StartReviewSessionPayload = Schema.Struct({
@@ -61,7 +60,7 @@ export const StartReviewSessionPayload = Schema.Struct({
 
 export type StartReviewSessionPayload = typeof StartReviewSessionPayload.Type
 
-// Without a document favourites span the whole path; with one only that document's marked questions.
+// CONTRACT: Omitting documentId selects favourites across the whole path.
 export const FavoritesScopeQuery = Schema.Struct({
   documentId: Schema.optional(ReferenceDocumentId),
 })
@@ -83,13 +82,12 @@ export const QuestionNoteParams = Schema.Struct({
   questionId: WrittenQuestionId,
 })
 
-// The whole note replaces the saved one; clearing it is a DELETE.
 export const SaveQuestionNotePayload = Schema.Struct({ text: QuestionNoteText })
 
 export type SaveQuestionNotePayload = typeof SaveQuestionNotePayload.Type
 
 export const LatestSessionQuery = Schema.Struct({
-  // Without a document the latest session of the whole path is returned.
+  // CONTRACT: Omitting documentId returns the latest regular-study session across the whole path.
   documentId: Schema.optional(ReferenceDocumentId),
 })
 
@@ -105,14 +103,12 @@ export const SessionQuestionParams = Schema.Struct({
 })
 
 export const SubmitSessionAnswerPayload = Schema.Struct({
-  // The revision the client showed; the backend refuses an answer to any other one.
   questionRevisionId: QuestionRevisionId,
   answerId: QuestionAnswerId,
 })
 
 export type SubmitSessionAnswerPayload = typeof SubmitSessionAnswerPayload.Type
 
-// What the learner opened before answering; the backend records each kind once (ADR-0002).
 export const RecordSessionAssistancePayload = Schema.Struct({ kind: SessionAssistanceKind })
 
 export type RecordSessionAssistancePayload = typeof RecordSessionAssistancePayload.Type
@@ -121,8 +117,7 @@ export const OralPathParams = Schema.Struct({ qualificationPathId: Qualification
 
 export const OralSessionPreviewQuery = Schema.Struct({
   categoryId: Schema.optional(OralQuestionCategoryId),
-  // Without a category, oral study continues from this one: it, or the next in catalogue order,
-  // with questions uncovered in the current oral round.
+  // CONTRACT: fromCategoryId is a continuation hint used only when categoryId is omitted.
   fromCategoryId: Schema.optional(OralQuestionCategoryId),
 })
 
@@ -134,7 +129,7 @@ export const StartOralSessionPayload = Schema.Struct({
 export type StartOralSessionPayload = typeof StartOralSessionPayload.Type
 
 export const LatestOralSessionQuery = Schema.Struct({
-  // Without a category the latest oral session of the whole path is returned.
+  // CONTRACT: Omitting categoryId returns the latest oral session across the whole path.
   categoryId: Schema.optional(OralQuestionCategoryId),
 })
 
@@ -152,7 +147,6 @@ export const OralSessionQuestionParams = Schema.Struct({
 export const OralSessionResultsQuery = CursorPagination
 
 export const SubmitOralSelfAssessmentPayload = Schema.Struct({
-  // The revision the client showed; the backend refuses a self-assessment of any other one.
   oralRevisionId: OralRevisionId,
   selfAssessment: OralSelfAssessment,
 })

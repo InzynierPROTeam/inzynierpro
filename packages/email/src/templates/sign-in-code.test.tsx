@@ -24,7 +24,6 @@ describe('sign-in code email', () => {
       />,
     )
 
-    // primary: #297eff, inlined by the Tailwind renderer as rgb.
     expect(html).toContain('rgb(41,126,255)')
   })
 })

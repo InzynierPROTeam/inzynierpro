@@ -34,7 +34,7 @@ export const canSsrWithCookies = createIsomorphicFn()
   .server(() => {
     const site = getRequestHeader('sec-fetch-site')
 
-    // Strict cookies can be omitted on external entry; resolve them in the browser instead.
+    // EXTERNAL: SameSite=Strict cookies may be absent on external entry; resolve them in the browser.
     return site === 'same-origin' || site === 'same-site' || site === 'none'
   })
   .client(() => true)

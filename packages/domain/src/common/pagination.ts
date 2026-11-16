@@ -13,7 +13,6 @@ export const PageNumber = Schema.Int.check(Schema.isGreaterThan(0)).pipe(Schema.
 
 export type PageNumber = typeof PageNumber.Type
 
-/** An opaque continuation token. Clients pass it back unchanged and never build or parse it. */
 export const Cursor = Schema.NonEmptyString.check(Schema.isMaxLength(512)).pipe(
   Schema.brand('Cursor'),
 )

@@ -23,7 +23,6 @@ export type ThemeCookies = {
   set: (name: string, value: string, options?: CookieOptions) => void
 }
 
-// Browser-only by default; pass request-aware cookies so the server renders the saved theme.
 const browserCookies: ThemeCookies = { get: getCookie, set: setCookie }
 
 export const createThemeStore = (

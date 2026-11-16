@@ -2,7 +2,6 @@ import { cx, tv, type VariantProps } from 'tailwind-variants'
 
 import { Skeleton } from './skeleton.js'
 
-// Font-relative bars match inherited text metrics; flex prevents their line-height margins collapsing.
 const textSkeletonVariants = tv({
   slots: {
     root: 'flex w-full flex-col',
@@ -34,7 +33,6 @@ const textSkeletonVariants = tv({
 
 type TextSkeletonProps = Omit<React.ComponentProps<'div'>, 'children'> &
   VariantProps<typeof textSkeletonVariants> & {
-    /** The last of several lines is shortened to three fifths of the width. */
     lines?: number
     lineClassName?: string
   }

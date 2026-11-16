@@ -95,7 +95,6 @@ test('hydrating a system theme on a dark device never switches the page to light
   })
 
   document.cookie = 'theme=system; path=/'
-  // The inline script has already applied the dark scheme before React hydrates.
   document.documentElement.classList.add('dark')
   document.documentElement.dataset.theme = 'system'
 

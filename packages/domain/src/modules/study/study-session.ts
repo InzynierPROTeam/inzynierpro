@@ -6,7 +6,6 @@ export const StudySessionId = Uuid.pipe(Schema.brand('StudySessionId'))
 
 export type StudySessionId = typeof StudySessionId.Type
 
-/** The 1-based place of a question in a session's fixed question set. */
 export const SessionQuestionPosition = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
   Schema.brand('SessionQuestionPosition'),
 )
@@ -17,7 +16,6 @@ export const activeStudySession = 'active'
 export const endedStudySession = 'ended'
 export const studySessionStatusValues = [activeStudySession, endedStudySession] as const
 
-/** An active session can be continued; an ended one only keeps its results. */
 export const StudySessionStatus = Schema.Literals(studySessionStatusValues)
 
 export type StudySessionStatus = typeof StudySessionStatus.Type
@@ -27,10 +25,6 @@ export const nextQuestionPosition = (
   questionCount: QuestionCount,
 ): SessionQuestionPosition => SessionQuestionPosition.make(Math.min(answered + 1, questionCount))
 
-/**
- * The questions a session scores: a question withdrawn before it was answered is skipped, neither
- * wrong nor submitted, so it leaves progress and the score (ADR-0003).
- */
 export const scoredQuestionCount = (progress: {
   readonly total: QuestionCount
   readonly skipped: QuestionCount
@@ -46,11 +40,6 @@ export const uncoveredQuestions = 'uncovered'
 export const coveredQuestions = 'covered'
 export const sessionQuestionSelectionValues = [uncoveredQuestions, coveredQuestions] as const
 
-/**
- * Which questions a new regular-study session draws, by the current LearningRound: those of the
- * scope not yet covered in it, or, for a scope already covered in this round, all of them again.
- * Covering the whole path starts the next round, where every question is uncovered (ADR-0002).
- */
 export const SessionQuestionSelection = Schema.Literals(sessionQuestionSelectionValues)
 
 export type SessionQuestionSelection = typeof SessionQuestionSelection.Type
@@ -65,7 +54,6 @@ export const studySessionKindValues = [
   favoritesStudySession,
 ] as const
 
-/** Only regular study advances LearningRounds; every kind feeds SRS (ADR-0005). */
 export const StudySessionKind = Schema.Literals(studySessionKindValues)
 
 export type StudySessionKind = typeof StudySessionKind.Type

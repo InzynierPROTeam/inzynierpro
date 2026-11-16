@@ -124,10 +124,6 @@ const Block: Schema.Codec<Block, unknown> = Schema.Union([
   Table,
 ])
 
-/**
- * Version 1 of the shared content format: Tiptap/ProseMirror JSON limited to the nodes below. The
- * `doc` is what an editor loads; `version` identifies the schema a document was written against.
- */
 export const RichContent = Schema.Struct({
   version: Schema.Literal(richContentVersion),
   doc: Schema.Struct({ type: Schema.Literal('doc'), content: Blocks }),
@@ -163,10 +159,6 @@ export const AnyRichContentNode: Schema.Codec<AnyRichContentNode> = Schema.Struc
   marks: Schema.optionalKey(Schema.Array(Schema.Struct({ type: Schema.String }))),
 })
 
-/**
- * Content as renderers receive it: any version and any node, so a client older than the content
- * still decodes the response and shows an explicit message for what it cannot render.
- */
 export const AnyRichContent = Schema.Struct({ version: Schema.Int, doc: AnyRichContentNode })
 
 export type AnyRichContent = typeof AnyRichContent.Type

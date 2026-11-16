@@ -1,6 +1,5 @@
 import { Schema } from 'effect'
 
-/** Keep ratios unrounded until presentation. */
 export const Ratio = Schema.Number.check(
   Schema.isFinite(),
   Schema.isBetween({ minimum: 0, maximum: 1 }),

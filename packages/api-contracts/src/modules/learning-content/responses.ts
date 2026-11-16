@@ -4,8 +4,6 @@ import { Schema } from 'effect'
 
 export const ContentAssetAddress = Schema.Struct({
   id: ContentAssetId,
-  // null while the asset has no address (no file storage yet); renderers show the image's
-  // alternative text instead.
   url: Schema.NullOr(Schema.String),
 })
 

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getAuthErrorMessage } from '~auth-client/error.js'
 
-// The shape Better Auth rejects with when the client is created with `throw: true`.
 const failedResponse = (status: number, body: { readonly code: string } | string | null) =>
   Object.assign(new Error('Request failed'), { status, statusText: '', error: body })
 

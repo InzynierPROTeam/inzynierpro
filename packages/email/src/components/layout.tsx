@@ -5,7 +5,6 @@ import { Footer } from '~email/components/footer.js'
 import { Header } from '~email/components/header.js'
 import { themeCss } from '~email/lib/theme.js'
 
-// Nunito Sans, the platform font (variable, latin and latin-ext for Polish characters).
 const fontFiles = [
   'https://fonts.gstatic.com/s/nunitosans/v19/pe0TMImSLYBIv1o4X1M8ce2xCx3yop4tQpF_MeTm0lfGWVpNn64CL7U8upHZIbMV51Q42ptCp7t1R-tQKr51.woff2',
   'https://fonts.gstatic.com/s/nunitosans/v19/pe0TMImSLYBIv1o4X1M8ce2xCx3yop4tQpF_MeTm0lfGWVpNn64CL7U8upHZIbMV51Q42ptCp7t7R-tQKr51pE8.woff2',

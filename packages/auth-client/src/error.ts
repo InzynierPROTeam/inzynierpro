@@ -1,7 +1,5 @@
 import { Option, Schema } from 'effect'
 
-// With `throw: true` a failed Better Auth call rejects with the response status and its JSON
-// body. A request that never reached the server rejects with a plain fetch error instead.
 const FailedResponse = Schema.Struct({ status: Schema.Finite })
 
 const FailedResponseWithCode = Schema.Struct({ error: Schema.Struct({ code: Schema.String }) })
@@ -16,7 +14,6 @@ const messagesByCode = new Map(
   }),
 )
 
-// Provider descriptions are untrusted; show only our own messages on the return page.
 export const getOAuthErrorMessage = (error: string) => {
   if (error === 'access_denied') {
     return 'Logowanie Google zostało anulowane. Spróbuj ponownie lub użyj kodu e-mail.'

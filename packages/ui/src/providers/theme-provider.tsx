@@ -35,8 +35,6 @@ export function ThemeProvider({
   const resolvedTheme = useSyncResolvedTheme(theme)
 
   useEffect(() => {
-    // The server cannot know the system scheme, so `resolvedTheme` is light during hydration.
-    // Resolve it from the media query here so hydration does not switch a dark page to light.
     const resolved =
       theme === 'system'
         ? window.matchMedia('(prefers-color-scheme: dark)').matches

@@ -12,7 +12,6 @@ export type GetCurrentSessionRes = Effect.Success<ReturnType<typeof getCurrentSe
 
 export type GetCurrentSessionError = Effect.Error<ReturnType<typeof getCurrentSession>>
 
-// The public onboarding screen treats a signed-out account as an ordinary empty state.
 export const getOptionalCurrentSession = (req: GetOptionalCurrentSessionRequest = {}) =>
   apiAction(api => api.Identity.GetCurrentSession(req)).pipe(
     Effect.catchTag('Unauthenticated', () => Effect.succeed(null)),

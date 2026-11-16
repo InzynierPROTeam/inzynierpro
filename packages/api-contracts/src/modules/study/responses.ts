@@ -38,7 +38,7 @@ export const DocumentQuestionPool = Schema.Struct({
   id: ReferenceDocumentId,
   title: Schema.NonEmptyString,
   availableQuestionCount: QuestionCount,
-  // Questions covered in the learner's current LearningRound.
+  // CONTRACT: completedQuestionCount measures coverage in the current learning round.
   completedQuestionCount: QuestionCount,
 })
 
@@ -48,7 +48,7 @@ export const OralQuestionCategory = Schema.Struct({
   id: OralQuestionCategoryId,
   name: Schema.NonEmptyString,
   availableQuestionCount: QuestionCount,
-  // Questions covered in the learner's current oral round.
+  // CONTRACT: completedQuestionCount measures coverage in the current oral learning round.
   completedQuestionCount: QuestionCount,
 })
 
@@ -58,7 +58,6 @@ export const DocumentResponse = Schema.Struct({ document: DocumentQuestionPool }
 
 export const DocumentsResponse = CursorPaginatedResponse(DocumentQuestionPool)
 
-/** The backend revalidates these limits when starting the session. */
 export const SessionCountSettings = Schema.Struct({
   defaultQuestionCount: QuestionCount,
   canChangeQuestionCount: Schema.Boolean,
@@ -77,7 +76,6 @@ export const SessionPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
   document: DocumentQuestionPool,
   mode: Schema.Literal('written-study'),
-  // Questions uncovered in the current round; a scope covered in this round offers all of them again.
   questionSelection: SessionQuestionSelection,
   availableQuestionCount: QuestionCount,
   settings: SessionCountSettings,
@@ -89,36 +87,34 @@ export const SessionPreviewResponse = Schema.NullOr(SessionPreview)
 
 export const ReviewPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
-  // Null for reviews of the whole path.
+  // CONTRACT: A null document means reviews span the whole path.
   document: Schema.NullOr(SessionDocument),
   dueQuestionCount: QuestionCount,
-  // The earliest review scheduled after now; null when none is scheduled.
+  // CONTRACT: The earliest review scheduled after now; null when none is scheduled.
   nextDueAt: Schema.NullOr(UtcIsoDateTime),
-  // Null when nothing is due.
+  // CONTRACT: settings is null when no question is due.
   settings: Schema.NullOr(SessionCountSettings),
 })
 
 export type ReviewPreview = typeof ReviewPreview.Type
 
-// Null for a document that is not on the path.
+// CONTRACT: null means the requested document is outside the path.
 export const ReviewPreviewResponse = Schema.NullOr(ReviewPreview)
 
 export const FavoritesPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
-  // Null for favourites of the whole path.
+  // CONTRACT: A null document means favourites span the whole path.
   document: Schema.NullOr(SessionDocument),
-  // Marked questions in the scope whose current revision is published and not withdrawn.
   favoriteQuestionCount: QuestionCount,
-  // Null when nothing is marked.
+  // CONTRACT: settings is null when no question is marked.
   settings: Schema.NullOr(SessionCountSettings),
 })
 
 export type FavoritesPreview = typeof FavoritesPreview.Type
 
-// Null for a document that is not on the path.
+// CONTRACT: null means the requested document is outside the path.
 export const FavoritesPreviewResponse = Schema.NullOr(FavoritesPreview)
 
-/** Marks are shared across the learner's paths. */
 export const FavoriteQuestion = Schema.Struct({
   questionId: WrittenQuestionId,
   isFavorite: Schema.Boolean,
@@ -128,18 +124,15 @@ export type FavoriteQuestion = typeof FavoriteQuestion.Type
 
 export const FavoriteQuestionResponse = FavoriteQuestion
 
-/** Notes are shared across the learner's paths. */
 export const QuestionNote = Schema.Struct({
   text: QuestionNoteText,
   updatedAt: UtcIsoDateTime,
-  // The question's current revision is substantively newer than the one current at the last edit,
-  // so the note may refer to earlier wording.
+  // CONTRACT: Compares substantive content with the revision current at the last note edit.
   refersToEarlierWording: Schema.Boolean,
 })
 
 export type QuestionNote = typeof QuestionNote.Type
 
-/** Null after clearing the note. */
 export const QuestionNoteResult = Schema.Struct({
   questionId: WrittenQuestionId,
   note: Schema.NullOr(QuestionNote),
@@ -154,7 +147,6 @@ export const OralMaterialsResponse = CursorPaginatedResponse(OralQuestionCategor
 export const StudySessionProgress = Schema.Struct({
   total: QuestionCount,
   answered: QuestionCount,
-  // Questions withdrawn before an answer: skipped without penalty and left out of the percent and score (ADR-0003).
   skipped: QuestionCount,
   percent: Percent,
   currentQuestion: SessionQuestionPosition,
@@ -164,7 +156,6 @@ export type StudySessionProgress = typeof StudySessionProgress.Type
 
 export const StudySession = Schema.Struct({
   id: StudySessionId,
-  // Only regular study is resumed from "Continue learning".
   kind: StudySessionKind,
   status: StudySessionStatus,
   progress: StudySessionProgress,
@@ -182,7 +173,7 @@ export const StartFavoritesSessionResponse = StudySession
 
 export const StudySessionResponse = Schema.NullOr(StudySession)
 
-/** Includes regular study only. */
+// CONTRACT: Contains regular-study sessions only.
 export const LatestStudySession = Schema.Struct({
   ...StudySession.fields,
   document: SessionDocument,
@@ -192,11 +183,10 @@ export type LatestStudySession = typeof LatestStudySession.Type
 
 export const LatestStudySessionResponse = Schema.NullOr(LatestStudySession)
 
-/** Continuing selects the most recently used unfinished regular-study session. */
 export const SessionNextStep = Schema.Union([
   Schema.Struct({
     type: Schema.Literal(reviewNextStep),
-    // Null for a review of the whole path.
+    // CONTRACT: A null document means the review spans the whole path.
     document: Schema.NullOr(SessionDocument),
     dueQuestionCount: QuestionCount,
   }),
@@ -206,7 +196,6 @@ export const SessionNextStep = Schema.Union([
 
 export type SessionNextStep = typeof SessionNextStep.Type
 
-// Null when the path has nothing left to suggest.
 export const SessionNextStepResponse = Schema.NullOr(SessionNextStep)
 
 export const EndSessionResponse = StudySession
@@ -214,9 +203,9 @@ export const EndSessionResponse = StudySession
 export const StudySessionResult = Schema.Struct({
   correct: QuestionCount,
   incorrect: QuestionCount,
-  // Answers given after opening the explanation; they still count as correct or incorrect.
+  // CONTRACT: Assisted counts overlap the correct and incorrect counts.
   assisted: QuestionCount,
-  // The score: correct answers among the session's questions that were not skipped.
+  // CONTRACT: Percentage of correct answers among questions that were not skipped.
   correctPercent: Percent,
 })
 
@@ -224,7 +213,7 @@ export type StudySessionResult = typeof StudySessionResult.Type
 
 export const StudySessionSummary = Schema.Struct({
   ...StudySession.fields,
-  // Null for a review or favourites session of the whole path.
+  // CONTRACT: A null document means the review or favourites session spans the whole path.
   document: Schema.NullOr(SessionDocument),
   result: StudySessionResult,
 })
@@ -246,14 +235,12 @@ export const SessionResultsResponse = CursorPaginatedResponse(SessionQuestionRes
 export const SessionAnswerOption = Schema.Struct({
   id: QuestionAnswerId,
   text: Schema.NonEmptyString,
-  // Clients mark the correct option in feedback; the backend scores by answer ID, never a client result.
   isCorrect: Schema.Boolean,
 })
 
 export const SessionAnswer = Schema.Struct({
   answerId: QuestionAnswerId,
   isCorrect: Schema.Boolean,
-  // The explanation or a saved note was opened before submitting, so the result is not independent mastery.
   isAssisted: Schema.Boolean,
   answeredAt: UtcIsoDateTime,
 })
@@ -267,13 +254,10 @@ export const SessionQuestion = Schema.Struct({
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
   explanation: ResolvedRichContent,
-  // The session's stored presentation order.
+  // CONTRACT: Options retain the session's stored presentation order.
   answers: Schema.Array(SessionAnswerOption),
-  // A withdrawn revision accepts no answer, even in a started session (ADR-0003).
   isWithdrawn: Schema.Boolean,
-  // When the backend recorded opening the explanation; before submitting it marks the answer assisted.
   explanationOpenedAt: Schema.NullOr(UtcIsoDateTime),
-  // When the backend recorded opening a saved note; before submitting it gives the note level.
   noteOpenedAt: Schema.NullOr(UtcIsoDateTime),
   answer: Schema.NullOr(SessionAnswer),
   isFavorite: Schema.Boolean,
@@ -298,7 +282,6 @@ export const OralSessionCategory = Schema.Struct({
   name: Schema.NonEmptyString,
 })
 
-/** A session draws the category's questions uncovered in the current oral round first, in catalogue order. */
 export const OralSessionPreview = Schema.Struct({
   qualificationPathId: QualificationPathId,
   category: OralQuestionCategory,
@@ -307,7 +290,7 @@ export const OralSessionPreview = Schema.Struct({
 
 export type OralSessionPreview = typeof OralSessionPreview.Type
 
-// Null when the category is not on the path or no category has questions.
+// CONTRACT: null means the category is outside the path or no category contains questions.
 export const OralSessionPreviewResponse = Schema.NullOr(OralSessionPreview)
 
 export const OralStudySession = Schema.Struct({
@@ -340,11 +323,8 @@ export const OralSessionQuestion = Schema.Struct({
   questionId: OralQuestionId,
   oralRevisionId: OralRevisionId,
   body: ResolvedRichContent,
-  // The prepared answer; clients hide it until the learner reveals it, which is never assistance.
   answer: ResolvedRichContent,
-  // A withdrawn revision accepts no self-assessment, even in a started session (ADR-0003).
   isWithdrawn: Schema.Boolean,
-  // Final once stored.
   selfAssessment: Schema.NullOr(StoredOralSelfAssessment),
 })
 
@@ -359,7 +339,6 @@ export const SubmitOralSelfAssessmentResponse = Schema.Struct({
 
 export type SubmitOralSelfAssessmentResponse = typeof SubmitOralSelfAssessmentResponse.Type
 
-/** Self-assessed questions of the session counted by level. */
 export const OralSessionResult = Schema.Struct({
   hard: QuestionCount,
   medium: QuestionCount,
@@ -375,7 +354,7 @@ export const OralStudySessionSummary = Schema.Struct({
 
 export type OralStudySessionSummary = typeof OralStudySessionSummary.Type
 
-// Only an ended session has a summary.
+// CONTRACT: An unfinished oral session has a null summary.
 export const OralStudySessionSummaryResponse = Schema.NullOr(OralStudySessionSummary)
 
 export const OralSessionQuestionResult = Schema.Struct({
@@ -388,7 +367,6 @@ export type OralSessionQuestionResult = typeof OralSessionQuestionResult.Type
 
 export const OralSessionResultsResponse = CursorPaginatedResponse(OralSessionQuestionResult)
 
-/** Continuing selects the most recently used unfinished oral session. */
 export const OralSessionNextStep = Schema.Union([
   Schema.Struct({ type: Schema.Literal(continueStudyNextStep), session: OralStudySession }),
   Schema.Struct({ type: Schema.Literal(startStudyNextStep), preview: OralSessionPreview }),
@@ -396,5 +374,4 @@ export const OralSessionNextStep = Schema.Union([
 
 export type OralSessionNextStep = typeof OralSessionNextStep.Type
 
-// Null when the path has nothing left to suggest.
 export const OralSessionNextStepResponse = Schema.NullOr(OralSessionNextStep)

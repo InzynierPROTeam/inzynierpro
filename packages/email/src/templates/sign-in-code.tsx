@@ -59,5 +59,4 @@ export const SignInCode = ({ code, expiresInMinutes }: SignInCodeProps) => (
 
 SignInCode.PreviewProps = { code: '482193', expiresInMinutes: 5 } satisfies SignInCodeProps
 
-// The preview server (`pnpm email:dev`) renders the default export.
 export default SignInCode

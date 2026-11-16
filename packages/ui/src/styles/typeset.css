@@ -96,7 +96,6 @@
       scroll-margin-block-start: var(--typeset-flow);
     }
 
-    /* Headings own the space below them. */
     &:where(h1 + *, h2 + *, h3 + *, h4 + *, h5 + *, h6 + *) {
       margin-block-start: 1em;
     }
@@ -342,8 +341,6 @@
       caption-side: bottom;
     }
 
-    /* Tables. Separators sit on cells, not tr:last-child: append-safe.
-       Bare tables stay real tables (keep their semantics) and wrap to fit. */
     &:where(table) {
       max-width: 100%;
       font-size: 1em;
@@ -356,9 +353,6 @@
       margin-block-end: 0;
     }
 
-    /* Horizontal scroll for any wide block. Wrap it and the wrapper owns the
-       flow margin. Tables shrink to fit, so widen the table to make it scroll
-       instead of compress. */
     &:where(.typeset-scroll) {
       overflow-x: auto;
       margin-block-start: var(--typeset-flow);
@@ -395,7 +389,6 @@
       text-align: end;
     }
 
-    /* Blocks inside list items keep the list's tighter rhythm. */
     &:where(li > blockquote, li > table, li > figure) {
       margin-block-start: 0.5em;
     }
@@ -412,7 +405,7 @@
       }
     }
 
-    /* Forced colors strips the code background, so give it a border. */
+    /* EXTERNAL: Forced-colors mode removes the inline code background; preserve its boundary with a border. */
     @media (forced-colors: active) {
       &:where(:not(pre) > code) {
         border: 1px solid;
@@ -420,8 +413,6 @@
     }
   }
 
-  /* Components (anything with data-slot) keep their own styles. A component
-     placed directly in the flow gets the same space above as a paragraph. */
   .typeset
     > :where([data-slot]):not(
       :where(.not-typeset, [data-not-typeset], .not-typeset *, [data-not-typeset] *)
@@ -429,7 +420,6 @@
     margin-block-start: var(--typeset-flow);
   }
 
-  /* First child adds no space above. Last so it wins ties. */
   .typeset
     > :where(:first-child):not(
       :where(.not-typeset, [data-not-typeset], .not-typeset *, [data-not-typeset] *)

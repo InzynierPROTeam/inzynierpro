@@ -3,7 +3,6 @@ import { cn, tv, type VariantProps } from 'tailwind-variants'
 
 import { Skeleton } from './skeleton.js'
 
-// The indicator hides in narrow containers, so place options inside an `@container` (the radio group).
 const answerOptionVariants = tv({
   base: 'group/answer-option bg-card text-card-foreground focus-visible:ring-ring flex w-full items-center gap-4 rounded-xl border-2 p-4 pr-6 text-left text-sm leading-relaxed transition-all outline-none focus-visible:ring-2 data-disabled:cursor-not-allowed',
   variants: {

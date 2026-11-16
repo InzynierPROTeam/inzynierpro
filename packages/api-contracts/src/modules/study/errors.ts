@@ -13,7 +13,6 @@ export class DocumentNotFound extends Schema.TaggedError<
   { readonly brand: unique symbol }
 >()('DocumentNotFound', errorFields('document_not_found'), NotFoundAnnotations()) {}
 
-/** The question is not on the path, so it cannot be marked or unmarked from it. */
 export class QuestionNotFound extends Schema.TaggedError<
   QuestionNotFound,
   { readonly brand: unique symbol }
@@ -24,7 +23,6 @@ export class StaleSessionPreview extends Schema.TaggedError<
   { readonly brand: unique symbol }
 >()('StaleSessionPreview', errorFields('stale_session_preview'), ConflictAnnotations()) {}
 
-/** The document already has an unfinished session; the client offers to continue it instead. */
 export class StudySessionAlreadyStarted extends Schema.TaggedError<
   StudySessionAlreadyStarted,
   { readonly brand: unique symbol }
@@ -53,13 +51,12 @@ export class StudySessionEnded extends Schema.TaggedError<
   { readonly brand: unique symbol }
 >()('StudySessionEnded', errorFields('study_session_ended'), ConflictAnnotations()) {}
 
-/** The question's revision was withdrawn after the session started and accepts no answers. */
 export class SessionQuestionWithdrawn extends Schema.TaggedError<
   SessionQuestionWithdrawn,
   { readonly brand: unique symbol }
 >()('SessionQuestionWithdrawn', errorFields('session_question_withdrawn'), ConflictAnnotations()) {}
 
-/** The answer is not an option of the revision this session shows for the question. */
+// CONTRACT: InvalidSessionAnswer means answerId does not belong to the revision pinned by the session.
 export class InvalidSessionAnswer extends Schema.TaggedError<
   InvalidSessionAnswer,
   { readonly brand: unique symbol }
@@ -69,7 +66,6 @@ export class InvalidSessionAnswer extends Schema.TaggedError<
   UnprocessableEntityAnnotations(),
 ) {}
 
-/** Another answer to this question was submitted first; the client rereads the stored result. */
 export class SessionAnswerAlreadySubmitted extends Schema.TaggedError<
   SessionAnswerAlreadySubmitted,
   { readonly brand: unique symbol }
@@ -84,7 +80,6 @@ export class OralCategoryNotFound extends Schema.TaggedError<
   { readonly brand: unique symbol }
 >()('OralCategoryNotFound', errorFields('oral_category_not_found'), NotFoundAnnotations()) {}
 
-/** The oral category already has an unfinished session; the client offers to continue it instead. */
 export class OralSessionAlreadyStarted extends Schema.TaggedError<
   OralSessionAlreadyStarted,
   { readonly brand: unique symbol }
@@ -98,7 +93,7 @@ export class OralSessionAlreadyStarted extends Schema.TaggedError<
   ConflictAnnotations(),
 ) {}
 
-/** The self-assessment refers to another revision than the one this session pinned for the question. */
+// CONTRACT: InvalidOralSelfAssessment means oralRevisionId differs from the revision pinned by the session.
 export class InvalidOralSelfAssessment extends Schema.TaggedError<
   InvalidOralSelfAssessment,
   { readonly brand: unique symbol }
@@ -108,7 +103,6 @@ export class InvalidOralSelfAssessment extends Schema.TaggedError<
   UnprocessableEntityAnnotations(),
 ) {}
 
-/** The question already has another self-assessment in this session; the client rereads the stored one. */
 export class OralSelfAssessmentAlreadySubmitted extends Schema.TaggedError<
   OralSelfAssessmentAlreadySubmitted,
   { readonly brand: unique symbol }

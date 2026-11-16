@@ -4,7 +4,6 @@ import type { AnyRichContent, RichContent } from './rich-content.js'
 
 export const fixtureAssetId = ContentAssetId.make('70000000-0000-4000-8000-000000000001')
 
-/** One valid version 1 document per node, the shared specification every renderer is tested against. */
 export const richContentNodeFixtures = {
   paragraph: {
     version: 1,
@@ -149,7 +148,6 @@ export const richContentNodeFixtures = {
   },
 } as const satisfies Record<string, RichContent>
 
-/** Content a newer schema could produce; renderers show a message in place of the unknown node. */
 export const unsupportedNodeFixture = {
   version: 1,
   doc: {

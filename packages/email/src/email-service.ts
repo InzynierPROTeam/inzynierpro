@@ -18,7 +18,6 @@ export type SendEmailRequest = {
   readonly template: ReactElement
 }
 
-// Carries only why sending failed, never the message, so it is safe to log.
 export class EmailSendFailed extends Data.TaggedError('EmailSendFailed')<{
   readonly reason: EmailErrorCode | 'render_failed' | 'unknown'
 }> {
@@ -33,7 +32,7 @@ export class EmailService extends Context.Service<
 >()('EmailService') {}
 
 export const make = (adapter: EmailAdapter) => {
-  // The SDK reports usage to its authors unless disabled.
+  // EXTERNAL: The email SDK sends usage telemetry unless telemetry is disabled.
   const client = createEmailClient({ adapters: [adapter], telemetry: false })
 
   return EmailService.of({

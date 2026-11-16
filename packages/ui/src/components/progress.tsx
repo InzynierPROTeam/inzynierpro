@@ -11,9 +11,7 @@ const progressVariants = tv({
   },
   variants: {
     variant: {
-      // Muted track: only visible on card or background surfaces.
       muted: { track: 'bg-muted', indicator: 'bg-primary' },
-      // Tinted track: visible on muted and translucent surfaces as well.
       primary: { track: 'bg-primary/15', indicator: 'bg-primary' },
       gradient: {
         track: 'bg-primary/15',
@@ -21,7 +19,6 @@ const progressVariants = tv({
       },
       success: { track: 'bg-success/15', indicator: 'bg-success' },
       foreground: { track: 'bg-foreground/10', indicator: 'bg-foreground' },
-      // For primary-coloured surfaces such as a primary card.
       'primary-foreground': {
         track: 'bg-primary-foreground/25',
         indicator: 'bg-primary-foreground',

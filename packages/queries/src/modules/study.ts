@@ -57,7 +57,6 @@ export const studyKeys = {
   account: (userId: UserId) => [...studyKeys.all, 'account', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
     [...studyKeys.account(userId), 'path', id] as const,
-  // Reads that show the learner's progress on the path, which every answer changes.
   progress: (userId: UserId, pathId: QualificationPathId) =>
     [...studyKeys.path(userId, pathId), 'progress'] as const,
   getDocuments: (userId: UserId, req: GetDocumentsRequest) =>
@@ -76,7 +75,6 @@ export const studyKeys = {
       'getLatestSession',
       req,
     ] as const,
-  // Review reads sit in the progress group, because every answer can make a question due or not.
   getReviewPreview: (userId: UserId, req: GetReviewPreviewRequest) =>
     [
       ...studyKeys.progress(userId, req.params.qualificationPathId),
@@ -95,13 +93,10 @@ export const studyKeys = {
       'getFavoritesSession',
       req,
     ] as const,
-  // Marks span all paths, so their previews invalidate independently of path progress.
   favorites: (userId: UserId) => [...studyKeys.account(userId), 'favorites'] as const,
-  // Marks and notes span all paths and invalidate every session question.
   questions: (userId: UserId) => [...studyKeys.account(userId), 'questions'] as const,
   getFavoritesPreview: (userId: UserId, req: GetFavoritesPreviewRequest) =>
     [...studyKeys.favorites(userId), 'getFavoritesPreview', req] as const,
-  // The step after a session depends on the whole path's progress, not on the session alone.
   getSessionNextStep: (userId: UserId, req: GetSessionNextStepRequest) =>
     [
       ...studyKeys.progress(userId, req.params.qualificationPathId),
@@ -128,10 +123,8 @@ export const studyKeys = {
       'getSessionResultsInfinite',
       req,
     ] as const,
-  // Outside session keys so account-wide mark/note invalidation reaches it; answers update it directly.
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
     [...studyKeys.questions(userId), 'getSessionQuestion', req] as const,
-  // Oral reads that show the learner's oral progress on the path, which every self-assessment changes.
   oralProgress: (userId: UserId, pathId: QualificationPathId) =>
     [...studyKeys.path(userId, pathId), 'oralProgress'] as const,
   getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>

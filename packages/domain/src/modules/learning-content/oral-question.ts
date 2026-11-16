@@ -9,7 +9,6 @@ export const OralRevisionId = Uuid.pipe(Schema.brand('OralRevisionId'))
 
 export type OralRevisionId = typeof OralRevisionId.Type
 
-/** The question's place inside its primary oral category, starting at 1. */
 export const OralCategoryPosition = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
   Schema.brand('OralCategoryPosition'),
 )

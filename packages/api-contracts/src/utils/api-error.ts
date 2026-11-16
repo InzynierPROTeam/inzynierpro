@@ -157,7 +157,6 @@ export const HTTPVersionNotSupportedAnnotations = () => ({
   description: 'The HTTP version used in the request is not supported by the server',
 })
 
-// Framework failures, kept separate from each endpoint's declared errors.
 export class InvalidRequest extends Schema.TaggedError<
   InvalidRequest,
   { readonly brand: unique symbol }
@@ -177,7 +176,6 @@ export class InternalServerError extends Schema.TaggedError<
   InternalServerErrorAnnotations(),
 ) {}
 
-// Shared by every rate-limited endpoint; `retry-after` and `x-ratelimit-*` headers carry the timing.
 export class RateLimitExceeded extends Schema.TaggedError<
   RateLimitExceeded,
   { readonly brand: unique symbol }

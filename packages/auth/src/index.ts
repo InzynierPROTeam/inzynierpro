@@ -12,8 +12,7 @@ import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { emailOTP } from 'better-auth/plugins'
 import { Context, Duration, Effect, Exit, Layer, Match, Option, Redacted, Schema } from 'effect'
 import { SecureRandom } from 'effect/crypto'
-// Better Auth's endpoint types refer to zod internals. This import lets TypeScript name them
-// in the emitted declarations, so `Auth` keeps the full, plugin-aware Better Auth type.
+// EXTERNAL: Better Auth endpoint declarations reference zod internals; this import makes them nameable in emitted declarations.
 import type {} from 'zod/v4/core'
 
 import { generateUserName } from './user-name.js'
@@ -25,10 +24,6 @@ export type AuthConfig = {
   readonly baseUrl: URL
   readonly trustedOrigins: ReadonlyArray<string>
   readonly cookiesDomain: Option.Option<string>
-  /**
-   * The request header with the client address set by the proxy, e.g. `cf-connecting-ip`. Without
-   * it, the sign-in rate limit cannot tell clients apart and shares one bucket per path.
-   */
   readonly trustedClientIpHeader: Option.Option<string>
   readonly google: Option.Option<{
     readonly clientId: string
@@ -56,8 +51,7 @@ const decodeEmail = Schema.decodeUnknownSync(Email)
 
 const sendSignInCodePath = '/email-otp/send-verification-otp'
 
-// Better Auth logs a failed send and still answers that the code was sent. The send callback
-// records the failure for the current request, and an after hook turns it into an error.
+// EXTERNAL: Better Auth reports send success after email delivery fails; the request state and after hook convert that failure into an error.
 const signInCodeNotSent = defineRequestState(() => false)
 
 export const signInCodeNotSentError = {
@@ -127,7 +121,7 @@ const makeAuth = (
         Number(await redis.eval(incrementWithTtl, { keys: [key], arguments: [String(ttl)] })),
     },
     rateLimit: {
-      // The library enables rate limiting only when NODE_ENV is production.
+      // EXTERNAL: Better Auth enables rate limiting only in production by default.
       enabled: true,
       storage: 'secondary-storage',
     },
@@ -163,13 +157,11 @@ const makeAuth = (
       }),
     ],
     advanced: {
-      // Keep callback/origin validation enabled in tests too (Better Auth skips it by default).
+      // EXTERNAL: Better Auth disables origin validation in tests by default; enable it explicitly.
       disableOriginCheck: false,
-      // Only the header set by our proxy is trusted; any other one can be forged by the client.
       ipAddress: {
         ipAddressHeaders: Option.toArray(config.trustedClientIpHeader),
       },
-      // PostgreSQL owns UUIDv7 generation through the table defaults.
       database: { generateId: false },
       cookiePrefix: 'inzynierpro',
       crossSubDomainCookies: Option.match(config.cookiesDomain, {
@@ -237,7 +229,7 @@ const makeAuth = (
     telemetry: { enabled: false },
     logger: {
       level: 'warn',
-      // Only the message is logged; the arguments may carry request data such as codes.
+      // EXTERNAL: Better Auth logger arguments may contain sign-in codes; forward only the message.
       log: (level, message) => {
         const log = Match.value(level).pipe(
           Match.when('error', () => Effect.logError),

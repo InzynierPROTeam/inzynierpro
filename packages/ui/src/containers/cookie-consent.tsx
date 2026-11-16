@@ -11,7 +11,7 @@ export type TrackingConsent = {
 
 type TrackedCategory = 'Analytics' | 'Advertising'
 
-// react-cookie-manager 5.4.1 re-exports its types without file extensions, so they resolve to `any`.
+// EXTERNAL: react-cookie-manager 5.4.1 exports types without extensions, so those types resolve to any.
 type LoadedConsent = Record<TrackedCategory, { consented: boolean }>
 
 type ManagedPreferences = Partial<Record<TrackedCategory, boolean>>
@@ -32,7 +32,7 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
   return (
     <CookieManager
       googleConsentMode
-      // Tracker callbacks own loading; the host blocker also blocks analytics-only GTM.
+      // EXTERNAL: react-cookie-manager's host blocker also blocks analytics-only GTM; tracker callbacks control loading.
       disableAutomaticBlocking
       onConsentLoaded={(consent: LoadedConsent | null) =>
         onConsentChange?.({

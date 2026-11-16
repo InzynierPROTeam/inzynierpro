@@ -128,7 +128,6 @@ export const GetReviewPreviewEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Returns the unfinished review session, if any.
 export const GetReviewSessionEndpoint = HttpApiEndpoint.get(
   'GetReviewSession',
   '/paths/:qualificationPathId/review-session',
@@ -140,7 +139,6 @@ export const GetReviewSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Selects the most overdue questions; subsequent operations use the shared session endpoints.
 export const StartReviewSessionEndpoint = HttpApiEndpoint.post(
   'StartReviewSession',
   '/paths/:qualificationPathId/review-sessions',
@@ -159,7 +157,6 @@ export const StartReviewSessionEndpoint = HttpApiEndpoint.post(
   },
 )
 
-// Marks the question as a FavoriteQuestion on every path of the learner; marking again changes nothing.
 export const MarkFavoriteQuestionEndpoint = HttpApiEndpoint.put(
   'MarkFavoriteQuestion',
   '/paths/:qualificationPathId/favorites/:questionId',
@@ -170,8 +167,6 @@ export const MarkFavoriteQuestionEndpoint = HttpApiEndpoint.put(
   },
 )
 
-// Removes the mark on every path, even for a question no longer on this one; started favourites
-// sessions keep their questions.
 export const UnmarkFavoriteQuestionEndpoint = HttpApiEndpoint.delete(
   'UnmarkFavoriteQuestion',
   '/paths/:qualificationPathId/favorites/:questionId',
@@ -182,8 +177,6 @@ export const UnmarkFavoriteQuestionEndpoint = HttpApiEndpoint.delete(
   },
 )
 
-// Saves the learner's note on a question of the path, shared across their paths; the whole text
-// replaces the saved one and the question's current revision is stored with it.
 export const SaveQuestionNoteEndpoint = HttpApiEndpoint.put(
   'SaveQuestionNote',
   '/paths/:qualificationPathId/notes/:questionId',
@@ -195,7 +188,6 @@ export const SaveQuestionNoteEndpoint = HttpApiEndpoint.put(
   },
 )
 
-// Clears the note on every path, even for a question no longer on this one; clearing again changes nothing.
 export const ClearQuestionNoteEndpoint = HttpApiEndpoint.delete(
   'ClearQuestionNote',
   '/paths/:qualificationPathId/notes/:questionId',
@@ -217,7 +209,6 @@ export const GetFavoritesPreviewEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Returns the unfinished favourites session, if any.
 export const GetFavoritesSessionEndpoint = HttpApiEndpoint.get(
   'GetFavoritesSession',
   '/paths/:qualificationPathId/favorites-session',
@@ -229,7 +220,6 @@ export const GetFavoritesSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Fixes the question set; subsequent operations use the shared session endpoints.
 export const StartFavoritesSessionEndpoint = HttpApiEndpoint.post(
   'StartFavoritesSession',
   '/paths/:qualificationPathId/favorites-sessions',
@@ -269,7 +259,7 @@ export const GetSessionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Uses current learner state; another account's session reads as null.
+// CONTRACT: Another account's session returns null.
 export const GetSessionNextStepEndpoint = HttpApiEndpoint.get(
   'GetSessionNextStep',
   '/paths/:qualificationPathId/sessions/:sessionId/next-step',
@@ -280,7 +270,7 @@ export const GetSessionNextStepEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Only an ended session has a summary; an unfinished one reads as null.
+// CONTRACT: An unfinished session has a null summary.
 export const GetSessionSummaryEndpoint = HttpApiEndpoint.get(
   'GetSessionSummary',
   '/paths/:qualificationPathId/sessions/:sessionId/summary',
@@ -291,7 +281,6 @@ export const GetSessionSummaryEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Results follow session order.
 export const GetSessionResultsEndpoint = HttpApiEndpoint.get(
   'GetSessionResults',
   '/paths/:qualificationPathId/sessions/:sessionId/results',
@@ -303,7 +292,7 @@ export const GetSessionResultsEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Ends a session before its summary; it keeps its answers and accepts no more. Ending an ended one changes nothing.
+// CONTRACT: Ending an already ended session is idempotent.
 export const EndSessionEndpoint = HttpApiEndpoint.post(
   'EndSession',
   '/paths/:qualificationPathId/sessions/:sessionId/end',
@@ -324,8 +313,6 @@ export const GetSessionQuestionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// Opening the explanation, or a saved note, before submitting is recorded once per kind; the answer
-// is then assisted at the note or explanation level (ADR-0002).
 export const RecordSessionAssistanceEndpoint = HttpApiEndpoint.post(
   'RecordSessionAssistance',
   '/paths/:qualificationPathId/sessions/:sessionId/questions/:position/assistance',
@@ -337,7 +324,7 @@ export const RecordSessionAssistanceEndpoint = HttpApiEndpoint.post(
   },
 )
 
-// Retrying the same answer returns the stored result; a different answer after it is refused.
+// CONTRACT: Retrying the same answer returns the stored result; a different answer conflicts.
 export const SubmitSessionAnswerEndpoint = HttpApiEndpoint.post(
   'SubmitSessionAnswer',
   '/paths/:qualificationPathId/sessions/:sessionId/questions/:position/answer',

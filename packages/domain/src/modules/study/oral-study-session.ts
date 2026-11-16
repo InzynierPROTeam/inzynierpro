@@ -15,10 +15,6 @@ export const oralSelfAssessmentValues = [
   easySelfAssessment,
 ] as const
 
-/**
- * OralSelfAssessment: how hard answering the question on one's own was, „Trudne”, „Średnie” or
- * „Łatwe” (ADR-0006). Any of them covers the question; a harder one brings it back sooner in reviews.
- */
 export const OralSelfAssessment = Schema.Literals(oralSelfAssessmentValues)
 
 export type OralSelfAssessment = typeof OralSelfAssessment.Type

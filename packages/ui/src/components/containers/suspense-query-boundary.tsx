@@ -45,10 +45,6 @@ export type SuspenseQueryProps<
   TIsDataEmpty extends (data: TData) => boolean = (data: TData) => boolean,
 > = {
   options: UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>
-  /**
-   * A check like `data => data === null` is inferred as a type predicate, so children get the data
-   * without `null` and need no guard of their own.
-   */
   isDataEmpty: TIsDataEmpty
   children: (data: NonEmptyData<TData, TIsDataEmpty>) => ReactNode
   noDataFallback?: ReactNode
