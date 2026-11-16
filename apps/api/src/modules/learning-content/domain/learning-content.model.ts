@@ -5,6 +5,14 @@ import {
   ImageDimension,
 } from '@inzpro/domain/modules/learning-content/content-asset'
 import {
+  KnowledgeCheckFormat,
+  OralKnowledgeCheckId,
+  OralKnowledgeCheckOptionId,
+  OralKnowledgeCheckRevisionId,
+  allowsSeveralOptions,
+  hasFormatOptionCount,
+} from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
+import {
   OralCategoryPosition,
   OralQuestionId,
   OralRevisionId,
@@ -144,3 +152,41 @@ export const OralRevisionWithdrawal = Schema.Struct({
 })
 
 export type OralRevisionWithdrawal = typeof OralRevisionWithdrawal.Type
+
+const NewKnowledgeCheckOption = Schema.Struct({
+  id: OralKnowledgeCheckOptionId,
+  text: Schema.NonEmptyString,
+  isCorrect: Schema.Boolean,
+})
+
+const hasValidOptions = (check: {
+  readonly format: KnowledgeCheckFormat
+  readonly options: ReadonlyArray<typeof NewKnowledgeCheckOption.Type>
+}) => {
+  const correctCount = check.options.filter(option => option.isCorrect).length
+
+  return (
+    new Set(check.options.map(option => option.id)).size === check.options.length &&
+    hasFormatOptionCount(check.format, check.options.length) &&
+    (allowsSeveralOptions(check.format) ? correctCount >= 1 : correctCount === 1)
+  )
+}
+
+export const NewOralKnowledgeCheck = Schema.Struct({
+  id: OralKnowledgeCheckId,
+  revisionId: OralKnowledgeCheckRevisionId,
+  questionId: OralQuestionId,
+  oralRevisionId: OralRevisionId,
+  format: KnowledgeCheckFormat,
+  prompt: Schema.NonEmptyString,
+  options: Schema.Array(NewKnowledgeCheckOption),
+  explanation: RichContent,
+  published: Schema.Boolean,
+}).check(
+  Schema.makeFilter(hasValidOptions, {
+    message:
+      'A knowledge check needs distinct options: single choice has three with exactly one correct, true/false two with exactly one correct and multiple choice four with at least one correct.',
+  }),
+)
+
+export type NewOralKnowledgeCheck = typeof NewOralKnowledgeCheck.Type

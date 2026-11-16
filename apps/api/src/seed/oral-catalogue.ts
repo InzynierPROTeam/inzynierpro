@@ -13,6 +13,7 @@ import {
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
 import { catalogueId } from './catalogue.js'
+import { seedOralKnowledgeChecks } from './oral-knowledge-checks.js'
 import { bold, italic, plain } from './rich-text.js'
 
 // EXTERNAL: Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 20, 22, 29–30, 34, 35, 37, 54) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 12, 62, 68, 72, 298).
@@ -349,4 +350,6 @@ export const seedOralCatalogue = Effect.fn('seedOralCatalogue')(function* (
   yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id,published_at)
   VALUES (${revisionId},${questionId},${body}::jsonb,${answer}::jsonb,${substantiveChange},${revisionId},clock_timestamp()) ON CONFLICT DO NOTHING`
   yield* sql`UPDATE oral_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id=${previousId}`
+
+  yield* seedOralKnowledgeChecks()
 })

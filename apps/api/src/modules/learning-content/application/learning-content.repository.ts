@@ -6,6 +6,7 @@ import { Context, type Effect } from 'effect'
 import type { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
 import type {
   ContentAsset,
+  NewOralKnowledgeCheck,
   NewOralQuestion,
   NewOralRevision,
   NewQuestion,
@@ -59,6 +60,9 @@ export class LearningContentRepository extends Context.Service<
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
     readonly publishOralRevision: (
       revision: NewOralRevision,
+    ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
+    readonly createKnowledgeCheck: (
+      check: NewOralKnowledgeCheck,
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
     readonly withdrawOralRevision: (
       withdrawal: OralRevisionWithdrawal,

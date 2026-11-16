@@ -1,5 +1,9 @@
+import type {
+  OralKnowledgeCheckOptionId,
+  OralKnowledgeCheckRevisionId,
+} from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
-import { Effect, Layer } from 'effect'
+import { Array as Arr, Effect, Layer } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { LearningContentWriteError } from '~api/modules/learning-content/application/errors.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
@@ -8,6 +12,14 @@ import {
   initialRevision,
   substantiveChange,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
+
+type KnowledgeCheckOptionInsert = {
+  readonly id: OralKnowledgeCheckOptionId
+  readonly knowledgeCheckRevisionId: OralKnowledgeCheckRevisionId
+  readonly optionPosition: number
+  readonly text: string
+  readonly isCorrect: boolean
+}
 
 export const LearningContentRepositoryLive = Layer.effect(
   LearningContentRepository,
@@ -191,6 +203,43 @@ export const LearningContentRepositoryLive = Layer.effect(
 
                 yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id,published_at) VALUES (${revision.revisionId},${revision.questionId},${JSON.stringify(revision.body)}::jsonb,${JSON.stringify(revision.answer)}::jsonb,${revision.changeKind},${substantiveRevisionId},clock_timestamp())`
                 yield* sql`UPDATE oral_questions SET current_revision_id=${revision.revisionId} WHERE id=${revision.questionId}`
+              }),
+            )
+            .pipe(
+              Effect.catchTag('SqlError', cause =>
+                Effect.fail(new LearningContentWriteError({ cause })),
+              ),
+            )
+        },
+      ),
+      createKnowledgeCheck: Effect.fn('LearningContentRepository.createKnowledgeCheck')(
+        function* (check) {
+          const options: ReadonlyArray<KnowledgeCheckOptionInsert> = check.options.map(
+            (option, index) => ({
+              id: option.id,
+              knowledgeCheckRevisionId: check.revisionId,
+              optionPosition: index + 1,
+              text: option.text,
+              isCorrect: option.isCorrect,
+            }),
+          )
+
+          return yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                yield* requireStoredAssets(check.explanation)
+                yield* sql`INSERT INTO oral_knowledge_checks (id,question_id) VALUES (${check.id},${check.questionId})`
+                yield* sql`INSERT INTO oral_knowledge_check_revisions (id,knowledge_check_id,question_id,oral_revision_id,format,prompt,explanation) VALUES (${check.revisionId},${check.id},${check.questionId},${check.oralRevisionId},${check.format},${check.prompt},${JSON.stringify(check.explanation)}::jsonb)`
+
+                if (Arr.isReadonlyArrayNonEmpty(options)) {
+                  yield* sql`INSERT INTO oral_knowledge_check_options ${sql.insert(options)}`
+                }
+
+                if (check.published) {
+                  yield* sql`UPDATE oral_knowledge_check_revisions SET published_at=clock_timestamp() WHERE id=${check.revisionId}`
+                }
+
+                yield* sql`UPDATE oral_knowledge_checks SET current_revision_id=${check.revisionId} WHERE id=${check.id}`
               }),
             )
             .pipe(
