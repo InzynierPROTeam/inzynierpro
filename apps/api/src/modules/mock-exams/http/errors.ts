@@ -41,7 +41,8 @@ export const attemptQuestionNotFound = Effect.fail(
 export const mockExamAttemptNotInProgress = Effect.fail(
   new MockExamAttemptNotInProgress({
     type: 'mock_exam_attempt_not_in_progress',
-    message: 'Answers can be changed only while the attempt is in progress.',
+    message:
+      'Answers can be changed only while the attempt is in progress and before its deadline.',
   }),
 )
 

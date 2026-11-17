@@ -8,7 +8,7 @@ import type {
 import { dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import type { MockExamUnavailableReason } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Option } from 'effect'
+import { DateTime, Effect, Option } from 'effect'
 import type { CursorPage } from '~api/lib/cursor-pagination.js'
 import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
 import { toQuestionNoteDto } from '~api/modules/learning/http/mappers.js'
@@ -31,6 +31,7 @@ export const toAttemptSummaryDto = (
     onNone: () => null,
     onSome: dateTimeUtcToUtcIsoDateTime,
   }),
+  endReason: Option.getOrNull(attempt.endReason),
   result: Option.match(attempt.result, {
     onNone: () => null,
     onSome: result => ({ ...result, passed: Option.getOrNull(result.passed) }),
@@ -60,14 +61,28 @@ export const toMockExamPreviewDto = (preview: {
   }),
 })
 
-export const toMockExamAttemptDto = (attempt: MockExamAttempt): MockExamAttemptDto => ({
+export const toMockExamAttemptDto = (
+  attempt: MockExamAttempt,
+  serverTime: DateTime.Utc,
+): MockExamAttemptDto => ({
   ...toAttemptSummaryDto(attempt),
+  deadline: dateTimeUtcToUtcIsoDateTime(attempt.deadline),
+  serverTime: dateTimeUtcToUtcIsoDateTime(serverTime),
   durationMinutes: attempt.durationMinutes,
   passThreshold: attempt.passThreshold,
   questionCount: attempt.questionCount,
   sections: attempt.sections,
   questions: attempt.questions,
 })
+
+export const toMockExamAttemptResponse = (attempt: MockExamAttempt) =>
+  Effect.map(DateTime.now, now => toMockExamAttemptDto(attempt, now))
+
+export const toNullableMockExamAttemptResponse = (attempt: Option.Option<MockExamAttempt>) =>
+  Option.match(attempt, {
+    onNone: () => Effect.succeed(null),
+    onSome: toMockExamAttemptResponse,
+  })
 
 export const toAttemptQuestionDto = (question: AttemptQuestion): AttemptQuestionDto => ({
   ...question,

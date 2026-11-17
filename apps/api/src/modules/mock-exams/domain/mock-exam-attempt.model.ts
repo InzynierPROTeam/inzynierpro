@@ -19,6 +19,7 @@ import type {
   AttemptQuestionVersion,
   MockExamAttemptId,
   MockExamAttemptStatus,
+  MockExamEndReason,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type {
   ExamActiveSeconds,
@@ -53,6 +54,7 @@ export type MockExamAttemptSummary = {
   readonly status: MockExamAttemptStatus
   readonly startedAt: DateTimeUtc
   readonly finishedAt: Option.Option<DateTimeUtc>
+  readonly endReason: Option.Option<MockExamEndReason>
   readonly result: Option.Option<MockExamResult>
 }
 
@@ -81,7 +83,21 @@ export type AttemptQuestionState = {
   readonly isFlagged: boolean
 }
 
+export type AttemptClock = {
+  readonly status: MockExamAttemptStatus
+  readonly startedAt: DateTimeUtc
+  readonly durationMinutes: ExamDurationMinutes
+  readonly pauseSeconds: ExamActiveSeconds
+}
+
+export type AttemptEnding = {
+  readonly endReason: MockExamEndReason
+  readonly finishedAt: DateTimeUtc
+  readonly activeSeconds: ExamActiveSeconds
+}
+
 export type MockExamAttempt = MockExamAttemptSummary & {
+  readonly deadline: DateTimeUtc
   readonly durationMinutes: ExamDurationMinutes
   readonly passThreshold: QuestionCount
   readonly questionCount: QuestionCount

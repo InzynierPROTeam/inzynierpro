@@ -51,3 +51,12 @@ export const ExamPauseCount = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))
 )
 
 export type ExamPauseCount = typeof ExamPauseCount.Type
+
+export const submittedAttempt = 'submitted'
+export const timeExpiredAttempt = 'time-expired'
+
+export const mockExamEndReasonValues = [submittedAttempt, timeExpiredAttempt] as const
+
+export const MockExamEndReason = Schema.Literals(mockExamEndReasonValues)
+
+export type MockExamEndReason = typeof MockExamEndReason.Type

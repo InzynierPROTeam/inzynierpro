@@ -4,13 +4,26 @@ import { PersistedQueue } from 'effect/persistence'
 import { processEnv } from '~api/lib/env.js'
 import { jobQueueStoreLayer } from '~api/lib/job-queue.js'
 import { processTelemetryLayer } from '~api/lib/observability.js'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { recordJobBacklog } from '~api/modules/background-jobs/application/job-backlog.service.js'
 import { BackgroundJobsReaderLive } from '~api/modules/background-jobs/infrastructure/background-jobs.reader.postgres.js'
+import {
+  AttemptDeadlineQueueLive,
+  processAttemptDeadlines,
+} from '~api/modules/mock-exams/application/attempt-deadline.job.js'
+import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-exam.reader.postgres.js'
+import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
 
 // EXTERNAL: Building Effect's SQL job store also runs its migrations.
 export const BackgroundJobsLive = Layer.unwrap(
   Effect.map(processEnv, config =>
-    BackgroundJobsReaderLive.pipe(
+    Layer.mergeAll(
+      BackgroundJobsReaderLive,
+      AttemptDeadlineQueueLive,
+      TransactionLive,
+      MockExamReaderLive,
+      MockExamRepositoryLive,
+    ).pipe(
       Layer.provideMerge(jobQueueStoreLayer()),
       Layer.provideMerge(databaseLayer({ url: config.DATABASE_URL })),
       Layer.provideMerge(processTelemetryLayer('inzpro-worker', config)),
@@ -29,6 +42,7 @@ const CleanupLive = PersistedQueue.layerCleanup()
 export const WorkerLive = Layer.effectDiscard(
   Effect.gen(function* () {
     yield* Effect.forkScoped(recordBacklog)
+    yield* Effect.forkScoped(processAttemptDeadlines)
 
     yield* Effect.logInfo('Worker started')
     yield* Effect.addFinalizer(() => Effect.logInfo('Worker stopped'))

@@ -1,4 +1,5 @@
 import { Data, type Schema } from 'effect'
+import type { PersistedQueue } from 'effect/persistence'
 import type { SqlError } from 'effect/sql'
 
 export class MockExamReadError extends Data.TaggedError('MockExamReadError')<{
@@ -6,5 +7,5 @@ export class MockExamReadError extends Data.TaggedError('MockExamReadError')<{
 }> {}
 
 export class MockExamWriteError extends Data.TaggedError('MockExamWriteError')<{
-  readonly cause: SqlError.SqlError | Schema.SchemaError
+  readonly cause: SqlError.SqlError | Schema.SchemaError | PersistedQueue.PersistedQueueError
 }> {}

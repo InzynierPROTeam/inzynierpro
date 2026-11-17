@@ -26,6 +26,7 @@ import {
   AttemptQuestionVersion,
   MockExamAttemptId,
   MockExamAttemptStatus,
+  MockExamEndReason,
   unfinishedAttemptStatuses,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -45,6 +46,7 @@ import type {
   AttemptQuestion,
   MockExamAttemptSummary,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
+import { attemptDeadline } from '~api/modules/mock-exams/domain/mock-exam-clock.rules.js'
 
 const BlueprintVersionRow = Schema.Struct({
   id: ExamBlueprintId,
@@ -82,6 +84,7 @@ const AttemptSummaryRow = Schema.Struct({
   status: MockExamAttemptStatus,
   startedAt: DateTimeUtc,
   finishedAt: Schema.OptionFromNullOr(DateTimeUtc),
+  endReason: Schema.OptionFromNullOr(MockExamEndReason),
   correctCount: Schema.NullOr(QuestionCount),
   incorrectCount: Schema.NullOr(QuestionCount),
   unansweredCount: Schema.NullOr(QuestionCount),
@@ -228,7 +231,7 @@ export const MockExamReaderLive = Layer.effect(
     )
 
     const summaryColumns = sql.literal(
-      'a.id,a.status,a.started_at,a.finished_at,a.correct_count,a.incorrect_count,a.unanswered_count,a.percent,a.passed,a.active_seconds,a.pause_count,a.pause_seconds',
+      'a.id,a.status,a.started_at,a.finished_at,a.end_reason,a.correct_count,a.incorrect_count,a.unanswered_count,a.percent,a.passed,a.active_seconds,a.pause_count,a.pause_seconds',
     )
 
     const sectionResultRow = Schema.Struct({
@@ -246,6 +249,7 @@ export const MockExamReaderLive = Layer.effect(
       status: row.status,
       startedAt: row.startedAt,
       finishedAt: row.finishedAt,
+      endReason: row.endReason,
       result:
         row.correctCount === null ||
         row.incorrectCount === null ||
@@ -551,6 +555,7 @@ export const MockExamReaderLive = Layer.effect(
 
           return Option.some({
             ...readSummary(attempt, resultSections),
+            deadline: attemptDeadline(attempt),
             durationMinutes: attempt.durationMinutes,
             passThreshold: attempt.passThreshold,
             questionCount: attempt.questionCount,
