@@ -2,9 +2,8 @@ import {
   attemptQuestionQueryOptions,
   mockExamAttemptQueryOptions,
 } from '@inzpro/queries/modules/mock-exams/queries'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Schema } from 'effect'
-import { constVoid } from 'effect/Function'
 import { seo } from '~platform/config/app'
 import { AttemptPage } from '~platform/features/mockExam/AttemptPage'
 import { AttemptQuestionRouteParams } from '~platform/features/mockExam/validation'
@@ -20,10 +19,10 @@ export const Route = createFileRoute(
       questionNumber: String(params.questionNumber),
     }),
   },
-  loader: ({ context: { queryClient, session, selectedPath }, params }) => {
+  loader: async ({ context: { queryClient, session, selectedPath }, params }) => {
     const attemptParams = { qualificationPathId: selectedPath.id, attemptId: params.attemptId }
 
-    void Promise.all([
+    const [attempt] = await Promise.all([
       queryClient.query(
         mockExamAttemptQueryOptions(apiHttpClient, session.user.id, { params: attemptParams }),
       ),
@@ -32,7 +31,15 @@ export const Route = createFileRoute(
           params: { ...attemptParams, position: params.questionNumber },
         }),
       ),
-    ]).catch(constVoid)
+    ])
+
+    if (attempt?.status === 'finished') {
+      throw redirect({
+        to: '/egzamin-probny/podejscie/$attemptId/podsumowanie',
+        params: { attemptId: params.attemptId },
+        replace: true,
+      })
+    }
   },
   component: AttemptPage,
   head: ({ params }) => ({

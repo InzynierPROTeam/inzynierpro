@@ -1,6 +1,7 @@
 import type { GetSessionQuestionRequest } from '@inzpro/api-client/modules/written-study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
+import { mockExamKeys } from '@inzpro/queries/modules/mock-exams/keys'
 import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
 import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { toast } from '@inzpro/ui/components/toast'
@@ -43,6 +44,10 @@ export const useToggleFavorite = (userId: UserId, req: GetSessionQuestionRequest
     },
     onSettled: () =>
       Promise.all([
+        client.invalidateQueries({
+          queryKey: mockExamKeys.reviewQuestions(userId),
+          refetchType: 'none',
+        }),
         client.invalidateQueries({
           queryKey: writtenStudyKeys.favorites(userId),
           refetchType: 'none',

@@ -15,6 +15,7 @@ export const useStartMockExam = (userId: UserId) => {
     onSuccess: async (attempt, req) => {
       await client.invalidateQueries({
         queryKey: mockExamKeys.path(userId, req.params.qualificationPathId),
+        refetchType: 'none',
       })
       client.setQueryData(
         mockExamKeys.getMockExamAttempt(userId, {
@@ -31,6 +32,7 @@ export const useStartMockExam = (userId: UserId) => {
     onError: async (_, req) => {
       await client.invalidateQueries({
         queryKey: mockExamKeys.path(userId, req.params.qualificationPathId),
+        refetchType: 'none',
       })
     },
   })

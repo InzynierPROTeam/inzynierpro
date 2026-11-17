@@ -12,7 +12,7 @@ Accept the configured HTTP client and preserve AbortSignal cancellation. Keep co
 
 ## Query keys
 
-A key object is flat: `all`, named domain groups, and concrete operations. Each group extends `all` directly; each query extends its parent group. A group is named after a resource or responsibility, a query after the client operation.
+Declare grouping keys first, ordered from the root to their descendants, then the concrete operation keys. A key object is flat: `all`, named domain groups, and concrete operations. Each group extends `all` directly; each query extends its parent group. A group is named after a resource or responsibility, a query after the client operation.
 
 - `all` identifies the whole module.
 - `paths()` groups queries about the set of paths, for example `getPaths(req)`.
@@ -24,7 +24,7 @@ A key object is flat: `all`, named domain groups, and concrete operations. Each 
 - `oralProgress(userId, pathId)` groups the path's oral reads that show the learner's oral progress (oral categories, oral preview, latest oral session and its next step), so a self-assessment refreshes them.
 - `oralSession(userId, pathId, id)` groups the reads of one oral session: the session, summary, results, its mini-quiz and the quiz's paginated checks. Questions belong to `oralQuestions(userId)` because oral marks and notes are shared across paths.
 - `oralFavorites(userId)` groups oral favourites previews across paths. Marks stale this group and `oralQuestions(userId)` without refetching active session reads. Notes stale only `oralQuestions(userId)`. The unfinished favourites session belongs to `oralProgress(userId, pathId)`; starting or ending a session refreshes it.
-- `mockExamKeys.path(userId, pathId)` groups the mock exam reads of a path, the preview and every attempt; `attempt(userId, pathId, id)` groups one attempt's reads: the attempt and each question read. Starting an attempt sets its read and refreshes the preview. Saving an answer or a flag refreshes the attempt group.
+- `mockExamKeys.path(userId, pathId)` groups a path's preview, history and draft attempts; `attempt(userId, pathId, id)` groups the attempt and its individual questions. Starting and finishing set the returned attempt directly and mark the path stale without refetching active views. Draft answer and flag mutations update the affected question and its navigation state inline, cache the returned question, then refetch only that question and attempt to reconcile success, failure or conflict. `reviewQuestions(userId)` groups cursor-paginated reviews across paths because notes and favourites are shared; `review(userId, pathId, id)` narrows that group to one attempt. Note and favourite writes patch matching review questions directly and stale the corresponding written-study question/favourite groups without refetching the attempt or review pages.
 - `account(userId)` groups everything the account reads about its own study: every path group, the favourites group and the questions group.
 - `favorites(userId)` groups the favourites previews of every path. A mark is shared across paths and nothing else in a path changes them, so marking or unmarking marks this group stale (`refetchType: 'none'`) without refetching the session or progress.
 - `questions(userId)` groups every session question on any path. A question shows the learner's FavoriteQuestion mark and PersonalQuestionNote, both shared across paths, so marking, unmarking, saving or clearing a note marks this group stale (`refetchType: 'none'`); a note leaves the favourites previews alone.

@@ -14,3 +14,7 @@ export const unavailableMessages = {
   [tooFewExamQuestions]:
     'Egzamin próbny jest chwilowo niedostępny: w jednej z części brakuje pytań do losowania.',
 } satisfies Record<MockExamUnavailableReason, string>
+
+export const attemptSummaryRouteApi = getRouteApi(
+  '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie/$attemptId/podsumowanie',
+)
