@@ -1,7 +1,7 @@
 import type {
   SubmitSessionAnswerError,
   SubmitSessionAnswerRequest,
-} from '@inzpro/api-client/modules/study'
+} from '@inzpro/api-client/modules/written-study'
 import { ratioToPercent } from '@inzpro/domain/common/percent'
 import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
@@ -9,20 +9,20 @@ import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference
 import {
   nextQuestionPosition,
   scoredQuestionCount,
-} from '@inzpro/domain/modules/study/study-session'
+} from '@inzpro/domain/modules/learning/study-session'
+import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
 import {
   sessionQueryOptions,
   sessionQuestionQueryOptions,
-  studyKeys,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/written-study/queries'
 import { toast } from '@inzpro/ui/components/toast'
 import { getCurrentUtcIsoDateTime } from '@inzpro/utils/date'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Predicate } from 'effect'
+import { withdrawnQuestion } from '~platform/features/learningSession/utils/session'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { submitStudySessionAnswer } from '../actions'
-import { withdrawnQuestion } from '../utils'
 
 const sessionQueries = (userId: UserId, { params }: SubmitSessionAnswerRequest) => ({
   question: sessionQuestionQueryOptions(apiHttpClient, userId, { params }),
@@ -102,7 +102,7 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
     },
     onSettled: (_result, _error, { params }) =>
       client.invalidateQueries({
-        queryKey: studyKeys.progress(userId, params.qualificationPathId),
+        queryKey: writtenStudyKeys.progress(userId, params.qualificationPathId),
       }),
   })
 }

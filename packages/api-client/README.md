@@ -23,6 +23,8 @@ export type GetSessionPreviewError = Effect.Error<ReturnType<typeof getSessionPr
 
 When a contract starts requiring input, TypeScript rejects the `{}` default: remove it and pass the required request at call sites. Keep the inferred type intact rather than weakening it with assertions, `Partial` or optional fields.
 
+Written and oral learning use separate `written-study.ts` and `oral-study.ts` modules. Request, response and error types stay beside their action; adjacent `<module>.test.ts` files exercise the HTTP interface. A larger module may use `modules/<module>/<topic>.ts` when it has distinct responsibilities. Use either the flat file or the topic directory for one module, never both. A folder wrapping one `actions.ts` adds no organization.
+
 ## Response data
 
 Public response schemas preserve JSON-compatible values. `UtcIsoDateTime` remains a validated UTC ISO string and optional response values remain `null`; decoded results never contain Effect `DateTime` or `Option`. Use `@inzpro/utils/date` helpers when formatting or calculating on clients. Backend DateTime/Option models are mapped by HTTP handlers before responses leave the server. These values can be cached and hydrated without custom serialization adapters.

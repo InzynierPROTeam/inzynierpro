@@ -4,9 +4,9 @@ import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Smartphone } from 'lucide-react'
 import { ExternalLink } from '~platform/components/ExternalLink'
 import { ExternalLinks } from '~platform/config/app'
+import { mobileAppBannerStore } from '~platform/features/start/stores'
 
 import { useMobileAppBannerDismissed } from '../hooks/useMobileAppBannerDismissed'
-import { mobileAppBannerStore } from '../store'
 
 export const MobileAppBanner = () => {
   const dismissed = useMobileAppBannerDismissed()

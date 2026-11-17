@@ -35,4 +35,4 @@ Before adding or changing client actions, queries or query keys, read [packages/
 
 ### Package architecture
 
-Before adding a package, moving shared code, or changing dependencies, read [docs/architecture.md](docs/architecture.md) and the affected package README.
+Before changing module boundaries or file layout, adding a package, moving shared code, or changing dependencies, read [docs/architecture.md](docs/architecture.md) and the affected package README.

@@ -1,6 +1,6 @@
 import { defineRule } from '@oxlint/plugins'
 
-import { normalizedPath } from './path.ts'
+import { isModuleSource } from './path.ts'
 
 export const infiniteQueryNamesRule = defineRule({
   meta: {
@@ -12,12 +12,7 @@ export const infiniteQueryNamesRule = defineRule({
     },
   },
   create(context) {
-    const filename = normalizedPath(context.filename)
-
-    if (
-      !/\/packages\/queries\/src\/modules\/[^/]+\.ts$/.test(filename) ||
-      /\.(test|spec)\.ts$/.test(filename)
-    ) {
+    if (!isModuleSource(context.filename, 'queries')) {
       return {}
     }
 

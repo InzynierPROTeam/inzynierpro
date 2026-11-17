@@ -1,7 +1,7 @@
 import {
   documentsInfiniteQueryOptions,
   latestSessionQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/written-study/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { constVoid } from 'effect/Function'
 import { seo } from '~platform/config/app'

@@ -1,6 +1,6 @@
 import { QualificationKindId } from '@inzpro/domain/modules/qualification-paths/qualification-kind'
 import type { SpecializationId } from '@inzpro/domain/modules/qualification-paths/specialization'
-import { qualificationScopesQueryOptions } from '@inzpro/queries/modules/qualification-paths'
+import { qualificationScopesQueryOptions } from '@inzpro/queries/modules/qualification-paths/queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { Effect, Option, Schema } from 'effect'
 import { useEffect } from 'react'

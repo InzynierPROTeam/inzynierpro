@@ -1,4 +1,4 @@
-import type { OralSessionPreview } from '@inzpro/api-contracts/modules/study/responses'
+import type { OralSessionPreview } from '@inzpro/api-contracts/modules/oral-study/responses'
 import {
   Card,
   CardContent,
@@ -9,13 +9,13 @@ import {
 } from '@inzpro/ui/components/card'
 import { List, Mic2 } from 'lucide-react'
 import type React from 'react'
+import { QuestionCountDialog } from '~platform/features/learningSession/components/QuestionCountDialog'
 import {
   SessionDetail,
   SessionDetails,
   SessionPathDetail,
-} from '~platform/components/session/SessionDetails'
-import { QuestionCountDialog } from '~platform/features/learningSession/components/QuestionCountDialog'
-import { getSessionQuestionCount } from '~platform/features/learningSession/utils'
+} from '~platform/features/learningSession/components/SessionDetails'
+import { getSessionQuestionCount } from '~platform/features/learningSession/utils/session-question-count'
 
 import { oralSessionPreviewRouteApi } from '../utils'
 import { StartOralSessionButton } from './StartOralSessionButton'

@@ -1,4 +1,4 @@
-import { oralMaterialsInfiniteQueryOptions } from '@inzpro/queries/modules/study'
+import { oralMaterialsInfiniteQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { InView } from '@inzpro/ui/components/containers/in-view'
 import {

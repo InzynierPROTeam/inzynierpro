@@ -1,6 +1,6 @@
 import { defineRule, type ESTree } from '@oxlint/plugins'
 
-import { normalizedPath } from './path.ts'
+import { isModuleSource } from './path.ts'
 
 export const apiClientContractsRule = defineRule({
   meta: {
@@ -21,10 +21,7 @@ export const apiClientContractsRule = defineRule({
     },
   },
   create(context) {
-    if (
-      !/\/packages\/api-client\/src\/modules\/[^/]+\.ts$/.test(normalizedPath(context.filename)) ||
-      /\.(test|spec)\.ts$/.test(context.filename)
-    ) {
+    if (!isModuleSource(context.filename, 'api-client')) {
       return {}
     }
 

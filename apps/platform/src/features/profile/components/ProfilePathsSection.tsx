@@ -1,6 +1,6 @@
 import { PageLimit } from '@inzpro/domain/common/pagination'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
-import { pathsQueryOptions } from '@inzpro/queries/modules/preparation'
+import { pathsQueryOptions } from '@inzpro/queries/modules/preparation/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Empty,

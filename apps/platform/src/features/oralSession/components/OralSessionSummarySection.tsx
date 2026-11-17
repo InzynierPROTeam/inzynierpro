@@ -1,4 +1,4 @@
-import { oralSessionSummaryQueryOptions } from '@inzpro/queries/modules/study'
+import { oralSessionSummaryQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardContent } from '@inzpro/ui/components/card'
 import {
@@ -22,12 +22,12 @@ import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { SessionResultCardSkeleton } from '~platform/features/learningSession/components/SessionResultCard'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { OralSessionQuizCard } from '~platform/features/oralSessionQuiz/components/OralSessionQuizCard'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { oralSessionSummaryRouteApi } from '../utils'
 import { OralSessionNextStepCard } from './OralSessionNextStepCard'
 import { OralSessionQuestionsCard } from './OralSessionQuestionsCard'
-import { OralSessionQuizCard } from './OralSessionQuizCard'
 import { OralSessionResultCard } from './OralSessionResultCard'
 
 export const OralSessionSummarySection = () => {

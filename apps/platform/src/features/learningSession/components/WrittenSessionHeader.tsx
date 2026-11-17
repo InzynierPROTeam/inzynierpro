@@ -1,7 +1,8 @@
-import type { GetSessionRes } from '@inzpro/api-client/modules/study'
-import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
-import { sessionQueryOptions } from '@inzpro/queries/modules/study'
+import type { GetSessionRes } from '@inzpro/api-client/modules/written-study'
+import { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
+import { sessionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import type React from 'react'
+import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import {
   SessionHeader,
   SessionHeaderNav,
@@ -10,12 +11,11 @@ import {
   SessionHeaderSkeleton,
   SessionHeaderTitle,
   SessionTraverseLink,
-} from '~platform/components/session/SessionHeader'
-import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+} from '~platform/features/learningSession/components/SessionHeader'
+import { sessionQuestionRouteApi } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-import { sessionQuestionRouteApi } from '../utils'
 import { SessionProgress } from './SessionProgress'
 
 export const WrittenSessionHeader = () => {

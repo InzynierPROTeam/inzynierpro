@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react'
-
-import { ORAL_ANSWER_VISIBILITY_EVENT_NAME, oralAnswerVisibilityStore } from '../store'
+import {
+  ORAL_ANSWER_VISIBILITY_EVENT_NAME,
+  oralAnswerVisibilityStore,
+} from '~platform/features/oralSession/stores'
 
 const subscribe = (callback: () => void) => {
   window.addEventListener(ORAL_ANSWER_VISIBILITY_EVENT_NAME, callback)

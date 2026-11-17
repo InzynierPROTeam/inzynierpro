@@ -1,12 +1,12 @@
+import type { SessionCountSettings } from '@inzpro/api-contracts/modules/learning/responses'
 import type {
   FavoritesPreview,
-  SessionCountSettings,
   StudySession,
-} from '@inzpro/api-contracts/modules/study/responses'
+} from '@inzpro/api-contracts/modules/written-study/responses'
 import {
   favoritesPreviewQueryOptions,
   favoritesSessionQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
@@ -29,15 +29,15 @@ import { Link } from '@tanstack/react-router'
 import { BookOpenCheck, List, Scale, Star } from 'lucide-react'
 import type React from 'react'
 import { BackLink } from '~platform/components/BackLink'
+import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+import { QuestionCountDialog } from '~platform/features/learningSession/components/QuestionCountDialog'
 import {
   SessionDetail,
   SessionDetails,
   SessionPathDetail,
-} from '~platform/components/session/SessionDetails'
-import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
-import { QuestionCountDialog } from '~platform/features/learningSession/components/QuestionCountDialog'
-import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCard'
-import { getSessionQuestionCount } from '~platform/features/learningSession/utils'
+} from '~platform/features/learningSession/components/SessionDetails'
+import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCardSkeleton'
+import { getSessionQuestionCount } from '~platform/features/learningSession/utils/session-question-count'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 

@@ -2,10 +2,11 @@ import { defineRule, type ESTree } from '@oxlint/plugins'
 
 import { normalizedPath } from './path.ts'
 
-const operationFile = /\/apps\/api\/src\/modules\/([^/]+)\/application\/[^/]+\.(command|query)\.ts$/
+const operationFile =
+  /\/apps\/api\/src\/modules\/([^/]+)\/application\/(?:[^/]+\/)*[^/]+\.(command|query|job|event-handler)\.ts$/
 
 const adapterFile =
-  /\/apps\/api\/src\/modules\/[^/]+\/infrastructure\/[^/]+\.(reader|repository)\.postgres\.ts$/
+  /\/apps\/api\/src\/modules\/[^/]+\/infrastructure\/(?:[^/]+\/)*[^/]+\.(reader|repository|service|client)\.(?:postgres|http|redis|file)\.ts$/
 
 const pascalCase = (kebab: string) =>
   kebab

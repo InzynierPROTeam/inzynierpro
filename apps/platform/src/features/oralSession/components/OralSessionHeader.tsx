@@ -1,8 +1,9 @@
-import type { OralStudySession } from '@inzpro/api-contracts/modules/study/responses'
-import type { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
-import { SessionQuestionPosition } from '@inzpro/domain/modules/study/study-session'
-import { oralSessionQueryOptions } from '@inzpro/queries/modules/study'
+import type { OralStudySession } from '@inzpro/api-contracts/modules/oral-study/responses'
+import { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
+import type { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-study-session'
+import { oralSessionQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import type React from 'react'
+import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import {
   SessionHeader,
   SessionHeaderNav,
@@ -11,8 +12,7 @@ import {
   SessionHeaderSkeleton,
   SessionHeaderTitle,
   SessionTraverseLink,
-} from '~platform/components/session/SessionHeader'
-import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+} from '~platform/features/learningSession/components/SessionHeader'
 import { SessionProgress } from '~platform/features/learningSession/components/SessionProgress'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'

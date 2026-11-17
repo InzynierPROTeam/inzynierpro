@@ -1,16 +1,27 @@
 import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import { RuleTester } from 'oxlint/plugins-dev'
 
 import { workspaceImports } from './architecture.ts'
 
-const root = fileURLToPath(new URL('../../../..', import.meta.url))
-const file = (workspace: string, name = 'example.ts') => resolve(root, workspace, 'src', name)
+const file = (workspace: string, name = 'example.ts') => resolve('/repo', workspace, 'src', name)
 const tester = new RuleTester({ languageOptions: { parserOptions: { lang: 'ts' } } })
 
 tester.run('architecture/workspace-imports', workspaceImports, {
   valid: [
+    {
+      filename: file('apps/platform', 'features/study/test/fixtures.ts'),
+      code: 'import "@inzpro/testing/http"',
+    },
+    {
+      filename: file('apps/platform', 'features/study/test/fixtures.ts'),
+      code: 'import "~platform/features/notes/test/fixtures"',
+    },
+    {
+      filename: file('packages/domain', 'test/fixtures.ts'),
+      code: 'import "@inzpro/testing/http"',
+    },
+
     {
       filename: file('packages/utils'),
       code: 'import "@inzpro/domain/modules/preparation/exam-access"',
@@ -39,6 +50,27 @@ tester.run('architecture/workspace-imports', workspaceImports, {
     { filename: file('packages/utils'), code: 'export type X = import("./types").X' },
   ],
   invalid: [
+    {
+      filename: file('apps/platform', 'features/study/actions.ts'),
+      code: 'import "~platform/features/study/test/fixtures"',
+      errors: [{ messageId: 'testOnly' }],
+    },
+    {
+      filename: file('apps/platform', 'features/study/actions.ts'),
+      code: 'import "./test/fixtures"',
+      errors: [{ messageId: 'testOnly' }],
+    },
+    {
+      filename: file('apps/platform', 'features/study/actions.ts'),
+      code: 'import "@inzpro/queries/test/fixtures"',
+      errors: [{ messageId: 'testOnly' }],
+    },
+    {
+      filename: file('apps/platform', 'features/study/actions.ts'),
+      code: 'import "@inzpro/queries/features/study/test/fixtures"',
+      errors: [{ messageId: 'testOnly' }],
+    },
+
     {
       filename: file('packages/domain'),
       code: 'import "@inzpro/utils/exam-access"',

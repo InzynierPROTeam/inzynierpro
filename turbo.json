@@ -42,17 +42,6 @@
       "cache": true,
       "outputs": ["coverage/**"]
     },
-    "@inzpro/tools#test": {
-      "dependsOn": [
-        "^build",
-        "@inzpro/api-client#build",
-        "@inzpro/api-contracts#build",
-        "@inzpro/domain#build"
-      ],
-      "cache": true,
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/api/src/modules/**"],
-      "outputs": ["coverage/**"]
-    },
     "@inzpro/api#test": {
       "dependsOn": ["^build"],
       "cache": false,

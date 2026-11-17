@@ -3,16 +3,15 @@ import { paragraphs } from '@inzpro/rich-content/rich-content'
 import { expect, test } from 'vitest'
 import { LearningContentWriteError } from '~api/modules/learning-content/application/errors.js'
 import { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
+import { addFixtureAsset } from '~api/test/content-fixtures.js'
 import {
-  addFixtureAsset,
   addFixtureOralCategory,
   addFixtureOralQuestion,
   editFixtureOralDraft,
   withdrawFixtureOralRevision,
-  addFixtureQuestion,
-  createStudyFixture,
-  publishFixtureRevision,
-} from '~api/test/learning-fixtures.js'
+} from '~api/test/oral-learning-fixtures.js'
+import { createStudyFixture } from '~api/test/preparation-fixtures.js'
+import { addFixtureQuestion, publishFixtureRevision } from '~api/test/written-learning-fixtures.js'
 
 test('a question with an explanation of every node, including an image of a stored asset, is saved', async () => {
   const { pathId, documentId } = await createStudyFixture()

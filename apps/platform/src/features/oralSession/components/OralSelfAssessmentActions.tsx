@@ -1,13 +1,13 @@
 import type {
   OralSessionQuestion,
   OralStudySession,
-} from '@inzpro/api-contracts/modules/study/responses'
+} from '@inzpro/api-contracts/modules/oral-study/responses'
+import { endedStudySession, hasOpenQuestions } from '@inzpro/domain/modules/learning/study-session'
 import {
   type OralSelfAssessment,
   oralSelfAssessmentValues,
-} from '@inzpro/domain/modules/study/oral-study-session'
-import { endedStudySession, hasOpenQuestions } from '@inzpro/domain/modules/study/study-session'
-import { oralSessionQueryOptions } from '@inzpro/queries/modules/study'
+} from '@inzpro/domain/modules/oral-study/oral-study-session'
+import { oralSessionQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Item, ItemContent } from '@inzpro/ui/components/item'
 import { useQuery } from '@tanstack/react-query'
@@ -16,12 +16,12 @@ import { LoaderCircle } from 'lucide-react'
 import type React from 'react'
 import { useId } from 'react'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { oralScaleExplainedStore } from '~platform/features/oralSession/stores'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useEndOralSession } from '../hooks/useEndOralSession'
 import { useOralScaleExplained } from '../hooks/useOralScaleExplained'
 import { useSubmitOralSelfAssessment } from '../hooks/useSubmitOralSelfAssessment'
-import { oralScaleExplainedStore } from '../store'
 import { selfAssessmentLevels } from '../utils'
 import { OralDifficultyScaleExplanation, OralDifficultyScaleHelp } from './OralDifficultyScale'
 

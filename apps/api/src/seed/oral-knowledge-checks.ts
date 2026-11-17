@@ -3,7 +3,7 @@ import { RichContent, richContentVersion } from '@inzpro/rich-content/rich-conte
 import { Effect, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 
-import { catalogueId } from './catalogue.js'
+import { catalogueId } from './catalogue-id.js'
 import { plain } from './rich-text.js'
 
 type SeedKnowledgeCheck = {

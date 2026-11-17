@@ -1,4 +1,4 @@
-import { sessionSummaryQueryOptions } from '@inzpro/queries/modules/study'
+import { sessionSummaryQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardContent } from '@inzpro/ui/components/card'
 import {
@@ -20,10 +20,10 @@ import { Link } from '@tanstack/react-router'
 import { FileQuestionMark } from 'lucide-react'
 import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+import { sessionSummaryRouteApi } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-import { sessionSummaryRouteApi } from '../utils'
 import { SessionNextStepCard } from './SessionNextStepCard'
 import { SessionQuestionResultsCard } from './SessionQuestionResultsCard'
 import { SessionResultCard, SessionResultCardSkeleton } from './SessionResultCard'

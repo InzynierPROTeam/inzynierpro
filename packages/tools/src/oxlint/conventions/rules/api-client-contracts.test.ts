@@ -3,7 +3,7 @@ import { RuleTester } from 'oxlint/plugins-dev'
 import { apiClientContractsRule } from './api-client-contracts.ts'
 
 const tester = new RuleTester({ languageOptions: { parserOptions: { lang: 'ts' } } })
-const filename = '/repo/packages/api-client/src/modules/study.ts'
+const filename = '/repo/packages/api-client/src/modules/written-study/actions.ts'
 
 const imports = `import { apiAction } from '~api-client/lib/api-action.js';
 import type { InferEndpointRequest } from '~api-client/lib/types.js';

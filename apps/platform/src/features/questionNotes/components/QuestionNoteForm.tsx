@@ -1,5 +1,5 @@
-import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
-import { questionNoteMaxLength } from '@inzpro/domain/modules/study/question-note'
+import type { SessionQuestion } from '@inzpro/api-contracts/modules/written-study/responses'
+import { questionNoteMaxLength } from '@inzpro/domain/modules/learning/question-note'
 import { Button } from '@inzpro/ui/components/button'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@inzpro/ui/components/field'
 import { Textarea } from '@inzpro/ui/components/textarea'

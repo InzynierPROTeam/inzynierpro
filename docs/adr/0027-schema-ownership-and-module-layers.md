@@ -11,3 +11,9 @@ Each API module is split into layer folders: `domain/` (models, rules, business 
 - **Shared object schemas in `@inzpro/domain`**: this was the earlier layout. In practice the package collected DTOs with ISO strings, and backend models then extended them.
 - **Effect `Model.Class` with select, insert and JSON variants from one definition**: rejected because it couples the contract package to persistence variants and hides the DTO/model/row split we want reviewers to see.
 - **Flat module folders with role suffixes only**: rejected because the direction of dependencies cannot be checked by path, and ten roles in one folder stopped being readable.
+
+## Learning module ownership
+
+Personal written and oral learning are separate `written-study` and `oral-study` modules across the backend, contracts, client and queries. Their common `learning` module owns reusable session vocabulary, lifecycle/round rules and review scheduling, with neither mode importing the other. The oral mini-quiz stays with oral learning because answering it updates oral review evidence in the same transaction. Each mode implements its repository transaction in its own adapter, preserving rollback and the original operation failure; oral learning does not obtain transactions through the written repository.
+
+Transport modules have fixed role files. Clients default to `modules/<module>.ts` and may group topic files under a module directory. Queries separate `keys.ts` from `queries.ts`, with topic directories available for larger roles. A role uses a file or a directory, never both. Layer and role rules apply recursively; grouping does not change ownership or dependencies. A path or assignment change invalidates both learning modes' path groups. Account-scoped notes and favourites remain shared across paths within their mode. Executable placement rules live in the conventions plugin, and the package READMEs own the usage examples.

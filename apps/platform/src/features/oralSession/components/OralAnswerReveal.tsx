@@ -7,9 +7,9 @@ import {
 } from '@inzpro/ui/components/accordion'
 import { RichText } from '@inzpro/ui/components/rich-text'
 import type React from 'react'
+import { oralAnswerVisibilityStore } from '~platform/features/oralSession/stores'
 
 import { useOralAnswerVisibility } from '../hooks/useOralAnswerVisibility'
-import { oralAnswerVisibilityStore } from '../store'
 
 const answerItem = 'answer'
 

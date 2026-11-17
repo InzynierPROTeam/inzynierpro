@@ -34,7 +34,10 @@ export const backendBoundariesRule = defineRule({
           (/\/(service|reader|repository|query|command|policy|rules)(\.postgres)?\.ts$/.test(
             filename,
           ) ||
-            /[^/]\.http\.ts$/.test(filename))
+            (/[^/]\.http\.ts$/.test(filename) &&
+              !/\/infrastructure\/(?:[^/]+\/)*[^/]+\.(?:reader|repository|service|client)\.http\.ts$/.test(
+                filename,
+              )))
         ) {
           context.report({ node, messageId: 'filename' })
         }
@@ -74,7 +77,7 @@ export const backendBoundariesRule = defineRule({
           httpBuilders.has(node.callee.object.name) &&
           node.callee.property.type === 'Identifier' &&
           node.callee.property.name === 'group' &&
-          !/\/src\/modules\/[^/]+\/http\/(?:[a-z0-9-]+\.)?handlers\.ts$/.test(filename)
+          !/\/src\/modules\/[^/]+\/http\/(?:[^/]+\/)*(?:[a-z0-9-]+\.)?handlers\.ts$/.test(filename)
         ) {
           context.report({ node, messageId: 'filename' })
         }

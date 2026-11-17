@@ -1,6 +1,6 @@
 import { PageLimit } from '@inzpro/domain/common/pagination'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
-import { pathsQueryOptions } from '@inzpro/queries/modules/preparation'
+import { pathsQueryOptions } from '@inzpro/queries/modules/preparation/queries'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { Link } from '@tanstack/react-router'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'

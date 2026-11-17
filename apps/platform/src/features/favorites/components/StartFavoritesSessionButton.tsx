@@ -1,4 +1,4 @@
-import { StudySessionAlreadyStarted } from '@inzpro/api-contracts/modules/study/errors'
+import { StudySessionAlreadyStarted } from '@inzpro/api-contracts/modules/written-study/errors'
 import type {
   QuestionCount,
   ReferenceDocumentId,

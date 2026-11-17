@@ -23,3 +23,7 @@ Public vocabulary is grouped by qualification-paths, exam-calendar, preparation 
 `common/pagination` holds the page vocabulary: `PageLimit`, `PageNumber`, the opaque `Cursor` and the default and maximum limits. Pagination parameters and `data`/`meta` envelopes are contracts in `@inzpro/api-contracts/utils/pagination`; cursor encoding and keyset paging are backend mechanics in `apps/api/src/lib/cursor-pagination.ts`.
 
 Catalogue codes are closed literal schemas built from named constants and readonly arrays. Adding a specialization, kind or scope requires updating those constants and the exhaustive client icon mappings.
+
+## Layout
+
+Shared primitives live in `common/**/*.ts`; vocabulary with a business owner lives in `modules/<module>/**/<concept>.ts`. Topic folders may organize larger areas without changing their dependency rules. Concrete concept names and adjacent tests remain the default; grouping does not introduce re-export barrels or object DTO schemas.

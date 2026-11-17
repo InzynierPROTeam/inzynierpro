@@ -1,4 +1,4 @@
-import type { GetOralMaterialsRes } from '@inzpro/api-client/modules/study'
+import type { GetOralMaterialsRes } from '@inzpro/api-client/modules/oral-study'
 import { ratioToPercent } from '@inzpro/domain/common/percent'
 import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
 import { Button } from '@inzpro/ui/components/button'

@@ -1,6 +1,6 @@
-import type { SessionQuestionResult } from '@inzpro/api-contracts/modules/study/responses'
-import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
-import { sessionResultsInfiniteQueryOptions } from '@inzpro/queries/modules/study'
+import type { SessionQuestionResult } from '@inzpro/api-contracts/modules/written-study/responses'
+import type { StudySessionId } from '@inzpro/domain/modules/learning/study-session'
+import { sessionResultsInfiniteQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Card,

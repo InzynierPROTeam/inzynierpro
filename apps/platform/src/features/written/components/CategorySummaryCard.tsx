@@ -1,4 +1,4 @@
-import type { GetDocumentRes } from '@inzpro/api-client/modules/study'
+import type { GetDocumentRes } from '@inzpro/api-client/modules/written-study'
 import { ratioToPercent } from '@inzpro/domain/common/percent'
 import { calculateCompletionRatio } from '@inzpro/domain/common/progress'
 import {

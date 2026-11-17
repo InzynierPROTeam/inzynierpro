@@ -1,6 +1,7 @@
 import { defineRule, type ESTree } from '@oxlint/plugins'
 
 import { apiModuleDependencies } from '../../architecture-policy.ts'
+import { apiLayerRoles } from '../../source-role-policy.ts'
 import { normalizedPath } from './path.ts'
 
 const layers = ['domain', 'application', 'infrastructure', 'http'] as const
@@ -8,27 +9,6 @@ const layers = ['domain', 'application', 'infrastructure', 'http'] as const
 type Layer = (typeof layers)[number]
 
 const isLayer = (value: string | undefined): value is Layer => layers.some(layer => layer === value)
-
-const roles: Record<Layer, { readonly pattern: RegExp; readonly description: string }> = {
-  domain: {
-    pattern: /^(?:[a-z0-9-]+\.(?:model|rules)|errors)\.ts$/,
-    description: '<concept>.model.ts, <concept>.rules.ts and errors.ts',
-  },
-  application: {
-    pattern: /^(?:[a-z0-9-]+\.(?:command|query|policy|reader|repository|service)|errors)\.ts$/,
-    description:
-      '<concept>.command.ts, .query.ts, .policy.ts, .reader.ts, .repository.ts, .service.ts and errors.ts',
-  },
-  infrastructure: {
-    pattern: /^[a-z0-9-]+\.(?:reader|repository)\.postgres\.ts$/,
-    description: '<concept>.reader.postgres.ts and <concept>.repository.postgres.ts',
-  },
-  http: {
-    pattern: /^(?:(?:[a-z0-9-]+\.)?handlers|mappers|errors)\.ts$/,
-    description:
-      'handlers.ts (or <group>.handlers.ts per contract group), mappers.ts and errors.ts',
-  },
-}
 
 const allowedLayers: Record<Layer, ReadonlyArray<Layer>> = {
   domain: ['domain'],
@@ -146,10 +126,10 @@ export const moduleLayersRule = defineRule({
     }
 
     const [folder, ...rest] = (match[2] ?? '').split('/')
-    const name = rest.join('/')
+    const name = rest.at(-1) ?? ''
     const test = /\.(?:test|spec)\.ts$/.test(filename)
 
-    if (!isLayer(folder) || rest.length !== 1) {
+    if (!isLayer(folder) || rest.length === 0) {
       return {
         Program(node) {
           context.report({ node, messageId: 'layer' })
@@ -183,7 +163,15 @@ export const moduleLayersRule = defineRule({
       if (target.kind === 'contracts') {
         context.report({ node, messageId: 'contracts' })
       } else if (target.kind === 'transport' || target.kind === 'middleware') {
-        context.report({ node, messageId: 'transport', data: { layer } })
+        if (
+          !(
+            layer === 'infrastructure' &&
+            filename.endsWith('.http.ts') &&
+            (source === 'effect/http' || source.startsWith('effect/http/'))
+          )
+        ) {
+          context.report({ node, messageId: 'transport', data: { layer } })
+        }
       } else if (target.kind === 'sql') {
         if (layer === 'domain' || (layer === 'application' && !typeOnly)) {
           context.report({ node, messageId: 'sql', data: { layer } })
@@ -207,11 +195,11 @@ export const moduleLayersRule = defineRule({
 
     return {
       Program(node) {
-        if (!test && !roles[layer].pattern.test(name)) {
+        if (!test && !apiLayerRoles[layer].pattern.test(name)) {
           context.report({
             node,
             messageId: 'role',
-            data: { layer, roles: roles[layer].description },
+            data: { layer, roles: apiLayerRoles[layer].description },
           })
         }
       },

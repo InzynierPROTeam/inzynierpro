@@ -1,5 +1,8 @@
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
-import { documentQueryOptions, latestSessionQueryOptions } from '@inzpro/queries/modules/study'
+import {
+  documentQueryOptions,
+  latestSessionQueryOptions,
+} from '@inzpro/queries/modules/written-study/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { constVoid } from 'effect/Function'

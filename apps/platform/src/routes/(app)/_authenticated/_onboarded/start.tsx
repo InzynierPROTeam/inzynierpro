@@ -1,5 +1,5 @@
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
-import { latestSessionQueryOptions } from '@inzpro/queries/modules/study'
+import { latestSessionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { hasExamAccess } from '@inzpro/utils/exam-access'
 import { createFileRoute } from '@tanstack/react-router'
 import { constVoid } from 'effect/Function'

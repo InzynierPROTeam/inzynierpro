@@ -1,9 +1,9 @@
-import type { StudySession } from '@inzpro/api-contracts/modules/study/responses'
-import { activeStudySession } from '@inzpro/domain/modules/study/study-session'
+import type { StudySession } from '@inzpro/api-contracts/modules/written-study/responses'
+import { activeStudySession } from '@inzpro/domain/modules/learning/study-session'
 import {
   latestSessionQueryOptions,
   sessionPreviewQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
@@ -26,11 +26,12 @@ import { BookOpenCheck } from 'lucide-react'
 import type React from 'react'
 import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCardSkeleton'
+import { sessionPreviewRouteApi } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-import { sessionPreviewRouteApi } from '../utils'
-import { SessionPreviewCard, SessionPreviewCardSkeleton } from './SessionPreviewCard'
+import { SessionPreviewCard } from './SessionPreviewCard'
 
 export const StartLearningSessionSection = () => {
   const {

@@ -1,9 +1,9 @@
-import type { FavoritesPreview } from '@inzpro/api-contracts/modules/study/responses'
+import type { FavoritesPreview } from '@inzpro/api-contracts/modules/written-study/responses'
 import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   favoritesPreviewQueryOptions,
   favoritesSessionQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { CardContent, CardDescription, CardFooter } from '@inzpro/ui/components/card'
 import { Link } from '@tanstack/react-router'

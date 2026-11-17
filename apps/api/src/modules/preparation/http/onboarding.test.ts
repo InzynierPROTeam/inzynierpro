@@ -23,7 +23,7 @@ import { afterAll, beforeAll, expect, test } from 'vitest'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { CalendarSession } from '~api/modules/exam-calendar/domain/exam-session.model.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
-import { createStudyFixture, runFixture } from '~api/test/learning-fixtures.js'
+import { createStudyFixture } from '~api/test/preparation-fixtures.js'
 import {
   loginForPreparation,
   learningRequest,
@@ -31,6 +31,7 @@ import {
   technicalPathA,
   technicalPathB,
 } from '~api/test/preparation.js'
+import { runFixture } from '~api/test/run-fixture.js'
 
 let api: TestApi
 
@@ -41,6 +42,7 @@ beforeAll(async () => {
 afterAll(() => api.close())
 
 const pathId = technicalPathA
+
 const config = { ...technicalConfiguration, accessScope: 'written' }
 
 const publicRequest = (path: string) =>

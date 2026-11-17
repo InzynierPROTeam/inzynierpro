@@ -5,13 +5,13 @@ import { afterAll, beforeAll, expect, test } from 'vitest'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { CalendarSession } from '~api/modules/exam-calendar/domain/exam-session.model.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
-import { runFixture } from '~api/test/learning-fixtures.js'
 import {
   learningRequest,
   loginForPreparation,
   technicalConfiguration,
   technicalPathA,
 } from '~api/test/preparation.js'
+import { runFixture } from '~api/test/run-fixture.js'
 
 const now = DateTime.makeUnsafe('2090-01-01T12:00:00.000Z')
 

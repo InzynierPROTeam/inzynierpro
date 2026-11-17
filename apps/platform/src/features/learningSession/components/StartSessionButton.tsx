@@ -1,9 +1,9 @@
-import { StudySessionAlreadyStarted } from '@inzpro/api-contracts/modules/study/errors'
+import { StudySessionAlreadyStarted } from '@inzpro/api-contracts/modules/written-study/errors'
 import type {
   QuestionCount,
   ReferenceDocumentId,
 } from '@inzpro/domain/modules/learning-content/reference-document'
-import type { SessionQuestionSelection } from '@inzpro/domain/modules/study/study-session'
+import type { SessionQuestionSelection } from '@inzpro/domain/modules/learning/study-session'
 import { Button } from '@inzpro/ui/components/button'
 import { toast } from '@inzpro/ui/components/toast'
 import { useNavigate } from '@tanstack/react-router'

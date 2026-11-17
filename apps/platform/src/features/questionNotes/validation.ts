@@ -1,4 +1,4 @@
-import { questionNoteMaxLength } from '@inzpro/domain/modules/study/question-note'
+import { questionNoteMaxLength } from '@inzpro/domain/modules/learning/question-note'
 import { Schema } from 'effect'
 
 export const questionNoteFormSchema = Schema.Struct({

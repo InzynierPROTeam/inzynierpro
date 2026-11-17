@@ -1,10 +1,10 @@
-import type { RecordSessionAssistanceRequest } from '@inzpro/api-client/modules/study'
+import type { RecordSessionAssistanceRequest } from '@inzpro/api-client/modules/written-study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import {
   explanationAssistanceKind,
   type SessionAssistanceKind,
-} from '@inzpro/domain/modules/study/study-session'
-import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/study'
+} from '@inzpro/domain/modules/learning/study-session'
+import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { getCurrentUtcIsoDateTime } from '@inzpro/utils/date'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiHttpClient } from '~platform/lib/api-client'

@@ -1,4 +1,4 @@
-import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/study'
+import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardAction, CardContent, CardHeader } from '@inzpro/ui/components/card'
 import {
@@ -15,12 +15,13 @@ import { Link } from '@tanstack/react-router'
 import { FileQuestionMark } from 'lucide-react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { FavoriteToggleButton } from '~platform/features/favorites/components/FavoriteToggleButton'
+import { SessionAnswerFormSkeleton } from '~platform/features/learningSession/components/SessionAnswerFormSkeleton'
+import { sessionQuestionRouteApi } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { QuestionNoteDialog } from '~platform/features/questionNotes/components/QuestionNoteDialog'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-import { sessionQuestionRouteApi } from '../utils'
-import { SessionAnswerForm, SessionAnswerFormSkeleton } from './SessionAnswerForm'
+import { SessionAnswerForm } from './SessionAnswerForm'
 import { SessionHintDialog } from './SessionHintDialog'
 
 export const SessionQuestionCard = () => {

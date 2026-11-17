@@ -8,6 +8,7 @@ import {
 } from '~api/modules/exam-calendar/http/handlers.js'
 import { HealthLive, HealthRequestServices } from '~api/modules/health/http/handlers.js'
 import { IdentityLive } from '~api/modules/identity/http/handlers.js'
+import { OralStudyLive, OralStudyRequestServices } from '~api/modules/oral-study/http/handlers.js'
 import {
   PreparationLive,
   PreparationRequestServices,
@@ -16,11 +17,7 @@ import {
   QualificationPathsLive,
   QualificationPathsRequestServices,
 } from '~api/modules/qualification-paths/http/handlers.js'
-import { StudyLive, StudyRequestServices } from '~api/modules/study/http/handlers.js'
-import {
-  OralStudyLive,
-  OralStudyRequestServices,
-} from '~api/modules/study/http/oral-study.handlers.js'
+import { StudyLive, StudyRequestServices } from '~api/modules/written-study/http/handlers.js'
 
 // EXTERNAL: Effect request services must be provided on the route-registration layer; group provision type-checks but does not reach handlers.
 export const ApiLive = HttpApiBuilder.layer(Api).pipe(

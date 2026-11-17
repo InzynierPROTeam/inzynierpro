@@ -1,5 +1,5 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import { studyKeys } from '@inzpro/queries/modules/study'
+import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
@@ -14,7 +14,7 @@ export const useEndSession = (userId: UserId) => {
     mutationFn: endStudySession,
     onSuccess: async (session, req) => {
       await client.invalidateQueries({
-        queryKey: studyKeys.path(userId, req.params.qualificationPathId),
+        queryKey: writtenStudyKeys.path(userId, req.params.qualificationPathId),
       })
       await navigate({
         to: '/nauka/sesja/$sessionId/podsumowanie',

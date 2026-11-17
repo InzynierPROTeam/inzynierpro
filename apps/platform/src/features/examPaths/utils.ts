@@ -2,9 +2,8 @@ import { writtenExamAccess, type ExamPart } from '@inzpro/domain/modules/prepara
 import { getCookie, setCookie, removeCookie } from '@inzpro/react-utils/tanstack-start/cookies'
 import { getRouteApi } from '@tanstack/react-router'
 import { Duration } from 'effect'
+import { createSelectedPathStore } from '~platform/features/examPaths/stores'
 import { safeRedirectPath } from '~platform/utils/redirect'
-
-import { createSelectedPathStore } from './store'
 
 export const selectedPathStore = createSelectedPathStore({
   read: getCookie,

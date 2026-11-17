@@ -1,9 +1,9 @@
-import type { OralReviewPreview } from '@inzpro/api-contracts/modules/study/responses'
+import type { OralReviewPreview } from '@inzpro/api-contracts/modules/oral-study/responses'
 import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import {
   oralReviewPreviewQueryOptions,
   oralReviewSessionQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { CardContent, CardDescription, CardFooter } from '@inzpro/ui/components/card'
 import { Link } from '@tanstack/react-router'

@@ -25,7 +25,9 @@ export const hooksInHooksFolderRule = defineRule({
         if (
           /\/apps\/[^/]+\/src\//.test(normalizedPath(context.filename)) &&
           hookFile.test(name) &&
-          segments.at(-2) !== 'hooks'
+          !/(?:\/src\/hooks\/|\/src\/features\/[^/]+\/hooks\/)/.test(
+            normalizedPath(context.filename),
+          )
         ) {
           context.report({ node, messageId: 'misplaced' })
         }

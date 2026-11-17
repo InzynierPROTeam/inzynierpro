@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { oralExamAccess, writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import { SpecializationId } from '@inzpro/domain/modules/qualification-paths/specialization'
-import { examSessionsQueryOptions } from '@inzpro/queries/modules/exam-calendar'
+import { examSessionsQueryOptions } from '@inzpro/queries/modules/exam-calendar/queries'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React, { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'

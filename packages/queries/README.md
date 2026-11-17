@@ -8,7 +8,7 @@ Accept the configured HTTP client and preserve AbortSignal cancellation. Keep co
 
 ## Module layout
 
-`src/modules/<module>.ts` starts with the module's key object, followed by its query option factories. `effectQueryOptions` keeps the result, the error union and the literal key tuple, and passes the `queryFn` `AbortSignal` to the runner. The application passes the HTTP client into the factory.
+`src/modules/<module>/keys.ts` owns the module's key object; `queries.ts` owns its query option factories and imports that object. A larger set of factories may replace `queries.ts` with `queries/<topic>.ts`, with further topical nesting when needed. Use the file or the directory for that role, never both. Adjacent tests exercise cache behavior and HTTP execution. `effectQueryOptions` keeps the result, the error union and the literal key tuple, and passes the `queryFn` `AbortSignal` to the runner. The application passes the HTTP client into the factory.
 
 ## Query keys
 
@@ -19,6 +19,8 @@ A key object is flat: `all`, named domain groups, and concrete operations. Each 
 - `path(id)` groups queries about one path: its details, statistics, documents and preview.
 - `session(userId, pathId, id)` groups the reads of one study session inside its path group (the session, its summary and results), so starting or answering can refresh one session without touching others. Its questions sit in `questions(userId)` instead.
 - `progress(userId, pathId)` groups the path's reads that show the learner's progress (documents, preview, latest session, review preview and the unfinished review and favourites sessions), so an answer refreshes them without refetching the session reads it already updated.
+  The following oral groups belong to `oralStudyKeys`; their root is `['oral-study']`. The written root is `['written-study']`, so a mutation affecting both kinds invalidates both explicitly.
+
 - `oralProgress(userId, pathId)` groups the path's oral reads that show the learner's oral progress (oral categories, oral preview, latest oral session and its next step), so a self-assessment refreshes them.
 - `oralSession(userId, pathId, id)` groups the reads of one oral session: the session, summary, results, its mini-quiz and the quiz's paginated checks. Questions belong to `oralQuestions(userId)` because oral marks and notes are shared across paths.
 - `oralFavorites(userId)` groups oral favourites previews across paths. Marks stale this group and `oralQuestions(userId)` without refetching active session reads. Notes stale only `oralQuestions(userId)`. The unfinished favourites session belongs to `oralProgress(userId, pathId)`; starting or ending a session refreshes it.
@@ -28,13 +30,17 @@ A key object is flat: `all`, named domain groups, and concrete operations. Each 
 - The full request goes into the concrete query key, so every param, query, payload and header that affects the result is part of it. Query contracts use only explicit, serializable data; authentication stays in the HTTP adapter.
 
 ```ts
-export const studyKeys = {
-  all: ['study'] as const,
-  account: (userId: UserId) => [...studyKeys.all, 'account', userId] as const,
+export const writtenStudyKeys = {
+  all: ['written-study'] as const,
+  account: (userId: UserId) => [...writtenStudyKeys.all, 'account', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
-    [...studyKeys.account(userId), 'path', id] as const,
+    [...writtenStudyKeys.account(userId), 'path', id] as const,
   getDocuments: (userId: UserId, req: GetDocumentsRequest) =>
-    [...studyKeys.path(userId, req.params.qualificationPathId), 'getDocuments', req] as const,
+    [
+      ...writtenStudyKeys.path(userId, req.params.qualificationPathId),
+      'getDocuments',
+      req,
+    ] as const,
 }
 ```
 
@@ -51,17 +57,17 @@ List factories return `effectInfiniteQueryOptions`, pass the cursor in the same 
 Invalidate through the parent key of the affected group:
 
 ```ts
-await queryClient.invalidateQueries({ queryKey: studyKeys.all })
+await queryClient.invalidateQueries({ queryKey: writtenStudyKeys.all })
 await queryClient.invalidateQueries({ queryKey: preparationKeys.paths(userId) })
-await queryClient.invalidateQueries({ queryKey: studyKeys.path(userId, pathId) })
+await queryClient.invalidateQueries({ queryKey: writtenStudyKeys.path(userId, pathId) })
 ```
 
-`path(userId, pathId)` covers every query of that path, without lists or other paths. A change affecting several groups invalidates each explicitly. `preparationKeys` groups onboarding, assignments and goals; `studyKeys` groups personal material reads. A write that changes an assignment's scope or state invalidates that path's group in both modules and the assignment list. Path selection is local to each client and has no query key or HTTP mutation. Platform components resolve the stored ID against the complete assignment list fetched with an ordinary query and the configured five-assignment limit. Assignment mutations invalidate `paths(userId)` and the affected path groups.
+`path(userId, pathId)` covers every query of that path, without lists or other paths. A change affecting several groups invalidates each explicitly. `preparationKeys` groups onboarding, assignments and goals; `writtenStudyKeys` and `oralStudyKeys` group the two kinds of personal material reads. A write that changes an assignment's scope or state invalidates that path's group in preparation, written study and oral study, plus the assignment list. Path selection is local to each client and has no query key or HTTP mutation. Platform components resolve the stored ID against the complete assignment list fetched with an ordinary query and the configured five-assignment limit. Assignment mutations invalidate `paths(userId)` and the affected path groups.
 
 ## Usage
 
 ```ts
-import { checkHealthQueryOptions } from '@inzpro/queries/modules/health'
+import { checkHealthQueryOptions } from '@inzpro/queries/modules/health/queries'
 ```
 
 ## Dependencies

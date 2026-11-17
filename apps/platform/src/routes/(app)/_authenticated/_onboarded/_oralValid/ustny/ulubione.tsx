@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { seo } from '~platform/config/app'
-import { OralFavoritesStartPage } from '~platform/features/oralSession/OralFavoritesStartPage'
-import { OralFavoritesPreviewSearch } from '~platform/features/oralSession/validation'
+import { OralFavoritesStartPage } from '~platform/features/oralFavorites/OralFavoritesStartPage'
+import { OralFavoritesPreviewSearch } from '~platform/features/oralFavorites/validation'
 
 export const Route = createFileRoute('/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione')({
   validateSearch: Schema.toStandardSchemaV1(OralFavoritesPreviewSearch),

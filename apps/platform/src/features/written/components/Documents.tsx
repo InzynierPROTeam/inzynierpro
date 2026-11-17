@@ -1,4 +1,4 @@
-import { documentsInfiniteQueryOptions } from '@inzpro/queries/modules/study'
+import { documentsInfiniteQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { InView } from '@inzpro/ui/components/containers/in-view'
 import {

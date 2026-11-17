@@ -2,7 +2,7 @@ import { runApi } from '@inzpro/api-client/lib/run-api'
 import {
   startOralReviewSession,
   type StartOralReviewSessionRequest,
-} from '@inzpro/api-client/modules/study'
+} from '@inzpro/api-client/modules/oral-study'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 export const startStudyOralReviewSession = (req: StartOralReviewSessionRequest) =>

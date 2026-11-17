@@ -2,7 +2,7 @@ import {
   sessionNextStepQueryOptions,
   sessionResultsInfiniteQueryOptions,
   sessionSummaryQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/written-study/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { constVoid } from 'effect/Function'

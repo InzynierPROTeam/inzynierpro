@@ -8,6 +8,8 @@ const code = 'export const useThing = () => 1'
 
 tester.run('conventions/hooks-in-hooks-folder', hooksInHooksFolderRule, {
   valid: [
+    { code, filename: '/repo/apps/platform/src/hooks/events/useEvent.ts' },
+    { code, filename: '/repo/apps/platform/src/features/auth/hooks/session/useSignOut.ts' },
     { code, filename: '/repo/apps/platform/src/hooks/useThing.ts' },
     { code, filename: '/repo/apps/platform/src/features/auth/hooks/useSignOutMutation.ts' },
     { code, filename: '/repo/apps/platform/src/features/auth/actions.ts' },
@@ -16,6 +18,7 @@ tester.run('conventions/hooks-in-hooks-folder', hooksInHooksFolderRule, {
     { code, filename: '/repo/packages/react-utils/src/useTheme.ts' },
   ],
   invalid: [
+    { code, filename: '/repo/apps/platform/src/lib/hooks/useApi.ts', errors: [error] },
     { code, filename: '/repo/apps/platform/src/features/auth/useSignOut.ts', errors: [error] },
     { code, filename: '/repo/apps/platform/src/lib/useApi.tsx', errors: [error] },
   ],

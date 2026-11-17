@@ -1,6 +1,6 @@
 import type { QualificationKindId } from '@inzpro/domain/modules/qualification-paths/qualification-kind'
 import type { SpecializationId } from '@inzpro/domain/modules/qualification-paths/specialization'
-import { qualificationScopesQueryOptions } from '@inzpro/queries/modules/qualification-paths'
+import { qualificationScopesQueryOptions } from '@inzpro/queries/modules/qualification-paths/queries'
 import type React from 'react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { apiHttpClient } from '~platform/lib/api-client'
