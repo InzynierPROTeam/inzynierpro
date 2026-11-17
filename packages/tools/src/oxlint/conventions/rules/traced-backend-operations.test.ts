@@ -30,6 +30,17 @@ tester.run('conventions/traced-backend-operations', tracedBackendOperationsRule,
   ],
   invalid: [
     {
+      filename: '/repo/apps/api/src/modules/preparation/application/reminders/send.job.ts',
+      code: 'export const sendReminder = () => Effect.gen(function* () {})',
+      errors: [{ messageId: 'untraced' }],
+    },
+    {
+      filename: '/repo/apps/api/src/modules/preparation/application/goals/change.command.ts',
+      code: 'export const changeGoal = () => Effect.gen(function* () {})',
+      errors: [{ messageId: 'untraced' }],
+    },
+
+    {
       code: 'export const selectPath = () => Effect.gen(function* () {})',
       filename: command,
       errors: [

@@ -1,22 +1,24 @@
 import { defineRule } from '@oxlint/plugins'
 
-import { normalizedPath } from './path.ts'
+import { isModuleSource } from './path.ts'
 
 const requestParts = new Set(['params', 'query', 'payload', 'headers'])
 
 export const requestSchemasRule = defineRule({
   meta: {
     type: 'problem',
-    docs: { description: 'Keep endpoint request schemas in the module requests.ts.' },
+    docs: {
+      description:
+        'Keep endpoint request schemas in the module requests.ts or requests/ topic files.',
+    },
     schema: [],
     messages: {
-      misplaced: 'Define request schemas in the module requests.ts and import them into api.ts.',
+      misplaced:
+        'Define request schemas in the module requests.ts or requests/ topic files and import them into api.ts or endpoints/ topic files.',
     },
   },
   create(context) {
-    const filename = normalizedPath(context.filename)
-
-    if (!/\/packages\/api-contracts\/src\/modules\/[^/]+\/api\.ts$/.test(filename)) {
+    if (!isModuleSource(context.filename, 'api-contracts')) {
       return {}
     }
 
@@ -26,7 +28,7 @@ export const requestSchemasRule = defineRule({
     return {
       ImportDeclaration(node) {
         for (const specifier of node.specifiers) {
-          if (/(^|\/)requests(\.js)?$/.test(node.source.value)) {
+          if (/(^|\/)requests(?:\/[^/]+)*(?:\.js)?$/.test(node.source.value)) {
             requestSchemas.add(specifier.local.name)
           }
 

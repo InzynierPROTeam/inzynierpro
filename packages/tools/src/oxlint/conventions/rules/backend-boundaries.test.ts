@@ -8,6 +8,16 @@ const sql = 'const rows = sql`SELECT id FROM users`'
 
 tester.run('conventions/backend-boundaries', backendBoundariesRule, {
   valid: [
+    { filename: file('modules/study/infrastructure/notes/note.reader.postgres.ts'), code: sql },
+    {
+      filename: file('modules/study/infrastructure/editor/content.client.http.ts'),
+      code: "import { HttpClient } from 'effect/http'",
+    },
+    {
+      filename: file('modules/study/http/materials/catalogue.handlers.ts'),
+      code: "import { HttpApiBuilder } from 'effect/http-api'; const group = HttpApiBuilder.group(Api, 'Catalogue', handlers)",
+    },
+
     {
       filename: file('modules/study/infrastructure/study.reader.postgres.ts'),
       code: `import { SqlClient } from 'effect/sql'; ${sql}`,
@@ -38,6 +48,17 @@ tester.run('conventions/backend-boundaries', backendBoundariesRule, {
     { filename: '/repo/packages/db/src/client.ts', code: "import { SqlClient } from 'effect/sql'" },
   ],
   invalid: [
+    {
+      filename: file('modules/study/infrastructure/editor/content.client.http.ts'),
+      code: sql,
+      errors: [{ messageId: 'sql' }],
+    },
+    {
+      filename: file('modules/study/application/notes/save.command.ts'),
+      code: sql,
+      errors: [{ messageId: 'sql' }],
+    },
+
     {
       filename: file('modules/study/http/http.ts'),
       code: "import { HttpApiBuilder } from 'effect/http-api'; const group = HttpApiBuilder.group(Api, 'Study', handlers)",

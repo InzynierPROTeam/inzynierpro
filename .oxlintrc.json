@@ -54,6 +54,7 @@
     "conventions/directory-names": "error",
     "conventions/domain-vocabulary": "error",
     "conventions/module-layers": "error",
+    "conventions/file-roles": "error",
     "conventions/date-boundaries": "error",
     "conventions/prefer-duration": "error",
     "conventions/hooks-in-hooks-folder": "error",
@@ -259,7 +260,7 @@
       "rules": { "no-restricted-imports": "off" }
     },
     {
-      "files": ["**/*.gen.ts"],
+      "files": ["apps/platform/src/routeTree.gen.ts"],
       "rules": {
         "import/no-cycle": "off",
         "architecture/workspace-imports": "off",

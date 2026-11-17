@@ -28,13 +28,14 @@ function workspaceOf(filename: string): Workspace | null {
 }
 
 const isTest = (path: string) =>
-  /\.(test|spec)\.[cm]?[jt]sx?$/.test(path) || /[\\/]src[\\/]test[\\/]/.test(path)
+  /\.(test|spec)\.[cm]?[jt]sx?$/.test(path) ||
+  /[\\/]src[\\/](?:test[\\/]|features[\\/][^\\/]+[\\/]test[\\/])/.test(path)
 
 const isTestSource = (filename: string, source: string) =>
   isTest(
     source.startsWith('.')
       ? resolve(dirname(filename), source)
-      : source.replace(/^~[^/]+\//, '/src/'),
+      : source.replace(/^~[^/]+\//, '/src/').replace(/^@inzpro\/[^/]+\//, '/src/'),
   )
 
 const nodeModules = new Set(builtinModules.map(name => name.replace(/^node:/, '')))

@@ -58,11 +58,13 @@ export const dateBoundariesRule = defineRule({
 
     const transport =
       filename.includes('/packages/domain/src/modules/') ||
-      (filename.includes('/packages/api-contracts/src/') && !filename.endsWith('/errors.ts'))
+      (filename.includes('/packages/api-contracts/src/') &&
+        !/(?:\/errors\.ts$|\/errors\/)/.test(filename))
 
     const requestSchemas =
       filename.includes('/packages/api-contracts/src/') &&
-      (filename.endsWith('/requests.ts') || filename.endsWith('/utils/pagination.ts'))
+      (/(?:\/requests\.ts$|\/requests\/)/.test(filename) ||
+        filename.endsWith('/utils/pagination.ts'))
 
     const client = /\/apps\/(platform|web|admin|mobile)\/src\//.test(filename)
 

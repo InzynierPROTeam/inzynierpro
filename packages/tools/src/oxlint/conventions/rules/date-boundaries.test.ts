@@ -12,6 +12,11 @@ const model = '/repo/apps/api/src/modules/preparation/domain/preparation.model.t
 tester.run('conventions/date-boundaries', dateBoundariesRule, {
   valid: [
     {
+      filename: '/repo/packages/api-contracts/src/modules/study/requests/session.ts',
+      code: "import { Schema } from 'effect'; const Q = Schema.FiniteFromString.pipe(Schema.decodeTo(Schema.Int))",
+    },
+
+    {
       filename: dto,
       code: "import { Schema } from 'effect'; const Goal = Schema.Struct({at: UtcIsoDateTime, optional: Schema.NullOr(UtcIsoDateTime)})",
     },
@@ -36,6 +41,12 @@ tester.run('conventions/date-boundaries', dateBoundariesRule, {
     { filename: client.replace('.ts', '.test.ts'), code: "import {DateTime} from 'effect'" },
   ],
   invalid: [
+    {
+      filename: '/repo/packages/api-contracts/src/modules/study/responses/session.ts',
+      code: "import { Schema } from 'effect'; const Q = Schema.OptionFromNullOr(Schema.String)",
+      errors: [{ messageId: 'json' }],
+    },
+
     {
       filename: '/repo/packages/api-contracts/src/modules/study/responses.ts',
       code: "import {Schema} from 'effect'; const position = Schema.FiniteFromString.pipe(Schema.decodeTo(SessionQuestionPosition))",

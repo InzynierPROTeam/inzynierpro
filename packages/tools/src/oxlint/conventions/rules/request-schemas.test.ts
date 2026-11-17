@@ -9,6 +9,11 @@ const factory = "import { HttpApiEndpoint } from 'effect/http-api';"
 tester.run('conventions/request-schemas', requestSchemasRule, {
   valid: [
     {
+      filename: filename.replace('api.ts', 'endpoints/quiz.ts'),
+      code: `${factory} import { Body } from '../requests/quiz/answer.js'; const endpoint = HttpApiEndpoint.post('Save', '/', { payload: Body })`,
+    },
+
+    {
       filename,
       code: `${factory} import { DocumentsQuery } from './requests.js'; const endpoint = HttpApiEndpoint.get('Get', '/', { query: DocumentsQuery })`,
     },
@@ -27,6 +32,12 @@ tester.run('conventions/request-schemas', requestSchemasRule, {
     },
   ],
   invalid: [
+    {
+      filename: filename.replace('api.ts', 'endpoints/quiz.ts'),
+      code: `${factory} const endpoint = HttpApiEndpoint.post('Save', '/', { payload: Schema.String })`,
+      errors: [{ messageId: 'misplaced' }],
+    },
+
     {
       filename,
       code: `${factory} const endpoint = HttpApiEndpoint.post('Save', '/', { payload: Schema.Struct({ pathId: Uuid }) })`,

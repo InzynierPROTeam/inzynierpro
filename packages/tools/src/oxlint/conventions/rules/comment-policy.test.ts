@@ -42,6 +42,11 @@ tester.run('conventions/comment-policy', commentPolicyRule, {
   ],
   invalid: [
     {
+      filename: '/repo/packages/api-contracts/src/modules/study/fake.gen.ts',
+      code: '// Generated-looking narration\nexport const value = 1',
+      errors: [prose],
+    },
+    {
       filename,
       code: '// The question card explains a missing session.\nconst x = 1',
       errors: [prose],

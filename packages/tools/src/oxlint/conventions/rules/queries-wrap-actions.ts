@@ -1,6 +1,6 @@
 import { defineRule } from '@oxlint/plugins'
 
-import { normalizedPath } from './path.ts'
+import { isModuleSource } from './path.ts'
 
 export const queriesWrapActionsRule = defineRule({
   meta: {
@@ -15,12 +15,7 @@ export const queriesWrapActionsRule = defineRule({
     },
   },
   create(context) {
-    const filename = normalizedPath(context.filename)
-
-    if (
-      !/\/packages\/queries\/src\/modules\/[^/]+\.ts$/.test(filename) ||
-      filename.endsWith('.test.ts')
-    ) {
+    if (!isModuleSource(context.filename, 'queries')) {
       return {}
     }
 

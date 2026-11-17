@@ -7,13 +7,28 @@ const file = (name: string) => `/repo/apps/api/src/modules/preparation/${name}`
 
 tester.run('conventions/module-layers', moduleLayersRule, {
   valid: [
+    { filename: file('domain/nested/goal.model.ts'), code: '' },
+    { filename: file('domain/goal-changed.event.ts'), code: '' },
+    { filename: file('application/reminders/send.job.ts'), code: '' },
+    { filename: file('application/reminders/goal-changed.event-handler.ts'), code: '' },
+    {
+      filename: file('infrastructure/editor/content.client.http.ts'),
+      code: "import { HttpClient } from 'effect/http'",
+    },
+    { filename: file('infrastructure/cache/goal.reader.redis.ts'), code: '' },
+    { filename: file('http/goal/goal.mappers.ts'), code: '' },
+    { filename: file('http/goal/goal.errors.ts'), code: '' },
+
     { filename: file('domain/preparation.model.ts'), code: "import { Schema } from 'effect'" },
     {
       filename: file('domain/preparation.model.ts'),
       code: "import { Specialization } from '~api/modules/qualification-paths/domain/qualification-path.model.js'",
     },
     { filename: file('domain/errors.ts'), code: 'export const value = 1' },
-    { filename: '/repo/apps/api/src/modules/study/domain/session-preview.rules.ts', code: '' },
+    {
+      filename: '/repo/apps/api/src/modules/written-study/domain/session-preview.rules.ts',
+      code: '',
+    },
     {
       filename: file('application/change-goal.command.ts'),
       code: "import { GoalChange } from '../domain/preparation.model.js'; import { ExamCalendarReader } from '~api/modules/exam-calendar/application/exam-calendar.reader.js'",
@@ -53,22 +68,37 @@ tester.run('conventions/module-layers', moduleLayersRule, {
     },
     { filename: '/repo/apps/api/src/lib/cursor-pagination.ts', code: "import 'effect/sql'" },
     {
-      filename: '/repo/apps/api/src/modules/study/application/start-session.command.ts',
+      filename: '/repo/apps/api/src/modules/written-study/application/start-session.command.ts',
       code: "import { PreparationPolicy } from '~api/modules/preparation/application/preparation.policy.js'",
     },
     {
-      filename: '/repo/apps/api/src/modules/study/http/handlers.ts',
+      filename: '/repo/apps/api/src/modules/written-study/http/handlers.ts',
       code: "import { PreparationReaderLive } from '../../preparation/infrastructure/preparation.reader.postgres.js'",
     },
     {
       filename: '/repo/apps/api/src/modules/exam-calendar/http/handlers.test.ts',
-      code: "import { startTestApi } from '~api/modules/study/http/handlers.js'",
+      code: "import { startTestApi } from '~api/modules/written-study/http/handlers.js'",
     },
   ],
   invalid: [
+    {
+      filename: file('application/goals/change.command.ts'),
+      code: "import { Goal } from '../../infrastructure/goals/goal.repository.postgres.js'",
+      errors: [{ messageId: 'inward' }],
+    },
+    {
+      filename: file('domain/goals/change.rules.ts'),
+      code: "import { Goal } from '../../application/goals/goal.query.js'",
+      errors: [{ messageId: 'inward' }],
+    },
+    {
+      filename: file('infrastructure/editor/content.client.http.ts'),
+      code: "import { HttpApiBuilder } from 'effect/http-api'",
+      errors: [{ messageId: 'transport' }],
+    },
+
     { filename: file('preparation.model.ts'), code: '', errors: [{ messageId: 'layer' }] },
     { filename: file('models/preparation.ts'), code: '', errors: [{ messageId: 'layer' }] },
-    { filename: file('domain/nested/goal.model.ts'), code: '', errors: [{ messageId: 'layer' }] },
     { filename: file('domain/archive-path.command.ts'), code: '', errors: [{ messageId: 'role' }] },
     {
       filename: file('application/preparation.model.ts'),
@@ -144,13 +174,13 @@ tester.run('conventions/module-layers', moduleLayersRule, {
     },
     {
       filename: file('application/archive-path.command.ts'),
-      code: "import { StudyReader } from '~api/modules/study/application/study.reader.js'",
-      errors: [{ messageId: 'module', data: { module: 'preparation', target: 'study' } }],
+      code: "import { StudyReader } from '~api/modules/written-study/application/study.reader.js'",
+      errors: [{ messageId: 'module', data: { module: 'preparation', target: 'written-study' } }],
     },
     {
       filename: file('domain/preparation.model.ts'),
-      code: "import type { SessionId } from '../../study/domain/study-session.model.js'",
-      errors: [{ messageId: 'module', data: { module: 'preparation', target: 'study' } }],
+      code: "import type { SessionId } from '../../written-study/domain/study-session.model.js'",
+      errors: [{ messageId: 'module', data: { module: 'preparation', target: 'written-study' } }],
     },
     {
       filename: '/repo/apps/api/src/modules/exam-calendar/http/handlers.ts',

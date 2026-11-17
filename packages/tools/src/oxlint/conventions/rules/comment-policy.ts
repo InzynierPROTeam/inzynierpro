@@ -26,7 +26,7 @@ export const commentPolicyRule = defineRule({
 
     if (
       filename.includes('/vendor/') ||
-      /\.gen\.[cm]?[jt]sx?$/.test(filename) ||
+      filename.endsWith('/apps/platform/src/routeTree.gen.ts') ||
       filename.endsWith('/apps/platform/src/types/icons.ts')
     ) {
       return {}

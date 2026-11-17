@@ -7,6 +7,7 @@ import { dateBoundariesRule } from './rules/date-boundaries.ts'
 import { directoryNamesRule } from './rules/directory-names.ts'
 import { domainIdentifiersRule } from './rules/domain-identifiers.ts'
 import { domainVocabularyRule } from './rules/domain-vocabulary.ts'
+import { fileRolesRule } from './rules/file-roles.ts'
 import { hooksInHooksFolderRule } from './rules/hooks-in-hooks-folder.ts'
 import { infiniteQueryNamesRule } from './rules/infinite-query-names.ts'
 import { moduleLayersRule } from './rules/module-layers.ts'
@@ -42,6 +43,7 @@ const conventionsPlugin = eslintCompatPlugin({
     'directory-names': directoryNamesRule,
     'domain-vocabulary': domainVocabularyRule,
     'module-layers': moduleLayersRule,
+    'file-roles': fileRolesRule,
     'date-boundaries': dateBoundariesRule,
     'prefer-duration': preferDurationRule,
     'hooks-in-hooks-folder': hooksInHooksFolderRule,
