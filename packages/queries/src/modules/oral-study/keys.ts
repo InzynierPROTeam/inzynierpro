@@ -23,6 +23,12 @@ export const oralStudyKeys = {
   account: (userId: UserId) => [...oralStudyKeys.all, 'account', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
     [...oralStudyKeys.account(userId), 'path', id] as const,
+  oralFavorites: (userId: UserId) => [...oralStudyKeys.account(userId), 'oralFavorites'] as const,
+  oralQuestions: (userId: UserId) => [...oralStudyKeys.account(userId), 'oralQuestions'] as const,
+  oralProgress: (userId: UserId, pathId: QualificationPathId) =>
+    [...oralStudyKeys.path(userId, pathId), 'oralProgress'] as const,
+  oralSession: (userId: UserId, pathId: QualificationPathId, id: OralStudySessionId) =>
+    [...oralStudyKeys.path(userId, pathId), 'oralSession', id] as const,
   getOralReviewPreview: (userId: UserId, req: GetOralReviewPreviewRequest) =>
     [
       ...oralStudyKeys.oralProgress(userId, req.params.qualificationPathId),
@@ -35,8 +41,6 @@ export const oralStudyKeys = {
       'getOralReviewSession',
       req,
     ] as const,
-  oralFavorites: (userId: UserId) => [...oralStudyKeys.account(userId), 'oralFavorites'] as const,
-  oralQuestions: (userId: UserId) => [...oralStudyKeys.account(userId), 'oralQuestions'] as const,
   getOralFavoritesPreview: (userId: UserId, req: GetOralFavoritesPreviewRequest) =>
     [...oralStudyKeys.oralFavorites(userId), 'getOralFavoritesPreview', req] as const,
   getOralFavoritesSession: (userId: UserId, req: GetOralFavoritesSessionRequest) =>
@@ -45,8 +49,6 @@ export const oralStudyKeys = {
       'getOralFavoritesSession',
       req,
     ] as const,
-  oralProgress: (userId: UserId, pathId: QualificationPathId) =>
-    [...oralStudyKeys.path(userId, pathId), 'oralProgress'] as const,
   getOralMaterials: (userId: UserId, req: GetOralMaterialsRequest) =>
     [
       ...oralStudyKeys.oralProgress(userId, req.params.qualificationPathId),
@@ -71,8 +73,6 @@ export const oralStudyKeys = {
       'getOralSessionNextStep',
       req,
     ] as const,
-  oralSession: (userId: UserId, pathId: QualificationPathId, id: OralStudySessionId) =>
-    [...oralStudyKeys.path(userId, pathId), 'oralSession', id] as const,
   getOralSession: (userId: UserId, req: GetOralSessionRequest) =>
     [
       ...oralStudyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),

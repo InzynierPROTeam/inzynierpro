@@ -12,6 +12,7 @@ const answerOptionVariants = tv({
         'data-checked:border-primary/30 data-checked:bg-primary/10 not-data-disabled:cursor-pointer not-data-checked:not-data-disabled:hover:border-primary/15 not-data-checked:not-data-disabled:hover:bg-primary/5',
       saved:
         'border-primary/10 bg-primary/2 data-checked:border-primary/30 data-checked:bg-primary/10 not-data-disabled:cursor-pointer',
+      primary: 'border-primary/30 bg-primary/5',
       correct: 'border-success/30 bg-success/5',
       incorrect: 'border-destructive/30 bg-destructive/5',
     },
@@ -24,6 +25,7 @@ const answerOptionIndicatorStyles = cn(
   'group-[[data-tone=neutral][data-checked]]/answer-option:bg-primary group-[[data-tone=neutral][data-checked]]/answer-option:text-primary-foreground',
   'group-data-[tone=saved]/answer-option:bg-primary/15 group-data-[tone=saved]/answer-option:text-primary',
   'group-[[data-tone=saved][data-checked]]/answer-option:bg-primary group-[[data-tone=saved][data-checked]]/answer-option:text-primary-foreground',
+  'group-data-[tone=primary]/answer-option:bg-primary group-data-[tone=primary]/answer-option:text-primary-foreground',
   'group-data-[tone=correct]/answer-option:bg-success group-data-[tone=correct]/answer-option:text-success-foreground',
   'group-data-[tone=incorrect]/answer-option:bg-destructive group-data-[tone=incorrect]/answer-option:text-destructive-foreground',
 )

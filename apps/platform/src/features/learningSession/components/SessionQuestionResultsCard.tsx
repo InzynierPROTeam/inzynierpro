@@ -1,7 +1,6 @@
 import type { SessionQuestionResult } from '@inzpro/api-contracts/modules/written-study/responses'
 import type { StudySessionId } from '@inzpro/domain/modules/learning/study-session'
 import { sessionResultsInfiniteQueryOptions } from '@inzpro/queries/modules/written-study/queries'
-import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
   CardContent,
@@ -12,9 +11,9 @@ import {
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
 import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { Link } from '@tanstack/react-router'
-import { LoaderCircle } from 'lucide-react'
 import type React from 'react'
 import { cx } from 'tailwind-variants'
+import { InfiniteQueryFooter } from '~platform/components/InfiniteQueryFooter'
 import {
   SuspenseInfiniteQuery,
   SuspenseQueryWrapper,
@@ -50,7 +49,7 @@ export const SessionQuestionResultsCard: React.FC<SessionQuestionResultsCardProp
             isDataEmpty={data => data.pages.every(page => page.data.length === 0)}
             noDataFallback={null}
           >
-            {({ data, hasNextPage, isFetchingNextPage, fetchNextPage }) => (
+            {({ data, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage }) => (
               <div className="flex flex-col gap-4">
                 <ol
                   aria-label="Pytania sesji"
@@ -67,17 +66,12 @@ export const SessionQuestionResultsCard: React.FC<SessionQuestionResultsCardProp
                       </li>
                     ))}
                 </ol>
-                {hasNextPage && (
-                  <Button
-                    variant="outline"
-                    className="self-center"
-                    disabled={isFetchingNextPage}
-                    onClick={() => void fetchNextPage()}
-                  >
-                    {isFetchingNextPage && <LoaderCircle className="animate-spin" />}
-                    Pokaż kolejne pytania
-                  </Button>
-                )}
+                <InfiniteQueryFooter
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  isFetchNextPageError={isFetchNextPageError}
+                  fetchNextPage={fetchNextPage}
+                />
               </div>
             )}
           </SuspenseInfiniteQuery>

@@ -10,6 +10,7 @@ type SessionResultRingProps = {
   answered: number
   correct: number
   percent: Percent
+  answeredTone?: 'primary' | 'muted'
 }
 
 export const SessionResultRing: React.FC<SessionResultRingProps> = ({
@@ -17,6 +18,7 @@ export const SessionResultRing: React.FC<SessionResultRingProps> = ({
   answered,
   correct,
   percent,
+  answeredTone = 'primary',
 }) => {
   const entered = useEntered()
 
@@ -37,7 +39,7 @@ export const SessionResultRing: React.FC<SessionResultRingProps> = ({
           entered
         />
         <RingArc
-          className="stroke-primary"
+          className={cx(answeredTone === 'muted' ? 'stroke-muted-foreground/20' : 'stroke-primary')}
           share={total > 0 ? answered / total : 0}
           entered={entered}
         />
