@@ -17,6 +17,15 @@ export const technicalConfiguration = {
   oralExamDate: null,
 } satisfies typeof CompleteOnboardingPayload.Encoded
 
+export const smallPathConfiguration = {
+  specializationId: '60000000-0000-4000-8000-000000000002',
+  qualificationKindId: '70000000-0000-4000-8000-000000000002',
+  qualificationScopeId: '80000000-0000-4000-8000-000000000002',
+  accessScope: 'both',
+  examSessionId: '90000000-0000-4000-8000-000000000002',
+  oralExamDate: null,
+} satisfies typeof CompleteOnboardingPayload.Encoded
+
 export const loginForPreparation = async (api: TestApi) => {
   const visitor = api.visitor()
   const email = `preparation-${crypto.randomUUID()}@example.com`
