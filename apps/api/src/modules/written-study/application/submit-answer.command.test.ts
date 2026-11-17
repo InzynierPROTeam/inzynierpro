@@ -7,6 +7,7 @@ import { databaseLayerFromConfig } from '@inzpro/db'
 import { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/written-question'
 import { Effect, Exit, Layer, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
@@ -42,6 +43,7 @@ const failingCoverageLayer = Layer.effect(
 ).pipe(Layer.provide(StudyRepositoryLive))
 
 const commandLayer = Layer.mergeAll(
+  TransactionLive,
   failingCoverageLayer,
   StudyReaderLive,
   ReviewSchedulerLive,

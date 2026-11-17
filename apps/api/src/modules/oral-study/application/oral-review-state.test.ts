@@ -14,6 +14,7 @@ import { OralRevisionId } from '@inzpro/domain/modules/learning-content/oral-que
 import type { OralSelfAssessment } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { DateTime, Effect, Exit, Layer, Option, Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { cosmeticChange } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { OralStudyRepository } from '~api/modules/oral-study/application/oral-study.repository.js'
@@ -43,6 +44,7 @@ beforeAll(async () => {
 afterAll(() => api.close())
 
 const commandServices = Layer.mergeAll(
+  TransactionLive,
   OralStudyReaderLive,
   PreparationReaderLive,
   PreparationRepositoryLive,

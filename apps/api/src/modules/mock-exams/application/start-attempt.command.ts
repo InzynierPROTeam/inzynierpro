@@ -4,6 +4,7 @@ import type { MockExamAttemptId } from '@inzpro/domain/modules/mock-exams/mock-e
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import {
@@ -23,6 +24,7 @@ export const startAttempt = Effect.fn('MockExams.startAttempt')(function* (
 ) {
   const mockExamReader = yield* MockExamReader
   const mockExamRepository = yield* MockExamRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
   const readAttempt = (attemptId: MockExamAttemptId) =>
@@ -35,10 +37,10 @@ export const startAttempt = Effect.fn('MockExams.startAttempt')(function* (
       ),
     )
 
-  return yield* mockExamRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, writtenExamAccess)
+      yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
 
       const unfinished = yield* mockExamReader.unfinishedAttempt(userId, pathId)
 

@@ -13,7 +13,7 @@ export const getDocument = Effect.fn('Study.getDocument')(function* (
   pathId: QualificationPathId,
   documentId: ReferenceDocumentId,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
   const round = currentLearningRound(yield* studyReader.learningRound(userId, pathId))
   const document = yield* studyReader.document(userId, pathId, round, documentId)

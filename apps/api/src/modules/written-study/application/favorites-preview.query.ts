@@ -13,7 +13,7 @@ export const getFavoritesPreview = Effect.fn('Study.getFavoritesPreview')(functi
   pathId: QualificationPathId,
   documentId: Option.Option<ReferenceDocumentId>,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
 
   const document = yield* Effect.transposeOption(

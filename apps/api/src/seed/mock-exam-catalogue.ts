@@ -6,6 +6,7 @@ import {
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Layer, Option } from 'effect'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { assignBlueprint } from '~api/modules/mock-exams/application/assign-blueprint.command.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { publishBlueprintVersion } from '~api/modules/mock-exams/application/publish-blueprint-version.command.js'
@@ -41,4 +42,4 @@ export const seedMockExamCatalogue = Effect.gen(function* () {
   }
 
   yield* assignBlueprint(demonstrativeBlueprint, QualificationPathId.make(catalogueId('10', 1)))
-}).pipe(Effect.provide(Layer.mergeAll(MockExamReaderLive, MockExamRepositoryLive)))
+}).pipe(Effect.provide(Layer.mergeAll(MockExamReaderLive, MockExamRepositoryLive, TransactionLive)))

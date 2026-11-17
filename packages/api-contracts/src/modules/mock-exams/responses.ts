@@ -16,6 +16,7 @@ import {
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import {
   AttemptQuestionPosition,
+  AttemptQuestionVersion,
   MockExamAttemptId,
   MockExamAttemptStatus,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
@@ -31,7 +32,6 @@ export const MockExamSectionPreview = Schema.Struct({
   position: ExamSectionPosition,
   name: ExamSectionName,
   questionCount: QuestionCount,
-  // CONTRACT: Distinct published, non-withdrawn questions on the path from the section's documents.
   availableQuestionCount: QuestionCount,
   documents: Schema.Array(ExamSectionDocument),
 })
@@ -78,9 +78,12 @@ export const AttemptQuestion = Schema.Struct({
   questionId: WrittenQuestionId,
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
-  // CONTRACT: Options retain the attempt's stored presentation order.
   answers: Schema.Array(AttemptAnswerOption),
   isWithdrawn: Schema.Boolean,
+  // CONTRACT: null when no option has been selected.
+  selectedAnswerId: Schema.NullOr(QuestionAnswerId),
+  isFlagged: Schema.Boolean,
+  version: AttemptQuestionVersion,
 })
 
 export type AttemptQuestion = typeof AttemptQuestion.Type
@@ -91,12 +94,21 @@ export const AttemptSection = Schema.Struct({
   questionCount: QuestionCount,
 })
 
+export const AttemptQuestionState = Schema.Struct({
+  position: AttemptQuestionPosition,
+  isAnswered: Schema.Boolean,
+  isFlagged: Schema.Boolean,
+})
+
+export type AttemptQuestionState = typeof AttemptQuestionState.Type
+
 export const MockExamAttempt = Schema.Struct({
   ...MockExamAttemptSummary.fields,
   durationMinutes: ExamDurationMinutes,
   passThreshold: QuestionCount,
   questionCount: QuestionCount,
   sections: Schema.Array(AttemptSection),
+  questions: Schema.Array(AttemptQuestionState),
 })
 
 export type MockExamAttempt = typeof MockExamAttempt.Type
@@ -108,3 +120,7 @@ export const MockExamAttemptResponse = Schema.NullOr(MockExamAttempt)
 
 // CONTRACT: null when the attempt is not the learner's on this path or has no question at this position.
 export const AttemptQuestionResponse = Schema.NullOr(AttemptQuestion)
+
+export const SaveAttemptAnswerResponse = AttemptQuestion
+
+export const FlagAttemptQuestionResponse = AttemptQuestion

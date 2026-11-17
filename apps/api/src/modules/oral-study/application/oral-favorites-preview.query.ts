@@ -10,7 +10,7 @@ export const getOralFavoritesPreview = Effect.fn('Study.getOralFavoritesPreview'
   userId: UserId,
   pathId: QualificationPathId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const favoriteQuestionCount = yield* oralStudyReader.favoriteQuestionCount(userId, pathId)
 
@@ -25,7 +25,7 @@ export const getOralFavoritesSession = Effect.fn('Study.getOralFavoritesSession'
   userId: UserId,
   pathId: QualificationPathId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
 
   return yield* oralStudyReader.unfinishedFavoritesSession(userId, pathId)

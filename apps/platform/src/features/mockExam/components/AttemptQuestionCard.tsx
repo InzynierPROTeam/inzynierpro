@@ -4,7 +4,13 @@ import {
   mockExamAttemptQueryOptions,
 } from '@inzpro/queries/modules/mock-exams/queries'
 import { Button } from '@inzpro/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader } from '@inzpro/ui/components/card'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '@inzpro/ui/components/card'
 import {
   Empty,
   EmptyContent,
@@ -25,6 +31,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { attemptQuestionRouteApi } from '../utils'
 import { AttemptAnswerForm } from './AttemptAnswerForm'
+import { AttemptFlagButton } from './AttemptFlagButton'
 
 export const AttemptQuestionCard = () => {
   const {
@@ -58,10 +65,13 @@ const AttemptQuestionContent: React.FC<AttemptQuestionContentProps> = ({ questio
     <CardHeader>
       <AttemptSectionName section={question.section} />
       <h2 className="text-base leading-relaxed font-medium">{question.body}</h2>
+      <CardAction>
+        <AttemptFlagButton question={question} />
+      </CardAction>
     </CardHeader>
     <CardContent>
       <AttemptAnswerForm
-        key={question.position}
+        key={`${question.position}:${question.selectedAnswerId}`}
         question={question}
       />
     </CardContent>

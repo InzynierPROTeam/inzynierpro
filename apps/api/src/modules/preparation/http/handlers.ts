@@ -5,6 +5,7 @@ import { HttpApiBuilder } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
+import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import {
   failExamCalendarRead,
@@ -92,6 +93,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           ExamCalendarWriteError: failExamCalendarWrite,
           UserPathLimitReached: () => pathLimitReached,
           StalePathConfiguration: () => invalidPathConfiguration,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -104,6 +106,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           PreparationReadError: failPreparationRead,
           PreparationWriteError: failPreparationWrite,
           PathPermissionDenied: () => pathAccessDenied,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -116,6 +119,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           PreparationReadError: failPreparationRead,
           PreparationWriteError: failPreparationWrite,
           PathPermissionDenied: () => pathAccessDenied,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -128,6 +132,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           PreparationReadError: failPreparationRead,
           PreparationWriteError: failPreparationWrite,
           PathPermissionDenied: () => pathAccessDenied,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -147,6 +152,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           PathPermissionDenied: () => pathAccessDenied,
           StaleExamGoal: () => goalConflict,
           StalePathConfiguration: () => invalidPathConfiguration,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -168,6 +174,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
           ExamCalendarWriteError: failExamCalendarWrite,
           PathPermissionDenied: () => pathAccessDenied,
           DistrictChamberUnavailable: () => districtChamberUnavailable,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -205,6 +212,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
 ).pipe(Layer.provide(AuthenticationLive))
 
 export const PreparationRequestServices = Layer.mergeAll(
+  TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
   QualificationPathsReaderLive,

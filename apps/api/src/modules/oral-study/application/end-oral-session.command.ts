@@ -3,6 +3,7 @@ import type { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { StudySessionMissing } from '~api/modules/learning/domain/errors.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
 import { OralStudyRepository } from '~api/modules/oral-study/application/oral-study.repository.js'
@@ -16,12 +17,13 @@ export const endOralSession = Effect.fn('Study.endOralSession')(function* (
 ) {
   const oralStudyReader = yield* OralStudyReader
   const oralStudyRepository = yield* OralStudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* oralStudyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, oralExamAccess)
+      yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
       const session = yield* oralStudyReader.session(userId, pathId, sessionId)
 
       if (Option.isNone(session)) {

@@ -9,6 +9,7 @@ import type {
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import {
   QuestionRevisionWithdrawn,
   SessionAlreadyEnded,
@@ -51,12 +52,13 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
 ) {
   const oralStudyReader = yield* OralStudyReader
   const oralStudyRepository = yield* OralStudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* oralStudyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, oralExamAccess)
+      yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
 
       const found = Option.all({
         session: yield* oralStudyReader.session(userId, pathId, sessionId),

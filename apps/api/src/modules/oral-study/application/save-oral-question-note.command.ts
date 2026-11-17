@@ -15,7 +15,7 @@ export const saveOralQuestionNote = Effect.fn('Study.saveOralQuestionNote')(func
   questionId: OralQuestionId,
   text: QuestionNoteText,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const oralStudyRepository = yield* OralStudyRepository
 

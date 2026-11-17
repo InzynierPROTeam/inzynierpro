@@ -56,7 +56,7 @@ export const getOralReviewPreview = Effect.fn('Study.getOralReviewPreview')(func
   categoryId: Option.Option<OralQuestionCategoryId>,
   questionScope: OralQuestionScope,
 ) {
-  const assignment = yield* requirePathAccess(userId, pathId, oralExamAccess)
+  const assignment = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const filter = yield* oralQuestionFilter(questionScope, assignment.districtChamber)
 
   return yield* findOralReviewPreview(userId, pathId, categoryId, filter)
@@ -67,7 +67,7 @@ export const getOralReviewSession = Effect.fn('Study.getOralReviewSession')(func
   pathId: QualificationPathId,
   categoryId: Option.Option<OralQuestionCategoryId>,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
 
   return yield* oralStudyReader.unfinishedReviewSession(userId, pathId, categoryId)

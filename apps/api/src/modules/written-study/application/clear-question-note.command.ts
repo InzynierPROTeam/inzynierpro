@@ -12,7 +12,7 @@ export const clearQuestionNote = Effect.fn('Study.clearQuestionNote')(function* 
   pathId: QualificationPathId,
   questionId: WrittenQuestionId,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyRepository = yield* StudyRepository
 
   yield* studyRepository.clearNote(userId, questionId)

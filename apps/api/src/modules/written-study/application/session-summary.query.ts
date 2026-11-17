@@ -11,7 +11,7 @@ export const getSessionSummary = Effect.fn('Study.getSessionSummary')(function* 
   pathId: QualificationPathId,
   sessionId: StudySessionId,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
   const session = yield* studyReader.session(userId, pathId, sessionId)
 

@@ -28,3 +28,14 @@ export const MockExamAttemptStatus = Schema.Literals(mockExamAttemptStatusValues
 export type MockExamAttemptStatus = typeof MockExamAttemptStatus.Type
 
 export const unfinishedAttemptStatuses = [inProgressAttempt, pausedAttempt] as const
+
+export const AttemptQuestionVersion = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
+  Schema.brand('AttemptQuestionVersion'),
+)
+
+export type AttemptQuestionVersion = typeof AttemptQuestionVersion.Type
+
+export const initialAttemptQuestionVersion = AttemptQuestionVersion.make(1)
+
+export const nextAttemptQuestionVersion = (version: AttemptQuestionVersion) =>
+  AttemptQuestionVersion.make(version + 1)

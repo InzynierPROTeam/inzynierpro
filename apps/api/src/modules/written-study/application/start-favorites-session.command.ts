@@ -7,6 +7,7 @@ import { favoritesStudySession } from '@inzpro/domain/modules/learning/study-ses
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { StaleSessionScope } from '~api/modules/learning/domain/errors.js'
 import { isAllowedQuestionCount } from '~api/modules/learning/domain/session-count.rules.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
@@ -28,12 +29,13 @@ export const startFavoritesSession = Effect.fn('Study.startFavoritesSession')(fu
 ) {
   const studyReader = yield* StudyReader
   const studyRepository = yield* StudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* studyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      const assignment = yield* requirePathAccess(userId, pathId, writtenExamAccess)
+      const assignment = yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
 
       if (Option.isSome(documentId)) {
         const document = yield* studyReader.pathDocument(pathId, documentId.value)

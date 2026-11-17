@@ -12,7 +12,7 @@ export const getOralMaterials = Effect.fn('Study.getOralMaterials')(function* (
   pathId: QualificationPathId,
   page: CursorPageRequest,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const round = currentLearningRound(yield* oralStudyReader.learningRound(userId, pathId))
 

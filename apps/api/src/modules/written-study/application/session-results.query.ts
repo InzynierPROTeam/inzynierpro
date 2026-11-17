@@ -13,7 +13,7 @@ export const getSessionResults = Effect.fn('Study.getSessionResults')(function* 
   sessionId: StudySessionId,
   page: CursorPageRequest,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
   const session = yield* studyReader.session(userId, pathId, sessionId)
 

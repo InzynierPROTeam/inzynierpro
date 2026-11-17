@@ -71,7 +71,11 @@ export default Effect.gen(function* () {
     section_position integer NOT NULL CHECK (section_position > 0),
     question_id uuid NOT NULL,
     question_revision_id uuid NOT NULL,
+    selected_answer_id uuid,
+    is_flagged boolean NOT NULL DEFAULT false,
+    version integer NOT NULL CHECK (version > 0),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
+    updated_at timestamptz(3) NOT NULL DEFAULT now(),
     PRIMARY KEY (attempt_id, position),
     UNIQUE (attempt_id, question_id),
     UNIQUE (attempt_id, position, question_revision_id),
@@ -89,4 +93,6 @@ export default Effect.gen(function* () {
     FOREIGN KEY (attempt_id, position, question_revision_id) REFERENCES mock_exam_attempt_questions(attempt_id, position, question_revision_id) ON DELETE CASCADE,
     FOREIGN KEY (question_revision_id, question_answer_id) REFERENCES question_answers(question_revision_id, id)
   )`
+  yield* sql`CREATE TRIGGER mock_exam_attempt_questions_updated_at BEFORE UPDATE ON mock_exam_attempt_questions FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
+  yield* sql`ALTER TABLE mock_exam_attempt_questions ADD FOREIGN KEY (attempt_id, position, selected_answer_id) REFERENCES mock_exam_attempt_answer_options(attempt_id, position, question_answer_id)`
 })

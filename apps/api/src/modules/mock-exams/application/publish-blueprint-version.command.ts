@@ -4,6 +4,7 @@ import {
   nextExamBlueprintVersion,
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import { InvalidExamBlueprint } from '~api/modules/mock-exams/domain/errors.js'
@@ -16,8 +17,9 @@ export const publishBlueprintVersion = Effect.fn('MockExams.publishBlueprintVers
 ) {
   const mockExamReader = yield* MockExamReader
   const mockExamRepository = yield* MockExamRepository
+  const transaction = yield* Transaction
 
-  return yield* mockExamRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* mockExamRepository.createBlueprint(blueprintId)
       yield* mockExamRepository.lockBlueprint(blueprintId)

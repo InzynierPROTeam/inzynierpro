@@ -6,6 +6,7 @@ const tester = new RuleTester({ languageOptions: { parserOptions: { lang: 'tsx' 
 const code = 'export const value = 1'
 
 const accepted = [
+  'apps/api/src/lib/transaction.ts',
   'apps/platform/src/lib/env.server.ts',
   'apps/platform/src/features/editor/lib/editor.client.ts',
   'apps/platform/src/types/environment.d.ts',

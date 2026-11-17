@@ -10,6 +10,8 @@ const answerOptionVariants = tv({
     tone: {
       neutral:
         'data-checked:border-primary/30 data-checked:bg-primary/10 not-data-disabled:cursor-pointer not-data-checked:not-data-disabled:hover:border-primary/15 not-data-checked:not-data-disabled:hover:bg-primary/5',
+      saved:
+        'border-primary/10 bg-primary/2 data-checked:border-primary/30 data-checked:bg-primary/10 not-data-disabled:cursor-pointer',
       correct: 'border-success/30 bg-success/5',
       incorrect: 'border-destructive/30 bg-destructive/5',
     },
@@ -20,6 +22,8 @@ const answerOptionVariants = tv({
 const answerOptionIndicatorStyles = cn(
   'bg-muted flex size-8 shrink-0 items-center justify-center rounded-full font-medium transition-colors @max-md:hidden [&_svg]:size-4',
   'group-[[data-tone=neutral][data-checked]]/answer-option:bg-primary group-[[data-tone=neutral][data-checked]]/answer-option:text-primary-foreground',
+  'group-data-[tone=saved]/answer-option:bg-primary/15 group-data-[tone=saved]/answer-option:text-primary',
+  'group-[[data-tone=saved][data-checked]]/answer-option:bg-primary group-[[data-tone=saved][data-checked]]/answer-option:text-primary-foreground',
   'group-data-[tone=correct]/answer-option:bg-success group-data-[tone=correct]/answer-option:text-success-foreground',
   'group-data-[tone=incorrect]/answer-option:bg-destructive group-data-[tone=incorrect]/answer-option:text-destructive-foreground',
 )

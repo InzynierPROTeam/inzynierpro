@@ -14,6 +14,7 @@ import { databaseLayerFromConfig } from '@inzpro/db'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Exit, Layer, Option, Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { cosmeticChange } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
@@ -45,6 +46,7 @@ beforeAll(async () => {
 afterAll(() => api.close())
 
 const commandLayer = Layer.mergeAll(
+  TransactionLive,
   StudyRepositoryLive,
   StudyReaderLive,
   PreparationReaderLive,

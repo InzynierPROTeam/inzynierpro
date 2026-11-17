@@ -12,6 +12,7 @@ import {
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import {
   QuestionRevisionWithdrawn,
   SessionAlreadyEnded,
@@ -68,12 +69,13 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
 ) {
   const studyReader = yield* StudyReader
   const studyRepository = yield* StudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* studyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, writtenExamAccess)
+      yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
 
       const found = Option.all({
         session: yield* studyReader.session(userId, pathId, sessionId),

@@ -32,9 +32,6 @@ import type {
 export class StudyRepository extends Context.Service<
   StudyRepository,
   {
-    readonly transaction: <A, E, R>(
-      operation: Effect.Effect<A, E, R>,
-    ) => Effect.Effect<A, E | StudyWriteError, R>
     readonly createSession: (
       session: NewStudySession,
     ) => Effect.Effect<StudySession, StudyWriteError>

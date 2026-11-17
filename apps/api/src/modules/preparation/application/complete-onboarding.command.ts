@@ -1,6 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { initialUserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/application/exam-calendar.reader.js'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import {
@@ -19,13 +20,14 @@ export const completeOnboarding = Effect.fn('Preparation.completeOnboarding')(fu
   config: PathConfiguration,
 ) {
   const preparationRepository = yield* PreparationRepository
+  const transaction = yield* Transaction
   const preparationReader = yield* PreparationReader
   const qualificationPathsReader = yield* QualificationPathsReader
   const examCalendarReader = yield* ExamCalendarReader
   const qualificationPathsRepository = yield* QualificationPathsRepository
   const examCalendarRepository = yield* ExamCalendarRepository
 
-  return yield* preparationRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
       const resolved = yield* qualificationPathsReader.resolve(config)

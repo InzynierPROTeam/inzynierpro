@@ -1,6 +1,6 @@
 # Mock exams
 
-How written mock exams are configured and started, and how an attempt and its questions are read. The decisions are in [ADR-0004](adr/0004-mock-exam-lifecycle.md) (lifecycle, blueprint and draw) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal). This document covers what is implemented so far: blueprints, the preview, starting an attempt and reading it. Answers, the clock, pause, finishing and history come later. Endpoints sit under `/mock-exams/paths/:qualificationPathId` and require written access on the assignment (`PathAccessDenied`, 403, otherwise).
+How written mock exams are configured and started, and how an attempt and its questions are read. The decisions are in [ADR-0004](adr/0004-mock-exam-lifecycle.md) (lifecycle, blueprint and draw) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal). This document covers what is implemented so far: blueprints, the preview, starting an attempt, reading it, and draft answers with flags. The clock, pause, finishing and history come later. Endpoints sit under `/mock-exams/paths/:qualificationPathId` and require written access on the assignment (`PathAccessDenied`, 403, otherwise).
 
 ## Blueprints
 
@@ -26,22 +26,32 @@ The `mock-exams` API module owns ExamBlueprints. A blueprint has a stable identi
 
 Like study sessions, an attempt is read separately from its questions, one question per request:
 
-- `GET /attempts/:attemptId` returns the status, start time, `questionCount` and the version's duration, threshold and sections.
-- `GET /attempts/:attemptId/questions/:position` returns one question: its section, pinned body, options in the stored order and `isWithdrawn`. It never contains correctness, explanations or notes.
+- `GET /attempts/:attemptId` returns the status, start time, `questionCount`, the version's duration, threshold and sections, and `questions`: each position with `isAnswered` and `isFlagged`, for the navigator.
+- `GET /attempts/:attemptId/questions/:position` returns one question: its section, pinned body, options in the stored order, `isWithdrawn`, and the draft state `selectedAnswerId`, `isFlagged` and `version`. It never contains correctness, explanations or notes.
 
 Another account's attempt, one on another path, or a position outside the attempt reads as `null`.
+
+## Draft answers and flags
+
+Each attempt question holds an optional selected option, a "come back later" flag and a version that starts at 1. An answer can be selected and changed to another option any number of times, but not cleared: once a question is answered it stays answered.
+
+- `PUT /attempts/:attemptId/questions/:position/answer` with `answerId` and `expectedVersion` selects an option; `PUT .../flag` with `isFlagged` and `expectedVersion` sets the flag. Both return the question.
+- A write locks the attempt row. When the question already reflects the requested value, the write succeeds without a new version, so a retry is safe. Otherwise a stale `expectedVersion` is refused with `AttemptQuestionConflict` (409) carrying the current question, and nothing is overwritten. A matching write increments the version.
+- Writes are refused with `AttemptQuestionNotFound` (404) for another account's attempt or a missing position, `MockExamAttemptNotInProgress` (409) unless the attempt is in progress, `AttemptQuestionWithdrawn` (409) for an answer to a withdrawn question and `InvalidAttemptAnswer` (422) for an option outside the question. A withdrawn question can still be flagged.
+- Draft answers are not study attempts: they create no learning events and never reach coverage, reviews or statistics.
 
 ## Storage
 
 - `exam_blueprints`, `exam_blueprint_versions`, `exam_blueprint_sections` and `exam_blueprint_section_documents`: identities and immutable versions.
 - `exam_blueprint_paths`: one row per path with its blueprint.
 - `mock_exam_attempts`: learner, path, blueprint version, `status` (`in-progress`, `paused`, `finished`, `abandoned`) and `started_at`.
-- `mock_exam_attempt_questions` and `mock_exam_attempt_answer_options`: references to revisions and answer IDs in attempt order, never content copies.
+- `mock_exam_attempt_questions` and `mock_exam_attempt_answer_options`: references to revisions and answer IDs in attempt order, never content copies. A question row also holds the draft `selected_answer_id`, which must be one of its stored options, `is_flagged` and `version`.
 
 ## Client
 
 - `/egzamin-probny` shows the preview: duration, question count, pass threshold and sections with their documents, the unavailable reason, and a start or resume button. Starting stores the attempt in its query, refreshes the preview and replaces the history entry with the attempt's first question.
-- `/egzamin-probny/podejscie/$attemptId/$questionNumber` shows the shown question with its section and an answer form; its header and numbered navigation read the attempt, and the previous and next links preload their questions. Submitting the form only confirms the selection with a toast until answers are saved (#76).
+- `/egzamin-probny/podejscie/$attemptId/$questionNumber` shows the question with its section, an answer form and an icon toggle to come back later; its header and numbered navigation read the attempt, and the previous and next links preload their questions. The navigator marks answered and flagged questions.
+- "Zapisz odpowiedź" sends the selected option with the version the question was read at and moves to the next question at once, without waiting for the response. On an answered question the form offers "Następne pytanie" until another option is selected. A failed write shows an error message; every write then refetches the attempt and its questions.
 - The "Egzamin próbny" tile on Start, for learners with written access, offers resuming an unfinished attempt, otherwise the exam page, or the unavailable reason.
 - Queries sit under `mockExamKeys.path(userId, pathId)`; an attempt and its questions under `mockExamKeys.attempt(userId, pathId, attemptId)`.
 

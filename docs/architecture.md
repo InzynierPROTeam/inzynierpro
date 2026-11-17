@@ -73,9 +73,9 @@ Static checks cannot judge whether a model is declared independently of its DTO,
 
 ## API modules
 
-The business modules are `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material), `written-study` and `oral-study` (the two personal learning modes) and `mock-exams` (exam blueprints and written mock exam attempts). `learning` owns reusable session rules, review scheduling and shared models; it has no dependency on either mode. The oral mini-quiz stays inside `oral-study` because it updates that mode's review evidence and belongs to its session lifecycle. Each mode owns its writes and its repository transaction implementation, preserving the atomic learning action in ADR-0012 without depending on the other mode.
+The business modules are `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material), `written-study` and `oral-study` (the two personal learning modes) and `mock-exams` (exam blueprints and written mock exam attempts). `learning` owns reusable session rules, review scheduling and shared models; it has no dependency on either mode. The oral mini-quiz stays inside `oral-study` because it updates that mode's review evidence and belongs to its session lifecycle. Each mode owns its writes. Commands open one database transaction through `Transaction` from `apps/api/src/lib/transaction.ts`, which preserves the atomic learning action in ADR-0012 across the repositories of several modules without either mode depending on the other.
 
-`identity` mounts authentication; the technical `health` and `background-jobs` modules own health and job diagnostics. Modules keep the fixed layer folders described in CODING_STANDARDS.md. A new module or dependency starts with its entry in `apiModuleDependencies`.
+`identity` mounts authentication; the technical `health` and `background-jobs` modules own health and job diagnostics. The shared transaction service owns no tables; its port, PostgreSQL implementation, error and HTTP failure mapping stay together in `lib/transaction.ts`. Only this file may import `SqlClient` outside SQL adapters, migrations and seeds, and SQL statements remain forbidden there. Modules keep the fixed layer folders described in CODING_STANDARDS.md. A new module or dependency starts with its entry in `apiModuleDependencies`.
 
 ## File roles
 
@@ -107,7 +107,7 @@ Source lint validates parsed file paths and contents and checks the current file
 
 ### Bootstrap migrations
 
-Bootstrap migrations define final tables, columns, indexes and constraints directly; local databases are recreated when the schema changes. An `ALTER TABLE` adding a cyclic current-revision foreign key is the narrow exception: both referenced tables must first exist. Bootstrap changes do not build a history of column additions or table reshaping. This policy does not govern later migrations of released databases with retained data.
+Bootstrap migrations define final tables, columns, indexes and constraints directly; local databases are recreated when the schema changes. An `ALTER TABLE` adding a cyclic foreign key, such as a current revision or a mock exam question's selected option, is the narrow exception: both referenced tables must first exist. Bootstrap changes do not build a history of column additions or table reshaping. This policy does not govern later migrations of released databases with retained data.
 
 The job table remains owned and migrated by Effect's queue store ([background-jobs.md](background-jobs.md)). The first migration owns the shared `set_updated_at` trigger function.
 

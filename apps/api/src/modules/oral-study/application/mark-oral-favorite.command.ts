@@ -13,7 +13,7 @@ export const markOralFavorite = Effect.fn('Study.markOralFavorite')(function* (
   pathId: QualificationPathId,
   questionId: OralQuestionId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const oralStudyRepository = yield* OralStudyRepository
 

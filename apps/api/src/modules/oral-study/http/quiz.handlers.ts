@@ -5,6 +5,7 @@ import type { HttpApiEndpoint } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
+import { failTransaction } from '~api/lib/transaction.js'
 import {
   failStudyRead,
   failStudyWrite,
@@ -90,6 +91,7 @@ export const quizHandlers = {
         StudySessionMissing: () => studySessionNotFound,
         OralQuizNotOffered: () => oralQuizUnavailable,
         OralQuizFormatNotSupported: () => oralQuizFormatUnsupported,
+        TransactionError: failTransaction,
       }),
     ),
   AnswerOralQuizCheck: ({ params, payload }) =>
@@ -118,6 +120,7 @@ export const quizHandlers = {
         OralQuizCheckMissing: () => oralQuizCheckNotFound,
         OralQuizCheckAlreadyChecked: () => oralQuizCheckAlreadyAnswered,
         OralQuizSelectionNotAllowed: () => invalidOralQuizSelection,
+        TransactionError: failTransaction,
       }),
     ),
 } satisfies {

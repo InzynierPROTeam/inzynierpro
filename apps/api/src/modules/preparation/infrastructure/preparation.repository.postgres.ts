@@ -1,11 +1,7 @@
-import { Data, DateTime, Effect, Layer, Option } from 'effect'
+import { DateTime, Effect, Layer, Option } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { PreparationWriteError } from '~api/modules/preparation/application/errors.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
-
-class PreparationTransactionFailure<E> extends Data.TaggedError('PreparationTransactionFailure')<{
-  readonly error: E
-}> {}
 
 export const PreparationRepositoryLive = Layer.effect(
   PreparationRepository,
@@ -13,18 +9,6 @@ export const PreparationRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return PreparationRepository.of({
-      transaction: Effect.fn('PreparationRepository.transaction')(function* (operation) {
-        return yield* sql
-          .withTransaction(
-            operation.pipe(Effect.mapError(error => new PreparationTransactionFailure({ error }))),
-          )
-          .pipe(
-            Effect.catchTags({
-              SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),
-              PreparationTransactionFailure: failure => Effect.fail(failure.error),
-            }),
-          )
-      }),
       lockUser: Effect.fn('PreparationRepository.lockUser')(function* (userId) {
         return yield* sql`SELECT id FROM users WHERE id=${userId} LIMIT 1 FOR UPDATE`.pipe(
           Effect.asVoid,

@@ -5,7 +5,7 @@ import type {
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
 import type { StudySessionId } from '@inzpro/domain/modules/learning/study-session'
-import { Array as Arr, Data, DateTime, Effect, Layer, Option, Predicate, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option, Predicate, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
 import { LearningEventId } from '~api/modules/learning/domain/review-state.model.js'
@@ -15,10 +15,6 @@ import {
 } from '~api/modules/written-study/application/errors.js'
 import { StudyRepository } from '~api/modules/written-study/application/study.repository.js'
 import { StudySession } from '~api/modules/written-study/domain/study-session.model.js'
-
-class StudyTransactionFailure<E> extends Data.TaggedError('StudyTransactionFailure')<{
-  readonly error: E
-}> {}
 
 const LearningEventRow = Schema.Struct({ id: LearningEventId })
 
@@ -62,18 +58,6 @@ export const StudyRepositoryLive = Layer.effect(
       )
 
     return StudyRepository.of({
-      transaction: Effect.fn('StudyRepository.transaction')(function* (operation) {
-        return yield* sql
-          .withTransaction(
-            operation.pipe(Effect.mapError(error => new StudyTransactionFailure({ error }))),
-          )
-          .pipe(
-            Effect.catchTags({
-              SqlError: cause => Effect.fail(new StudyWriteError({ cause })),
-              StudyTransactionFailure: failure => Effect.fail(failure.error),
-            }),
-          )
-      }),
       createSession: Effect.fn('StudyRepository.createSession')(
         function* (session) {
           const documentId = Option.getOrNull(session.documentId)

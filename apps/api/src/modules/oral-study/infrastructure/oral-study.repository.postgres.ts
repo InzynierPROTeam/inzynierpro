@@ -7,7 +7,7 @@ import {
   OralSelfAssessment,
   type OralStudySessionId,
 } from '@inzpro/domain/modules/oral-study/oral-study-session'
-import { Array as Arr, Data, DateTime, Effect, Layer, Option, Predicate, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option, Predicate, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
 import { LearningEventId } from '~api/modules/learning/domain/review-state.model.js'
@@ -18,10 +18,6 @@ import {
 import { OralStudyRepository } from '~api/modules/oral-study/application/oral-study.repository.js'
 import { OralReviewEvidence } from '~api/modules/oral-study/domain/oral-review-state.model.js'
 import { OralStudySession } from '~api/modules/oral-study/domain/oral-study-session.model.js'
-
-class OralStudyTransactionFailure<E> extends Data.TaggedError('OralStudyTransactionFailure')<{
-  readonly error: E
-}> {}
 
 const SelfAssessmentRow = Schema.Struct({ value: OralSelfAssessment, assessedAt: DateTimeUtc })
 
@@ -47,18 +43,6 @@ export const OralStudyRepositoryLive = Layer.effect(
       )
 
     return OralStudyRepository.of({
-      transaction: Effect.fn('OralStudyRepository.transaction')(function* (operation) {
-        return yield* sql
-          .withTransaction(
-            operation.pipe(Effect.mapError(error => new OralStudyTransactionFailure({ error }))),
-          )
-          .pipe(
-            Effect.catchTags({
-              SqlError: cause => Effect.fail(new StudyWriteError({ cause })),
-              OralStudyTransactionFailure: failure => Effect.fail(failure.error),
-            }),
-          )
-      }),
       saveNote: Effect.fn('OralStudyRepository.saveNote')(
         function* (userId, questionId, text) {
           const rows =

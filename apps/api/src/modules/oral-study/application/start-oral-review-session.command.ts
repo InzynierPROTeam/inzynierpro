@@ -6,6 +6,7 @@ import type { OralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-s
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { StaleSessionScope } from '~api/modules/learning/domain/errors.js'
 import { currentLearningRound } from '~api/modules/learning/domain/learning-round.rules.js'
 import { isAllowedQuestionCount } from '~api/modules/learning/domain/session-count.rules.js'
@@ -29,12 +30,13 @@ export const startOralReviewSession = Effect.fn('Study.startOralReviewSession')(
 ) {
   const oralStudyReader = yield* OralStudyReader
   const oralStudyRepository = yield* OralStudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* oralStudyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      const assignment = yield* requirePathAccess(userId, pathId, oralExamAccess)
+      const assignment = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
       const { reportedIn } = yield* oralQuestionFilter(questionScope, assignment.districtChamber)
 
       if (Option.isSome(categoryId)) {

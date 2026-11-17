@@ -1,11 +1,5 @@
 import { MockExamUnavailable } from '@inzpro/api-contracts/modules/mock-exams/errors'
-import {
-  AttemptQuestion,
-  AttemptQuestionResponse,
-  MockExamAttempt,
-  MockExamAttemptResponse,
-  MockExamPreview,
-} from '@inzpro/api-contracts/modules/mock-exams/responses'
+import { MockExamAttempt } from '@inzpro/api-contracts/modules/mock-exams/responses'
 import type { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { ExamBlueprintId } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -23,11 +17,8 @@ import {
   publishFixtureBlueprint,
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
-import {
-  learningRequest,
-  loginForPreparation,
-  smallPathConfiguration,
-} from '~api/test/preparation.js'
+import { mockExamLearner } from '~api/test/mock-exam-learner.js'
+import { smallPathConfiguration } from '~api/test/preparation.js'
 import { runFixture } from '~api/test/run-fixture.js'
 import { addFixtureQuestion, withdrawFixtureRevision } from '~api/test/written-learning-fixtures.js'
 
@@ -41,57 +32,10 @@ afterAll(() => api.close())
 
 const examPath = mockExamPathConfiguration('60000000-0000-4000-8000-000000000004')
 
-const learnerOn = async (
+const learnerOn = (
   configuration: typeof CompleteOnboardingPayload.Encoded,
   accessScope: typeof CompleteOnboardingPayload.Encoded.accessScope = 'written',
-) => {
-  const visitor = await loginForPreparation(api)
-  const pathId = await resolveFixturePath(configuration)
-
-  const onboarded = await learningRequest(api, visitor, '/onboarding', {
-    ...configuration,
-    accessScope,
-  })
-
-  expect(onboarded.ok).toBe(true)
-
-  const request = (path: string, method = 'GET') =>
-    visitor.jar.fetch(new URL(`/api/v1/mock-exams/paths/${pathId}${path}`, api.baseUrl), {
-      method,
-    })
-
-  const decode =
-    <T, E>(schema: Schema.Codec<T, E>) =>
-    async (response: Response) =>
-      Schema.decodeUnknownSync(schema)(await response.json())
-
-  return {
-    pathId,
-    preview: async () => decode(MockExamPreview)(await request('/preview')),
-    start: () => request('/attempts', 'POST'),
-    started: async () => decode(MockExamAttempt)(await request('/attempts', 'POST')),
-    attempt: async (attemptId: string) =>
-      decode(MockExamAttemptResponse)(await request(`/attempts/${attemptId}`)),
-    question: async (attemptId: string, position: number) =>
-      decode(AttemptQuestionResponse)(
-        await request(`/attempts/${attemptId}/questions/${position}`),
-      ),
-    questions: async (attempt: MockExamAttempt) => {
-      const questions: Array<AttemptQuestion> = []
-
-      for (let position = 1; position <= attempt.questionCount; position++) {
-        questions.push(
-          await decode(AttemptQuestion)(
-            await request(`/attempts/${attempt.id}/questions/${position}`),
-          ),
-        )
-      }
-
-      return questions
-    },
-    request,
-  }
-}
+) => mockExamLearner(api, configuration, accessScope)
 
 const first = <T>(items: ReadonlyArray<T>) => {
   const [item] = items
