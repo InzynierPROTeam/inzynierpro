@@ -74,7 +74,7 @@ test('documents return one cursor page of private coverage and archive preserves
   )
 
   expect(first.data).toMatchObject([
-    { id: technicalDocumentA, availableQuestionCount: 5, completedQuestionCount: 1 },
+    { id: technicalDocumentA, availableQuestionCount: 8, completedQuestionCount: 1 },
   ])
   expect(first.meta.hasMore).toBe(true)
   expect(first.meta.nextCursor).toEqual(expect.any(String))
@@ -86,7 +86,7 @@ test('documents return one cursor page of private coverage and archive preserves
   ).json()
 
   expect(second).toMatchObject({
-    data: [{ id: technicalDocumentB, availableQuestionCount: 5, completedQuestionCount: 0 }],
+    data: [{ id: technicalDocumentB, availableQuestionCount: 8, completedQuestionCount: 0 }],
     meta: { hasMore: false },
   })
   expect(
@@ -101,12 +101,12 @@ test('documents return one cursor page of private coverage and archive preserves
     ).json(),
   )
 
-  expect(preview).toMatchObject({ questionSelection: 'uncovered', availableQuestionCount: 4 })
+  expect(preview).toMatchObject({ questionSelection: 'uncovered', availableQuestionCount: 7 })
   expect(preview.settings).toEqual({
-    defaultQuestionCount: 4,
+    defaultQuestionCount: 7,
     canChangeQuestionCount: false,
-    minimumQuestionCount: 4,
-    maximumQuestionCount: 4,
+    minimumQuestionCount: 7,
+    maximumQuestionCount: 7,
   })
   expect(
     (await request(`/paths/${technicalPathB}/preview?documentId=${technicalDocumentB}`)).status,
@@ -155,7 +155,7 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
   })
   expect(
     await (await learningRequest(api, visitor, `/paths/${fixture.pathId}/preview`)).json(),
-  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 5 })
+  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 8 })
 
   const questions: Array<Awaited<ReturnType<typeof addFixtureQuestion>>> = []
 
@@ -185,7 +185,7 @@ test('preview reads exactly one document and applies the 25/26 threshold while e
   expect((await preview()).availableQuestionCount).toBe(0)
   expect(
     await (await learningRequest(api, visitor, `/paths/${fixture.pathId}/preview`)).json(),
-  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 5 })
+  ).toMatchObject({ document: { id: technicalDocumentA }, availableQuestionCount: 8 })
 })
 
 test('category details are a private point lookup without preview settings', async () => {
@@ -198,7 +198,7 @@ test('category details are a private point lookup without preview settings', asy
   const detail = Schema.decodeUnknownSync(DocumentResponse)(await response.json())
   expect(detail.document).toMatchObject({
     id: technicalDocumentA,
-    availableQuestionCount: 5,
+    availableQuestionCount: 8,
     completedQuestionCount: 0,
   })
   expect(Object.keys(detail)).toEqual(['document'])
@@ -250,13 +250,13 @@ test('preview continues from a category until its questions are answered, then m
     await (
       await learningRequest(api, visitor, `/paths/${technicalPathA}/sessions`, {
         documentId: technicalDocumentA,
-        questionCount: 5,
+        questionCount: 8,
         questionSelection: 'uncovered',
       })
     ).json(),
   )
 
-  for (const position of [1, 2, 3, 4, 5]) {
+  for (const position of [1, 2, 3, 4, 5, 6, 7, 8]) {
     const question = Schema.decodeUnknownSync(SessionQuestion)(
       await (
         await learningRequest(
@@ -283,7 +283,7 @@ test('preview continues from a category until its questions are answered, then m
   expect(await (await preview(`?documentId=${technicalDocumentA}`)).json()).toMatchObject({
     document: { id: technicalDocumentA },
     questionSelection: 'covered',
-    availableQuestionCount: 5,
+    availableQuestionCount: 8,
   })
   expect((await preview('?documentId=invalid')).status).toBe(400)
   expect((await preview('?fromDocumentId=invalid')).status).toBe(400)
@@ -337,7 +337,7 @@ test('covering the whole path starts a new round that continues from the categor
   expect(await preview(`?fromDocumentId=${technicalDocumentB}`)).toMatchObject({
     document: { id: technicalDocumentA },
     questionSelection: 'uncovered',
-    availableQuestionCount: 5,
+    availableQuestionCount: 8,
   })
   expect(await preview(`?fromDocumentId=${technicalDocumentA}`)).toMatchObject({
     document: { id: technicalDocumentB },
@@ -346,8 +346,8 @@ test('covering the whole path starts a new round that continues from the categor
   expect(await preview()).toMatchObject({ document: { id: technicalDocumentA } })
   expect(await (await request('/documents')).json()).toMatchObject({
     data: [
-      { availableQuestionCount: 5, completedQuestionCount: 0 },
-      { availableQuestionCount: 5, completedQuestionCount: 0 },
+      { availableQuestionCount: 8, completedQuestionCount: 0 },
+      { availableQuestionCount: 8, completedQuestionCount: 0 },
     ],
   })
 })

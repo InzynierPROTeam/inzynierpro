@@ -10,7 +10,7 @@ test('a learner writes a note, reads it again after reload and the answer counts
   await page.getByRole('link', { name: new RegExp(buildingLaw) }).click()
   await page.getByRole('button', { name: 'Zacznij naukę' }).click()
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 8' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Dodaj notatkę' }).click()
   const dialog = page.getByRole('dialog', { name: 'Twoja notatka' })

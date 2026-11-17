@@ -140,13 +140,13 @@ test('covering the last uncovered questions concurrently advances the round once
   await coverPathExcept(technicalDocumentB)
   const last = await start(technicalDocumentB)
 
-  for (const position of [1, 2, 3]) {
+  for (const position of [1, 2, 3, 4, 5, 6]) {
     await answer(last.id, position)
   }
 
   expect(await round()).toBe(1)
 
-  const responses = await Promise.all([answer(last.id, 4), answer(last.id, 5)])
+  const responses = await Promise.all([answer(last.id, 7), answer(last.id, 8)])
 
   expect(responses.map(response => response.status)).toEqual([200, 200])
   expect(await round()).toBe(2)
@@ -155,12 +155,12 @@ test('covering the last uncovered questions concurrently advances the round once
     expect.arrayContaining([
       expect.objectContaining({
         id: technicalDocumentA,
-        availableQuestionCount: 5,
+        availableQuestionCount: 8,
         completedQuestionCount: 0,
       }),
       expect.objectContaining({
         id: technicalDocumentB,
-        availableQuestionCount: 5,
+        availableQuestionCount: 8,
         completedQuestionCount: 0,
       }),
     ]),
@@ -168,7 +168,7 @@ test('covering the last uncovered questions concurrently advances the round once
   expect(await preview()).toMatchObject({
     document: { id: technicalDocumentA },
     questionSelection: 'uncovered',
-    availableQuestionCount: 5,
+    availableQuestionCount: 8,
   })
 
   const next = await start(technicalDocumentA)
@@ -177,7 +177,7 @@ test('covering the last uncovered questions concurrently advances the round once
   expect(await round()).toBe(2)
   expect(await preview(`?documentId=${technicalDocumentA}`)).toMatchObject({
     questionSelection: 'uncovered',
-    availableQuestionCount: 4,
+    availableQuestionCount: 7,
   })
 })
 

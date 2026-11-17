@@ -9,6 +9,7 @@ Application behaviour has its own documents:
 - [platform.md](platform.md): the web platform's authentication, route guards, assignment selection, back navigation and data loading.
 - [written-study.md](written-study.md): written study sessions from preview to summary, including withdrawn questions.
 - [oral-study.md](oral-study.md): the oral content model, its revision guards and the oral catalogue.
+- [mock-exams.md](mock-exams.md): exam blueprints, the mock exam preview, starting an attempt and reading it.
 - [rich-content.md](rich-content.md): the versioned rich content format, its validation and the web renderer.
 - [background-jobs.md](background-jobs.md): durable background jobs, the worker process and its diagnosis.
 - [deployment.md](deployment.md): images, CI/CD to staging and production through Dokploy, operator setup and backups.
@@ -72,7 +73,7 @@ Static checks cannot judge whether a model is declared independently of its DTO,
 
 ## API modules
 
-The business modules are `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material), `written-study` and `oral-study` (the two personal learning modes). `learning` owns reusable session rules, review scheduling and shared models; it has no dependency on either mode. The oral mini-quiz stays inside `oral-study` because it updates that mode's review evidence and belongs to its session lifecycle. Each mode owns its writes and its repository transaction implementation, preserving the atomic learning action in ADR-0012 without depending on the other mode.
+The business modules are `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material), `written-study` and `oral-study` (the two personal learning modes) and `mock-exams` (exam blueprints and written mock exam attempts). `learning` owns reusable session rules, review scheduling and shared models; it has no dependency on either mode. The oral mini-quiz stays inside `oral-study` because it updates that mode's review evidence and belongs to its session lifecycle. Each mode owns its writes and its repository transaction implementation, preserving the atomic learning action in ADR-0012 without depending on the other mode.
 
 `identity` mounts authentication; the technical `health` and `background-jobs` modules own health and job diagnostics. Modules keep the fixed layer folders described in CODING_STANDARDS.md. A new module or dependency starts with its entry in `apiModuleDependencies`.
 

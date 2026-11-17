@@ -1,3 +1,4 @@
+import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   cosmeticChange,
   substantiveChange,
@@ -6,10 +7,10 @@ import {
 import { catalogueId } from './catalogue-id.js'
 import { bold, italic, plain } from './rich-text.js'
 
-// EXTERNAL: Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 18, 24, 37, 82) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 62, 68, 72, 298).
-export const buildingLaw = catalogueId('20', 1)
+// EXTERNAL: Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 18, 24, 37, 41, 45, 62, 82) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 12, 57, 62, 68, 72, 298).
+export const buildingLaw = ReferenceDocumentId.make(catalogueId('20', 1))
 
-export const technicalConditions = catalogueId('20', 2)
+export const technicalConditions = ReferenceDocumentId.make(catalogueId('20', 2))
 
 export const questions = [
   {
@@ -137,6 +138,76 @@ export const questions = [
       plain(' wymaga co do zasady wysokości w świetle co najmniej '),
       bold('2,5 m'),
       plain(' dla pomieszczeń przeznaczonych na stały pobyt ludzi.'),
+    ],
+  },
+  {
+    documentId: buildingLaw,
+    body: 'Z jaką chwilą następuje rozpoczęcie budowy?',
+    answers: [
+      'Z chwilą podjęcia prac przygotowawczych na terenie budowy.',
+      'Z chwilą, w której decyzja o pozwoleniu na budowę stała się ostateczna.',
+      'Z chwilą wykonania fundamentów obiektu budowlanego.',
+    ],
+    explanation: [
+      italic('Art. 41 ust. 1 Prawa budowlanego'),
+      plain(': rozpoczęcie budowy następuje z chwilą podjęcia '),
+      bold('prac przygotowawczych'),
+      plain(' na terenie budowy.'),
+    ],
+  },
+  {
+    documentId: buildingLaw,
+    body: 'Który dokument stanowi urzędowy dokument przebiegu robót budowlanych?',
+    answers: ['Dziennik budowy', 'Książka obiektu budowlanego', 'Projekt techniczny'],
+    explanation: [
+      italic('Art. 45 ust. 1 Prawa budowlanego'),
+      plain(': '),
+      bold('dziennik budowy'),
+      plain(' stanowi urzędowy dokument przebiegu robót budowlanych.'),
+    ],
+  },
+  {
+    documentId: buildingLaw,
+    body: 'Jak często należy co najmniej przeprowadzać okresową kontrolę stanu technicznego i przydatności do użytkowania obiektu budowlanego, obejmującą także estetykę obiektu i jego otoczenia?',
+    answers: ['Raz na 5 lat', 'Raz na 10 lat', 'Raz na 3 lata'],
+    explanation: [
+      italic('Art. 62 ust. 1 pkt 2 Prawa budowlanego'),
+      plain(' wymaga takiej kontroli co najmniej '),
+      bold('raz na 5 lat'),
+      plain('.'),
+    ],
+  },
+  {
+    documentId: technicalConditions,
+    body: 'W jakiej minimalnej odległości od granicy działki budowlanej sytuuje się co do zasady budynek zwrócony w jej stronę ścianą z oknami lub drzwiami?',
+    answers: ['4 m', '3 m', '5 m'],
+    explanation: [
+      italic('§ 12 ust. 1 pkt 1 warunków technicznych'),
+      plain(': budynek zwrócony ścianą z oknami lub drzwiami sytuuje się co najmniej '),
+      bold('4 m'),
+      plain(' od granicy działki.'),
+    ],
+  },
+  {
+    documentId: technicalConditions,
+    body: 'W jakiej minimalnej odległości od granicy działki budowlanej sytuuje się co do zasady budynek zwrócony w jej stronę ścianą bez okien i drzwi?',
+    answers: ['3 m', '1,5 m', '4 m'],
+    explanation: [
+      italic('§ 12 ust. 1 pkt 2 warunków technicznych'),
+      plain(': budynek zwrócony ścianą bez okien i drzwi sytuuje się co najmniej '),
+      bold('3 m'),
+      plain(' od granicy działki.'),
+    ],
+  },
+  {
+    documentId: technicalConditions,
+    body: 'Jaki powinien być co najmniej stosunek powierzchni okien, liczonej w świetle ościeżnic, do powierzchni podłogi w pomieszczeniu przeznaczonym na stały pobyt ludzi?',
+    answers: ['1:8', '1:12', '1:5'],
+    explanation: [
+      italic('§ 57 ust. 1 warunków technicznych'),
+      plain(' wymaga stosunku powierzchni okien do powierzchni podłogi co najmniej '),
+      bold('1:8'),
+      plain('.'),
     ],
   },
 ]

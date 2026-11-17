@@ -4,6 +4,10 @@ import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/e
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
+import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
+import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
+import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-exam.reader.postgres.js'
+import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
 import { OralStudyReaderLive } from '~api/modules/oral-study/infrastructure/oral-study.reader.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
@@ -20,6 +24,8 @@ const fixturesLayer = Layer.mergeAll(
   StudyRepositoryLive,
   StudyReaderLive,
   OralStudyReaderLive,
+  MockExamReaderLive,
+  MockExamRepositoryLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
 export const runFixture = <A, E>(
@@ -32,5 +38,7 @@ export const runFixture = <A, E>(
     | StudyRepository
     | StudyReader
     | OralStudyReader
+    | MockExamReader
+    | MockExamRepository
   >,
 ) => Effect.runPromise(operation.pipe(Effect.provide(fixturesLayer), Effect.scoped))

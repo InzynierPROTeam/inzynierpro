@@ -5,6 +5,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { ExamSessionTile } from './ExamSessionTile'
 import { FavoritesTile } from './FavoritesTile'
 import { MobileAppBanner } from './MobileAppBanner'
+import { MockExamTile } from './MockExamTile'
 import { OralFavoritesTile } from './OralFavoritesTile'
 import { OralLearningTile } from './OralLearningTile'
 import { OralReviewTile } from './OralReviewTile'
@@ -27,6 +28,7 @@ export const StartSection = () => {
             <WrittenLearningTile />
             <ReviewTile />
             <FavoritesTile />
+            <MockExamTile />
           </>
         )}
         {hasExamAccess(selectedPath.accessScope, oralExamAccess) && (
