@@ -136,6 +136,7 @@ export type AttemptQuestionState = typeof AttemptQuestionState.Type
 
 export const MockExamAttempt = Schema.Struct({
   ...MockExamAttemptSummary.fields,
+  // CONTRACT: While the attempt is paused, the deadline moves with serverTime, so deadline minus serverTime stays the remaining time.
   deadline: UtcIsoDateTime,
   // CONTRACT: The backend time when the response was produced; clients count down from deadline minus serverTime.
   serverTime: UtcIsoDateTime,

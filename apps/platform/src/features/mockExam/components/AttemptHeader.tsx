@@ -18,7 +18,8 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useOpenSummaryWhenFinished } from '../hooks/useOpenSummaryWhenFinished'
 import { attemptQuestionRouteApi } from '../utils'
-import { AttemptTimer } from './AttemptTimer'
+import { AttemptTimer, PausedAttemptTimer } from './AttemptTimer'
+import { PauseAttemptButton } from './PauseAttemptButton'
 
 export const AttemptHeader = () => {
   const {
@@ -76,7 +77,13 @@ const AttemptHeaderContent: React.FC<AttemptHeaderContentProps> = ({ attempt }) 
           )}
         </SessionHeaderNext>
       </SessionHeaderNav>
-      {attempt.status === 'in-progress' && <AttemptTimer attempt={attempt} />}
+      {attempt.status === 'in-progress' && (
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <AttemptTimer attempt={attempt} />
+          <PauseAttemptButton />
+        </div>
+      )}
+      {attempt.status === 'paused' && <PausedAttemptTimer attempt={attempt} />}
       <p className="text-muted-foreground text-center text-sm">
         Czas: {attempt.durationMinutes} min • Próg zaliczenia: {attempt.passThreshold} z {total}
       </p>

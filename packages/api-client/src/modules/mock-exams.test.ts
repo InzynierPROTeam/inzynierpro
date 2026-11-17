@@ -11,7 +11,13 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { runApi } from '~api-client/lib/run-api.js'
 
-import { finishMockExamAttempt, flagAttemptQuestion, saveAttemptAnswer } from './mock-exams.js'
+import {
+  finishMockExamAttempt,
+  flagAttemptQuestion,
+  pauseMockExamAttempt,
+  resumeMockExamAttempt,
+  saveAttemptAnswer,
+} from './mock-exams.js'
 
 const firstAnswerId = '22000000-0000-4000-8000-000000000001'
 const secondAnswerId = '22000000-0000-4000-8000-000000000002'
@@ -166,6 +172,45 @@ test('finishing an attempt decodes the saved score, dates and nullable pass resu
     ],
     async ({ httpClient }) => {
       expect(await runApi(finishMockExamAttempt({ params }), httpClient)).toStrictEqual(finished)
+    },
+  )
+})
+
+test('pausing and resuming an attempt post to their commands and decode the attempt clock', () => {
+  const attempt = {
+    id: params.attemptId,
+    status: 'paused',
+    startedAt: '2026-11-13T12:00:00.000Z',
+    finishedAt: null,
+    endReason: null,
+    deadline: '2026-11-13T12:13:00.000Z',
+    serverTime: '2026-11-13T12:05:00.000Z',
+    durationMinutes: 10,
+    questionCount: 2,
+    passThreshold: 1,
+    sections: [{ position: 1, name: 'Section', questionCount: 2 }],
+    questions: [],
+    result: null,
+  }
+
+  const attemptPath =
+    '/api/v1/mock-exams/paths/10000000-0000-4000-8000-000000000001/attempts/b0000000-0000-4000-8000-000000000001' as const
+
+  return withHttpServer(
+    [
+      HttpRouter.route('POST', `${attemptPath}/pause`, HttpServerResponse.jsonUnsafe(attempt)),
+      HttpRouter.route(
+        'POST',
+        `${attemptPath}/resume`,
+        HttpServerResponse.jsonUnsafe({ ...attempt, status: 'in-progress' }),
+      ),
+    ],
+    async ({ httpClient }) => {
+      expect(await runApi(pauseMockExamAttempt({ params }), httpClient)).toStrictEqual(attempt)
+      expect(await runApi(resumeMockExamAttempt({ params }), httpClient)).toMatchObject({
+        status: 'in-progress',
+        deadline: '2026-11-13T12:13:00.000Z',
+      })
     },
   )
 })

@@ -8,6 +8,7 @@ import type {
 import type {
   AttemptQuestionPosition,
   MockExamAttemptId,
+  MockExamAttemptStatus,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect, type Option } from 'effect'
@@ -82,6 +83,11 @@ export class MockExamReader extends Context.Service<
       pathId: QualificationPathId,
       attemptId: MockExamAttemptId,
     ) => Effect.Effect<Option.Option<MockExamAttempt>, MockExamReadError>
+    readonly attemptStatus: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      attemptId: MockExamAttemptId,
+    ) => Effect.Effect<Option.Option<MockExamAttemptStatus>, MockExamReadError>
     readonly attemptQuestion: (
       userId: UserId,
       pathId: QualificationPathId,

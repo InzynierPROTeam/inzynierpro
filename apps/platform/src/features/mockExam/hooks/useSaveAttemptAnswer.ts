@@ -13,6 +13,10 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { saveAnswer } from '../actions'
 
 const saveAnswerErrorMessage = (error: SaveAttemptAnswerError | Error) => {
+  if (Predicate.isTagged(error, 'MockExamAttemptPaused')) {
+    return 'Egzamin jest wstrzymany. Wznów go, aby zmieniać odpowiedzi.'
+  }
+
   if (Predicate.isTagged(error, 'AttemptQuestionConflict')) {
     return 'Odpowiedź na to pytanie zmieniono na innym urządzeniu. Sprawdź ją i zapisz ponownie.'
   }
@@ -66,12 +70,14 @@ export const useSaveAttemptAnswer = (
       )
     },
     onError: error => toast.add({ type: 'error', title: saveAnswerErrorMessage(error) }),
-    onSettled: (_result, _error, req) =>
-      Promise.all([
-        client.invalidateQueries(attempt),
-        client.invalidateQueries(
-          attemptQuestionQueryOptions(apiHttpClient, userId, { params: req.params }),
-        ),
-      ]),
+    onSettled: (_result, error, req) =>
+      Predicate.isTagged(error, 'MockExamAttemptPaused')
+        ? client.invalidateQueries(attempt)
+        : Promise.all([
+            client.invalidateQueries(attempt),
+            client.invalidateQueries(
+              attemptQuestionQueryOptions(apiHttpClient, userId, { params: req.params }),
+            ),
+          ]),
   })
 }

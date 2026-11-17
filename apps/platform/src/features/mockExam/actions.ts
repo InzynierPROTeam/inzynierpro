@@ -4,6 +4,10 @@ import {
   type FinishMockExamAttemptRequest,
   flagAttemptQuestion,
   type FlagAttemptQuestionRequest,
+  pauseMockExamAttempt,
+  type PauseMockExamAttemptRequest,
+  resumeMockExamAttempt,
+  type ResumeMockExamAttemptRequest,
   saveAttemptAnswer,
   type SaveAttemptAnswerRequest,
   startMockExamAttempt,
@@ -19,6 +23,12 @@ export const saveAnswer = (req: SaveAttemptAnswerRequest) =>
 
 export const flagQuestion = (req: FlagAttemptQuestionRequest) =>
   runApi(flagAttemptQuestion(req), apiHttpClient)
+
+export const pauseExam = (req: PauseMockExamAttemptRequest) =>
+  runApi(pauseMockExamAttempt(req), apiHttpClient)
+
+export const resumeExam = (req: ResumeMockExamAttemptRequest) =>
+  runApi(resumeMockExamAttempt(req), apiHttpClient)
 
 export const finishExam = (req: FinishMockExamAttemptRequest) =>
   runApi(finishMockExamAttempt(req), apiHttpClient)

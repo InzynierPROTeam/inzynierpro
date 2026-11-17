@@ -66,8 +66,8 @@ export default Effect.gen(function* () {
     percent integer CHECK (percent BETWEEN 0 AND 100),
     passed boolean,
     active_seconds integer CHECK (active_seconds >= 0),
-    pause_count integer NOT NULL DEFAULT 0 CHECK (pause_count >= 0),
-    pause_seconds integer NOT NULL DEFAULT 0 CHECK (pause_seconds >= 0),
+    pause_count integer CHECK (pause_count >= 0),
+    pause_seconds integer CHECK (pause_seconds >= 0),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now(),
     FOREIGN KEY (user_id, qualification_path_id) REFERENCES user_qualification_paths(user_id, qualification_path_id) ON DELETE CASCADE,
@@ -76,6 +76,17 @@ export default Effect.gen(function* () {
   yield* sql`CREATE TRIGGER mock_exam_attempts_updated_at BEFORE UPDATE ON mock_exam_attempts FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`CREATE UNIQUE INDEX mock_exam_attempts_one_unfinished ON mock_exam_attempts (user_id, qualification_path_id) WHERE status IN ('in-progress','paused')`
   yield* sql`CREATE INDEX mock_exam_attempts_history ON mock_exam_attempts (user_id, qualification_path_id, started_at DESC, id DESC)`
+  yield* sql`CREATE TABLE mock_exam_attempt_pauses (
+    id uuid PRIMARY KEY DEFAULT uuidv7(),
+    attempt_id uuid NOT NULL REFERENCES mock_exam_attempts(id) ON DELETE CASCADE,
+    paused_at timestamptz(3) NOT NULL,
+    ended_at timestamptz(3) CHECK (ended_at >= paused_at),
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    updated_at timestamptz(3) NOT NULL DEFAULT now()
+  )`
+  yield* sql`CREATE INDEX mock_exam_attempt_pauses_attempt ON mock_exam_attempt_pauses (attempt_id, paused_at)`
+  yield* sql`CREATE UNIQUE INDEX mock_exam_attempt_pauses_one_open ON mock_exam_attempt_pauses (attempt_id) WHERE ended_at IS NULL`
+  yield* sql`CREATE TRIGGER mock_exam_attempt_pauses_updated_at BEFORE UPDATE ON mock_exam_attempt_pauses FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`CREATE TABLE mock_exam_attempt_section_results (
     attempt_id uuid NOT NULL REFERENCES mock_exam_attempts(id) ON DELETE CASCADE,
     position integer NOT NULL,

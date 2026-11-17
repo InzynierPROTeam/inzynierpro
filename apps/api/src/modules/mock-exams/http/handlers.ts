@@ -17,6 +17,8 @@ import { flagAttemptQuestion } from '~api/modules/mock-exams/application/flag-at
 import { getMockExamAttempt } from '~api/modules/mock-exams/application/mock-exam-attempt.query.js'
 import { getMockExamPreview } from '~api/modules/mock-exams/application/mock-exam-preview.query.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
+import { pauseAttempt } from '~api/modules/mock-exams/application/pause-attempt.command.js'
+import { resumeAttempt } from '~api/modules/mock-exams/application/resume-attempt.command.js'
 import { saveAttemptAnswer } from '~api/modules/mock-exams/application/save-attempt-answer.command.js'
 import { startAttempt } from '~api/modules/mock-exams/application/start-attempt.command.js'
 import {
@@ -28,6 +30,7 @@ import {
   failMockExamWrite,
   invalidAttemptAnswer,
   mockExamAttemptNotInProgress,
+  mockExamAttemptPaused,
   mockExamUnavailable,
 } from '~api/modules/mock-exams/http/errors.js'
 import {
@@ -58,6 +61,42 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
         Effect.andThen(
           Effect.flatMap(CurrentUser, user =>
             finishAttempt(user.id, params.qualificationPathId, params.attemptId),
+          ),
+        ),
+        Effect.flatMap(toNullableMockExamAttemptResponse),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
+          TransactionError: failTransaction,
+        }),
+      ),
+    )
+    .handle('PauseMockExamAttempt', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            pauseAttempt(user.id, params.qualificationPathId, params.attemptId),
+          ),
+        ),
+        Effect.flatMap(toNullableMockExamAttemptResponse),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
+          TransactionError: failTransaction,
+        }),
+      ),
+    )
+    .handle('ResumeMockExamAttempt', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            resumeAttempt(user.id, params.qualificationPathId, params.attemptId),
           ),
         ),
         Effect.flatMap(toNullableMockExamAttemptResponse),
@@ -205,6 +244,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           PathPermissionDenied: () => pathAccessDenied,
           MockExamReadError: failMockExamRead,
           MockExamWriteError: failMockExamWrite,
+          MockExamAttemptPaused: () => mockExamAttemptPaused,
           TransactionError: failTransaction,
         }),
       ),
@@ -230,6 +270,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           AttemptQuestionNotFound: () => attemptQuestionNotFound,
           MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
+          MockExamAttemptPaused: () => mockExamAttemptPaused,
           AttemptQuestionWithdrawn: () => attemptQuestionWithdrawn,
           InvalidAttemptAnswer: () => invalidAttemptAnswer,
           AttemptQuestionConflict: attemptQuestionConflict,
@@ -258,6 +299,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           AttemptQuestionNotFound: () => attemptQuestionNotFound,
           MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
+          MockExamAttemptPaused: () => mockExamAttemptPaused,
           AttemptQuestionConflict: attemptQuestionConflict,
           TransactionError: failTransaction,
         }),

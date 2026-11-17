@@ -42,6 +42,10 @@ type AttemptQuestionLinksProps = { attempt: MockExamAttempt }
 const AttemptQuestionLinks: React.FC<AttemptQuestionLinksProps> = ({ attempt }) => {
   const { questionNumber } = attemptQuestionRouteApi.useParams()
 
+  if (attempt.status === 'paused') {
+    return null
+  }
+
   return (
     <nav
       aria-label="Pytania egzaminu"

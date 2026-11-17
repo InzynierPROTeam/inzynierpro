@@ -6,6 +6,8 @@ import type {
   GetAttemptQuestionEndpoint,
   GetMockExamAttemptEndpoint,
   GetMockExamPreviewEndpoint,
+  PauseMockExamAttemptEndpoint,
+  ResumeMockExamAttemptEndpoint,
   SaveAttemptAnswerEndpoint,
   StartMockExamAttemptEndpoint,
 } from '@inzpro/api-contracts/modules/mock-exams/api'
@@ -66,6 +68,26 @@ export type FlagAttemptQuestionRequest = InferEndpointRequest<typeof FlagAttempt
 export type FlagAttemptQuestionRes = Effect.Success<ReturnType<typeof flagAttemptQuestion>>
 
 export type FlagAttemptQuestionError = Effect.Error<ReturnType<typeof flagAttemptQuestion>>
+
+export const pauseMockExamAttempt = (req: PauseMockExamAttemptRequest) =>
+  apiAction(api => api.MockExams.PauseMockExamAttempt(req))
+
+export type PauseMockExamAttemptRequest = InferEndpointRequest<typeof PauseMockExamAttemptEndpoint>
+
+export type PauseMockExamAttemptRes = Effect.Success<ReturnType<typeof pauseMockExamAttempt>>
+
+export type PauseMockExamAttemptError = Effect.Error<ReturnType<typeof pauseMockExamAttempt>>
+
+export const resumeMockExamAttempt = (req: ResumeMockExamAttemptRequest) =>
+  apiAction(api => api.MockExams.ResumeMockExamAttempt(req))
+
+export type ResumeMockExamAttemptRequest = InferEndpointRequest<
+  typeof ResumeMockExamAttemptEndpoint
+>
+
+export type ResumeMockExamAttemptRes = Effect.Success<ReturnType<typeof resumeMockExamAttempt>>
+
+export type ResumeMockExamAttemptError = Effect.Error<ReturnType<typeof resumeMockExamAttempt>>
 
 export const finishMockExamAttempt = (req: FinishMockExamAttemptRequest) =>
   apiAction(api => api.MockExams.FinishMockExamAttempt(req))

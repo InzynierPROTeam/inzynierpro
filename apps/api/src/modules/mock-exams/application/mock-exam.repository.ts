@@ -7,7 +7,7 @@ import type {
   MockExamAttemptId,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Context, type Effect, type Option } from 'effect'
+import { Context, type DateTime, type Effect, type Option } from 'effect'
 import type { MockExamWriteError } from '~api/modules/mock-exams/application/errors.js'
 import type { NewExamBlueprintVersion } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
 import type {
@@ -46,6 +46,14 @@ export class MockExamRepository extends Context.Service<
       pathId: QualificationPathId,
       attemptId: MockExamAttemptId,
     ) => Effect.Effect<Option.Option<AttemptClock>, MockExamWriteError>
+    readonly pauseAttempt: (
+      attemptId: MockExamAttemptId,
+      pausedAt: DateTime.Utc,
+    ) => Effect.Effect<void, MockExamWriteError>
+    readonly resumeAttempt: (
+      attemptId: MockExamAttemptId,
+      resumedAt: DateTime.Utc,
+    ) => Effect.Effect<void, MockExamWriteError>
     readonly saveAttemptAnswer: (
       attemptId: MockExamAttemptId,
       position: AttemptQuestionPosition,

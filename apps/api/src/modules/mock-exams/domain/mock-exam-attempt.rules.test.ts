@@ -3,7 +3,10 @@ import {
   ExamSectionName,
   ExamSectionPosition,
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
-import { ExamActiveSeconds } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
+import {
+  ExamActiveSeconds,
+  ExamPauseCount,
+} from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { Option } from 'effect'
 import { describe, expect, it } from 'vitest'
 import type { AttemptScoreCounts } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
@@ -30,29 +33,33 @@ const counts = (
   ],
 })
 
-const activeSeconds = ExamActiveSeconds.make(180)
+const timing = {
+  activeSeconds: ExamActiveSeconds.make(180),
+  pauseCount: ExamPauseCount.make(2),
+  pauseSeconds: ExamActiveSeconds.make(75),
+}
 
 describe('mock exam scoring', () => {
   it('passes at the exact threshold and fails immediately below it', () => {
-    expect(scoreAttempt(counts(6), activeSeconds)).toMatchObject({
+    expect(scoreAttempt(counts(6), timing)).toMatchObject({
       correct: 6,
       incorrect: 4,
       percent: 60,
       passed: Option.some(true),
       activeSeconds: 180,
-      pauseCount: 0,
-      pauseSeconds: 0,
+      pauseCount: 2,
+      pauseSeconds: 75,
     })
-    expect(scoreAttempt(counts(5), activeSeconds).passed).toStrictEqual(Option.some(false))
+    expect(scoreAttempt(counts(5), timing).passed).toStrictEqual(Option.some(false))
   })
   it('counts unanswered questions as wrong and preserves section counts', () => {
-    expect(scoreAttempt(counts(6, 10, 4), activeSeconds)).toMatchObject({
+    expect(scoreAttempt(counts(6, 10, 4), timing)).toMatchObject({
       correct: 6,
       incorrect: 4,
       unanswered: 4,
       sections: [{ correct: 6, questionCount: 10 }],
     })
-    expect(scoreAttempt(counts(0, 10, 10), activeSeconds)).toMatchObject({
+    expect(scoreAttempt(counts(0, 10, 10), timing)).toMatchObject({
       correct: 0,
       incorrect: 10,
       unanswered: 10,
@@ -61,12 +68,12 @@ describe('mock exam scoring', () => {
     })
   })
   it('rounds partial percentages through the shared completion rule', () => {
-    expect(scoreAttempt(counts(1, 3), activeSeconds).percent).toBe(33)
-    expect(scoreAttempt(counts(2, 3), activeSeconds).percent).toBe(67)
-    expect(scoreAttempt(counts(0, 0), activeSeconds).percent).toBe(0)
+    expect(scoreAttempt(counts(1, 3), timing).percent).toBe(33)
+    expect(scoreAttempt(counts(2, 3), timing).percent).toBe(67)
+    expect(scoreAttempt(counts(0, 0), timing).percent).toBe(0)
   })
   it('keeps valid scores but suppresses pass or fail when any question was withdrawn', () => {
-    expect(scoreAttempt(counts(6, 10, 1, 1), activeSeconds)).toMatchObject({
+    expect(scoreAttempt(counts(6, 10, 1, 1), timing)).toMatchObject({
       correct: 6,
       percent: 60,
       passed: Option.none(),

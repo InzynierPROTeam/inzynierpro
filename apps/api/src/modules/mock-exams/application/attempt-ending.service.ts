@@ -25,9 +25,5 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
 
   const ending = attemptEnding(clock, now)
 
-  yield* mockExamRepository.finishAttempt(
-    attemptId,
-    ending,
-    scoreAttempt(score.value, ending.activeSeconds),
-  )
+  yield* mockExamRepository.finishAttempt(attemptId, ending, scoreAttempt(score.value, ending))
 })

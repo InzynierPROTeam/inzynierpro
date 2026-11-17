@@ -22,16 +22,9 @@ export const Route = createFileRoute(
   loader: async ({ context: { queryClient, session, selectedPath }, params }) => {
     const attemptParams = { qualificationPathId: selectedPath.id, attemptId: params.attemptId }
 
-    const [attempt] = await Promise.all([
-      queryClient.query(
-        mockExamAttemptQueryOptions(apiHttpClient, session.user.id, { params: attemptParams }),
-      ),
-      queryClient.query(
-        attemptQuestionQueryOptions(apiHttpClient, session.user.id, {
-          params: { ...attemptParams, position: params.questionNumber },
-        }),
-      ),
-    ])
+    const attempt = await queryClient.query(
+      mockExamAttemptQueryOptions(apiHttpClient, session.user.id, { params: attemptParams }),
+    )
 
     if (attempt?.status === 'finished') {
       throw redirect({
@@ -39,6 +32,14 @@ export const Route = createFileRoute(
         params: { attemptId: params.attemptId },
         replace: true,
       })
+    }
+
+    if (attempt?.status !== 'paused') {
+      await queryClient.query(
+        attemptQuestionQueryOptions(apiHttpClient, session.user.id, {
+          params: { ...attemptParams, position: params.questionNumber },
+        }),
+      )
     }
   },
   component: AttemptPage,

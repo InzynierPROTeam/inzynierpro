@@ -347,3 +347,51 @@ test('a delayed answer response preserves a newer flag after conflict reconcilia
     page.getByRole('link', { name: 'Pytanie 1, z odpowiedzią, do powrotu', exact: true }),
   ).toBeVisible()
 })
+
+test('a learner answers and flags questions, pauses and resumes the exam, then finishes and sees the pause in the summary', async ({
+  onboarded: { page },
+}) => {
+  await page.goto('/egzamin-probny/start')
+  await page.getByRole('button', { name: 'Rozpocznij egzamin' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 10' })).toBeVisible()
+
+  const answers = page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
+  const navigator = page.getByRole('navigation', { name: 'Pytania egzaminu' })
+  const flag = page.getByRole('button', { name: 'Wróć do tego pytania później' })
+  const paused = page.getByRole('heading', { name: 'Egzamin wstrzymany' })
+
+  await answers.first().click()
+  await page.getByRole('button', { name: 'Zapisz odpowiedź' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 2 z 10' })).toBeVisible()
+  await flag.click()
+  await expect(page.getByText('Pytanie 2 oznaczono do powrotu.')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Wstrzymaj egzamin' }).click()
+  await expect(paused).toBeVisible()
+  await expect(page.getByRole('timer', { name: 'Pozostały czas, wstrzymany' })).toBeVisible()
+  await expect(answers).toHaveCount(0)
+  await expect(navigator).toBeHidden()
+
+  await page.reload()
+  await expect(paused).toBeVisible()
+  await expect(answers).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Wznów egzamin' }).click()
+  await expect(paused).toBeHidden()
+  await expect(page.getByRole('timer', { name: 'Pozostały czas' })).toBeVisible()
+  await expect(answers).toHaveCount(3)
+  await expect(flag).toHaveAttribute('aria-pressed', 'true')
+  await expect(navigator.getByRole('link', { name: 'Pytanie 1, z odpowiedzią' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Zakończ egzamin' }).click()
+  const confirmation = page.getByRole('dialog', { name: 'Zakończyć egzamin?' })
+  await expect(confirmation).toContainText('Bez odpowiedzi: 9')
+  await expect(confirmation).toContainText('Do powrotu: 1')
+  await confirmation.getByRole('button', { name: 'Zakończ i zobacz wynik' }).click()
+
+  await expect(page.getByRole('heading', { level: 1, name: 'Podsumowanie egzaminu' })).toBeVisible()
+  await expect(
+    page.getByRole('listitem').filter({ hasText: 'Liczba przerw' }).getByText('1', { exact: true }),
+  ).toBeVisible()
+  await expect(page.getByRole('listitem').filter({ hasText: 'Czas przerw' })).toBeVisible()
+})

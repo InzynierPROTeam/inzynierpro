@@ -17,17 +17,23 @@ import {
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import {
   AttemptQuestionPosition,
-  ExamActiveSeconds,
   type AttemptQuestionVersion,
   initialAttemptQuestionVersion,
   inProgressAttempt,
   MockExamAttemptId,
   MockExamAttemptStatus,
+  pausedAttempt,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { MockExamWriteError } from '~api/modules/mock-exams/application/errors.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
+import type { AttemptClock } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
+
+const AttemptPauseRow = Schema.Struct({
+  pausedAt: DateTimeUtc,
+  endedAt: Schema.OptionFromNullOr(DateTimeUtc),
+})
 
 type SectionInsert = {
   readonly blueprintId: ExamBlueprintId
@@ -73,7 +79,8 @@ export const MockExamRepositoryLive = Layer.effect(
           const passed = Option.getOrNull(result.passed)
           yield* sql`UPDATE mock_exam_attempt_questions q SET scored_withdrawn=r.withdrawn_at IS NOT NULL
  FROM question_revisions r WHERE q.attempt_id=${attemptId} AND r.id=q.question_revision_id`
-          yield* sql`UPDATE mock_exam_attempts SET status='finished',end_reason=${ending.endReason},finished_at=${finished},correct_count=${result.correct},incorrect_count=${result.incorrect},unanswered_count=${result.unanswered},percent=${result.percent},passed=${passed},active_seconds=${result.activeSeconds}
+          yield* sql`UPDATE mock_exam_attempt_pauses SET ended_at=${finished} WHERE attempt_id=${attemptId} AND ended_at IS NULL`
+          yield* sql`UPDATE mock_exam_attempts SET status='finished',end_reason=${ending.endReason},finished_at=${finished},correct_count=${result.correct},incorrect_count=${result.incorrect},unanswered_count=${result.unanswered},percent=${result.percent},passed=${passed},active_seconds=${result.activeSeconds},pause_count=${result.pauseCount},pause_seconds=${result.pauseSeconds}
  WHERE id=${attemptId}`
 
           for (const section of result.sections) {
@@ -188,22 +195,46 @@ export const MockExamRepositoryLive = Layer.effect(
       lockAttempt: Effect.fn('MockExamRepository.lockAttempt')(
         function* (userId, pathId, attemptId) {
           const rows =
-            yield* sql`SELECT a.status,a.started_at,v.duration_minutes,a.pause_seconds FROM mock_exam_attempts a
+            yield* sql`SELECT a.status,a.started_at,v.duration_minutes FROM mock_exam_attempts a
  JOIN exam_blueprint_versions v ON v.blueprint_id=a.blueprint_id AND v.version=a.blueprint_version
  WHERE a.id=${attemptId} AND a.user_id=${userId} AND a.qualification_path_id=${pathId} LIMIT 1 FOR UPDATE OF a`
 
-          const attempts = yield* Schema.decodeUnknownEffect(
+          const [attempt] = yield* Schema.decodeUnknownEffect(
             Schema.Array(
               Schema.Struct({
                 status: MockExamAttemptStatus,
                 startedAt: DateTimeUtc,
                 durationMinutes: ExamDurationMinutes,
-                pauseSeconds: ExamActiveSeconds,
               }),
             ),
           )(rows)
 
-          return Arr.head(attempts)
+          if (attempt === undefined) {
+            return Option.none()
+          }
+
+          const pauses =
+            yield* sql`SELECT paused_at,ended_at FROM mock_exam_attempt_pauses WHERE attempt_id=${attemptId} ORDER BY paused_at,id`.pipe(
+              Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(AttemptPauseRow))),
+            )
+
+          return Option.some<AttemptClock>({ ...attempt, pauses })
+        },
+        Effect.mapError(cause => new MockExamWriteError({ cause })),
+      ),
+      pauseAttempt: Effect.fn('MockExamRepository.pauseAttempt')(
+        function* (attemptId, pausedAt) {
+          const paused = DateTime.formatIso(pausedAt)
+          yield* sql`UPDATE mock_exam_attempts SET status=${pausedAttempt} WHERE id=${attemptId}`
+          yield* sql`INSERT INTO mock_exam_attempt_pauses (attempt_id,paused_at) VALUES (${attemptId},${paused})`
+        },
+        Effect.mapError(cause => new MockExamWriteError({ cause })),
+      ),
+      resumeAttempt: Effect.fn('MockExamRepository.resumeAttempt')(
+        function* (attemptId, resumedAt) {
+          const resumed = DateTime.formatIso(resumedAt)
+          yield* sql`UPDATE mock_exam_attempt_pauses SET ended_at=${resumed} WHERE attempt_id=${attemptId} AND ended_at IS NULL`
+          yield* sql`UPDATE mock_exam_attempts SET status=${inProgressAttempt} WHERE id=${attemptId}`
         },
         Effect.mapError(cause => new MockExamWriteError({ cause })),
       ),

@@ -31,6 +31,11 @@ export class MockExamAttemptNotInProgress extends Schema.TaggedError<
   ConflictAnnotations(),
 ) {}
 
+export class MockExamAttemptPaused extends Schema.TaggedError<
+  MockExamAttemptPaused,
+  { readonly brand: unique symbol }
+>()('MockExamAttemptPaused', errorFields('mock_exam_attempt_paused'), ConflictAnnotations()) {}
+
 export class AttemptQuestionWithdrawn extends Schema.TaggedError<
   AttemptQuestionWithdrawn,
   { readonly brand: unique symbol }
