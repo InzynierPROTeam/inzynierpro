@@ -205,3 +205,107 @@ it('fails below the threshold and gives an incomplete result after withdrawal wh
   expect(incomplete.result).toMatchObject({ correct: 0, passed: null, sections: [{ correct: 0 }] })
   expect((await learner.attempt(attempt.id))?.result).toStrictEqual(finished.result)
 })
+
+it('scores only valid questions and freezes incomplete results in history and review', async () => {
+  const configuration = mockExamPathConfiguration('60000000-0000-4000-8000-000000000003')
+  const pathId = await resolveFixturePath(configuration)
+  await createMockExamFixture(
+    pathId,
+    [
+      { questionCount: 3, eligibleQuestions: 3 },
+      { questionCount: 1, eligibleQuestions: 1 },
+    ],
+    3,
+  )
+  const learner = await mockExamLearner(api, configuration)
+  const attempt = await learner.started()
+  const questions = await learner.questions(attempt)
+  const ordered = [...questions].sort((left, right) => left.section - right.section)
+
+  const withdrawnPositions = new Set(
+    ordered.filter((_, index) => index === 1 || index === 3).map(question => question.position),
+  )
+
+  for (const [index, question] of ordered.entries()) {
+    const answer = question.answers.find(option => option.text === 'A')
+
+    if (answer === undefined) {
+      throw new Error('Missing correct fixture answer')
+    }
+
+    if (index !== 2) {
+      expect(
+        (
+          await learner.saveAnswer(attempt.id, question.position, {
+            answerId: answer.id,
+            expectedVersion: question.version,
+          })
+        ).status,
+      ).toBe(200)
+    }
+
+    if (withdrawnPositions.has(question.position)) {
+      await withdrawFixtureRevision(question.questionRevisionId)
+    }
+  }
+
+  const finished = await decodeResponse(MockExamAttempt)(
+    await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
+  )
+
+  expect(finished.result).toMatchObject({
+    correct: 1,
+    incorrect: 1,
+    unanswered: 1,
+    percent: 50,
+    passed: null,
+    sections: [
+      { questionCount: 2, correct: 1 },
+      { questionCount: 0, correct: 0 },
+    ],
+  })
+  const valid = ordered[0]
+
+  if (valid === undefined) {
+    throw new Error('Missing valid question')
+  }
+
+  await withdrawFixtureRevision(valid.questionRevisionId)
+  expect((await learner.attempt(attempt.id))?.result).toStrictEqual(finished.result)
+  const history = await decodeResponse(MockExamHistoryResponse)(await learner.request('/history'))
+  expect(history.data[0]?.result).toStrictEqual(finished.result)
+
+  const review = await decodeResponse(AttemptReviewResponse)(
+    await learner.request(`/attempts/${attempt.id}/review`),
+  )
+
+  expect(review.data.map(question => question.isWithdrawn)).toStrictEqual(
+    questions.map(question => withdrawnPositions.has(question.position)),
+  )
+})
+
+it('finishes with no scored questions when every question was withdrawn', async () => {
+  const configuration = mockExamPathConfiguration('60000000-0000-4000-8000-000000000003')
+  const pathId = await resolveFixturePath(configuration)
+  await createMockExamFixture(pathId, [{ questionCount: 2, eligibleQuestions: 2 }], 1)
+  const learner = await mockExamLearner(api, configuration)
+  const attempt = await learner.started()
+  const questions = await learner.questions(attempt)
+
+  for (const question of questions) {
+    await withdrawFixtureRevision(question.questionRevisionId)
+  }
+
+  const finished = await decodeResponse(MockExamAttempt)(
+    await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
+  )
+
+  expect(finished.result).toMatchObject({
+    correct: 0,
+    incorrect: 0,
+    unanswered: 0,
+    percent: 0,
+    passed: null,
+    sections: [{ questionCount: 0, correct: 0 }],
+  })
+})

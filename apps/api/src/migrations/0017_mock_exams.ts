@@ -93,7 +93,8 @@ export default Effect.gen(function* () {
   yield* sql`CREATE TABLE mock_exam_attempt_section_results (
     attempt_id uuid NOT NULL REFERENCES mock_exam_attempts(id) ON DELETE CASCADE,
     position integer NOT NULL,
-    correct_count integer NOT NULL CHECK (correct_count >= 0),
+    question_count integer NOT NULL CHECK (question_count >= 0),
+    correct_count integer NOT NULL CHECK (correct_count BETWEEN 0 AND question_count),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     PRIMARY KEY (attempt_id, position)
   )`

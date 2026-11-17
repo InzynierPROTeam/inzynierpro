@@ -175,6 +175,7 @@ describe('mock exam draft answers', () => {
     })
 
     expect(withdrawn.status).toBe(409)
+    expect(await withdrawn.json()).toMatchObject({ type: 'attempt_question_withdrawn' })
     expect(await learner.question(attempt.id, 1)).toMatchObject({
       isWithdrawn: true,
       selectedAnswerId: null,
