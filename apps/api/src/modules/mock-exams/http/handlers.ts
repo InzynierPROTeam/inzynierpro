@@ -8,6 +8,7 @@ import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { failStudyRead, failStudyWrite } from '~api/modules/learning/http/errors.js'
+import { abandonAttempt } from '~api/modules/mock-exams/application/abandon-attempt.command.js'
 import { AttemptDeadlineQueueLive } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { getAttemptQuestion } from '~api/modules/mock-exams/application/attempt-question.query.js'
 import {
@@ -65,6 +66,27 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
         Effect.andThen(
           Effect.flatMap(CurrentUser, user =>
             finishAttempt(user.id, params.qualificationPathId, params.attemptId),
+          ),
+        ),
+        Effect.flatMap(toNullableMockExamAttemptResponse),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
+          TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
+        }),
+      ),
+    )
+    .handle('AbandonMockExamAttempt', ({ params }) =>
+      limitByUser(accountWriteLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            abandonAttempt(user.id, params.qualificationPathId, params.attemptId),
           ),
         ),
         Effect.flatMap(toNullableMockExamAttemptResponse),

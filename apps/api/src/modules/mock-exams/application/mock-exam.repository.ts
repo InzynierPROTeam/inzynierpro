@@ -20,6 +20,10 @@ import type { NewMockExamAttempt } from '~api/modules/mock-exams/domain/mock-exa
 export class MockExamRepository extends Context.Service<
   MockExamRepository,
   {
+    readonly abandonAttempt: (
+      attemptId: MockExamAttemptId,
+      ending: AttemptEnding,
+    ) => Effect.Effect<void, MockExamWriteError>
     readonly finishAttempt: (
       attemptId: MockExamAttemptId,
       ending: AttemptEnding,

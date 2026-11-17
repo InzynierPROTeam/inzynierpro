@@ -256,6 +256,8 @@ export const MockExamReaderLive = Layer.effect(
       startedAt: row.startedAt,
       finishedAt: row.finishedAt,
       endReason: row.endReason,
+      pauseCount: row.pauseCount ?? ExamPauseCount.make(0),
+      pauseSeconds: row.pauseSeconds ?? ExamActiveSeconds.make(0),
       result:
         row.correctCount === null ||
         row.incorrectCount === null ||
