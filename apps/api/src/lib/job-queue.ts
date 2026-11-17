@@ -68,12 +68,18 @@ export const makeJobQueue = Effect.fnUntraced(function* <A>(options: JobQueueOpt
   return {
     name: options.name,
     offer: Effect.fn('JobQueue.offer', { attributes: { 'app.job.queue': options.name } })(
-      function* (payload: A, offerOptions: { readonly id?: string } = {}) {
+      function* (
+        payload: A,
+        offerOptions: { readonly id?: string; readonly delay?: Duration.Duration } = {},
+      ) {
         const trace = yield* Effect.option(Effect.currentSpan).pipe(
           Effect.map(Option.map(span => ({ traceId: span.traceId, spanId: span.spanId }))),
         )
 
-        const id = yield* queue.offer({ payload, trace }, { id: offerOptions.id })
+        const id = yield* queue.offer(
+          { payload, trace },
+          { id: offerOptions.id, delay: offerOptions.delay },
+        )
 
         yield* Effect.logInfo('Background job offered').pipe(
           Effect.annotateLogs({ 'app.job.queue': options.name, 'app.job.id': id }),
