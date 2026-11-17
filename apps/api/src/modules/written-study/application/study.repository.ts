@@ -21,6 +21,7 @@ import type {
 import type {
   LearningEventContext,
   NewReviewState,
+  NewWrittenEvidence,
 } from '~api/modules/written-study/domain/review-state.model.js'
 import type {
   NewSessionAnswer,
@@ -47,7 +48,7 @@ export class StudyRepository extends Context.Service<
       answer: NewSessionAnswer,
     ) => Effect.Effect<SessionAnswer, StudyWriteError>
     readonly recordLearningEvent: (
-      answer: NewSessionAnswer,
+      evidence: NewWrittenEvidence,
       context: LearningEventContext,
     ) => Effect.Effect<LearningEventId, StudyWriteError>
     readonly storeReviewState: (state: NewReviewState) => Effect.Effect<void, StudyWriteError>

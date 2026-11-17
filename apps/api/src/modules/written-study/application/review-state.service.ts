@@ -5,34 +5,36 @@ import { StudyReader } from '~api/modules/written-study/application/study.reader
 import { StudyRepository } from '~api/modules/written-study/application/study.repository.js'
 import {
   type LearningEventContext,
+  type NewWrittenEvidence,
   writtenReviewRulesVersion,
 } from '~api/modules/written-study/domain/review-state.model.js'
 import { writtenReviewRating } from '~api/modules/written-study/domain/review-state.rules.js'
-import type { NewSessionAnswer } from '~api/modules/written-study/domain/study-session.model.js'
 
 export const recordWrittenEvidence = Effect.fn('Study.recordWrittenEvidence')(function* (
-  answer: NewSessionAnswer,
+  evidence: NewWrittenEvidence,
   context: LearningEventContext,
 ) {
   const studyReader = yield* StudyReader
   const studyRepository = yield* StudyRepository
   const reviewScheduler = yield* ReviewScheduler
-  const { userId, qualificationPathId: pathId, questionId } = answer
+  const { userId, qualificationPathId: pathId, questionId } = evidence
 
-  const answersCurrentContent = yield* studyReader.carriesCurrentContent(answer.questionRevisionId)
+  const answersCurrentContent = yield* studyReader.carriesCurrentContent(
+    evidence.questionRevisionId,
+  )
 
   const answeredToday = yield* studyReader.answeredContentOnStudyDay(
     userId,
     pathId,
-    answer.questionRevisionId,
+    evidence.questionRevisionId,
     studyDayOf(context.answeredAt),
   )
 
-  const learningEventId = yield* studyRepository.recordLearningEvent(answer, context)
+  const learningEventId = yield* studyRepository.recordLearningEvent(evidence, context)
   const card = yield* studyReader.reviewState(userId, pathId, questionId)
 
   const rating = writtenReviewRating({
-    isCorrect: answer.isCorrect,
+    isCorrect: evidence.isCorrect,
     assistance: context.assistance,
     isNewCard: Option.isNone(card),
     isFirstAnswerOfStudyDay: !answeredToday,
@@ -44,7 +46,7 @@ export const recordWrittenEvidence = Effect.fn('Study.recordWrittenEvidence')(fu
       userId,
       qualificationPathId: pathId,
       questionId,
-      questionRevisionId: answer.questionRevisionId,
+      questionRevisionId: evidence.questionRevisionId,
       learningEventId,
       rulesVersion: writtenReviewRulesVersion,
       card: reviewScheduler.review(questionId, card, rating.value, context.answeredAt),

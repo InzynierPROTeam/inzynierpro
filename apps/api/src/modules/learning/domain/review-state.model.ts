@@ -8,7 +8,9 @@ export const reviewMode = 'review'
 
 export const favoritesMode = 'favourites'
 
-export const learningModes = [studyMode, reviewMode, favoritesMode] as const
+export const examMode = 'exam'
+
+export const learningModes = [studyMode, reviewMode, favoritesMode, examMode] as const
 
 export const LearningMode = Schema.Literals(learningModes)
 
