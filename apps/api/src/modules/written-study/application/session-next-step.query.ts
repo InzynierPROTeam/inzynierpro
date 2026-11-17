@@ -21,7 +21,7 @@ export const getSessionNextStep = Effect.fn('Study.getSessionNextStep')(function
   pathId: QualificationPathId,
   sessionId: StudySessionId,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
   const found = yield* studyReader.session(userId, pathId, sessionId)
 

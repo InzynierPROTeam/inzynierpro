@@ -56,6 +56,7 @@ export const backendBoundariesRule = defineRule({
 
         if (
           !sqlAllowed &&
+          !filename.endsWith('/apps/api/src/lib/transaction.ts') &&
           (node.source.value === 'effect/sql/SqlClient' ||
             (node.source.value === 'effect/sql' &&
               node.specifiers.some(

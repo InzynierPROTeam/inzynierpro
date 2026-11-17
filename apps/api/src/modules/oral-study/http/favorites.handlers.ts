@@ -3,6 +3,7 @@ import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/cur
 import { Effect, Option } from 'effect'
 import type { HttpApiEndpoint } from 'effect/http-api'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
+import { failTransaction } from '~api/lib/transaction.js'
 import {
   questionNotFound,
   failStudyRead,
@@ -98,6 +99,7 @@ export const favoritesHandlers = {
         StudyWriteError: failStudyWrite,
         StaleSessionScope: () => staleSessionPreview,
         UnfinishedOralSessionExists: oralSessionAlreadyStarted,
+        TransactionError: failTransaction,
       }),
     ),
 } satisfies {

@@ -21,7 +21,7 @@ export const getSessionPreview = Effect.fn('Study.getSessionPreview')(function* 
   documentId: Option.Option<ReferenceDocumentId>,
   fromDocumentId: Option.Option<ReferenceDocumentId>,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
   const progress = yield* studyReader.learningRound(userId, pathId)
   const round = currentLearningRound(progress)

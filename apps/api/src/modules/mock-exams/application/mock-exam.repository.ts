@@ -9,9 +9,6 @@ import type { NewMockExamAttempt } from '~api/modules/mock-exams/domain/mock-exa
 export class MockExamRepository extends Context.Service<
   MockExamRepository,
   {
-    readonly transaction: <A, E, R>(
-      operation: Effect.Effect<A, E, R>,
-    ) => Effect.Effect<A, E | MockExamWriteError, R>
     readonly createBlueprint: (
       blueprintId: ExamBlueprintId,
     ) => Effect.Effect<void, MockExamWriteError>

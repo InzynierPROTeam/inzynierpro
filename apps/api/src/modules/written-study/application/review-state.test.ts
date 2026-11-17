@@ -8,6 +8,7 @@ import { databaseLayerFromConfig } from '@inzpro/db'
 import { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/written-question'
 import { DateTime, Effect, Exit, Layer, Option, Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { cosmeticChange } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
@@ -35,6 +36,7 @@ beforeAll(async () => {
 afterAll(() => api.close())
 
 const commandServices = Layer.mergeAll(
+  TransactionLive,
   StudyReaderLive,
   PreparationReaderLive,
   PreparationRepositoryLive,

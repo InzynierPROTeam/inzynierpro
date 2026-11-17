@@ -1,6 +1,7 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
@@ -25,6 +26,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
 ).pipe(Layer.provide(AuthenticationLive))
 
 export const StudyRequestServices = Layer.mergeAll(
+  TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
   StudyReaderLive,

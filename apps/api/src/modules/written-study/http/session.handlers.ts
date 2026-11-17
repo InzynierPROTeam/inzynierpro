@@ -10,6 +10,7 @@ import type { HttpApiEndpoint } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
+import { failTransaction } from '~api/lib/transaction.js'
 import {
   failStudyRead,
   failStudyWrite,
@@ -81,6 +82,7 @@ export const sessionHandlers = {
         StudyDocumentNotFound: () => documentNotFound,
         StaleSessionScope: () => staleSessionPreview,
         UnfinishedSessionExists: studySessionAlreadyStarted,
+        TransactionError: failTransaction,
       }),
     ),
   GetLatestSession: ({ params, query }) =>
@@ -177,6 +179,7 @@ export const sessionHandlers = {
         StudyReadError: failStudyRead,
         StudyWriteError: failStudyWrite,
         StudySessionMissing: () => studySessionNotFound,
+        TransactionError: failTransaction,
       }),
     ),
   GetSessionQuestion: ({ params }) =>
@@ -219,6 +222,7 @@ export const sessionHandlers = {
         StudyReadError: failStudyRead,
         StudyWriteError: failStudyWrite,
         SessionQuestionMissing: () => sessionQuestionNotFound,
+        TransactionError: failTransaction,
       }),
     ),
   SubmitSessionAnswer: ({ params, payload }) =>
@@ -250,6 +254,7 @@ export const sessionHandlers = {
         QuestionRevisionWithdrawn: () => sessionQuestionWithdrawn,
         AnswerNotInQuestion: () => invalidSessionAnswer,
         QuestionAlreadyAnswered: () => sessionAnswerAlreadySubmitted,
+        TransactionError: failTransaction,
       }),
     ),
 } satisfies {

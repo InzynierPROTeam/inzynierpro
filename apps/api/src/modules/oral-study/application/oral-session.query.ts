@@ -14,7 +14,7 @@ export const getLatestOralSession = Effect.fn('Study.getLatestOralSession')(func
   pathId: QualificationPathId,
   categoryId: Option.Option<OralQuestionCategoryId>,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
 
   return yield* oralStudyReader.latestSession(userId, pathId, categoryId)
@@ -25,7 +25,7 @@ export const getOralSession = Effect.fn('Study.getOralSession')(function* (
   pathId: QualificationPathId,
   sessionId: OralStudySessionId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
 
   return yield* oralStudyReader.session(userId, pathId, sessionId)
@@ -37,7 +37,7 @@ export const getOralSessionQuestion = Effect.fn('Study.getOralSessionQuestion')(
   sessionId: OralStudySessionId,
   position: SessionQuestionPosition,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
 
   return yield* oralStudyReader.sessionQuestion(userId, pathId, sessionId, position)
@@ -48,7 +48,7 @@ export const getOralSessionSummary = Effect.fn('Study.getOralSessionSummary')(fu
   pathId: QualificationPathId,
   sessionId: OralStudySessionId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const session = yield* oralStudyReader.session(userId, pathId, sessionId)
 
@@ -67,7 +67,7 @@ export const getOralSessionResults = Effect.fn('Study.getOralSessionResults')(fu
   sessionId: OralStudySessionId,
   page: CursorPageRequest,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const session = yield* oralStudyReader.session(userId, pathId, sessionId)
 

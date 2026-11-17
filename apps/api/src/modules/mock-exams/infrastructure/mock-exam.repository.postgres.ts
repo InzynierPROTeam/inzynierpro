@@ -18,7 +18,7 @@ import {
   inProgressAttempt,
   MockExamAttemptId,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
-import { Array as Arr, Data, DateTime, Effect, Layer, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { MockExamWriteError } from '~api/modules/mock-exams/application/errors.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
@@ -54,28 +54,12 @@ type AnswerOptionInsert = {
   readonly questionAnswerId: QuestionAnswerId
 }
 
-class MockExamTransactionFailure<E> extends Data.TaggedError('MockExamTransactionFailure')<{
-  readonly error: E
-}> {}
-
 export const MockExamRepositoryLive = Layer.effect(
   MockExamRepository,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
 
     return MockExamRepository.of({
-      transaction: Effect.fn('MockExamRepository.transaction')(function* (operation) {
-        return yield* sql
-          .withTransaction(
-            operation.pipe(Effect.mapError(error => new MockExamTransactionFailure({ error }))),
-          )
-          .pipe(
-            Effect.catchTags({
-              SqlError: cause => Effect.fail(new MockExamWriteError({ cause })),
-              MockExamTransactionFailure: failure => Effect.fail(failure.error),
-            }),
-          )
-      }),
       createBlueprint: Effect.fn('MockExamRepository.createBlueprint')(blueprintId =>
         sql`INSERT INTO exam_blueprints (id) VALUES (${blueprintId}) ON CONFLICT DO NOTHING`.pipe(
           Effect.asVoid,

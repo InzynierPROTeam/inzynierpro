@@ -10,6 +10,7 @@ import {
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { StaleSessionScope } from '~api/modules/learning/domain/errors.js'
 import { currentLearningRound } from '~api/modules/learning/domain/learning-round.rules.js'
 import { isAllowedQuestionCount } from '~api/modules/learning/domain/session-count.rules.js'
@@ -36,12 +37,13 @@ export const startSession = Effect.fn('Study.startSession')(function* (
 ) {
   const studyReader = yield* StudyReader
   const studyRepository = yield* StudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* studyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      const assignment = yield* requirePathAccess(userId, pathId, writtenExamAccess)
+      const assignment = yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
 
       const unfinished = yield* studyReader.unfinishedSession(
         userId,

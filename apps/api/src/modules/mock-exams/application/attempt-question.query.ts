@@ -15,7 +15,7 @@ export const getAttemptQuestion = Effect.fn('MockExams.getAttemptQuestion')(func
   attemptId: MockExamAttemptId,
   position: AttemptQuestionPosition,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const mockExamReader = yield* MockExamReader
 
   return yield* mockExamReader.attemptQuestion(userId, pathId, attemptId, position)

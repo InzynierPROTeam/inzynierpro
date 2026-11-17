@@ -12,7 +12,7 @@ export const clearOralQuestionNote = Effect.fn('Study.clearOralQuestionNote')(fu
   pathId: QualificationPathId,
   questionId: OralQuestionId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyRepository = yield* OralStudyRepository
 
   yield* oralStudyRepository.clearNote(userId, questionId)

@@ -11,7 +11,7 @@ export const getDocuments = Effect.fn('Study.getDocuments')(function* (
   pathId: QualificationPathId,
   page: CursorPageRequest,
 ) {
-  yield* requirePathAccess(userId, pathId, 'written')
+  yield* requirePathAccess(userId, pathId, { part: 'written' })
 
   const studyReader = yield* StudyReader
 

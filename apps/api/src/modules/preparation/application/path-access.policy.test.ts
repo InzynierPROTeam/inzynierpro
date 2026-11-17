@@ -12,7 +12,6 @@ import { describe, expect, it } from 'vitest'
 import { PathPermissionDenied } from '~api/modules/preparation/domain/errors.js'
 import { UserQualificationPath } from '~api/modules/preparation/domain/preparation.model.js'
 
-import { requireAssignment } from './assignment.policy.js'
 import { requirePathAccess } from './path-access.policy.js'
 import { PreparationReader } from './preparation.reader.js'
 
@@ -67,7 +66,9 @@ const denied = Exit.fail(new PathPermissionDenied())
 
 const accessExit = (found: Option.Option<UserQualificationPath>, part?: ExamPart) =>
   Effect.runSync(
-    Effect.exit(requirePathAccess(userId, pathId, part).pipe(Effect.provide(readerWith(found)))),
+    Effect.exit(
+      requirePathAccess(userId, pathId, { part }).pipe(Effect.provide(readerWith(found))),
+    ),
   )
 
 describe('path access policy', () => {
@@ -104,10 +105,14 @@ describe('path access policy', () => {
     expect(accessExit(Option.none(), writtenExamAccess)).toEqual(denied))
 })
 
-describe('assignment policy', () => {
+describe('path access policy including archived paths', () => {
   const assignmentExit = (found: Option.Option<UserQualificationPath>) =>
     Effect.runSync(
-      Effect.exit(requireAssignment(userId, pathId).pipe(Effect.provide(readerWith(found)))),
+      Effect.exit(
+        requirePathAccess(userId, pathId, { includeArchived: true }).pipe(
+          Effect.provide(readerWith(found)),
+        ),
+      ),
     )
 
   it('returns an archived assignment, so it can still be restored', () => {

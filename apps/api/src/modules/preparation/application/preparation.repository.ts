@@ -12,9 +12,6 @@ import type { PreparationWriteError } from './errors.js'
 export class PreparationRepository extends Context.Service<
   PreparationRepository,
   {
-    readonly transaction: <A, E, R>(
-      operation: Effect.Effect<A, E, R>,
-    ) => Effect.Effect<A, E | PreparationWriteError, R>
     readonly lockUser: (userId: UserId) => Effect.Effect<void, PreparationWriteError>
     readonly insert: (
       userId: UserId,

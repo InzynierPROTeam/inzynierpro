@@ -4,6 +4,7 @@ import { favoritesStudySession } from '@inzpro/domain/modules/learning/study-ses
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { StaleSessionScope } from '~api/modules/learning/domain/errors.js'
 import { isAllowedQuestionCount } from '~api/modules/learning/domain/session-count.rules.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
@@ -20,12 +21,13 @@ export const startOralFavoritesSession = Effect.fn('Study.startOralFavoritesSess
 ) {
   const oralStudyReader = yield* OralStudyReader
   const oralStudyRepository = yield* OralStudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* oralStudyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      const assignment = yield* requirePathAccess(userId, pathId, oralExamAccess)
+      const assignment = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
 
       const unfinished = yield* oralStudyReader.unfinishedFavoritesSession(userId, pathId)
 

@@ -95,7 +95,8 @@ Tests sit beside the code they cover. Another module is importable only when `ap
 ## Backend responsibilities
 
 - A query operation owns authorization or composition for one read use case. A handler may call its reader directly when there is no application behavior to add. Create query files only when they do useful work.
-- A command owns one intent, its domain decisions, transaction and concurrency order. Import and call the defining function directly, for example `archivePath(userId, pathId)`. Command aggregator objects are unnecessary facades. Keep different intents in separate functions rather than passing an action discriminator to a switch.
+- A policy only authorizes: it reads the caller's access, never locks, writes or checks business state, and fails with a permission error. `requirePathAccess` is the shared one; other rules belong in `domain/`.
+- A command owns one intent, its domain decisions, transaction and concurrency order. It opens the transaction with `Transaction.run` from `~api/lib/transaction.js`; repositories expose persistence operations only. Import and call the defining function directly, for example `archivePath(userId, pathId)`. Command aggregator objects are unnecessary facades. Keep different intents in separate functions rather than passing an action discriminator to a switch.
 - A reader exposes purposeful lookups and bounded lists. Fetch a single assignment/document/session when one is needed. Keep a point lookup bounded with LIMIT 1 and rely on the appropriate unique keys/predicates for its cardinality. Authorization and idempotency checks use single-record lookups.
 - A repository exposes persistence operations used by commands. Commands can also use readers when they need current data to decide a write.
 - PostgreSQL adapters own SQL, row decoding and persistence conversion. Prepare input variables before interpolating SQL. Select flat columns and assemble nested objects in TypeScript. Use SQL joins, predicates, counts and limits for the requested read; keep JSON object/array construction out of SELECTs.
@@ -145,4 +146,4 @@ Keep finite literal choices reusable: export named literals, then a readonly val
 
 Mutable tables usually have `created_at` and `updated_at`; append-only history has only `created_at`. The first migration defines the shared `set_updated_at` function, and every mutable table attaches a `BEFORE UPDATE` trigger. Application timestamps are `timestamptz(3)`. Choose a table's columns by its real lifecycle.
 
-Repository transactions preserve both rollback and the original operation failure while mapping infrastructure failures. Review this behavior independently of the adapter's error-handling syntax.
+The `Transaction` adapter preserves both rollback and the original operation failure, and maps only its own SQL failure to `TransactionError`, which handlers map with `failTransaction`. Review this behavior independently of the adapter's error-handling syntax.

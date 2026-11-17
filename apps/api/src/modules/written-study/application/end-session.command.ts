@@ -3,6 +3,7 @@ import type { StudySessionId } from '@inzpro/domain/modules/learning/study-sessi
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { StudySessionMissing } from '~api/modules/learning/domain/errors.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
@@ -16,12 +17,13 @@ export const endSession = Effect.fn('Study.endSession')(function* (
 ) {
   const studyReader = yield* StudyReader
   const studyRepository = yield* StudyRepository
+  const transaction = yield* Transaction
   const preparationRepository = yield* PreparationRepository
 
-  return yield* studyRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, writtenExamAccess)
+      yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
       const session = yield* studyReader.session(userId, pathId, sessionId)
 
       if (Option.isNone(session)) {

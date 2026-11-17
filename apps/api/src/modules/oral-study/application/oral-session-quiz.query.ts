@@ -14,7 +14,7 @@ export const getOralSessionQuizState = Effect.fn('Study.getOralSessionQuizState'
   pathId: QualificationPathId,
   sessionId: OralStudySessionId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const oralSessionQuizReader = yield* OralSessionQuizReader
   const session = yield* oralStudyReader.session(userId, pathId, sessionId)
@@ -39,7 +39,7 @@ export const getOralQuizChecks = Effect.fn('Study.getOralQuizChecks')(function* 
   sessionId: OralStudySessionId,
   page: CursorPageRequest,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralSessionQuizReader = yield* OralSessionQuizReader
 
   return yield* oralSessionQuizReader.checks(userId, pathId, sessionId, page)

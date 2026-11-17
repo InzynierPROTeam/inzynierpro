@@ -23,6 +23,10 @@ tester.run('conventions/backend-boundaries', backendBoundariesRule, {
       code: `import { SqlClient } from 'effect/sql'; ${sql}`,
     },
     { filename: file('modules/study/infrastructure/study.repository.postgres.ts'), code: sql },
+    {
+      filename: file('lib/transaction.ts'),
+      code: "import { SqlClient } from 'effect/sql'",
+    },
     { filename: file('migrations/0001_identity.ts'), code: sql },
     { filename: file('seed/catalogue.ts'), code: sql },
     {
@@ -48,6 +52,22 @@ tester.run('conventions/backend-boundaries', backendBoundariesRule, {
     { filename: '/repo/packages/db/src/client.ts', code: "import { SqlClient } from 'effect/sql'" },
   ],
   invalid: [
+    {
+      filename: file('modules/study/infrastructure/transaction.service.postgres.ts'),
+      code: sql,
+      errors: [{ messageId: 'sql' }],
+    },
+    { filename: file('lib/transaction.ts'), code: sql, errors: [{ messageId: 'sql' }] },
+    {
+      filename: file('lib/other.ts'),
+      code: "import { SqlClient } from 'effect/sql'",
+      errors: [{ messageId: 'sql' }],
+    },
+    {
+      filename: file('lib/nested/transaction.ts'),
+      code: "import { SqlClient } from 'effect/sql'",
+      errors: [{ messageId: 'sql' }],
+    },
     {
       filename: file('modules/study/infrastructure/editor/content.client.http.ts'),
       code: sql,

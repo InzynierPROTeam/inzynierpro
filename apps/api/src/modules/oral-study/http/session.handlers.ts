@@ -6,6 +6,7 @@ import type { HttpApiEndpoint } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
+import { failTransaction } from '~api/lib/transaction.js'
 import {
   failStudyRead,
   failStudyWrite,
@@ -71,6 +72,7 @@ export const sessionHandlers = {
         OralCategoryNotOnPath: () => oralCategoryNotFound,
         StaleSessionScope: () => staleSessionPreview,
         UnfinishedOralSessionExists: oralSessionAlreadyStarted,
+        TransactionError: failTransaction,
       }),
     ),
   GetLatestOralSession: ({ params, query }) =>
@@ -167,6 +169,7 @@ export const sessionHandlers = {
         StudyReadError: failStudyRead,
         StudyWriteError: failStudyWrite,
         StudySessionMissing: () => studySessionNotFound,
+        TransactionError: failTransaction,
       }),
     ),
   GetOralSessionQuestion: ({ params }) =>
@@ -218,6 +221,7 @@ export const sessionHandlers = {
         QuestionRevisionWithdrawn: () => sessionQuestionWithdrawn,
         OralRevisionNotInSession: () => invalidOralSelfAssessment,
         OralQuestionAlreadyAssessed: () => oralSelfAssessmentAlreadySubmitted,
+        TransactionError: failTransaction,
       }),
     ),
 } satisfies {

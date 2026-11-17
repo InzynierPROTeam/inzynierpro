@@ -12,7 +12,7 @@ export const getReviewSession = Effect.fn('Study.getReviewSession')(function* (
   pathId: QualificationPathId,
   documentId: Option.Option<ReferenceDocumentId>,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
 
   return yield* studyReader.unfinishedSession(userId, pathId, reviewStudySession, documentId)

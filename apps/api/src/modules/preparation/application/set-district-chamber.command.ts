@@ -2,6 +2,7 @@ import type { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/dis
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Equal, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { ExamCalendarReader } from '~api/modules/exam-calendar/application/exam-calendar.reader.js'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { DistrictChamberUnavailable } from '~api/modules/preparation/domain/errors.js'
@@ -15,10 +16,11 @@ export const setDistrictChamber = Effect.fn('Preparation.setDistrictChamber')(fu
   districtChamberId: Option.Option<DistrictChamberId>,
 ) {
   const preparationRepository = yield* PreparationRepository
+  const transaction = yield* Transaction
   const examCalendarReader = yield* ExamCalendarReader
   const examCalendarRepository = yield* ExamCalendarRepository
 
-  return yield* preparationRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
       const path = yield* requirePathAccess(userId, pathId)

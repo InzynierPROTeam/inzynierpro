@@ -9,6 +9,7 @@ import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/prepara
 import { databaseLayerFromConfig } from '@inzpro/db'
 import { DateTime, Effect, Layer, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { cosmeticChange } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { submitOralSelfAssessment } from '~api/modules/oral-study/application/submit-oral-self-assessment.command.js'
@@ -28,6 +29,7 @@ import { createStudyFixture, studySessionSpecialization } from '~api/test/prepar
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
 const commandLayer = Layer.mergeAll(
+  TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
   OralStudyReaderLive,

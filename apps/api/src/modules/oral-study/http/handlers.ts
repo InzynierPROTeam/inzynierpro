@@ -1,6 +1,7 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { OralSessionQuizReaderLive } from '~api/modules/oral-study/infrastructure/oral-session-quiz.reader.postgres.js'
@@ -29,6 +30,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
 ).pipe(Layer.provide(AuthenticationLive))
 
 export const OralStudyRequestServices = Layer.mergeAll(
+  TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
   OralStudyReaderLive,

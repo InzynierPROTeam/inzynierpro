@@ -11,7 +11,7 @@ export const getLatestSession = Effect.fn('Study.getLatestSession')(function* (
   pathId: QualificationPathId,
   documentId: Option.Option<ReferenceDocumentId>,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
 
   return yield* studyReader.latestSession(userId, pathId, documentId)

@@ -6,7 +6,16 @@ import { PathPermissionDenied } from '~api/modules/preparation/domain/errors.js'
 
 import { PreparationReader } from './preparation.reader.js'
 
-export const requirePathAccess = (userId: UserId, pathId: QualificationPathId, part?: ExamPart) =>
+type PathAccess = {
+  readonly part?: ExamPart
+  readonly includeArchived?: boolean
+}
+
+export const requirePathAccess = (
+  userId: UserId,
+  pathId: QualificationPathId,
+  { part, includeArchived = false }: PathAccess = {},
+) =>
   Effect.gen(function* () {
     const preparationReader = yield* PreparationReader
     const found = yield* preparationReader.path(userId, pathId)
@@ -14,7 +23,7 @@ export const requirePathAccess = (userId: UserId, pathId: QualificationPathId, p
 
     if (
       assignment === undefined ||
-      assignment.archived ||
+      (assignment.archived && !includeArchived) ||
       (part !== undefined && assignment.accessScope !== 'both' && assignment.accessScope !== part)
     ) {
       return yield* new PathPermissionDenied()

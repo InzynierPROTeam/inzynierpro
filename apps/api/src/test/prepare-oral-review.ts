@@ -6,6 +6,7 @@ import { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-s
 import { pathOralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Layer, Option, Schema } from 'effect'
+import { TransactionLive } from '~api/lib/transaction.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { endOralSession } from '~api/modules/oral-study/application/end-oral-session.command.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
@@ -24,6 +25,7 @@ const [userId, pathId, categoryId] = Schema.decodeUnknownSync(
 )(process.argv.slice(2))
 
 const services = Layer.mergeAll(
+  TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
   OralStudyReaderLive,

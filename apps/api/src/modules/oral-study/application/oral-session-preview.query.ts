@@ -56,7 +56,7 @@ export const getOralSessionPreview = Effect.fn('Study.getOralSessionPreview')(fu
   fromCategoryId: Option.Option<OralQuestionCategoryId>,
   questionScope: OralQuestionScope,
 ) {
-  const assignment = yield* requirePathAccess(userId, pathId, oralExamAccess)
+  const assignment = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const filter = yield* oralQuestionFilter(questionScope, assignment.districtChamber)
 
   return yield* findOralSessionPreview(userId, pathId, categoryId, fromCategoryId, filter)

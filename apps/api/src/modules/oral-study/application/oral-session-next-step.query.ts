@@ -24,7 +24,7 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
   pathId: QualificationPathId,
   sessionId: OralStudySessionId,
 ) {
-  yield* requirePathAccess(userId, pathId, oralExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
   const session = yield* oralStudyReader.session(userId, pathId, sessionId)
 

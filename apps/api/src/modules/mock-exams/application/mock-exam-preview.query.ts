@@ -12,7 +12,7 @@ export const getMockExamPreview = Effect.fn('MockExams.getMockExamPreview')(func
   userId: UserId,
   pathId: QualificationPathId,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const mockExamReader = yield* MockExamReader
   const found = yield* mockExamReader.pathBlueprint(pathId)
 

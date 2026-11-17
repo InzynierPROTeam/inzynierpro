@@ -3,6 +3,7 @@ import { databaseLayerFromConfig } from '@inzpro/db'
 import { Effect, Layer, Schema } from 'effect'
 import { SqlError } from 'effect/sql'
 import { afterAll, beforeAll, expect, test } from 'vitest'
+import { Transaction, TransactionLive } from '~api/lib/transaction.js'
 import { QuestionNotOnPath } from '~api/modules/learning/domain/errors.js'
 import { OralStudyRepository } from '~api/modules/oral-study/application/oral-study.repository.js'
 import { OralStudyRepositoryLive } from '~api/modules/oral-study/infrastructure/oral-study.repository.postgres.js'
@@ -22,9 +23,11 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-const transactionLayer = Layer.mergeAll(StudyRepositoryLive, OralStudyRepositoryLive).pipe(
-  Layer.provide(databaseLayerFromConfig),
-)
+const transactionLayer = Layer.mergeAll(
+  TransactionLive,
+  StudyRepositoryLive,
+  OralStudyRepositoryLive,
+).pipe(Layer.provide(databaseLayerFromConfig))
 
 const errors = [
   { name: 'business', error: new QuestionNotOnPath() },
@@ -61,8 +64,8 @@ test.each(errors)(
     )
 
     const failed = await Effect.runPromise(
-      StudyRepository.use(studyRepository =>
-        studyRepository.transaction(write.pipe(Effect.andThen(Effect.fail(error)))),
+      Transaction.use(transaction =>
+        transaction.run(write.pipe(Effect.andThen(Effect.fail(error)))),
       ).pipe(
         Effect.match({ onFailure: failure => failure, onSuccess: () => null }),
         Effect.provide(transactionLayer),
@@ -78,7 +81,7 @@ test.each(errors)(
     ).toMatchObject({ favoriteQuestionCount: 0 })
 
     await Effect.runPromise(
-      StudyRepository.use(studyRepository => studyRepository.transaction(write)).pipe(
+      Transaction.use(transaction => transaction.run(write)).pipe(
         Effect.provide(transactionLayer),
         Effect.scoped,
       ),
@@ -104,8 +107,8 @@ test.each(errors)(
     )
 
     const failed = await Effect.runPromise(
-      OralStudyRepository.use(oralStudyRepository =>
-        oralStudyRepository.transaction(write.pipe(Effect.andThen(Effect.fail(error)))),
+      Transaction.use(transaction =>
+        transaction.run(write.pipe(Effect.andThen(Effect.fail(error)))),
       ).pipe(
         Effect.match({ onFailure: failure => failure, onSuccess: () => null }),
         Effect.provide(transactionLayer),
@@ -121,7 +124,7 @@ test.each(errors)(
     ).toMatchObject({ favoriteQuestionCount: 0 })
 
     await Effect.runPromise(
-      OralStudyRepository.use(oralStudyRepository => oralStudyRepository.transaction(write)).pipe(
+      Transaction.use(transaction => transaction.run(write)).pipe(
         Effect.provide(transactionLayer),
         Effect.scoped,
       ),

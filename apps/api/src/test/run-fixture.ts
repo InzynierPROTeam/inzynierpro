@@ -1,5 +1,6 @@
 import { databaseLayerFromConfig } from '@inzpro/db'
 import { Effect, Layer } from 'effect'
+import { Transaction, TransactionLive } from '~api/lib/transaction.js'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
@@ -18,6 +19,7 @@ import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 
 const fixturesLayer = Layer.mergeAll(
+  TransactionLive,
   LearningContentRepositoryLive,
   QualificationPathsReaderLive,
   ExamCalendarRepositoryLive,
@@ -40,5 +42,6 @@ export const runFixture = <A, E>(
     | OralStudyReader
     | MockExamReader
     | MockExamRepository
+    | Transaction
   >,
 ) => Effect.runPromise(operation.pipe(Effect.provide(fixturesLayer), Effect.scoped))

@@ -1,6 +1,7 @@
 import type { ExamBlueprintId } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
+import { Transaction } from '~api/lib/transaction.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import {
@@ -15,8 +16,9 @@ export const assignBlueprint = Effect.fn('MockExams.assignBlueprint')(function* 
 ) {
   const mockExamReader = yield* MockExamReader
   const mockExamRepository = yield* MockExamRepository
+  const transaction = yield* Transaction
 
-  return yield* mockExamRepository.transaction(
+  return yield* transaction.run(
     Effect.gen(function* () {
       yield* mockExamRepository.lockBlueprint(blueprintId)
       const latest = yield* mockExamReader.blueprint(blueprintId)

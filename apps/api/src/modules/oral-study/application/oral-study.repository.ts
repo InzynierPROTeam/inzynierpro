@@ -29,9 +29,6 @@ import type {
 export class OralStudyRepository extends Context.Service<
   OralStudyRepository,
   {
-    readonly transaction: <A, E, R>(
-      operation: Effect.Effect<A, E, R>,
-    ) => Effect.Effect<A, E | StudyWriteError, R>
     readonly saveNote: (
       userId: UserId,
       questionId: OralQuestionId,

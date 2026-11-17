@@ -15,7 +15,7 @@ export const saveQuestionNote = Effect.fn('Study.saveQuestionNote')(function* (
   questionId: WrittenQuestionId,
   text: QuestionNoteText,
 ) {
-  yield* requirePathAccess(userId, pathId, writtenExamAccess)
+  yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const studyReader = yield* StudyReader
   const studyRepository = yield* StudyRepository
 

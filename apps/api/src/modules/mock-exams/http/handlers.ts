@@ -3,6 +3,7 @@ import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/cur
 import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
+import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { getAttemptQuestion } from '~api/modules/mock-exams/application/attempt-question.query.js'
 import { getMockExamAttempt } from '~api/modules/mock-exams/application/mock-exam-attempt.query.js'
@@ -54,6 +55,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           PathPermissionDenied: () => pathAccessDenied,
           MockExamReadError: failMockExamRead,
           MockExamWriteError: failMockExamWrite,
+          TransactionError: failTransaction,
           MockExamUnavailable: mockExamUnavailable,
           MockExamAttemptNotFound: failMissingMockExamAttempt,
         }),
@@ -98,6 +100,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
 ).pipe(Layer.provide(AuthenticationLive))
 
 export const MockExamsRequestServices = Layer.mergeAll(
+  TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
   MockExamReaderLive,
