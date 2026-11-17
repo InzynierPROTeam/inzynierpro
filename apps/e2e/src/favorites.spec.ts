@@ -15,7 +15,7 @@ test('a learner marks a favourite, completes a favourites session and sees its s
   await page.getByRole('link', { name: new RegExp(buildingLaw) }).click()
   await page.getByRole('button', { name: 'Zacznij naukę' }).click()
   await page.getByRole('button', { name: 'Zacznij sesję' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 8' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Dodaj do ulubionych' }).click()
   await expect(page.getByRole('button', { name: 'Usuń z ulubionych' })).toHaveAttribute(
@@ -53,5 +53,5 @@ test('a learner marks a favourite, completes a favourites session and sees its s
   await expect(page.getByText('Ulubione pytania', { exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: 'Kontynuuj sesję' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 5' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 8' })).toBeVisible()
 })

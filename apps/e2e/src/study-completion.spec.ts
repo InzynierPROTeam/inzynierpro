@@ -5,7 +5,7 @@ import { chooseTechnicalPath } from '~e2e/test/paths'
 const buildingLaw = 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'
 const technicalConditions = 'Warunki techniczne, jakim powinny odpowiadać budynki i ich usytuowanie'
 
-const categoryQuestions = 5
+const categoryQuestions = 8
 
 const answers = (page: Page) =>
   page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
