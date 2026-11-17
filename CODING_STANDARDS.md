@@ -8,18 +8,9 @@ When V1 (`~/Developer/inzynier-pro`) already solves the same problem (a form, an
 
 ## Frontend features
 
-A feature folder `apps/<app>/src/features/<feature>/` holds:
+Place code with its business owner. Feature-owned helpers and controls may be imported by other features without becoming global. Keep cross-feature imports acyclic. A helper with nothing feature-specific belongs in app-level utilities; an adapter to an external library or system belongs in `lib`. Types stay with their consumer unless sharing justifies extracting them.
 
-- `<Name>Page.tsx`: the page component a route renders directly (`component: SignInPage`).
-- `components/`: components used only by this feature.
-- `hooks/`: hooks used only by this feature. App-wide hooks live in `src/hooks/`.
-- `actions.ts`: calls to external clients, such as the Better Auth client.
-- `validation.ts`: schemas for search params and other feature input. Shared schemas live in `src/` or in `@inzpro/domain`.
-- `utils.ts`: `getRouteApi` constants (`signInPageRouteApi`) and feature helpers.
-- `types/`: request and response types derived from the client calls.
-
-A helper with nothing feature-specific in it belongs in `src/utils/<name>.ts`.
-
+The [architecture guide](docs/architecture.md#file-roles) describes feature/global roles, recursive grouping, page placement and role extension. The executable role policy and regression cases own mechanical path restrictions. Create only roles with content.
 Components read route state (search params, route context) through the feature's route API constant at the place that uses it. Props carry component inputs, not route state passed down the tree.
 
 A query or mutation hook runs in the lowest component that renders its data or triggers it, and that component owns the branches the data decides (an ended session's menu item, a footer action). A parent renders such a child without props when the child can read its inputs from the route itself.
@@ -87,7 +78,7 @@ Use concrete branded schemas for concurrency versions and meaningful quantities.
 
 Every schema has one home ([ADR-0027](docs/adr/0027-schema-ownership-and-module-layers.md)). Ask in order:
 
-1. **Does it cross HTTP as an object** (resource, request, response, pagination envelope, transport error)? It goes in `@inzpro/api-contracts/src/modules/<module>/{requests,responses,errors}.ts`, or `utils/` when every module shares it.
+1. **Does it cross HTTP as an object** (resource, request, response, pagination envelope, transport error)? It goes in `@inzpro/api-contracts/src/modules/<module>/{requests,responses,errors}.ts` or the corresponding role directory, or `utils/` when every module shares it.
 2. **Is it a single value or pure rule that both clients and the backend need** (branded ID, literal code, value primitive, limit, version step)? It goes in `@inzpro/domain`. That package has no object schemas.
 3. **Otherwise it is private to the owning API module**:
    - a model (`DateTimeUtc`, `Option`), business rule or business error goes in `domain/`;
@@ -97,14 +88,7 @@ Every schema has one home ([ADR-0027](docs/adr/0027-schema-ownership-and-module-
 
 A model never spreads DTO fields, and a row never chains through `Model.fields`. Declare fields from vocabulary instead. Decode rows straight into the model only when the columns match it one to one. A model without rich values can be returned as its DTO without a mapper.
 
-An API module keeps its files in layer folders and creates only the ones it needs:
-
-| Folder            | Files                                                                                                         | May import                                                        |
-| ----------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `domain/`         | `<concept>.model.ts`, `<concept>.rules.ts`, `errors.ts`                                                       | `@inzpro/domain`, other modules' `domain/`                        |
-| `application/`    | `<concept>.command.ts`, `.query.ts`, `.policy.ts`, `.reader.ts`, `.repository.ts`, `.service.ts`, `errors.ts` | `domain/`, other modules' `application/`, `~api/lib`              |
-| `infrastructure/` | `<concept>.reader.postgres.ts`, `<concept>.repository.postgres.ts`                                            | its module's `application/` and `domain/`, `effect/sql`           |
-| `http/`           | `handlers.ts` (`<group>.handlers.ts` when a module serves several contract groups), `mappers.ts`, `errors.ts` | everything above, `@inzpro/api-contracts`, other modules' `http/` |
+An API module keeps its models and rules in `domain/`, use cases and ports in `application/`, concrete adapters in `infrastructure/` and transport in `http/`. Topic nesting preserves that direction. Create only layers with content. The [architecture guide](docs/architecture.md#backend-ownership) describes role extension; the conventions plugin owns exact filename grammar.
 
 Tests sit beside the code they cover. Another module is importable only when `apiModuleDependencies` in the architecture policy permits it. The `conventions/module-layers` and `conventions/domain-vocabulary` lint rules enforce placement and direction.
 
@@ -138,7 +122,7 @@ ADR-0015 sets the strategy; this section is how to apply it. Name tests after be
 Data and isolation:
 
 - Every test creates its own account with a unique e-mail. Tests never truncate tables or depend on order, so files and workers run in parallel against one database.
-- The catalogue comes from the idempotent technical seed. Test-specific content goes through module repositories (`apps/api/src/test/learning-fixtures.ts`); test bodies write no SQL.
+- The catalogue comes from the idempotent technical seed. Test-specific content goes through module repositories (`apps/api/src/test/{content,preparation,written-learning,oral-learning}-fixtures.ts`); test bodies write no SQL.
 - Business time is fixed (`catalogueTestTime`), so exam sessions do not expire under the suite.
 
 E2E:
@@ -161,4 +145,4 @@ Keep finite literal choices reusable: export named literals, then a readonly val
 
 Mutable tables usually have `created_at` and `updated_at`; append-only history has only `created_at`. The first migration defines the shared `set_updated_at` function, and every mutable table attaches a `BEFORE UPDATE` trigger. Application timestamps are `timestamptz(3)`. Choose a table's columns by its real lifecycle.
 
-Generic transaction adapters preserve both rollback and the original operation failure while mapping infrastructure failures. Review this behavior independently of the adapter's error-handling syntax.
+Repository transactions preserve both rollback and the original operation failure while mapping infrastructure failures. Review this behavior independently of the adapter's error-handling syntax.

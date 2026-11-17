@@ -8,6 +8,8 @@ Own endpoint schemas and every object that crosses HTTP: resources, request part
 
 Request-part schemas (params, query, payload, headers) live in `src/modules/<module>/requests.ts`, beside `responses.ts`. Endpoints import them and are exported individually so clients can infer their requests. A request schema is a direct alias of an existing schema when it adds no fields. Decisions behind the contracts are in [ADR-0014](../../docs/adr/0014-shared-http-contracts-and-client.md).
 
+Written and oral learning have separate `written-study` and `oral-study` contract modules. Their shared session lifecycle errors, progress, count settings and note contracts belong to `learning`. The root `api.ts` composes the HTTP group. Requests, responses and errors use either `<role>.ts` or `<role>/<topic>.ts`, allowing topical nesting and creating only needed roles. The file and directory forms of a role never coexist. Larger groups may declare endpoints in `endpoints/<topic>.ts`; clients import the concrete declaration to infer requests, without re-export barrels. Alternate group filenames such as `oral-api.ts` are rejected. Semantic schema checks cover endpoint files and nested role files as well as the flat forms.
+
 ## Usage
 
 ```ts

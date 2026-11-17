@@ -41,7 +41,7 @@ Environment variables, credentials and environment loading always stay in the ap
 
 ## Dependencies
 
-[architecture-policy.ts](../packages/tools/src/oxlint/architecture-policy.ts) is the authoritative list of what each workspace, and each API module, may import. An entry permits a dependency; it does not require it. A policy test rejects cycles in both graphs and requires every API module folder to be listed.
+[architecture-policy.ts](../packages/tools/src/oxlint/architecture-policy.ts) is the authoritative list of what each workspace, and each API module, may import. An entry permits a dependency; it does not require it. Policy tests reject cycles in both graphs; `conventions/module-layers` rejects API source files whose module is missing from the policy.
 
 - Applications compose packages; packages never import applications, and applications never import each other.
 - `e2e` drives the platform and the API over HTTP and imports none of their sources.
@@ -53,7 +53,7 @@ Environment variables, credentials and environment loading always stay in the ap
 
 ## Imports and exports
 
-Import across workspaces by package name and concrete subpath, for example `@inzpro/queries/modules/health`. Relative paths into another workspace are rejected even when the dependency itself is allowed.
+Import across workspaces by package name and concrete subpath, for example `@inzpro/queries/modules/health/queries`. Relative paths into another workspace are rejected even when the dependency itself is allowed.
 
 Packages keep broad exports such as `"./*": "./dist/*.js"`, with no per-file allowlist and no barrel files. Modules export their own declarations; re-exports are rejected.
 
@@ -66,15 +66,49 @@ The checks run inside Oxlint, through `pnpm lint`, `pnpm check` and CI:
 - `conventions/module-layers` also limits imports between API modules to `apiModuleDependencies`, so module cycles cannot form even when no single file cycle exists, and rejects a module folder missing from the policy.
 - Names: `unicorn/filename-case` keeps files kebab-case, app `.tsx` components PascalCase (acronyms allowed, as in `VerifyOTPPage.tsx`) and hooks `useX` camelCase; TanStack route files and migrations keep their framework names. `conventions/directory-names` keeps folders kebab-case, except camelCase app feature folders and TanStack route folders (`(group)`, `_pathless`, `$param`).
 - `import/no-cycle` rejects file cycles. Package cycles count type-only imports; application cycles ignore them, because generated router files refer back to their router types.
-- Generated `*.gen.ts` files are exempt from source rules but still type-checked.
+- The generated `apps/platform/src/routeTree.gen.ts` has explicit lint exceptions and remains type-checked; other files receive no exemption from a `.gen.ts` suffix.
 
 Static checks cannot judge whether a model is declared independently of its DTO, authorization order, bounded SQL cardinality, module ownership or whether a query wrapper earns its place. Review covers those under ADR-0012 and CODING_STANDARDS.md.
 
 ## API modules
 
-The API has five business modules: `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material) and `study` (personal learning). `identity` mounts authentication, and the technical `health` and `background-jobs` modules own the health check and job diagnostics; the generic queue lives in `src/lib/job-queue.ts`. Each keeps its files in `domain/`, `application/`, `infrastructure/` and `http/` folders, as CODING_STANDARDS.md describes. Personal learning depends on shared data, never the reverse. A new module, or a new edge between modules, starts with its entry in `apiModuleDependencies`.
+The business modules are `qualification-paths` (shared path catalogue), `exam-calendar` (official exam sessions), `preparation` (assignments, access and goals), `learning-content` (shared material), `written-study` and `oral-study` (the two personal learning modes). `learning` owns reusable session rules, review scheduling and shared models; it has no dependency on either mode. The oral mini-quiz stays inside `oral-study` because it updates that mode's review evidence and belongs to its session lifecycle. Each mode owns its writes and its repository transaction implementation, preserving the atomic learning action in ADR-0012 without depending on the other mode.
 
-Module migrations create their final tables directly, so a schema change edits the module's migration and local databases are recreated. The job table is the exception: Effect's queue store creates and migrates it itself ([background-jobs.md](background-jobs.md)). The first migration owns the shared `set_updated_at` trigger function.
+`identity` mounts authentication; the technical `health` and `background-jobs` modules own health and job diagnostics. Modules keep the fixed layer folders described in CODING_STANDARDS.md. A new module or dependency starts with its entry in `apiModuleDependencies`.
+
+## File roles
+
+The executable role catalogue lives in `packages/tools/src/oxlint/source-role-policy.ts`; `conventions/rules/file-roles.ts` applies it, and regression tests define accepted paths and framework exceptions. Module moves update that policy and the semantic checks together. Keeping a file kebab-case alone does not establish its role.
+
+Contracts use a root `modules/<module>/api.ts`, with requests, responses and errors in role files or topic directories. An optional `endpoints/` directory contains endpoint declarations composed by `api.ts`. Client modules are flat `modules/<module>.ts` by default and may become `modules/<module>/<topic>.ts` when responsibilities justify grouping. Queries use `<module>/keys.ts` and `queries.ts`, optionally replacing the latter with `queries/<topic>.ts`. Domain vocabulary allows topic nesting inside `common/` and `modules/<module>/`. Package READMEs own the usage examples.
+
+Choose a file or a directory for the same role, never both: `utils.ts` and `utils/session.ts` must not coexist. The same applies to a flat client module and its topic directory. Adjacent tests belong to their subject; shared fixture and builder code belongs in `test/` and stays unavailable to production imports. A source role creates no requirement for an empty file or directory.
+
+### Platform ownership
+
+Global application roles are `components/`, `hooks/`, `utils/`, `types/`, `lib/`, `config/`, `stores/`, `providers/`, `assets/`, `styles/` and `test/`. Their contents may be grouped recursively by topic. Existing route, layout and application entry files retain their framework-specific rules.
+
+Features allow root `<Name>Page.tsx` files; a feature may have no page. Page components live only at that root, never under `components/` or another nested folder. A feature's `actions`, `validation`, `utils`, `types`, `config` and `stores` roles use either `<role>.ts` or `<role>/**/*.ts`. Components and hooks use recursive `components/` and `hooks/` directories, with PascalCase component names and `useX` hook names. Feature integrations, providers, assets, styles and shared test support use `lib/`, `providers/`, `assets/`, `styles/` and `test/` when needed.
+
+Ownership decides location. A session helper or control remains in `learningSession` even when oral sessions, favourites and reviews consume it. Cross-feature imports are allowed and must remain acyclic. A genuinely application-wide helper belongs globally. `utils` holds calculations and transformations, `lib` adapts external libraries and systems, `config` holds configuration and `stores` holds shared state. Providers keep their context nearby. Local types remain with their consumer until sharing gives them an owner.
+
+### Backend ownership
+
+Modules retain `domain/`, `application/`, `infrastructure/` and `http/`. Topic subdirectories preserve those layer identities and import directions. Role suffixes continue to identify models, rules, commands, queries, policies, ports and adapters. Grouped HTTP handlers, mappers and error mappings stay in `http/`.
+
+A domain event describes a fact in `domain/`; application event handlers and background jobs orchestrate existing use cases in `application/`. Infrastructure implements ports, with adapter kinds registered explicitly in the executable role policy. New transports, such as MCP, extend that policy when implemented and reuse application operations rather than copying business logic. Keep regular study, reviews and favourites in their owning mode while they share lifecycle and persistence.
+
+### Extending the policy
+
+The stable rules protect ownership, dependency direction, page placement and production/test separation. The role catalogue is extensible. When an implementation needs a distinct responsibility or adapter, update its role policy, semantic checks and positive/negative regression cases in the same change. The diagnostic points to this extension path. Do not disguise integration code as a utility to fit an existing filename. No file count or line-count threshold substitutes for reviewing responsibilities.
+
+Source lint validates parsed file paths and contents and checks the current filesystem for file/folder role collisions. Non-source assets and empty directories are outside Oxlint parsing; their ownership remains a review responsibility. Regression cases must include untracked files and nested paths so new layouts do not silently bypass existing semantic checks. Framework and generator exceptions are explicit rather than available to any filename ending in `.gen.ts`.
+
+### Bootstrap migrations
+
+Bootstrap migrations define final tables, columns, indexes and constraints directly; local databases are recreated when the schema changes. An `ALTER TABLE` adding a cyclic current-revision foreign key is the narrow exception: both referenced tables must first exist. Bootstrap changes do not build a history of column additions or table reshaping. This policy does not govern later migrations of released databases with retained data.
+
+The job table remains owned and migrated by Effect's queue store ([background-jobs.md](background-jobs.md)). The first migration owns the shared `set_updated_at` trigger function.
 
 ## URLs and dates
 
