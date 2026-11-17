@@ -22,7 +22,7 @@ The ports differ from local development, so the suite runs beside `pnpm dev`. Af
 ## Writing tests
 
 - Specs live in `src/*.spec.ts`; fixtures and helpers in `src/test/`.
-- Start from the `visitor`, `signedIn` or `onboarded` fixtures. `test.use({ accessScope: 'written' })` changes the exam parts of the `onboarded` path, and `test.use({ pathConfiguration: smallPathConfiguration })` onboards to the small second path, whose learning round takes three answers.
+- Start from the `visitor`, `signedIn` or `onboarded` fixtures. `test.use({ accessScope: 'written' })` changes the exam parts of the `onboarded` path, and `test.use({ pathConfiguration: smallPathConfiguration })` onboards to the small second path, whose learning round takes three answers and which has no mock exam blueprint. The default path has eight written questions per category and the seeded mock exam.
 - Each test is its own client address and its own account, so tests run in parallel.
 - Path fixture IDs mirror `apps/api/src/test/preparation.ts`; update both when the technical seed changes. The visitor fixture injects the client address through Playwright routing to avoid adding a browser CORS preflight. It freezes browser time to match the API's catalogue clock; Cloudflare SSR retains its real clock, so displayed business dates must come from the API.
 - Follow the E2E rules in [CODING_STANDARDS.md](../../CODING_STANDARDS.md#testing).
