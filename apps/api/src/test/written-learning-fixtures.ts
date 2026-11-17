@@ -7,7 +7,7 @@ import type {
 import type { StudySessionId } from '@inzpro/domain/modules/learning/study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { paragraphs, type RichContent } from '@inzpro/rich-content/rich-content'
-import { Effect, Schema, Option } from 'effect'
+import { type DateTime, Effect, Schema, Option } from 'effect'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import {
   NewQuestion,
@@ -16,6 +16,7 @@ import {
   type RevisionChangeKind,
   substantiveChange,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
+import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { StudyReader } from '~api/modules/written-study/application/study.reader.js'
 import { runFixture } from '~api/test/run-fixture.js'
 
@@ -162,5 +163,24 @@ export const currentReviewState = (
       const studyReader = yield* StudyReader
 
       return yield* studyReader.reviewState(userId, pathId, questionId)
+    }),
+  )
+
+export const learningEventOnStudyDay = (
+  userId: UserId,
+  pathId: QualificationPathId,
+  questionRevisionId: QuestionRevisionId,
+  at: DateTime.Utc,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const studyReader = yield* StudyReader
+
+      return yield* studyReader.answeredContentOnStudyDay(
+        userId,
+        pathId,
+        questionRevisionId,
+        studyDayOf(at),
+      )
     }),
   )

@@ -56,6 +56,7 @@ export default Effect.gen(function* () {
     qualification_path_id uuid NOT NULL,
     blueprint_id uuid NOT NULL,
     blueprint_version integer NOT NULL,
+    user_exam_goal_version integer NOT NULL,
     status text NOT NULL CHECK (status IN ('in-progress','paused','finished','abandoned')),
     started_at timestamptz(3) NOT NULL,
     finished_at timestamptz(3),
@@ -71,7 +72,9 @@ export default Effect.gen(function* () {
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now(),
     FOREIGN KEY (user_id, qualification_path_id) REFERENCES user_qualification_paths(user_id, qualification_path_id) ON DELETE CASCADE,
-    FOREIGN KEY (blueprint_id, blueprint_version) REFERENCES exam_blueprint_versions(blueprint_id, version)
+    FOREIGN KEY (user_id, qualification_path_id, user_exam_goal_version) REFERENCES user_exam_goals(user_id, qualification_path_id, version) ON DELETE CASCADE,
+    FOREIGN KEY (blueprint_id, blueprint_version) REFERENCES exam_blueprint_versions(blueprint_id, version),
+    UNIQUE (id, user_id, qualification_path_id, user_exam_goal_version)
   )`
   yield* sql`CREATE TRIGGER mock_exam_attempts_updated_at BEFORE UPDATE ON mock_exam_attempts FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`CREATE UNIQUE INDEX mock_exam_attempts_one_unfinished ON mock_exam_attempts (user_id, qualification_path_id) WHERE status IN ('in-progress','paused')`
@@ -125,4 +128,6 @@ export default Effect.gen(function* () {
   )`
   yield* sql`CREATE TRIGGER mock_exam_attempt_questions_updated_at BEFORE UPDATE ON mock_exam_attempt_questions FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`ALTER TABLE mock_exam_attempt_questions ADD FOREIGN KEY (attempt_id, position, selected_answer_id) REFERENCES mock_exam_attempt_answer_options(attempt_id, position, question_answer_id)`
+  yield* sql`ALTER TABLE written_learning_events ADD FOREIGN KEY (mock_exam_attempt_id, user_id, qualification_path_id, user_exam_goal_version) REFERENCES mock_exam_attempts(id, user_id, qualification_path_id, user_exam_goal_version) ON DELETE CASCADE`
+  yield* sql`ALTER TABLE written_learning_events ADD FOREIGN KEY (mock_exam_attempt_id, attempt_position) REFERENCES mock_exam_attempt_questions(attempt_id, position) ON DELETE CASCADE`
 })

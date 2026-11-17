@@ -21,6 +21,7 @@ import type {
 import type {
   AttemptReviewQuestion,
   AttemptScoreCounts,
+  FinalAttemptAnswer,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import type {
   AttemptQuestion,
@@ -38,6 +39,9 @@ export class MockExamReader extends Context.Service<
       pathId: QualificationPathId,
       attemptId: MockExamAttemptId,
     ) => Effect.Effect<Option.Option<AttemptScoreCounts>, MockExamReadError>
+    readonly finalAnswers: (
+      attemptId: MockExamAttemptId,
+    ) => Effect.Effect<ReadonlyArray<FinalAttemptAnswer>, MockExamReadError>
     readonly history: (
       userId: UserId,
       pathId: QualificationPathId,

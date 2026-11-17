@@ -38,9 +38,10 @@ import { QuestionNote } from '~api/modules/learning/domain/question-note.model.j
 import { MockExamReadError } from '~api/modules/mock-exams/application/errors.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import type { ExamBlueprint } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
-import type {
-  AttemptScoreCounts,
-  AttemptReviewQuestion,
+import {
+  type AttemptScoreCounts,
+  type AttemptReviewQuestion,
+  FinalAttemptAnswer,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import type {
   AttemptQuestion,
@@ -357,6 +358,19 @@ export const MockExamReaderLive = Layer.effect(
             )
 
           return Option.some<AttemptScoreCounts>({ ...row, sections })
+        },
+        Effect.mapError(cause => new MockExamReadError({ cause })),
+      ),
+      finalAnswers: Effect.fn('MockExamReader.finalAnswers')(
+        function* (attemptId) {
+          const rows =
+            yield* sql`SELECT q.position,q.question_id,q.question_revision_id,qa.is_correct,a.user_exam_goal_version AS goal_version
+ FROM mock_exam_attempts a JOIN mock_exam_attempt_questions q ON q.attempt_id=a.id
+ JOIN question_revisions r ON r.id=q.question_revision_id AND r.withdrawn_at IS NULL
+ JOIN question_answers qa ON qa.id=q.selected_answer_id
+ WHERE a.id=${attemptId} ORDER BY q.position`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(FinalAttemptAnswer))(rows)
         },
         Effect.mapError(cause => new MockExamReadError({ cause })),
       ),

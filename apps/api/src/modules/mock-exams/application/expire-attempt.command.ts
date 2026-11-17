@@ -4,9 +4,11 @@ import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-acces
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
-import { endLockedAttempt } from '~api/modules/mock-exams/application/attempt-ending.service.js'
+import {
+  endLockedAttempt,
+  lockAttemptForEnding,
+} from '~api/modules/mock-exams/application/attempt-ending.service.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
-import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import { isDueToExpire } from '~api/modules/mock-exams/domain/mock-exam-clock.rules.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 
@@ -15,12 +17,11 @@ export const finishAttemptIfExpired = Effect.fn('MockExams.finishAttemptIfExpire
   pathId: QualificationPathId,
   attemptId: MockExamAttemptId,
 ) {
-  const mockExamRepository = yield* MockExamRepository
   const transaction = yield* Transaction
 
   yield* transaction.run(
     Effect.gen(function* () {
-      const clock = yield* mockExamRepository.lockAttempt(userId, pathId, attemptId)
+      const clock = yield* lockAttemptForEnding(userId, pathId, attemptId)
       const now = yield* DateTime.now
 
       if (Option.isSome(clock) && isDueToExpire(clock.value, now)) {

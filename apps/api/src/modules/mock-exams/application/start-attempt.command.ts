@@ -45,7 +45,7 @@ export const startAttempt = Effect.fn('MockExams.startAttempt')(function* (
   return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
+      const assignment = yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
 
       const unfinished = yield* mockExamReader.unfinishedAttempt(userId, pathId)
 
@@ -86,6 +86,7 @@ export const startAttempt = Effect.fn('MockExams.startAttempt')(function* (
         qualificationPathId: pathId,
         blueprintId,
         blueprintVersion: version,
+        goalVersion: assignment.goal.version,
         startedAt: yield* DateTime.now,
         questions,
       })

@@ -148,8 +148,8 @@ export const MockExamRepositoryLive = Layer.effect(
           const startedAt = DateTime.formatIso(attempt.startedAt)
 
           const [created] =
-            yield* sql`INSERT INTO mock_exam_attempts (user_id,qualification_path_id,blueprint_id,blueprint_version,status,started_at)
- VALUES (${attempt.userId},${attempt.qualificationPathId},${attempt.blueprintId},${attempt.blueprintVersion},${inProgressAttempt},${startedAt})
+            yield* sql`INSERT INTO mock_exam_attempts (user_id,qualification_path_id,blueprint_id,blueprint_version,user_exam_goal_version,status,started_at)
+ VALUES (${attempt.userId},${attempt.qualificationPathId},${attempt.blueprintId},${attempt.blueprintVersion},${attempt.goalVersion},${inProgressAttempt},${startedAt})
  RETURNING id`.pipe(
               Effect.flatMap(
                 Schema.decodeUnknownEffect(
