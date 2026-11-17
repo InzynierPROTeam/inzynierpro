@@ -15,10 +15,13 @@ import {
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import {
   AttemptQuestionPosition,
+  type AttemptQuestionVersion,
+  initialAttemptQuestionVersion,
   inProgressAttempt,
   MockExamAttemptId,
+  MockExamAttemptStatus,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
-import { Array as Arr, DateTime, Effect, Layer, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { MockExamWriteError } from '~api/modules/mock-exams/application/errors.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
@@ -44,6 +47,7 @@ type AttemptQuestionInsert = {
   readonly sectionPosition: ExamSectionPosition
   readonly questionId: WrittenQuestionId
   readonly questionRevisionId: QuestionRevisionId
+  readonly version: AttemptQuestionVersion
 }
 
 type AnswerOptionInsert = {
@@ -136,6 +140,7 @@ export const MockExamRepositoryLive = Layer.effect(
               sectionPosition: question.section,
               questionId: question.questionId,
               questionRevisionId: question.questionRevisionId,
+              version: initialAttemptQuestionVersion,
             }),
           )
 
@@ -161,6 +166,35 @@ export const MockExamRepositoryLive = Layer.effect(
           return created.id
         },
         Effect.mapError(cause => new MockExamWriteError({ cause })),
+      ),
+      lockAttempt: Effect.fn('MockExamRepository.lockAttempt')(
+        function* (userId, pathId, attemptId) {
+          const rows = yield* sql`SELECT status FROM mock_exam_attempts
+ WHERE id=${attemptId} AND user_id=${userId} AND qualification_path_id=${pathId} LIMIT 1 FOR UPDATE`
+
+          const attempts = yield* Schema.decodeUnknownEffect(
+            Schema.Array(Schema.Struct({ status: MockExamAttemptStatus })),
+          )(rows)
+
+          return Option.map(Arr.head(attempts), attempt => attempt.status)
+        },
+        Effect.mapError(cause => new MockExamWriteError({ cause })),
+      ),
+      saveAttemptAnswer: Effect.fn('MockExamRepository.saveAttemptAnswer')(
+        (attemptId, position, answerId, version) =>
+          sql`UPDATE mock_exam_attempt_questions SET selected_answer_id=${answerId},version=${version}
+ WHERE attempt_id=${attemptId} AND position=${position}`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new MockExamWriteError({ cause })),
+          ),
+      ),
+      flagAttemptQuestion: Effect.fn('MockExamRepository.flagAttemptQuestion')(
+        (attemptId, position, isFlagged, version) =>
+          sql`UPDATE mock_exam_attempt_questions SET is_flagged=${isFlagged},version=${version}
+ WHERE attempt_id=${attemptId} AND position=${position}`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new MockExamWriteError({ cause })),
+          ),
       ),
     })
   }),

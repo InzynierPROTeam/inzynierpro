@@ -1,7 +1,9 @@
 import type {
+  FlagAttemptQuestionEndpoint,
   GetAttemptQuestionEndpoint,
   GetMockExamAttemptEndpoint,
   GetMockExamPreviewEndpoint,
+  SaveAttemptAnswerEndpoint,
   StartMockExamAttemptEndpoint,
 } from '@inzpro/api-contracts/modules/mock-exams/api'
 import type { Effect } from 'effect'
@@ -43,3 +45,21 @@ export type GetAttemptQuestionRequest = InferEndpointRequest<typeof GetAttemptQu
 export type GetAttemptQuestionRes = Effect.Success<ReturnType<typeof getAttemptQuestion>>
 
 export type GetAttemptQuestionError = Effect.Error<ReturnType<typeof getAttemptQuestion>>
+
+export const saveAttemptAnswer = (req: SaveAttemptAnswerRequest) =>
+  apiAction(api => api.MockExams.SaveAttemptAnswer(req))
+
+export type SaveAttemptAnswerRequest = InferEndpointRequest<typeof SaveAttemptAnswerEndpoint>
+
+export type SaveAttemptAnswerRes = Effect.Success<ReturnType<typeof saveAttemptAnswer>>
+
+export type SaveAttemptAnswerError = Effect.Error<ReturnType<typeof saveAttemptAnswer>>
+
+export const flagAttemptQuestion = (req: FlagAttemptQuestionRequest) =>
+  apiAction(api => api.MockExams.FlagAttemptQuestion(req))
+
+export type FlagAttemptQuestionRequest = InferEndpointRequest<typeof FlagAttemptQuestionEndpoint>
+
+export type FlagAttemptQuestionRes = Effect.Success<ReturnType<typeof flagAttemptQuestion>>
+
+export type FlagAttemptQuestionError = Effect.Error<ReturnType<typeof flagAttemptQuestion>>

@@ -17,6 +17,7 @@ import {
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import {
   AttemptQuestionPosition,
+  AttemptQuestionVersion,
   MockExamAttemptId,
   MockExamAttemptStatus,
   unfinishedAttemptStatuses,
@@ -84,6 +85,12 @@ const AttemptSectionRow = Schema.Struct({
   questionCount: QuestionCount,
 })
 
+const AttemptQuestionStateRow = Schema.Struct({
+  position: AttemptQuestionPosition,
+  isAnswered: Schema.Boolean,
+  isFlagged: Schema.Boolean,
+})
+
 const AttemptQuestionRow = Schema.Struct({
   position: AttemptQuestionPosition,
   section: ExamSectionPosition,
@@ -91,6 +98,9 @@ const AttemptQuestionRow = Schema.Struct({
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
   isWithdrawn: Schema.Boolean,
+  selectedAnswerId: Schema.NullOr(QuestionAnswerId),
+  isFlagged: Schema.Boolean,
+  version: AttemptQuestionVersion,
   answerId: QuestionAnswerId,
   answerText: Schema.NonEmptyString,
 })
@@ -260,6 +270,12 @@ export const MockExamReaderLive = Layer.effect(
               Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(AttemptSectionRow))),
             )
 
+          const questions =
+            yield* sql`SELECT position,selected_answer_id IS NOT NULL AS is_answered,is_flagged FROM mock_exam_attempt_questions
+ WHERE attempt_id=${attempt.id} ORDER BY position`.pipe(
+              Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(AttemptQuestionStateRow))),
+            )
+
           return Option.some({
             id: attempt.id,
             status: attempt.status,
@@ -268,6 +284,7 @@ export const MockExamReaderLive = Layer.effect(
             passThreshold: attempt.passThreshold,
             questionCount: attempt.questionCount,
             sections,
+            questions,
           })
         },
         Effect.mapError(cause => new MockExamReadError({ cause })),
@@ -276,7 +293,7 @@ export const MockExamReaderLive = Layer.effect(
         function* (userId, pathId, attemptId, position) {
           const rows =
             yield* sql`SELECT q.position,q.section_position AS section,q.question_id,q.question_revision_id,r.body,r.withdrawn_at IS NOT NULL AS is_withdrawn,
- qa.id AS answer_id,qa.text AS answer_text
+ q.selected_answer_id,q.is_flagged,q.version,qa.id AS answer_id,qa.text AS answer_text
  FROM mock_exam_attempts a
  JOIN mock_exam_attempt_questions q ON q.attempt_id=a.id
  JOIN question_revisions r ON r.id=q.question_revision_id
@@ -295,6 +312,9 @@ export const MockExamReaderLive = Layer.effect(
             body: first.body,
             isWithdrawn: first.isWithdrawn,
             answers: rows.map(row => ({ id: row.answerId, text: row.answerText })),
+            selectedAnswerId: Option.fromNullOr(first.selectedAnswerId),
+            isFlagged: first.isFlagged,
+            version: first.version,
           }))
         },
         Effect.mapError(cause => new MockExamReadError({ cause })),

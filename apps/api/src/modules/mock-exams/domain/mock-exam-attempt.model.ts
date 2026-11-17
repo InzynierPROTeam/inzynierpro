@@ -15,10 +15,12 @@ import type {
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type {
   AttemptQuestionPosition,
+  AttemptQuestionVersion,
   MockExamAttemptId,
   MockExamAttemptStatus,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { Option } from 'effect'
 
 export type MockExamAttemptSummary = {
   readonly id: MockExamAttemptId
@@ -40,6 +42,15 @@ export type AttemptQuestion = {
   readonly body: string
   readonly answers: ReadonlyArray<{ readonly id: QuestionAnswerId; readonly text: string }>
   readonly isWithdrawn: boolean
+  readonly selectedAnswerId: Option.Option<QuestionAnswerId>
+  readonly isFlagged: boolean
+  readonly version: AttemptQuestionVersion
+}
+
+export type AttemptQuestionState = {
+  readonly position: AttemptQuestionPosition
+  readonly isAnswered: boolean
+  readonly isFlagged: boolean
 }
 
 export type MockExamAttempt = MockExamAttemptSummary & {
@@ -47,6 +58,7 @@ export type MockExamAttempt = MockExamAttemptSummary & {
   readonly passThreshold: QuestionCount
   readonly questionCount: QuestionCount
   readonly sections: ReadonlyArray<AttemptSection>
+  readonly questions: ReadonlyArray<AttemptQuestionState>
 }
 
 export type ExamCandidate = {

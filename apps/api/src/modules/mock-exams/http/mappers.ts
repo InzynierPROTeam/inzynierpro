@@ -1,4 +1,5 @@
 import type {
+  AttemptQuestion as AttemptQuestionDto,
   MockExamAttempt as MockExamAttemptDto,
   MockExamAttemptSummary as MockExamAttemptSummaryDto,
   MockExamPreview as MockExamPreviewDto,
@@ -10,6 +11,7 @@ import { Option } from 'effect'
 import type { ExamBlueprintPreview } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
 import { blueprintQuestionCount } from '~api/modules/mock-exams/domain/exam-blueprint.rules.js'
 import type {
+  AttemptQuestion,
   MockExamAttempt,
   MockExamAttemptSummary,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
@@ -49,4 +51,10 @@ export const toMockExamAttemptDto = (attempt: MockExamAttempt): MockExamAttemptD
   passThreshold: attempt.passThreshold,
   questionCount: attempt.questionCount,
   sections: attempt.sections,
+  questions: attempt.questions,
+})
+
+export const toAttemptQuestionDto = (question: AttemptQuestion): AttemptQuestionDto => ({
+  ...question,
+  selectedAnswerId: Option.getOrNull(question.selectedAnswerId),
 })
