@@ -1,7 +1,5 @@
-import {
-  OralSessionAlreadyStarted,
-  StaleSessionPreview,
-} from '@inzpro/api-contracts/modules/study/errors'
+import { StaleSessionPreview } from '@inzpro/api-contracts/modules/learning/errors'
+import { OralSessionAlreadyStarted } from '@inzpro/api-contracts/modules/oral-study/errors'
 import { InternalServerError } from '@inzpro/api-contracts/utils/api-error'
 import { Schema } from 'effect'
 import { expect, test } from 'vitest'

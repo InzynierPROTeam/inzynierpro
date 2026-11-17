@@ -6,7 +6,7 @@ const buildingLaw = 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'
 test('a learner marks a favourite, completes a favourites session and sees its summary', async ({
   onboarded: { page },
 }) => {
-  const favoritesTile = page.getByRole('region', { name: 'Ulubione pytania' })
+  const favoritesTile = page.getByRole('region', { name: 'Ulubione pytania', exact: true })
 
   await page.goto('/start')
   await expect(favoritesTile).toContainText('Nie masz jeszcze ulubionych pytań.')

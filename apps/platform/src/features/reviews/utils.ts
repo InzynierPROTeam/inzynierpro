@@ -1,4 +1,4 @@
-import type { ReviewPreview } from '@inzpro/api-contracts/modules/study/responses'
+import type { ReviewPreview } from '@inzpro/api-contracts/modules/written-study/responses'
 import { getRouteApi } from '@tanstack/react-router'
 
 export const reviewPreviewRouteApi = getRouteApi(

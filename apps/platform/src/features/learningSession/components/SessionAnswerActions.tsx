@@ -1,17 +1,17 @@
-import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
-import { nextQuestionPosition } from '@inzpro/domain/modules/study/study-session'
-import { sessionQueryOptions } from '@inzpro/queries/modules/study'
+import type { SessionQuestion } from '@inzpro/api-contracts/modules/written-study/responses'
+import { nextQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
+import { sessionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { useIsMutating, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { LoaderCircle } from 'lucide-react'
 import type React from 'react'
+import { sessionNextStep } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useEndSession } from '../hooks/useEndSession'
 import { recordAssistanceMutationKey } from '../hooks/useRecordSessionAssistance'
-import { sessionNextStep } from '../utils'
 
 type SessionAnswerActionsProps = {
   question: SessionQuestion

@@ -1,0 +1,39 @@
+import { Api } from '@inzpro/api-contracts/api'
+import { Layer } from 'effect'
+import { HttpApiBuilder } from 'effect/http-api'
+import { AuthenticationLive } from '~api/middleware/authentication.js'
+import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
+import { OralSessionQuizReaderLive } from '~api/modules/oral-study/infrastructure/oral-session-quiz.reader.postgres.js'
+import { OralSessionQuizRepositoryLive } from '~api/modules/oral-study/infrastructure/oral-session-quiz.repository.postgres.js'
+import { OralStudyReaderLive } from '~api/modules/oral-study/infrastructure/oral-study.reader.postgres.js'
+import { OralStudyRepositoryLive } from '~api/modules/oral-study/infrastructure/oral-study.repository.postgres.js'
+import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
+import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+
+import { favoritesHandlers } from './favorites.handlers.js'
+import { materialHandlers } from './material.handlers.js'
+import { notesHandlers } from './notes.handlers.js'
+import { quizHandlers } from './quiz.handlers.js'
+import { reviewHandlers } from './review.handlers.js'
+import { sessionHandlers } from './session.handlers.js'
+
+export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
+  handlers.handleAll({
+    ...notesHandlers,
+    ...favoritesHandlers,
+    ...reviewHandlers,
+    ...materialHandlers,
+    ...sessionHandlers,
+    ...quizHandlers,
+  }),
+).pipe(Layer.provide(AuthenticationLive))
+
+export const OralStudyRequestServices = Layer.mergeAll(
+  PreparationReaderLive,
+  PreparationRepositoryLive,
+  OralStudyReaderLive,
+  OralStudyRepositoryLive,
+  OralSessionQuizReaderLive,
+  OralSessionQuizRepositoryLive,
+  ReviewSchedulerLive,
+)

@@ -1,4 +1,4 @@
-import type { StudySession } from '@inzpro/api-contracts/modules/study/responses'
+import type { StudySession } from '@inzpro/api-contracts/modules/written-study/responses'
 import { Button } from '@inzpro/ui/components/button'
 import { Link } from '@tanstack/react-router'
 import type React from 'react'

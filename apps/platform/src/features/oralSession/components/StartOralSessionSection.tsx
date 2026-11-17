@@ -1,9 +1,9 @@
-import type { OralStudySession } from '@inzpro/api-contracts/modules/study/responses'
-import { activeStudySession } from '@inzpro/domain/modules/study/study-session'
+import type { OralStudySession } from '@inzpro/api-contracts/modules/oral-study/responses'
+import { activeStudySession } from '@inzpro/domain/modules/learning/study-session'
 import {
   latestOralSessionQueryOptions,
   oralSessionPreviewQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
@@ -26,7 +26,7 @@ import { Mic2 } from 'lucide-react'
 import type React from 'react'
 import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
-import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCard'
+import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCardSkeleton'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 

@@ -1,4 +1,4 @@
-import { oralMaterialsInfiniteQueryOptions } from '@inzpro/queries/modules/study'
+import { oralMaterialsInfiniteQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { constVoid } from 'effect/Function'
 import { seo } from '~platform/config/app'

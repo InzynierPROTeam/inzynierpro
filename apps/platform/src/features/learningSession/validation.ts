@@ -1,6 +1,6 @@
-import { SessionQuestionParams } from '@inzpro/api-contracts/modules/study/requests'
+import { SessionQuestionParams } from '@inzpro/api-contracts/modules/written-study/requests'
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
-import { StudySessionId } from '@inzpro/domain/modules/study/study-session'
+import { StudySessionId } from '@inzpro/domain/modules/learning/study-session'
 import { Schema } from 'effect'
 
 export const LearningPreviewSearch = Schema.Struct({

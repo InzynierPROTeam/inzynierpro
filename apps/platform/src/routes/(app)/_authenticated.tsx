@@ -1,5 +1,5 @@
 import { Unauthenticated } from '@inzpro/api-contracts/middleware/authentication/errors'
-import { currentSessionQueryOptions } from '@inzpro/queries/modules/identity'
+import { currentSessionQueryOptions } from '@inzpro/queries/modules/identity/queries'
 import { canSsrWithCookies } from '@inzpro/react-utils/tanstack-start/cookies'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Effect, Option, Schema } from 'effect'

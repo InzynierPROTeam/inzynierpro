@@ -1,5 +1,5 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import { studyKeys } from '@inzpro/queries/modules/study'
+import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Predicate } from 'effect'
@@ -14,7 +14,7 @@ export const useStartFavoritesSession = (userId: UserId) => {
     mutationFn: startStudyFavoritesSession,
     onSuccess: async (session, req) => {
       await client.invalidateQueries({
-        queryKey: studyKeys.path(userId, req.params.qualificationPathId),
+        queryKey: writtenStudyKeys.path(userId, req.params.qualificationPathId),
       })
       await navigate({
         to: '/nauka/sesja/$sessionId/$questionNumber',
@@ -29,10 +29,10 @@ export const useStartFavoritesSession = (userId: UserId) => {
       ) {
         await Promise.all([
           client.invalidateQueries({
-            queryKey: studyKeys.path(userId, req.params.qualificationPathId),
+            queryKey: writtenStudyKeys.path(userId, req.params.qualificationPathId),
           }),
           client.invalidateQueries({
-            queryKey: studyKeys.getFavoritesPreview(userId, {
+            queryKey: writtenStudyKeys.getFavoritesPreview(userId, {
               params: req.params,
               query: { documentId: req.payload.documentId },
             }),

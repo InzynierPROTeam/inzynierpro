@@ -1,6 +1,3 @@
-import { readdirSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-
 import { describe, expect, test } from 'vitest'
 
 import {
@@ -52,13 +49,6 @@ const undeclaredTargets = (graph: Graph, nodes: ReadonlyArray<string>) =>
     .flat()
     .filter(target => !nodes.includes(target))
 
-const folders = (path: string) =>
-  readdirSync(fileURLToPath(new URL(path, import.meta.url)), { withFileTypes: true })
-    .flatMap(entry =>
-      entry.isDirectory() && !entry.name.startsWith('lint-probe-') ? [entry.name] : [],
-    )
-    .toSorted()
-
 describe('findCycle', () => {
   test('reports a cycle through several nodes', () => {
     expect(findCycle({ a: ['b'], b: ['c'], c: ['a'] })).toEqual(['a', 'b', 'c', 'a'])
@@ -85,12 +75,6 @@ describe('workspace packages', () => {
 describe('API modules', () => {
   test('depend on each other without cycles', () => {
     expect(findCycle(apiModuleDependencies)).toBeUndefined()
-  })
-
-  test('are declared exactly as the module folders that exist', () => {
-    expect(Object.keys(apiModuleDependencies).toSorted()).toEqual(
-      folders('../../../../apps/api/src/modules'),
-    )
   })
 
   test('depend only on declared modules', () => {

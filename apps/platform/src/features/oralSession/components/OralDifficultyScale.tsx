@@ -1,4 +1,4 @@
-import { oralSelfAssessmentValues } from '@inzpro/domain/modules/study/oral-study-session'
+import { oralSelfAssessmentValues } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Popover,

@@ -6,21 +6,7 @@ import {
   type StartOralSessionRequest,
   submitOralSelfAssessment,
   type SubmitOralSelfAssessmentRequest,
-  startOralFavoritesSession,
-  type StartOralFavoritesSessionRequest,
-  markOralFavoriteQuestion,
-  type MarkOralFavoriteQuestionRequest,
-  unmarkOralFavoriteQuestion,
-  type UnmarkOralFavoriteQuestionRequest,
-  clearOralQuestionNote,
-  type ClearOralQuestionNoteRequest,
-  saveOralQuestionNote,
-  type SaveOralQuestionNoteRequest,
-  startOralSessionQuiz,
-  type StartOralSessionQuizRequest,
-  answerOralQuizCheck,
-  type AnswerOralQuizCheckRequest,
-} from '@inzpro/api-client/modules/study'
+} from '@inzpro/api-client/modules/oral-study'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 export const startOralStudySession = (req: StartOralSessionRequest) =>
@@ -31,24 +17,3 @@ export const submitOralStudySelfAssessment = (req: SubmitOralSelfAssessmentReque
 
 export const endOralStudySession = (req: EndOralSessionRequest) =>
   runApi(endOralSession(req), apiHttpClient)
-
-export const startStudyOralFavoritesSession = (req: StartOralFavoritesSessionRequest) =>
-  runApi(startOralFavoritesSession(req), apiHttpClient)
-
-export const markOralFavorite = (req: MarkOralFavoriteQuestionRequest) =>
-  runApi(markOralFavoriteQuestion(req), apiHttpClient)
-
-export const unmarkOralFavorite = (req: UnmarkOralFavoriteQuestionRequest) =>
-  runApi(unmarkOralFavoriteQuestion(req), apiHttpClient)
-
-export const saveOralNote = (req: SaveOralQuestionNoteRequest) =>
-  runApi(saveOralQuestionNote(req), apiHttpClient)
-
-export const clearOralNote = (req: ClearOralQuestionNoteRequest) =>
-  runApi(clearOralQuestionNote(req), apiHttpClient)
-
-export const startOralQuiz = (req: StartOralSessionQuizRequest) =>
-  runApi(startOralSessionQuiz(req), apiHttpClient)
-
-export const checkOralQuizAnswer = (req: AnswerOralQuizCheckRequest) =>
-  runApi(answerOralQuizCheck(req), apiHttpClient)

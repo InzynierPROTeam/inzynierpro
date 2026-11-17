@@ -1,4 +1,4 @@
-import { oralSessionQuestionQueryOptions } from '@inzpro/queries/modules/study'
+import { oralSessionQuestionQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@inzpro/ui/components/card'
 import {
@@ -17,12 +17,12 @@ import { FileQuestionMark } from 'lucide-react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { SessionQuestionWithdrawn } from '~platform/features/learningSession/components/SessionQuestionWithdrawn'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { OralFavoriteToggleButton } from '~platform/features/oralFavorites/components/OralFavoriteToggleButton'
+import { OralQuestionNoteDialog } from '~platform/features/oralQuestionNotes/components/OralQuestionNoteDialog'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { oralSessionQuestionRouteApi } from '../utils'
 import { OralAnswerReveal } from './OralAnswerReveal'
-import { OralFavoriteToggleButton } from './OralFavoriteToggleButton'
-import { OralQuestionNoteDialog } from './OralQuestionNoteDialog'
 import { OralSelfAssessmentActions } from './OralSelfAssessmentActions'
 
 export const OralSessionQuestionCard = () => {

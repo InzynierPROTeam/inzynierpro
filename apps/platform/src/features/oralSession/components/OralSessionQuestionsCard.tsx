@@ -1,6 +1,6 @@
-import type { OralSessionQuestionResult } from '@inzpro/api-contracts/modules/study/responses'
-import type { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
-import { oralSessionResultsInfiniteQueryOptions } from '@inzpro/queries/modules/study'
+import type { OralSessionQuestionResult } from '@inzpro/api-contracts/modules/oral-study/responses'
+import type { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-study-session'
+import { oralSessionResultsInfiniteQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Card,

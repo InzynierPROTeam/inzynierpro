@@ -1,4 +1,4 @@
-import { specializationsQueryOptions } from '@inzpro/queries/modules/qualification-paths'
+import { specializationsQueryOptions } from '@inzpro/queries/modules/qualification-paths/queries'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { constVoid } from 'effect/Function'

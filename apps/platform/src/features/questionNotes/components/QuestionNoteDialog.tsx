@@ -1,6 +1,6 @@
-import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
-import { noteAssistanceKind } from '@inzpro/domain/modules/study/study-session'
-import { sessionQueryOptions } from '@inzpro/queries/modules/study'
+import type { SessionQuestion } from '@inzpro/api-contracts/modules/written-study/responses'
+import { noteAssistanceKind } from '@inzpro/domain/modules/learning/study-session'
+import { sessionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Alert, AlertDescription, AlertTitle } from '@inzpro/ui/components/alert'
 import { Button } from '@inzpro/ui/components/button'
 import {

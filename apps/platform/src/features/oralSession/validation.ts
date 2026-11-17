@@ -1,6 +1,6 @@
-import { OralSessionQuestionParams } from '@inzpro/api-contracts/modules/study/requests'
+import { OralSessionQuestionParams } from '@inzpro/api-contracts/modules/oral-study/requests'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
-import { OralStudySessionId } from '@inzpro/domain/modules/study/oral-study-session'
+import { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { Schema } from 'effect'
 
 export const OralPreviewSearch = Schema.Struct({
@@ -15,7 +15,3 @@ export const OralSessionQuestionRouteParams = Schema.Struct({
 })
 
 export const OralSessionSummaryRouteParams = Schema.Struct({ sessionId: OralStudySessionId })
-
-export const OralFavoritesPreviewSearch = Schema.Struct({
-  'liczba-pytan': Schema.optional(Schema.Int.check(Schema.isGreaterThan(0))),
-})

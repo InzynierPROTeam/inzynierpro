@@ -1,5 +1,5 @@
-import type { OralStudySessionSummary } from '@inzpro/api-contracts/modules/study/responses'
-import { oralSelfAssessmentValues } from '@inzpro/domain/modules/study/oral-study-session'
+import type { OralStudySessionSummary } from '@inzpro/api-contracts/modules/oral-study/responses'
+import { oralSelfAssessmentValues } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import {
   Card,
   CardContent,

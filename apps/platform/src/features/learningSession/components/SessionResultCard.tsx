@@ -1,5 +1,5 @@
-import type { StudySessionSummary } from '@inzpro/api-contracts/modules/study/responses'
-import { scoredQuestionCount } from '@inzpro/domain/modules/study/study-session'
+import type { StudySessionSummary } from '@inzpro/api-contracts/modules/written-study/responses'
+import { scoredQuestionCount } from '@inzpro/domain/modules/learning/study-session'
 import {
   Card,
   CardContent,
@@ -20,8 +20,8 @@ import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { CircleCheck, CircleSlash, LightbulbOff, ListChecks } from 'lucide-react'
 import type React from 'react'
+import { sessionScopeLabel } from '~platform/features/learningSession/utils/session'
 
-import { sessionScopeLabel } from '../utils'
 import { SessionResultRing } from './SessionResultRing'
 
 type SessionResultCardProps = { summary: StudySessionSummary }

@@ -1,10 +1,10 @@
-import type { OralSessionNextStep } from '@inzpro/api-contracts/modules/study/responses'
+import type { OralSessionNextStep } from '@inzpro/api-contracts/modules/oral-study/responses'
 import {
   reviewNextStep,
   continueStudyNextStep,
   startStudyNextStep,
-} from '@inzpro/domain/modules/study/study-session'
-import { oralSessionNextStepQueryOptions } from '@inzpro/queries/modules/study'
+} from '@inzpro/domain/modules/learning/study-session'
+import { oralSessionNextStepQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@inzpro/ui/components/card'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'

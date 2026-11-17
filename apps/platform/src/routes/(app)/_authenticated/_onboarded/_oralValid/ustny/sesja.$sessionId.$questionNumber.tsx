@@ -1,7 +1,7 @@
 import {
   oralSessionQueryOptions,
   oralSessionQuestionQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/oral-study/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { constVoid } from 'effect/Function'

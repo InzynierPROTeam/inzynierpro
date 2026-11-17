@@ -13,7 +13,8 @@ import {
   type RegionalSourceKind,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
-import { catalogueDistrictChambers, catalogueId } from './catalogue.js'
+import { catalogueId } from './catalogue-id.js'
+import { catalogueDistrictChambers } from './chamber-catalogue.js'
 
 const regionalLinks: ReadonlyArray<{
   readonly chamber: DistrictChamberCode

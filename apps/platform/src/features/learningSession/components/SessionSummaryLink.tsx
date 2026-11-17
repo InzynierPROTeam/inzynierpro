@@ -1,4 +1,4 @@
-import type { StudySessionId } from '@inzpro/domain/modules/study/study-session'
+import type { StudySessionId } from '@inzpro/domain/modules/learning/study-session'
 import { Button } from '@inzpro/ui/components/button'
 import { Link } from '@tanstack/react-router'
 import type React from 'react'

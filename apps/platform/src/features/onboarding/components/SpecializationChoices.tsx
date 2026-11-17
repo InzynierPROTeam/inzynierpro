@@ -1,4 +1,4 @@
-import { specializationsQueryOptions } from '@inzpro/queries/modules/qualification-paths'
+import { specializationsQueryOptions } from '@inzpro/queries/modules/qualification-paths/queries'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { apiHttpClient } from '~platform/lib/api-client'
 

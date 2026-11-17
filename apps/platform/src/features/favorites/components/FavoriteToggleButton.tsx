@@ -1,4 +1,4 @@
-import type { SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
+import type { SessionQuestion } from '@inzpro/api-contracts/modules/written-study/responses'
 import { Button } from '@inzpro/ui/components/button'
 import { Star } from 'lucide-react'
 import type React from 'react'

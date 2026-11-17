@@ -1,6 +1,6 @@
 import { PageLimit } from '@inzpro/domain/common/pagination'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
-import { pathsQueryOptions } from '@inzpro/queries/modules/preparation'
+import { pathsQueryOptions } from '@inzpro/queries/modules/preparation/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { constVoid } from 'effect/Function'
 import { seo } from '~platform/config/app'

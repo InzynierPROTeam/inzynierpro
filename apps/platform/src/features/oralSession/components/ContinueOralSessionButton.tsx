@@ -1,4 +1,4 @@
-import type { OralStudySession } from '@inzpro/api-contracts/modules/study/responses'
+import type { OralStudySession } from '@inzpro/api-contracts/modules/oral-study/responses'
 import { Button } from '@inzpro/ui/components/button'
 import { Link } from '@tanstack/react-router'
 import type React from 'react'

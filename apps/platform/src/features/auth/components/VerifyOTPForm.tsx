@@ -1,5 +1,5 @@
 import { getAuthErrorMessage } from '@inzpro/auth-client/error'
-import { identityKeys } from '@inzpro/queries/modules/identity'
+import { identityKeys } from '@inzpro/queries/modules/identity/keys'
 import { Button } from '@inzpro/ui/components/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@inzpro/ui/components/field'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@inzpro/ui/components/input-otp'

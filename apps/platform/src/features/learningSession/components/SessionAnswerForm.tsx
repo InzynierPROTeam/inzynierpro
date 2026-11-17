@@ -1,29 +1,29 @@
-import type { SessionAnswer, SessionQuestion } from '@inzpro/api-contracts/modules/study/responses'
+import type {
+  SessionAnswer,
+  SessionQuestion,
+} from '@inzpro/api-contracts/modules/written-study/responses'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
-import { endedStudySession } from '@inzpro/domain/modules/study/study-session'
-import { sessionQueryOptions } from '@inzpro/queries/modules/study'
+import { endedStudySession } from '@inzpro/domain/modules/learning/study-session'
+import { sessionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import {
   AnswerOption,
   AnswerOptionIndicator,
-  AnswerOptionSkeleton,
   AnswerOptionText,
   type AnswerOptionTone,
 } from '@inzpro/ui/components/answer-option'
-import { Button } from '@inzpro/ui/components/button'
 import { Field, FieldError, FieldTitle } from '@inzpro/ui/components/field'
 import { RadioGroup } from '@inzpro/ui/components/radio-group'
-import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { withAnswerLetters } from '@inzpro/utils/answer'
 import { revalidateLogic, useForm } from '@tanstack/react-form'
 import { useQuery } from '@tanstack/react-query'
 import { Match, Schema } from 'effect'
 import { CheckIcon, XIcon } from 'lucide-react'
 import type React from 'react'
+import { sessionWithdrawalNotice } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useSubmitSessionAnswer } from '../hooks/useSubmitSessionAnswer'
-import { sessionWithdrawalNotice } from '../utils'
 import { SessionAnswerActions } from './SessionAnswerActions'
 import { SessionAnswerExplanation } from './SessionAnswerExplanation'
 import { RemainingQuestionsWithdrawn, SessionQuestionWithdrawn } from './SessionQuestionWithdrawn'
@@ -160,20 +160,3 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
     </form>
   )
 }
-
-export const SessionAnswerFormSkeleton = () => (
-  <div className="flex flex-col gap-6">
-    <div className="flex flex-col gap-3">
-      <TextSkeleton
-        size="sm"
-        className="w-32"
-      />
-      <div className="@container flex flex-col gap-4">
-        <AnswerOptionSkeleton textClassName="max-w-24" />
-        <AnswerOptionSkeleton textClassName="max-w-40" />
-        <AnswerOptionSkeleton textClassName="max-w-32" />
-      </div>
-    </div>
-    <Button disabled>Sprawdź</Button>
-  </div>
-)

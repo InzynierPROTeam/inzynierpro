@@ -1,7 +1,7 @@
 import { Unauthenticated } from '@inzpro/api-contracts/middleware/authentication/errors'
 import { PageLimit } from '@inzpro/domain/common/pagination'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
-import { pathsQueryOptions } from '@inzpro/queries/modules/preparation'
+import { pathsQueryOptions } from '@inzpro/queries/modules/preparation/queries'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Effect, Option, Schema } from 'effect'
 import { selectedPathStore } from '~platform/features/examPaths/utils'

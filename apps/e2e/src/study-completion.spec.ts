@@ -184,6 +184,9 @@ test('continue opens the most recently used session and each category keeps its 
 
   await page.goto('/nauka')
   await page.getByRole('link', { name: new RegExp(technicalConditions) }).click()
+  await expect(
+    page.getByRole('heading', { level: 1, name: technicalConditions, exact: true }),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Kontynuuj' }).click()
   await expect(page).toHaveURL(conditionsSession)
   await page.reload()

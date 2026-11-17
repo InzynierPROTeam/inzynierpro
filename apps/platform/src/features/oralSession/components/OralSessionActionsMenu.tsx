@@ -1,5 +1,5 @@
-import { endedStudySession } from '@inzpro/domain/modules/study/study-session'
-import { oralSessionQueryOptions } from '@inzpro/queries/modules/study'
+import { endedStudySession } from '@inzpro/domain/modules/learning/study-session'
+import { oralSessionQueryOptions } from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   DropdownMenu,

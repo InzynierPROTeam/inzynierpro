@@ -1,6 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import { preparationKeys } from '@inzpro/queries/modules/preparation'
-import { studyKeys } from '@inzpro/queries/modules/study'
+import { oralStudyKeys } from '@inzpro/queries/modules/oral-study/keys'
+import { preparationKeys } from '@inzpro/queries/modules/preparation/keys'
+import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 
@@ -18,7 +19,12 @@ export const useArchivePath = (userId: UserId) => {
         client.invalidateQueries({
           queryKey: preparationKeys.path(userId, receipt.qualificationPathId),
         }),
-        client.invalidateQueries({ queryKey: studyKeys.path(userId, receipt.qualificationPathId) }),
+        client.invalidateQueries({
+          queryKey: writtenStudyKeys.path(userId, receipt.qualificationPathId),
+        }),
+        client.invalidateQueries({
+          queryKey: oralStudyKeys.path(userId, receipt.qualificationPathId),
+        }),
       ])
 
       await router.invalidate()

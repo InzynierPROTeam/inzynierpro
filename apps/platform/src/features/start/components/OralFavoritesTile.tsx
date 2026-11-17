@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle } from '@inzpro/ui/components/card'
-import { OralFavoritesTileContent } from '~platform/features/oralSession/components/OralFavoritesTileContent'
+import { OralFavoritesTileContent } from '~platform/features/oralFavorites/components/OralFavoritesTileContent'
 
 export const OralFavoritesTile = () => (
   <Card

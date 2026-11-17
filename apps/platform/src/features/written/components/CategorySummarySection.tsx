@@ -1,4 +1,4 @@
-import { documentQueryOptions } from '@inzpro/queries/modules/study'
+import { documentQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'

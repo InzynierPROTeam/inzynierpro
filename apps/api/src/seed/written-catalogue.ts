@@ -1,0 +1,109 @@
+import { RichContent, richContentVersion, type Text } from '@inzpro/rich-content/rich-content'
+import { Effect, Schema } from 'effect'
+import { SqlClient } from 'effect/sql'
+import {
+  cosmeticChange,
+  initialRevision,
+} from '~api/modules/learning-content/domain/learning-content.model.js'
+
+import { catalogueId } from './catalogue-id.js'
+import { buildingLaw, questions, laterRevisions } from './written-content.js'
+
+const explanationJson = (paragraph: ReadonlyArray<Text>) =>
+  Schema.decodeEffect(RichContent)({
+    version: richContentVersion,
+    doc: { type: 'doc', content: [{ type: 'paragraph', content: paragraph }] },
+  }).pipe(Effect.map(content => JSON.stringify(content)))
+
+export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* (
+  cataloguePathIds: ReadonlyArray<string>,
+) {
+  const sql = yield* SqlClient.SqlClient
+  yield* sql`INSERT INTO reference_documents (id, title) VALUES
+      ('20000000-0000-4000-8000-000000000001', 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'),
+      ('20000000-0000-4000-8000-000000000002', 'Warunki techniczne, jakim powinny odpowiadać budynki i ich usytuowanie') ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title`
+  yield* sql`INSERT INTO path_documents (qualification_path_id, document_id) VALUES
+      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001'),
+      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002'),
+      ('10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001') ON CONFLICT DO NOTHING`
+
+  for (const pathId of cataloguePathIds) {
+    if (pathId === catalogueId('10', 2)) {
+      continue
+    }
+
+    for (const documentId of [catalogueId('20', 1), catalogueId('20', 2)]) {
+      yield* sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId}) ON CONFLICT DO NOTHING`
+    }
+  }
+
+  for (const [questionIndex, question] of questions.entries()) {
+    const n = questionIndex + 1
+    const questionId = catalogueId('30', n)
+    const revisionId = catalogueId('43', n)
+    const { documentId } = question
+    const explanation = yield* explanationJson(question.explanation)
+    yield* sql`INSERT INTO written_questions (id, document_id) VALUES (${questionId}, ${documentId}) ON CONFLICT DO NOTHING`
+    yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id)
+        VALUES (${revisionId},${questionId},${question.body},${explanation}::jsonb,${initialRevision},${revisionId}) ON CONFLICT DO NOTHING`
+
+    const revisions =
+      yield* sql`SELECT published_at FROM question_revisions WHERE id=${revisionId} LIMIT 1`
+
+    if (revisions[0]?.publishedAt === null) {
+      for (const [index, text] of question.answers.entries()) {
+        const answerId = catalogueId('44', n * 10 + index + 1)
+        const isCorrect = index === 0
+        yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answerId},${revisionId},${text},${isCorrect}) ON CONFLICT DO NOTHING`
+      }
+
+      yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
+    }
+
+    yield* sql`UPDATE written_questions SET current_revision_id = ${revisionId} WHERE id = ${questionId} AND (current_revision_id IS NULL OR current_revision_id = ${catalogueId('41', n)})`
+    yield* sql`INSERT INTO path_questions (qualification_path_id, document_id, question_id)
+        VALUES ('10000000-0000-4000-8000-000000000001', ${documentId}, ${questionId}) ON CONFLICT DO NOTHING`
+  }
+
+  for (const revision of laterRevisions) {
+    const n = revision.questionNumber
+    const questionId = catalogueId('30', n)
+    const previousId = catalogueId('43', n)
+    const revisionId = catalogueId('45', n)
+
+    const substantiveRevisionId = revision.changeKind === cosmeticChange ? previousId : revisionId
+
+    const explanation = yield* explanationJson(revision.explanation)
+
+    yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id)
+        VALUES (${revisionId},${questionId},${revision.body},${explanation}::jsonb,${revision.changeKind},${substantiveRevisionId}) ON CONFLICT DO NOTHING`
+
+    const revisions =
+      yield* sql`SELECT published_at FROM question_revisions WHERE id=${revisionId} LIMIT 1`
+
+    if (revisions[0]?.publishedAt === null) {
+      for (const [index, text] of revision.answers.entries()) {
+        const answerId = catalogueId('46', n * 10 + index + 1)
+        const isCorrect = index === 0
+        yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answerId},${revisionId},${text},${isCorrect}) ON CONFLICT DO NOTHING`
+      }
+
+      yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
+    }
+
+    yield* sql`UPDATE written_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id=${previousId}`
+  }
+
+  for (const n of [1, 2, 4]) {
+    yield* sql`INSERT INTO path_questions (qualification_path_id, document_id, question_id)
+        VALUES ('10000000-0000-4000-8000-000000000002', ${buildingLaw}, ${catalogueId('30', n)}) ON CONFLICT DO NOTHING`
+  }
+
+  for (const pathId of cataloguePathIds) {
+    if (pathId === catalogueId('10', 2)) {
+      continue
+    }
+
+    yield* sql`INSERT INTO path_questions (qualification_path_id,document_id,question_id) SELECT ${pathId},q.document_id,q.id FROM written_questions q WHERE q.id IN ${sql.in(questions.map((_, index) => catalogueId('30', index + 1)))} ON CONFLICT DO NOTHING`
+  }
+})

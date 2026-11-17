@@ -1,4 +1,4 @@
-import type { SessionCountSettings } from '@inzpro/api-contracts/modules/study/responses'
+import type { SessionCountSettings } from '@inzpro/api-contracts/modules/learning/responses'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Dialog,

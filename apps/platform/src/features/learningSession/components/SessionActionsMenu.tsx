@@ -1,5 +1,5 @@
-import { endedStudySession } from '@inzpro/domain/modules/study/study-session'
-import { sessionQueryOptions } from '@inzpro/queries/modules/study'
+import { endedStudySession } from '@inzpro/domain/modules/learning/study-session'
+import { sessionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   DropdownMenu,
@@ -10,11 +10,11 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { LoaderCircle, MoreVertical } from 'lucide-react'
+import { sessionQuestionRouteApi } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useEndSession } from '../hooks/useEndSession'
-import { sessionQuestionRouteApi } from '../utils'
 
 export const SessionActionsMenu = () => (
   <DropdownMenu>

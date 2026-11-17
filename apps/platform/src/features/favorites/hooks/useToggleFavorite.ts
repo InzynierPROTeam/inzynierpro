@@ -1,7 +1,8 @@
-import type { GetSessionQuestionRequest } from '@inzpro/api-client/modules/study'
+import type { GetSessionQuestionRequest } from '@inzpro/api-client/modules/written-study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
-import { sessionQuestionQueryOptions, studyKeys } from '@inzpro/queries/modules/study'
+import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
+import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiHttpClient } from '~platform/lib/api-client'
@@ -42,8 +43,14 @@ export const useToggleFavorite = (userId: UserId, req: GetSessionQuestionRequest
     },
     onSettled: () =>
       Promise.all([
-        client.invalidateQueries({ queryKey: studyKeys.favorites(userId), refetchType: 'none' }),
-        client.invalidateQueries({ queryKey: studyKeys.questions(userId), refetchType: 'none' }),
+        client.invalidateQueries({
+          queryKey: writtenStudyKeys.favorites(userId),
+          refetchType: 'none',
+        }),
+        client.invalidateQueries({
+          queryKey: writtenStudyKeys.questions(userId),
+          refetchType: 'none',
+        }),
       ]),
   })
 }

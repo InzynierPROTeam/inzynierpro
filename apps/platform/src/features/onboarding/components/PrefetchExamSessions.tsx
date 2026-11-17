@@ -1,5 +1,5 @@
 import type { SpecializationId } from '@inzpro/domain/modules/qualification-paths/specialization'
-import { examSessionsQueryOptions } from '@inzpro/queries/modules/exam-calendar'
+import { examSessionsQueryOptions } from '@inzpro/queries/modules/exam-calendar/queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { Effect } from 'effect'
 import { useEffect } from 'react'

@@ -1,10 +1,10 @@
-import type { SubmitOralSelfAssessmentRequest } from '@inzpro/api-client/modules/study'
+import type { SubmitOralSelfAssessmentRequest } from '@inzpro/api-client/modules/oral-study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import { oralStudyKeys } from '@inzpro/queries/modules/oral-study/keys'
 import {
   oralSessionQueryOptions,
   oralSessionQuestionQueryOptions,
-  studyKeys,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/oral-study/queries'
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Predicate } from 'effect'
@@ -52,7 +52,7 @@ export const useSubmitOralSelfAssessment = (userId: UserId) => {
     },
     onSettled: (_result, _error, { params }) =>
       client.invalidateQueries({
-        queryKey: studyKeys.oralProgress(userId, params.qualificationPathId),
+        queryKey: oralStudyKeys.oralProgress(userId, params.qualificationPathId),
       }),
   })
 }

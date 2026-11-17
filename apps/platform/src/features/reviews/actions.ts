@@ -2,7 +2,7 @@ import { runApi } from '@inzpro/api-client/lib/run-api'
 import {
   startReviewSession,
   type StartReviewSessionRequest,
-} from '@inzpro/api-client/modules/study'
+} from '@inzpro/api-client/modules/written-study'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 export const startStudyReviewSession = (req: StartReviewSessionRequest) =>

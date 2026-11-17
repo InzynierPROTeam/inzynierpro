@@ -1,8 +1,9 @@
-import type { GetSessionQuestionRequest } from '@inzpro/api-client/modules/study'
+import type { GetSessionQuestionRequest } from '@inzpro/api-client/modules/written-study'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
-import { QuestionNoteText } from '@inzpro/domain/modules/study/question-note'
-import { sessionQuestionQueryOptions, studyKeys } from '@inzpro/queries/modules/study'
+import { QuestionNoteText } from '@inzpro/domain/modules/learning/question-note'
+import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
+import { sessionQuestionQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Schema } from 'effect'
 import { apiHttpClient } from '~platform/lib/api-client'
@@ -29,6 +30,9 @@ export const useSaveQuestionNote = (userId: UserId, req: GetSessionQuestionReque
       )
     },
     onSettled: () =>
-      client.invalidateQueries({ queryKey: studyKeys.questions(userId), refetchType: 'none' }),
+      client.invalidateQueries({
+        queryKey: writtenStudyKeys.questions(userId),
+        refetchType: 'none',
+      }),
   })
 }

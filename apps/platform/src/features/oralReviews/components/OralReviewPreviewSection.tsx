@@ -1,12 +1,12 @@
+import type { SessionCountSettings } from '@inzpro/api-contracts/modules/learning/responses'
 import type {
   OralReviewPreview,
-  SessionCountSettings,
   OralStudySession,
-} from '@inzpro/api-contracts/modules/study/responses'
+} from '@inzpro/api-contracts/modules/oral-study/responses'
 import {
   oralReviewPreviewQueryOptions,
   oralReviewSessionQueryOptions,
-} from '@inzpro/queries/modules/study'
+} from '@inzpro/queries/modules/oral-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import {
   Card,
@@ -29,15 +29,15 @@ import { Link } from '@tanstack/react-router'
 import { BookOpenCheck, CalendarCheck, List, Scale } from 'lucide-react'
 import type React from 'react'
 import { BackLink } from '~platform/components/BackLink'
+import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+import { QuestionCountDialog } from '~platform/features/learningSession/components/QuestionCountDialog'
 import {
   SessionDetail,
   SessionDetails,
   SessionPathDetail,
-} from '~platform/components/session/SessionDetails'
-import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
-import { QuestionCountDialog } from '~platform/features/learningSession/components/QuestionCountDialog'
-import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCard'
-import { getSessionQuestionCount } from '~platform/features/learningSession/utils'
+} from '~platform/features/learningSession/components/SessionDetails'
+import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCardSkeleton'
+import { getSessionQuestionCount } from '~platform/features/learningSession/utils/session-question-count'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 

@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react'
-
-import { MOBILE_APP_BANNER_DISMISSED_EVENT_NAME, mobileAppBannerStore } from '../store'
+import {
+  MOBILE_APP_BANNER_DISMISSED_EVENT_NAME,
+  mobileAppBannerStore,
+} from '~platform/features/start/stores'
 
 const subscribe = (callback: () => void) => {
   window.addEventListener(MOBILE_APP_BANNER_DISMISSED_EVENT_NAME, callback)

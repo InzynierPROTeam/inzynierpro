@@ -4,7 +4,7 @@ import {
   hardSelfAssessment,
   mediumSelfAssessment,
   type OralSelfAssessment,
-} from '@inzpro/domain/modules/study/oral-study-session'
+} from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { getRouteApi } from '@tanstack/react-router'
 import { CircleCheck, CircleDashed, CircleAlert, type LucideIcon } from 'lucide-react'
 
@@ -53,10 +53,3 @@ export const selfAssessmentLevels = {
     linkClassName: 'border-success/50 bg-success/10 text-success group-hover/result:bg-success/20',
   },
 } satisfies Record<OralSelfAssessment, SelfAssessmentLevel>
-
-export const oralFavoritesPreviewRouteApi = getRouteApi(
-  '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione',
-)
-
-export const noOralFavoritesMessage =
-  'Nie masz jeszcze ulubionych pytań ustnych. Oznacz pytanie gwiazdką podczas nauki, aby do niego wrócić.'

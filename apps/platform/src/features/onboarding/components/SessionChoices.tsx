@@ -1,5 +1,5 @@
 import type { SpecializationId } from '@inzpro/domain/modules/qualification-paths/specialization'
-import { examSessionsQueryOptions } from '@inzpro/queries/modules/exam-calendar'
+import { examSessionsQueryOptions } from '@inzpro/queries/modules/exam-calendar/queries'
 import { formatDate } from '@inzpro/utils/date'
 import type React from 'react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'

@@ -1,10 +1,10 @@
-import type { SessionNextStep } from '@inzpro/api-contracts/modules/study/responses'
+import type { SessionNextStep } from '@inzpro/api-contracts/modules/written-study/responses'
 import {
   continueStudyNextStep,
   reviewNextStep,
   startStudyNextStep,
-} from '@inzpro/domain/modules/study/study-session'
-import { sessionNextStepQueryOptions } from '@inzpro/queries/modules/study'
+} from '@inzpro/domain/modules/learning/study-session'
+import { sessionNextStepQueryOptions } from '@inzpro/queries/modules/written-study/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@inzpro/ui/components/card'
 import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
@@ -23,10 +23,10 @@ import { Match } from 'effect'
 import { Play, Repeat, Scale } from 'lucide-react'
 import type React from 'react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
+import { sessionSummaryRouteApi } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-import { sessionSummaryRouteApi } from '../utils'
 import { ContinueSessionButton } from './ContinueSessionButton'
 
 export const SessionNextStepCard = () => {

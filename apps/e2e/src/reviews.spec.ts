@@ -7,7 +7,7 @@ test('before any answer the reviews tile and a category explain how reviews get 
   onboarded: { page },
 }) => {
   await page.goto('/start')
-  await expect(page.getByRole('region', { name: 'Powtórka' })).toContainText(
+  await expect(page.getByRole('region', { name: 'Powtórka', exact: true })).toContainText(
     'Brak zaplanowanych powtórek.',
   )
 
@@ -36,7 +36,7 @@ test('after an answer the reviews tile, the category and the review preview say 
   await expect(firstAnswer).toBeDisabled()
 
   await page.goto('/start')
-  await expect(page.getByRole('region', { name: 'Powtórka' })).toContainText(
+  await expect(page.getByRole('region', { name: 'Powtórka', exact: true })).toContainText(
     'Na teraz nie masz pytań do powtórki. Wróć do nich później.',
   )
   await expect(

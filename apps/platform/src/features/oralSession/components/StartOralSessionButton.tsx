@@ -1,4 +1,4 @@
-import { OralSessionAlreadyStarted } from '@inzpro/api-contracts/modules/study/errors'
+import { OralSessionAlreadyStarted } from '@inzpro/api-contracts/modules/oral-study/errors'
 import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { Button } from '@inzpro/ui/components/button'

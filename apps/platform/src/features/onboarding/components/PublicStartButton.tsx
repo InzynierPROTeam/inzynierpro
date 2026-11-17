@@ -1,6 +1,6 @@
 import type { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import { optionalCurrentSessionQueryOptions } from '@inzpro/queries/modules/identity'
+import { optionalCurrentSessionQueryOptions } from '@inzpro/queries/modules/identity/queries'
 import { Button } from '@inzpro/ui/components/button'
 import type React from 'react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
