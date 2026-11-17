@@ -31,7 +31,7 @@ import {
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { RichContent } from '@inzpro/rich-content/rich-content'
-import { Array as Arr, Effect, Layer, Option, Schema } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
 import { makeCursorPaginator, mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
@@ -91,8 +91,13 @@ const AttemptSummaryRow = Schema.Struct({
   percent: Schema.NullOr(Percent),
   passed: Schema.OptionFromNullOr(Schema.Boolean),
   activeSeconds: Schema.NullOr(ExamActiveSeconds),
-  pauseCount: ExamPauseCount,
-  pauseSeconds: ExamActiveSeconds,
+  pauseCount: Schema.NullOr(ExamPauseCount),
+  pauseSeconds: Schema.NullOr(ExamActiveSeconds),
+})
+
+const AttemptPauseRow = Schema.Struct({
+  pausedAt: DateTimeUtc,
+  endedAt: Schema.OptionFromNullOr(DateTimeUtc),
 })
 
 const AttemptRow = Schema.Struct({
@@ -255,7 +260,9 @@ export const MockExamReaderLive = Layer.effect(
         row.incorrectCount === null ||
         row.unansweredCount === null ||
         row.percent === null ||
-        row.activeSeconds === null
+        row.activeSeconds === null ||
+        row.pauseCount === null ||
+        row.pauseSeconds === null
           ? Option.none()
           : Option.some({
               correct: row.correctCount,
@@ -553,15 +560,33 @@ export const MockExamReaderLive = Layer.effect(
 
           const resultSections = yield* storedSections([attempt.id])
 
+          const pauses =
+            yield* sql`SELECT paused_at,ended_at FROM mock_exam_attempt_pauses WHERE attempt_id=${attempt.id} ORDER BY paused_at,id`.pipe(
+              Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(AttemptPauseRow))),
+            )
+
           return Option.some({
             ...readSummary(attempt, resultSections),
-            deadline: attemptDeadline(attempt),
+            deadline: attemptDeadline({ ...attempt, pauses }, yield* DateTime.now),
             durationMinutes: attempt.durationMinutes,
             passThreshold: attempt.passThreshold,
             questionCount: attempt.questionCount,
             sections,
             questions,
           })
+        },
+        Effect.mapError(cause => new MockExamReadError({ cause })),
+      ),
+      attemptStatus: Effect.fn('MockExamReader.attemptStatus')(
+        function* (userId, pathId, attemptId) {
+          const rows =
+            yield* sql`SELECT status FROM mock_exam_attempts WHERE id=${attemptId} AND user_id=${userId} AND qualification_path_id=${pathId} LIMIT 1`
+
+          const attempts = yield* Schema.decodeUnknownEffect(
+            Schema.Array(Schema.Struct({ status: MockExamAttemptStatus })),
+          )(rows)
+
+          return Option.map(Arr.head(attempts), attempt => attempt.status)
         },
         Effect.mapError(cause => new MockExamReadError({ cause })),
       ),

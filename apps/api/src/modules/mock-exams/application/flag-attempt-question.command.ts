@@ -4,6 +4,7 @@ import {
   type AttemptQuestionVersion,
   type MockExamAttemptId,
   nextAttemptQuestionVersion,
+  pausedAttempt,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -16,6 +17,7 @@ import {
   AttemptQuestionConflict,
   AttemptQuestionNotFound,
   MockExamAttemptNotInProgress,
+  MockExamAttemptPaused,
 } from '~api/modules/mock-exams/domain/errors.js'
 import type { AttemptQuestion } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import { acceptsDraftWrites } from '~api/modules/mock-exams/domain/mock-exam-clock.rules.js'
@@ -41,6 +43,10 @@ export const flagAttemptQuestion = Effect.fn('MockExams.flagAttemptQuestion')(fu
 
       if (Option.isNone(clock)) {
         return yield* new AttemptQuestionNotFound()
+      }
+
+      if (clock.value.status === pausedAttempt) {
+        return yield* new MockExamAttemptPaused()
       }
 
       if (!acceptsDraftWrites(clock.value, yield* DateTime.now)) {

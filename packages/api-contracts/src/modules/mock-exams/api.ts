@@ -6,6 +6,7 @@ import {
   AttemptQuestionWithdrawn,
   InvalidAttemptAnswer,
   MockExamAttemptNotInProgress,
+  MockExamAttemptPaused,
   MockExamUnavailable,
 } from '~api-contracts/modules/mock-exams/errors.js'
 import {
@@ -68,7 +69,7 @@ export const GetAttemptQuestionEndpoint = HttpApiEndpoint.get(
   {
     params: AttemptQuestionParams,
     success: AttemptQuestionResponse,
-    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, MockExamAttemptPaused],
   },
 )
 
@@ -86,6 +87,7 @@ export const SaveAttemptAnswerEndpoint = HttpApiEndpoint.put(
       PathAccessDenied,
       AttemptQuestionNotFound,
       MockExamAttemptNotInProgress,
+      MockExamAttemptPaused,
       AttemptQuestionWithdrawn,
       InvalidAttemptAnswer,
       AttemptQuestionConflict,
@@ -107,8 +109,29 @@ export const FlagAttemptQuestionEndpoint = HttpApiEndpoint.put(
       PathAccessDenied,
       AttemptQuestionNotFound,
       MockExamAttemptNotInProgress,
+      MockExamAttemptPaused,
       AttemptQuestionConflict,
     ],
+  },
+)
+
+export const PauseMockExamAttemptEndpoint = HttpApiEndpoint.post(
+  'PauseMockExamAttempt',
+  '/paths/:qualificationPathId/attempts/:attemptId/pause',
+  {
+    params: MockExamAttemptParams,
+    success: MockExamAttemptResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, MockExamAttemptNotInProgress],
+  },
+)
+
+export const ResumeMockExamAttemptEndpoint = HttpApiEndpoint.post(
+  'ResumeMockExamAttempt',
+  '/paths/:qualificationPathId/attempts/:attemptId/resume',
+  {
+    params: MockExamAttemptParams,
+    success: MockExamAttemptResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, MockExamAttemptNotInProgress],
   },
 )
 
@@ -151,6 +174,8 @@ export const MockExamsApi = HttpApiGroup.make('MockExams')
   .add(GetAttemptQuestionEndpoint)
   .add(SaveAttemptAnswerEndpoint)
   .add(FlagAttemptQuestionEndpoint)
+  .add(PauseMockExamAttemptEndpoint)
+  .add(ResumeMockExamAttemptEndpoint)
   .add(FinishMockExamAttemptEndpoint)
   .add(GetAttemptReviewEndpoint)
   .add(GetMockExamHistoryEndpoint)

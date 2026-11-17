@@ -1,10 +1,11 @@
 import {
   ExamActiveSeconds,
+  ExamPauseCount,
   inProgressAttempt,
   submittedAttempt,
   timeExpiredAttempt,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
-import { DateTime, Duration } from 'effect'
+import { DateTime, Duration, Option } from 'effect'
 import {
   type DeadlineJobAction,
   finishAtDeadline,
@@ -16,35 +17,52 @@ import type {
   AttemptEnding,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 
-export const attemptDeadline = (clock: AttemptClock) =>
+const pausedTime = (clock: AttemptClock, now: DateTime.Utc) =>
+  clock.pauses.reduce(
+    (total, pause) =>
+      Duration.sum(
+        total,
+        DateTime.distance(
+          pause.pausedAt,
+          Option.getOrElse(pause.endedAt, () => now),
+        ),
+      ),
+    Duration.zero,
+  )
+
+const wholeSeconds = (duration: Duration.Duration) =>
+  ExamActiveSeconds.make(Math.max(0, Math.floor(Duration.toSeconds(duration))))
+
+export const attemptDeadline = (clock: AttemptClock, now: DateTime.Utc) =>
   DateTime.addDuration(
     clock.startedAt,
-    Duration.sum(Duration.minutes(clock.durationMinutes), Duration.seconds(clock.pauseSeconds)),
+    Duration.sum(Duration.minutes(clock.durationMinutes), pausedTime(clock, now)),
   )
 
 const isPastDeadline = (clock: AttemptClock, now: DateTime.Utc) =>
-  !DateTime.isLessThan(now, attemptDeadline(clock))
+  !DateTime.isLessThan(now, attemptDeadline(clock, now))
 
 export const acceptsDraftWrites = (clock: AttemptClock, now: DateTime.Utc) =>
   clock.status === inProgressAttempt && !isPastDeadline(clock, now)
+
+export const acceptsPause = acceptsDraftWrites
 
 export const isDueToExpire = (clock: AttemptClock, now: DateTime.Utc) =>
   clock.status === inProgressAttempt && isPastDeadline(clock, now)
 
 export const attemptEnding = (clock: AttemptClock, now: DateTime.Utc): AttemptEnding => {
-  const deadline = attemptDeadline(clock)
   const timeExpired = isPastDeadline(clock, now)
-  const finishedAt = timeExpired ? deadline : now
-
-  const elapsed = Duration.subtract(
-    DateTime.distance(clock.startedAt, finishedAt),
-    Duration.seconds(clock.pauseSeconds),
-  )
+  const finishedAt = timeExpired ? attemptDeadline(clock, now) : now
+  const paused = pausedTime(clock, finishedAt)
 
   return {
     endReason: timeExpired ? timeExpiredAttempt : submittedAttempt,
     finishedAt,
-    activeSeconds: ExamActiveSeconds.make(Math.max(0, Math.floor(Duration.toSeconds(elapsed)))),
+    activeSeconds: wholeSeconds(
+      Duration.subtract(DateTime.distance(clock.startedAt, finishedAt), paused),
+    ),
+    pauseCount: ExamPauseCount.make(clock.pauses.length),
+    pauseSeconds: wholeSeconds(paused),
   }
 }
 
@@ -54,7 +72,7 @@ export const deadlineJobAction = (
   now: DateTime.Utc,
 ): DeadlineJobAction =>
   clock.status !== inProgressAttempt ||
-  DateTime.isGreaterThan(attemptDeadline(clock), scheduledDeadline)
+  DateTime.isGreaterThan(attemptDeadline(clock, now), scheduledDeadline)
     ? skipDeadlineJob
     : isPastDeadline(clock, now)
       ? finishAtDeadline

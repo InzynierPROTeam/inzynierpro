@@ -21,6 +21,8 @@ export class MockExamAttemptNotInProgress extends Data.TaggedError(
   'MockExamAttemptNotInProgress',
 ) {}
 
+export class MockExamAttemptPaused extends Data.TaggedError('MockExamAttemptPaused') {}
+
 export class AttemptQuestionWithdrawn extends Data.TaggedError('AttemptQuestionWithdrawn') {}
 
 export class InvalidAttemptAnswer extends Data.TaggedError('InvalidAttemptAnswer') {}

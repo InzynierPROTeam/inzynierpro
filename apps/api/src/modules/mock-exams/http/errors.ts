@@ -4,6 +4,7 @@ import {
   AttemptQuestionWithdrawn,
   InvalidAttemptAnswer,
   MockExamAttemptNotInProgress,
+  MockExamAttemptPaused,
   MockExamUnavailable,
 } from '@inzpro/api-contracts/modules/mock-exams/errors'
 import { Effect } from 'effect'
@@ -41,8 +42,14 @@ export const attemptQuestionNotFound = Effect.fail(
 export const mockExamAttemptNotInProgress = Effect.fail(
   new MockExamAttemptNotInProgress({
     type: 'mock_exam_attempt_not_in_progress',
-    message:
-      'Answers can be changed only while the attempt is in progress and before its deadline.',
+    message: 'This mock exam attempt has already ended or its time is up.',
+  }),
+)
+
+export const mockExamAttemptPaused = Effect.fail(
+  new MockExamAttemptPaused({
+    type: 'mock_exam_attempt_paused',
+    message: 'This mock exam attempt is paused. Resume it to see and answer questions.',
   }),
 )
 

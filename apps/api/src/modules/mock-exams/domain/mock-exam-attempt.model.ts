@@ -83,17 +83,27 @@ export type AttemptQuestionState = {
   readonly isFlagged: boolean
 }
 
+export type AttemptPause = {
+  readonly pausedAt: DateTimeUtc
+  readonly endedAt: Option.Option<DateTimeUtc>
+}
+
 export type AttemptClock = {
   readonly status: MockExamAttemptStatus
   readonly startedAt: DateTimeUtc
   readonly durationMinutes: ExamDurationMinutes
+  readonly pauses: ReadonlyArray<AttemptPause>
+}
+
+export type AttemptTiming = {
+  readonly activeSeconds: ExamActiveSeconds
+  readonly pauseCount: ExamPauseCount
   readonly pauseSeconds: ExamActiveSeconds
 }
 
-export type AttemptEnding = {
+export type AttemptEnding = AttemptTiming & {
   readonly endReason: MockExamEndReason
   readonly finishedAt: DateTimeUtc
-  readonly activeSeconds: ExamActiveSeconds
 }
 
 export type MockExamAttempt = MockExamAttemptSummary & {

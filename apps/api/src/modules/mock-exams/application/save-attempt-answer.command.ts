@@ -5,6 +5,7 @@ import {
   type AttemptQuestionVersion,
   type MockExamAttemptId,
   nextAttemptQuestionVersion,
+  pausedAttempt,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -17,6 +18,7 @@ import {
   AttemptQuestionConflict,
   AttemptQuestionNotFound,
   MockExamAttemptNotInProgress,
+  MockExamAttemptPaused,
   AttemptQuestionWithdrawn,
   InvalidAttemptAnswer,
 } from '~api/modules/mock-exams/domain/errors.js'
@@ -44,6 +46,10 @@ export const saveAttemptAnswer = Effect.fn('MockExams.saveAttemptAnswer')(functi
 
       if (Option.isNone(clock)) {
         return yield* new AttemptQuestionNotFound()
+      }
+
+      if (clock.value.status === pausedAttempt) {
+        return yield* new MockExamAttemptPaused()
       }
 
       if (!acceptsDraftWrites(clock.value, yield* DateTime.now)) {
