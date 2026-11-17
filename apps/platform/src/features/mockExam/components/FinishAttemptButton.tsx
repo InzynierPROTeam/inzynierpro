@@ -13,7 +13,7 @@ import {
 } from '@inzpro/ui/components/dialog'
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
@@ -29,7 +29,6 @@ export const FinishAttemptButton = () => {
   const { attemptId } = attemptQuestionRouteApi.useParams()
   const params = { qualificationPathId: selectedPath.id, attemptId }
   const client = useQueryClient()
-  const navigate = useNavigate()
 
   const { data: attempt } = useQuery(
     mockExamAttemptQueryOptions(apiHttpClient, user.id, { params }),
@@ -37,27 +36,8 @@ export const FinishAttemptButton = () => {
 
   const mutation = useMutation({
     mutationFn: finishExam,
-    onSuccess: async result => {
-      await Promise.all([
-        client.invalidateQueries({
-          queryKey: mockExamKeys.path(user.id, selectedPath.id),
-          refetchType: 'none',
-        }),
-        client.invalidateQueries({
-          queryKey: mockExamKeys.review(user.id, selectedPath.id, attemptId),
-          refetchType: 'none',
-        }),
-      ])
-
-      if (result !== null) {
-        client.setQueryData(mockExamKeys.getMockExamAttempt(user.id, { params }), result)
-        await navigate({
-          to: '/egzamin-probny/podejscie/$attemptId/podsumowanie',
-          params: { attemptId },
-          replace: true,
-        })
-      }
-    },
+    onSuccess: result =>
+      client.setQueryData(mockExamKeys.getMockExamAttempt(user.id, { params }), result),
   })
 
   const finish = () =>

@@ -45,6 +45,9 @@ export const AttemptResultCard: React.FC<AttemptResultCardProps> = ({ attempt, r
           ? 'Egzamin zawiera wycofane pytanie i nie ma oceny zaliczenia.'
           : `Próg zaliczenia: ${attempt.passThreshold} z ${attempt.questionCount} poprawnych odpowiedzi.`}
       </CardDescription>
+      {attempt.endReason === 'time-expired' && (
+        <CardDescription>Czas minął. Wynik obliczono z zapisanych odpowiedzi.</CardDescription>
+      )}
     </CardHeader>
     <CardContent className="flex flex-col gap-8">
       <SessionResultRing
