@@ -1,39 +1,78 @@
 import type { AttemptQuestion } from '@inzpro/api-contracts/modules/mock-exams/responses'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
+import { AttemptQuestionPosition } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
+import { mockExamAttemptQueryOptions } from '@inzpro/queries/modules/mock-exams/queries'
 import {
   AnswerOption,
   AnswerOptionIndicator,
   AnswerOptionText,
 } from '@inzpro/ui/components/answer-option'
 import { Button } from '@inzpro/ui/components/button'
-import { Field, FieldError, FieldTitle } from '@inzpro/ui/components/field'
+import { Field, FieldDescription, FieldError, FieldTitle } from '@inzpro/ui/components/field'
 import { RadioGroup } from '@inzpro/ui/components/radio-group'
-import { toast } from '@inzpro/ui/components/toast'
 import { withAnswerLetters } from '@inzpro/utils/answer'
 import { revalidateLogic, useForm } from '@tanstack/react-form'
+import { useQuery } from '@tanstack/react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import type React from 'react'
+import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { apiHttpClient } from '~platform/lib/api-client'
+
+import { useSaveAttemptAnswer } from '../hooks/useSaveAttemptAnswer'
+import { attemptQuestionRouteApi } from '../utils'
 
 const answerSchema = Schema.Struct({
   answerId: QuestionAnswerId.annotate({ message: 'Wybierz odpowiedź.' }),
 })
-
-type AnswerSchema = typeof answerSchema.Encoded
-
-const noSelection: AnswerSchema = { answerId: '' }
 
 const answerLabelId = 'attempt-answer-label'
 
 type AttemptAnswerFormProps = { question: AttemptQuestion }
 
 export const AttemptAnswerForm: React.FC<AttemptAnswerFormProps> = ({ question }) => {
+  const {
+    selectedPath,
+    session: { user },
+  } = onboardedRouteApi.useRouteContext()
+
+  const { attemptId } = attemptQuestionRouteApi.useParams()
+  const navigate = useNavigate()
+  const submission = useSaveAttemptAnswer(user.id)
+
+  const { data: attempt } = useQuery(
+    mockExamAttemptQueryOptions(apiHttpClient, user.id, {
+      params: { qualificationPathId: selectedPath.id, attemptId },
+    }),
+  )
+
+  const nextPosition =
+    attempt !== undefined && attempt !== null && question.position < attempt.questionCount
+      ? AttemptQuestionPosition.make(question.position + 1)
+      : null
+
   const form = useForm({
-    defaultValues: noSelection,
+    defaultValues: { answerId: question.selectedAnswerId ?? '' },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: Schema.toStandardSchemaV1(answerSchema) },
-    onSubmit: () =>
-      // TODO(#76): Save the selected answer instead of only acknowledging it.
-      toast.add({ type: 'info', title: `Zaznaczono odpowiedź na pytanie ${question.position}.` }),
+    onSubmit: ({ value }) => {
+      submission.mutate({
+        params: { qualificationPathId: selectedPath.id, attemptId, position: question.position },
+        payload: {
+          answerId: QuestionAnswerId.make(value.answerId),
+          expectedVersion: question.version,
+        },
+      })
+
+      if (nextPosition !== null) {
+        void navigate({
+          to: '/egzamin-probny/podejscie/$attemptId/$questionNumber',
+          params: { attemptId, questionNumber: nextPosition },
+          resetScroll: false,
+          replace: true,
+        })
+      }
+    },
   })
 
   return (
@@ -66,7 +105,7 @@ export const AttemptAnswerForm: React.FC<AttemptAnswerFormProps> = ({ question }
                   <AnswerOption
                     key={answer.id}
                     value={answer.id}
-                    tone="neutral"
+                    tone={answer.id === question.selectedAnswerId ? 'saved' : 'neutral'}
                   >
                     <AnswerOptionIndicator>{letter}</AnswerOptionIndicator>
                     <AnswerOptionText>{answer.text}</AnswerOptionText>
@@ -74,17 +113,46 @@ export const AttemptAnswerForm: React.FC<AttemptAnswerFormProps> = ({ question }
                 ))}
               </RadioGroup>
               {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              {question.isWithdrawn && (
+                <FieldDescription>
+                  To pytanie zostało wycofane i nie można już na nie odpowiedzieć.
+                </FieldDescription>
+              )}
             </Field>
           )
         }}
       </form.Field>
-      <Button
-        type="submit"
-        disabled={question.isWithdrawn}
-        className="self-start"
-      >
-        Zapisz odpowiedź
-      </Button>
+      {!question.isWithdrawn && (
+        <form.Subscribe selector={state => state.values.answerId === question.selectedAnswerId}>
+          {isSaved =>
+            isSaved ? (
+              nextPosition !== null && (
+                <Button
+                  nativeButton={false}
+                  render={
+                    <Link
+                      to="/egzamin-probny/podejscie/$attemptId/$questionNumber"
+                      params={{ attemptId, questionNumber: nextPosition }}
+                      resetScroll={false}
+                      replace
+                    />
+                  }
+                  className="self-start"
+                >
+                  Następne pytanie
+                </Button>
+              )
+            ) : (
+              <Button
+                type="submit"
+                className="self-start"
+              >
+                Zapisz odpowiedź
+              </Button>
+            )
+          }
+        </form.Subscribe>
+      )}
     </form>
   )
 }
