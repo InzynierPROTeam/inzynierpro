@@ -13,6 +13,10 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { flagQuestion } from '../actions'
 
 const flagErrorMessage = (error: FlagAttemptQuestionError | Error) => {
+  if (Predicate.isTagged(error, 'MockExamAttemptPaused')) {
+    return 'Egzamin jest wstrzymany. Wznów go, aby zmieniać odpowiedzi.'
+  }
+
   if (Predicate.isTagged(error, 'AttemptQuestionConflict')) {
     return 'To pytanie zmieniono na innym urządzeniu. Sprawdź je i spróbuj ponownie.'
   }
@@ -68,12 +72,14 @@ export const useFlagAttemptQuestion = (
       })
     },
     onError: error => toast.add({ type: 'error', title: flagErrorMessage(error) }),
-    onSettled: (_result, _error, req) =>
-      Promise.all([
-        client.invalidateQueries(attempt),
-        client.invalidateQueries(
-          attemptQuestionQueryOptions(apiHttpClient, userId, { params: req.params }),
-        ),
-      ]),
+    onSettled: (_result, error, req) =>
+      Predicate.isTagged(error, 'MockExamAttemptPaused')
+        ? client.invalidateQueries(attempt)
+        : Promise.all([
+            client.invalidateQueries(attempt),
+            client.invalidateQueries(
+              attemptQuestionQueryOptions(apiHttpClient, userId, { params: req.params }),
+            ),
+          ]),
   })
 }

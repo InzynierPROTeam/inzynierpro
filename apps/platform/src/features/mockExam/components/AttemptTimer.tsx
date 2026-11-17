@@ -1,8 +1,9 @@
 import type { MockExamAttempt } from '@inzpro/api-contracts/modules/mock-exams/responses'
 import { mockExamAttemptQueryOptions } from '@inzpro/queries/modules/mock-exams/queries'
-import { getRemainingDuration } from '@inzpro/utils/date'
+import { formatDuration, getRemainingDuration } from '@inzpro/utils/date'
 import { useQueryClient } from '@tanstack/react-query'
-import { Timer } from 'lucide-react'
+import { Duration } from 'effect'
+import { Pause, Timer } from 'lucide-react'
 import type React from 'react'
 import { Countdown } from '~platform/components/Countdown'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
@@ -42,3 +43,21 @@ export const AttemptTimer: React.FC<AttemptTimerProps> = ({ attempt }) => {
     </p>
   )
 }
+
+export const PausedAttemptTimer: React.FC<AttemptTimerProps> = ({ attempt }) => (
+  <p
+    role="timer"
+    aria-label="Pozostały czas, wstrzymany"
+    className="text-muted-foreground flex items-center justify-center gap-1.5 font-medium tabular-nums"
+  >
+    <Pause
+      aria-hidden
+      className="size-4"
+    />
+    {formatDuration(
+      Duration.seconds(
+        Math.ceil(Duration.toSeconds(getRemainingDuration(attempt.deadline, attempt.serverTime))),
+      ),
+    )}
+  </p>
+)

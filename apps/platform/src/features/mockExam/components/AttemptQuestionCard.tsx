@@ -32,8 +32,36 @@ import { apiHttpClient } from '~platform/lib/api-client'
 import { attemptQuestionRouteApi } from '../utils'
 import { AttemptAnswerForm } from './AttemptAnswerForm'
 import { AttemptFlagButton } from './AttemptFlagButton'
+import { AttemptPausedContent } from './AttemptPausedContent'
 
 export const AttemptQuestionCard = () => {
+  const {
+    selectedPath,
+    session: { user },
+  } = onboardedRouteApi.useRouteContext()
+
+  const { attemptId } = attemptQuestionRouteApi.useParams()
+
+  return (
+    <Card className="w-full max-w-3xl self-center">
+      <SuspenseQueryWrapper fallback={<AttemptQuestionSkeleton />}>
+        <SuspenseQuery
+          options={mockExamAttemptQueryOptions(apiHttpClient, user.id, {
+            params: { qualificationPathId: selectedPath.id, attemptId },
+          })}
+          isDataEmpty={attempt => attempt === null}
+          noDataFallback={<MissingAttemptQuestion />}
+        >
+          {attempt =>
+            attempt.status === 'paused' ? <AttemptPausedContent /> : <AttemptQuestionQuery />
+          }
+        </SuspenseQuery>
+      </SuspenseQueryWrapper>
+    </Card>
+  )
+}
+
+const AttemptQuestionQuery = () => {
   const {
     selectedPath,
     session: { user },
@@ -42,19 +70,15 @@ export const AttemptQuestionCard = () => {
   const { attemptId, questionNumber } = attemptQuestionRouteApi.useParams()
 
   return (
-    <Card className="w-full max-w-3xl self-center">
-      <SuspenseQueryWrapper fallback={<AttemptQuestionSkeleton />}>
-        <SuspenseQuery
-          options={attemptQuestionQueryOptions(apiHttpClient, user.id, {
-            params: { qualificationPathId: selectedPath.id, attemptId, position: questionNumber },
-          })}
-          isDataEmpty={question => question === null}
-          noDataFallback={<MissingAttemptQuestion />}
-        >
-          {question => <AttemptQuestionContent question={question} />}
-        </SuspenseQuery>
-      </SuspenseQueryWrapper>
-    </Card>
+    <SuspenseQuery
+      options={attemptQuestionQueryOptions(apiHttpClient, user.id, {
+        params: { qualificationPathId: selectedPath.id, attemptId, position: questionNumber },
+      })}
+      isDataEmpty={question => question === null}
+      noDataFallback={<MissingAttemptQuestion />}
+    >
+      {question => <AttemptQuestionContent question={question} />}
+    </SuspenseQuery>
   )
 }
 
