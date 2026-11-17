@@ -1,3 +1,4 @@
+import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type { ExamBlueprintId } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
@@ -11,11 +12,17 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { Context, type Effect, type Option } from 'effect'
 import type { MockExamWriteError } from '~api/modules/mock-exams/application/errors.js'
 import type { NewExamBlueprintVersion } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
+import type { MockExamResult } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import type { NewMockExamAttempt } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 
 export class MockExamRepository extends Context.Service<
   MockExamRepository,
   {
+    readonly finishAttempt: (
+      attemptId: MockExamAttemptId,
+      finishedAt: DateTimeUtc,
+      result: MockExamResult,
+    ) => Effect.Effect<void, MockExamWriteError>
     readonly createBlueprint: (
       blueprintId: ExamBlueprintId,
     ) => Effect.Effect<void, MockExamWriteError>

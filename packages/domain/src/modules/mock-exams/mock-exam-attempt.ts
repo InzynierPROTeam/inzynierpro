@@ -39,3 +39,15 @@ export const initialAttemptQuestionVersion = AttemptQuestionVersion.make(1)
 
 export const nextAttemptQuestionVersion = (version: AttemptQuestionVersion) =>
   AttemptQuestionVersion.make(version + 1)
+
+export const ExamActiveSeconds = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)).pipe(
+  Schema.brand('ExamActiveSeconds'),
+)
+
+export type ExamActiveSeconds = typeof ExamActiveSeconds.Type
+
+export const ExamPauseCount = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)).pipe(
+  Schema.brand('ExamPauseCount'),
+)
+
+export type ExamPauseCount = typeof ExamPauseCount.Type

@@ -18,8 +18,11 @@ import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
 export const decodeResponse =
   <T, E>(schema: Schema.Codec<T, E>) =>
-  async (response: Response) =>
-    Schema.decodeUnknownSync(schema)(await response.json())
+  async (response: Response) => {
+    expect(response.status, await response.clone().text()).toBe(200)
+
+    return Schema.decodeUnknownSync(schema)(await response.json())
+  }
 
 export const mockExamLearner = async (
   api: TestApi,

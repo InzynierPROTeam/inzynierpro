@@ -6,6 +6,7 @@ import {
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
+import { CursorPagination } from '~api-contracts/utils/pagination.js'
 
 export const MockExamPathParams = Schema.Struct({ qualificationPathId: QualificationPathId })
 
@@ -33,3 +34,5 @@ export const FlagAttemptQuestionPayload = Schema.Struct({
 })
 
 export type FlagAttemptQuestionPayload = typeof FlagAttemptQuestionPayload.Type
+
+export const MockExamPageQuery = CursorPagination

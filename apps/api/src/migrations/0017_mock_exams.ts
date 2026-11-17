@@ -58,6 +58,16 @@ export default Effect.gen(function* () {
     blueprint_version integer NOT NULL,
     status text NOT NULL CHECK (status IN ('in-progress','paused','finished','abandoned')),
     started_at timestamptz(3) NOT NULL,
+    finished_at timestamptz(3),
+    end_reason text CHECK (end_reason IN ('submitted','time-expired')),
+    correct_count integer CHECK (correct_count >= 0),
+    incorrect_count integer CHECK (incorrect_count >= 0),
+    unanswered_count integer CHECK (unanswered_count >= 0),
+    percent integer CHECK (percent BETWEEN 0 AND 100),
+    passed boolean,
+    active_seconds integer CHECK (active_seconds >= 0),
+    pause_count integer NOT NULL DEFAULT 0 CHECK (pause_count >= 0),
+    pause_seconds integer NOT NULL DEFAULT 0 CHECK (pause_seconds >= 0),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now(),
     FOREIGN KEY (user_id, qualification_path_id) REFERENCES user_qualification_paths(user_id, qualification_path_id) ON DELETE CASCADE,
@@ -65,6 +75,14 @@ export default Effect.gen(function* () {
   )`
   yield* sql`CREATE TRIGGER mock_exam_attempts_updated_at BEFORE UPDATE ON mock_exam_attempts FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
   yield* sql`CREATE UNIQUE INDEX mock_exam_attempts_one_unfinished ON mock_exam_attempts (user_id, qualification_path_id) WHERE status IN ('in-progress','paused')`
+  yield* sql`CREATE INDEX mock_exam_attempts_history ON mock_exam_attempts (user_id, qualification_path_id, started_at DESC, id DESC)`
+  yield* sql`CREATE TABLE mock_exam_attempt_section_results (
+    attempt_id uuid NOT NULL REFERENCES mock_exam_attempts(id) ON DELETE CASCADE,
+    position integer NOT NULL,
+    correct_count integer NOT NULL CHECK (correct_count >= 0),
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    PRIMARY KEY (attempt_id, position)
+  )`
   yield* sql`CREATE TABLE mock_exam_attempt_questions (
     attempt_id uuid NOT NULL REFERENCES mock_exam_attempts(id) ON DELETE CASCADE,
     position integer NOT NULL CHECK (position > 0),
@@ -72,6 +90,7 @@ export default Effect.gen(function* () {
     question_id uuid NOT NULL,
     question_revision_id uuid NOT NULL,
     selected_answer_id uuid,
+    scored_withdrawn boolean,
     is_flagged boolean NOT NULL DEFAULT false,
     version integer NOT NULL CHECK (version > 0),
     created_at timestamptz(3) NOT NULL DEFAULT now(),

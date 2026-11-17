@@ -63,7 +63,7 @@ export const apiModuleDependencies = {
   learning: [],
   'written-study': ['preparation', 'learning-content', 'learning'],
   'oral-study': ['preparation', 'learning-content', 'learning'],
-  'mock-exams': ['preparation', 'learning-content'],
+  'mock-exams': ['preparation', 'learning-content', 'learning'],
 } as const satisfies Record<string, ReadonlyArray<string>>
 
 export const universalPackages = [
