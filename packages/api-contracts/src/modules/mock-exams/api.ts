@@ -145,6 +145,16 @@ export const FinishMockExamAttemptEndpoint = HttpApiEndpoint.post(
   },
 )
 
+export const AbandonMockExamAttemptEndpoint = HttpApiEndpoint.post(
+  'AbandonMockExamAttempt',
+  '/paths/:qualificationPathId/attempts/:attemptId/abandon',
+  {
+    params: MockExamAttemptParams,
+    success: MockExamAttemptResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, MockExamAttemptNotInProgress],
+  },
+)
+
 export const GetAttemptReviewEndpoint = HttpApiEndpoint.get(
   'GetAttemptReview',
   '/paths/:qualificationPathId/attempts/:attemptId/review',
@@ -177,6 +187,7 @@ export const MockExamsApi = HttpApiGroup.make('MockExams')
   .add(PauseMockExamAttemptEndpoint)
   .add(ResumeMockExamAttemptEndpoint)
   .add(FinishMockExamAttemptEndpoint)
+  .add(AbandonMockExamAttemptEndpoint)
   .add(GetAttemptReviewEndpoint)
   .add(GetMockExamHistoryEndpoint)
   .middleware(Authentication)

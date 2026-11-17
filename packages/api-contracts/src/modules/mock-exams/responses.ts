@@ -83,6 +83,8 @@ export const MockExamAttemptSummary = Schema.Struct({
   startedAt: UtcIsoDateTime,
   finishedAt: Schema.NullOr(UtcIsoDateTime),
   endReason: Schema.NullOr(MockExamEndReason),
+  pauseCount: ExamPauseCount,
+  pauseSeconds: ExamActiveSeconds,
   result: Schema.NullOr(MockExamResult),
 })
 

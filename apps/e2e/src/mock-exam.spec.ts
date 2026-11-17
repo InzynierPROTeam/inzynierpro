@@ -395,3 +395,38 @@ test('a learner answers and flags questions, pauses and resumes the exam, then f
   ).toBeVisible()
   await expect(page.getByRole('listitem').filter({ hasText: 'Czas przerw' })).toBeVisible()
 })
+
+test('a learner confirms abandoning a paused exam, sees it in history and starts a new attempt', async ({
+  onboarded: { page },
+}) => {
+  await page.goto('/egzamin-probny/start')
+  await page.getByRole('button', { name: 'Rozpocznij egzamin' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 10' })).toBeVisible()
+  const abandonedUrl = page.url()
+  await page.getByRole('button', { name: 'Porzuć egzamin', exact: true }).click()
+  const confirmation = page.getByRole('dialog', { name: 'Porzucić egzamin?' })
+  await expect(confirmation).toContainText('bez wyniku')
+  await confirmation.getByRole('button', { name: 'Wróć do egzaminu' }).click()
+  await expect(confirmation).toBeHidden()
+  await expect(page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Wstrzymaj egzamin' }).click()
+  await expect(page.getByRole('heading', { name: 'Egzamin wstrzymany' })).toBeVisible()
+  await page.getByRole('button', { name: 'Porzuć egzamin', exact: true }).click()
+  await confirmation.getByRole('button', { name: 'Porzuć bez wyniku' }).click()
+  await expect(page).toHaveURL(/\/egzamin-probny$/)
+  await expect(page.getByText('Egzamin porzucony', { exact: true })).toBeVisible()
+  await expect(page.getByText('Porzucony', { exact: true })).toBeVisible()
+  await expect(page.getByText('Przerwy: 1', { exact: false })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Zobacz podsumowanie/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Zobacz wynik ostatniego egzaminu' })).toHaveCount(
+    0,
+  )
+
+  await page.goto(abandonedUrl)
+  await expect(page).toHaveURL(/\/egzamin-probny$/)
+  await page.getByRole('button', { name: 'Zacznij nowy egzamin' }).click()
+  await page.getByRole('button', { name: 'Rozpocznij egzamin' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 10' })).toBeVisible()
+  expect(page.url()).not.toBe(abandonedUrl)
+})

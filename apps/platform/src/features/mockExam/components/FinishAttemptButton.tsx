@@ -51,6 +51,10 @@ export const FinishAttemptButton = () => {
     return null
   }
 
+  if (attempt.status === 'abandoned') {
+    return null
+  }
+
   if (attempt.status === 'finished') {
     return (
       <Button

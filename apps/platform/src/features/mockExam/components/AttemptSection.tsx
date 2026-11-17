@@ -1,5 +1,6 @@
 import { BackLink } from '~platform/components/BackLink'
 
+import { AbandonAttemptButton } from './AbandonAttemptButton'
 import { AttemptHeader } from './AttemptHeader'
 import { AttemptQuestionCard } from './AttemptQuestionCard'
 import { AttemptQuestionNavigation } from './AttemptQuestionNavigation'
@@ -11,6 +12,9 @@ export const AttemptSection = () => (
     <AttemptHeader />
     <AttemptQuestionCard />
     <AttemptQuestionNavigation />
-    <FinishAttemptButton />
+    <div className="flex flex-wrap items-center justify-center gap-3">
+      <FinishAttemptButton />
+      <AbandonAttemptButton />
+    </div>
   </section>
 )

@@ -16,7 +16,7 @@ import {
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-import { useOpenSummaryWhenFinished } from '../hooks/useOpenSummaryWhenFinished'
+import { useLeaveEndedAttempt } from '../hooks/useLeaveEndedAttempt'
 import { attemptQuestionRouteApi } from '../utils'
 import { AttemptTimer, PausedAttemptTimer } from './AttemptTimer'
 import { PauseAttemptButton } from './PauseAttemptButton'
@@ -50,7 +50,7 @@ const AttemptHeaderContent: React.FC<AttemptHeaderContentProps> = ({ attempt }) 
   const { questionNumber } = attemptQuestionRouteApi.useParams()
   const total = attempt.questionCount
 
-  useOpenSummaryWhenFinished(attempt)
+  useLeaveEndedAttempt(attempt)
 
   return (
     <SessionHeader>

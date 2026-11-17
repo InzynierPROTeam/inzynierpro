@@ -67,8 +67,8 @@ export const MockExamHistorySection = () => {
                               : `${attempt.result.correct} poprawnych · ${attempt.result.percent}% · ${attempt.result.passed === null ? 'Wynik niepełny' : attempt.result.passed ? 'Zaliczony' : 'Niezaliczony'}`}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            Przerwy: {attempt.result?.pauseCount ?? 0} ·{' '}
-                            {formatDuration(Duration.seconds(attempt.result?.pauseSeconds ?? 0))}
+                            Przerwy: {attempt.pauseCount} ·{' '}
+                            {formatDuration(Duration.seconds(attempt.pauseSeconds))}
                           </p>
                         </div>
                         {attempt.status === 'finished' ? (

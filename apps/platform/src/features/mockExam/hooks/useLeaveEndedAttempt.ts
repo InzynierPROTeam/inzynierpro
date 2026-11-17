@@ -5,7 +5,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useEffectEvent } from 'react'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 
-export const useOpenSummaryWhenFinished = (attempt: MockExamAttempt) => {
+export const useLeaveEndedAttempt = (attempt: MockExamAttempt) => {
   const {
     selectedPath,
     session: { user },
@@ -14,7 +14,7 @@ export const useOpenSummaryWhenFinished = (attempt: MockExamAttempt) => {
   const client = useQueryClient()
   const navigate = useNavigate()
 
-  const openSummary = useEffectEvent(async () => {
+  const leaveAttempt = useEffectEvent(async () => {
     await Promise.all([
       client.invalidateQueries({
         queryKey: mockExamKeys.path(user.id, selectedPath.id),
@@ -26,6 +26,12 @@ export const useOpenSummaryWhenFinished = (attempt: MockExamAttempt) => {
       }),
     ])
 
+    if (attempt.status === 'abandoned') {
+      await navigate({ to: '/egzamin-probny', replace: true })
+
+      return
+    }
+
     await navigate({
       to: '/egzamin-probny/podejscie/$attemptId/podsumowanie',
       params: { attemptId: attempt.id },
@@ -34,8 +40,8 @@ export const useOpenSummaryWhenFinished = (attempt: MockExamAttempt) => {
   })
 
   useEffect(() => {
-    if (attempt.status === 'finished') {
-      void openSummary()
+    if (attempt.status === 'finished' || attempt.status === 'abandoned') {
+      void leaveAttempt()
     }
   }, [attempt.status])
 }

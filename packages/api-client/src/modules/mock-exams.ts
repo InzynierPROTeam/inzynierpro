@@ -1,4 +1,5 @@
 import type {
+  AbandonMockExamAttemptEndpoint,
   FinishMockExamAttemptEndpoint,
   GetAttemptReviewEndpoint,
   GetMockExamHistoryEndpoint,
@@ -117,3 +118,14 @@ export type GetMockExamHistoryRequest = InferEndpointRequest<typeof GetMockExamH
 export type GetMockExamHistoryRes = Effect.Success<ReturnType<typeof getMockExamHistory>>
 
 export type GetMockExamHistoryError = Effect.Error<ReturnType<typeof getMockExamHistory>>
+
+export const abandonMockExamAttempt = (req: AbandonMockExamAttemptRequest) =>
+  apiAction(api => api.MockExams.AbandonMockExamAttempt(req))
+
+export type AbandonMockExamAttemptRequest = InferEndpointRequest<
+  typeof AbandonMockExamAttemptEndpoint
+>
+
+export type AbandonMockExamAttemptRes = Effect.Success<ReturnType<typeof abandonMockExamAttempt>>
+
+export type AbandonMockExamAttemptError = Effect.Error<ReturnType<typeof abandonMockExamAttempt>>

@@ -56,6 +56,8 @@ export type MockExamAttemptSummary = {
   readonly startedAt: DateTimeUtc
   readonly finishedAt: Option.Option<DateTimeUtc>
   readonly endReason: Option.Option<MockExamEndReason>
+  readonly pauseCount: ExamPauseCount
+  readonly pauseSeconds: ExamActiveSeconds
   readonly result: Option.Option<MockExamResult>
 }
 

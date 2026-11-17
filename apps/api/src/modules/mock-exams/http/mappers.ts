@@ -32,6 +32,8 @@ export const toAttemptSummaryDto = (
     onSome: dateTimeUtcToUtcIsoDateTime,
   }),
   endReason: Option.getOrNull(attempt.endReason),
+  pauseCount: attempt.pauseCount,
+  pauseSeconds: attempt.pauseSeconds,
   result: Option.match(attempt.result, {
     onNone: () => null,
     onSome: result => ({ ...result, passed: Option.getOrNull(result.passed) }),

@@ -73,6 +73,14 @@ export const MockExamRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return MockExamRepository.of({
+      abandonAttempt: Effect.fn('MockExamRepository.abandonAttempt')(
+        function* (attemptId, ending) {
+          const endedAt = DateTime.formatIso(ending.finishedAt)
+          yield* sql`UPDATE mock_exam_attempt_pauses SET ended_at=${endedAt} WHERE attempt_id=${attemptId} AND ended_at IS NULL`
+          yield* sql`UPDATE mock_exam_attempts SET status='abandoned',finished_at=${endedAt},pause_count=${ending.pauseCount},pause_seconds=${ending.pauseSeconds} WHERE id=${attemptId}`
+        },
+        Effect.mapError(cause => new MockExamWriteError({ cause })),
+      ),
       finishAttempt: Effect.fn('MockExamRepository.finishAttempt')(
         function* (attemptId, ending, result) {
           const finished = DateTime.formatIso(ending.finishedAt)
