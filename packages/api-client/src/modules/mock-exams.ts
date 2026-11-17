@@ -1,4 +1,7 @@
 import type {
+  FinishMockExamAttemptEndpoint,
+  GetAttemptReviewEndpoint,
+  GetMockExamHistoryEndpoint,
   FlagAttemptQuestionEndpoint,
   GetAttemptQuestionEndpoint,
   GetMockExamAttemptEndpoint,
@@ -63,3 +66,32 @@ export type FlagAttemptQuestionRequest = InferEndpointRequest<typeof FlagAttempt
 export type FlagAttemptQuestionRes = Effect.Success<ReturnType<typeof flagAttemptQuestion>>
 
 export type FlagAttemptQuestionError = Effect.Error<ReturnType<typeof flagAttemptQuestion>>
+
+export const finishMockExamAttempt = (req: FinishMockExamAttemptRequest) =>
+  apiAction(api => api.MockExams.FinishMockExamAttempt(req))
+
+export type FinishMockExamAttemptRequest = InferEndpointRequest<
+  typeof FinishMockExamAttemptEndpoint
+>
+
+export type FinishMockExamAttemptRes = Effect.Success<ReturnType<typeof finishMockExamAttempt>>
+
+export type FinishMockExamAttemptError = Effect.Error<ReturnType<typeof finishMockExamAttempt>>
+
+export const getAttemptReview = (req: GetAttemptReviewRequest) =>
+  apiAction(api => api.MockExams.GetAttemptReview(req))
+
+export type GetAttemptReviewRequest = InferEndpointRequest<typeof GetAttemptReviewEndpoint>
+
+export type GetAttemptReviewRes = Effect.Success<ReturnType<typeof getAttemptReview>>
+
+export type GetAttemptReviewError = Effect.Error<ReturnType<typeof getAttemptReview>>
+
+export const getMockExamHistory = (req: GetMockExamHistoryRequest) =>
+  apiAction(api => api.MockExams.GetMockExamHistory(req))
+
+export type GetMockExamHistoryRequest = InferEndpointRequest<typeof GetMockExamHistoryEndpoint>
+
+export type GetMockExamHistoryRes = Effect.Success<ReturnType<typeof getMockExamHistory>>
+
+export type GetMockExamHistoryError = Effect.Error<ReturnType<typeof getMockExamHistory>>

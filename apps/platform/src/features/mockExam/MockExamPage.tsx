@@ -1,3 +1,9 @@
-import { MockExamPreviewSection } from './components/MockExamPreviewSection'
+import { LatestMockExamSection } from './components/LatestMockExamSection'
+import { MockExamHistorySection } from './components/MockExamHistorySection'
 
-export const MockExamPage = () => <MockExamPreviewSection />
+export const MockExamPage = () => (
+  <>
+    <LatestMockExamSection />
+    <MockExamHistorySection />
+  </>
+)

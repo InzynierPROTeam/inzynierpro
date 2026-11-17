@@ -33,7 +33,7 @@ export const MockExamPreviewSection = () => {
 
   return (
     <section className="app-layout-section @container gap-8">
-      <BackLink fallback={{ to: '/start' }} />
+      <BackLink fallback={{ to: '/egzamin-probny' }} />
       <SuspenseQueryWrapper fallback={<SessionPreviewCardSkeleton />}>
         <SuspenseQuery
           options={mockExamPreviewQueryOptions(apiHttpClient, user.id, {

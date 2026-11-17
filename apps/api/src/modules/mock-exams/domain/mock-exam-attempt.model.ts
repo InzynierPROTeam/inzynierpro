@@ -1,4 +1,5 @@
 import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import type { Percent } from '@inzpro/domain/common/percent'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
@@ -19,13 +20,40 @@ import type {
   MockExamAttemptId,
   MockExamAttemptStatus,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
+import type {
+  ExamActiveSeconds,
+  ExamPauseCount,
+} from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import type { RichContent } from '@inzpro/rich-content/rich-content'
 import type { Option } from 'effect'
+import type { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
+
+export type MockExamResult = {
+  readonly correct: QuestionCount
+  readonly incorrect: QuestionCount
+  readonly unanswered: QuestionCount
+  readonly percent: Percent
+  readonly passed: Option.Option<boolean>
+  readonly activeSeconds: ExamActiveSeconds
+  readonly pauseCount: ExamPauseCount
+  readonly pauseSeconds: ExamActiveSeconds
+  readonly sections: ReadonlyArray<AttemptSection & { readonly correct: QuestionCount }>
+}
+
+export type AttemptReviewQuestion = AttemptQuestion & {
+  readonly correctAnswerId: QuestionAnswerId
+  readonly explanation: RichContent
+  readonly isFavorite: boolean
+  readonly note: Option.Option<QuestionNote>
+}
 
 export type MockExamAttemptSummary = {
   readonly id: MockExamAttemptId
   readonly status: MockExamAttemptStatus
   readonly startedAt: DateTimeUtc
+  readonly finishedAt: Option.Option<DateTimeUtc>
+  readonly result: Option.Option<MockExamResult>
 }
 
 export type AttemptSection = {
@@ -83,4 +111,13 @@ export type NewMockExamAttempt = {
   readonly blueprintVersion: ExamBlueprintVersion
   readonly startedAt: DateTimeUtc
   readonly questions: ReadonlyArray<DrawnQuestion>
+}
+
+export type AttemptScoreCounts = {
+  readonly total: QuestionCount
+  readonly correct: QuestionCount
+  readonly unanswered: QuestionCount
+  readonly withdrawn: QuestionCount
+  readonly passThreshold: QuestionCount
+  readonly sections: ReadonlyArray<AttemptSection & { readonly correct: QuestionCount }>
 }

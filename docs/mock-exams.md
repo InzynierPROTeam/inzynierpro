@@ -1,6 +1,6 @@
 # Mock exams
 
-How written mock exams are configured and started, and how an attempt and its questions are read. The decisions are in [ADR-0004](adr/0004-mock-exam-lifecycle.md) (lifecycle, blueprint and draw) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal). This document covers what is implemented so far: blueprints, the preview, starting an attempt, reading it, and draft answers with flags. The clock, pause, finishing and history come later. Endpoints sit under `/mock-exams/paths/:qualificationPathId` and require written access on the assignment (`PathAccessDenied`, 403, otherwise).
+How written mock exams are configured and started, and how an attempt and its questions are read. The decisions are in [ADR-0004](adr/0004-mock-exam-lifecycle.md) (lifecycle, blueprint and draw) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal). This document covers what is implemented so far: blueprints, the preview, starting an attempt, reading it, draft answers with flags, finishing and result history. Finishing, result review and history are available; the clock and pause come later. Endpoints sit under `/mock-exams/paths/:qualificationPathId` and require written access on the assignment (`PathAccessDenied`, 403, otherwise).
 
 ## Blueprints
 
@@ -18,7 +18,7 @@ The `mock-exams` API module owns ExamBlueprints. A blueprint has a stable identi
 
 `POST /attempts` runs under the account lock. It returns the unfinished attempt when one exists; a partial unique index keeps at most one per learner and path. Otherwise it draws a new attempt from the latest version:
 
-- Sections draw in blueprint order. Each takes its count at random (`Random.shuffle`) from its eligible questions. Sections share no document, so no question is drawn twice and the preview's per-section counts decide exactly whether a draw succeeds. There is no weighting by SRS or history.
+- Each section takes its required count at random (`Random.shuffle`) from its eligible questions. The combined draw is then shuffled across all sections before question positions are stored. Sections share no document, so no question is drawn twice and the preview's per-section counts decide exactly whether a draw succeeds. There is no weighting by SRS or history.
 - When a section has too few eligible questions left, start is refused with `MockExamUnavailable` (409) and the `reason` the preview reports. A path without a blueprint is refused the same way with `no-blueprint`.
 - The attempt stores the blueprint version, `started_at` in backend time, the drawn questions in order with their section and current revision, and each question's shuffled option order. A newer version never changes a started attempt.
 
@@ -40,20 +40,29 @@ Each attempt question holds an optional selected option, a "come back later" fla
 - Writes are refused with `AttemptQuestionNotFound` (404) for another account's attempt or a missing position, `MockExamAttemptNotInProgress` (409) unless the attempt is in progress, `AttemptQuestionWithdrawn` (409) for an answer to a withdrawn question and `InvalidAttemptAnswer` (422) for an option outside the question. A withdrawn question can still be flagged.
 - Draft answers are not study attempts: they create no learning events and never reach coverage, reviews or statistics.
 
+## Finishing and review
+
+`POST /attempts/:attemptId/finish` authorizes the owner, locks the attempt and stores the submitted result in one transaction. Repeating it returns the stored result. Unanswered questions count as wrong, and the threshold is inclusive. A withdrawn question makes the result incomplete (`passed: null`). The stored total and section scores remain stable after later content changes. Active time is measured by the backend; pause count and time are zero until explicit pause is implemented.
+
+`GET /attempts/:attemptId/review` returns a cursor page in attempt order, with the pinned question revision, stored option order, selected and correct answers, resolved rich explanation, current favourite mark and personal note. Unfinished, missing and foreign attempts return an empty page. Notes and favourites reuse the written-study actions and remain shared across paths. `GET /history` returns the owner's attempts on the path, newest first, with a date, status and saved result. Both collections accept `cursor` and `limit`.
+
+The stable owner-only summary URL is `/egzamin-probny/podejscie/$attemptId/podsumowanie`. Its result card uses the learning summary animation and displays pass/fail or incomplete, counts, solving time, pauses and section scores. Question cards below show the selected answer, the correct answer after a mistake or omission, the explanation and note, with favourite and note-editing actions. The exam panel shows the last attempt and links to its result or unfinished questions, then cursor-paginated history. Starting a new exam first opens `/egzamin-probny/start`, which shows the blueprint preview. Every infinite list loads its next cursor page when its sentinel enters the viewport; only failed page loads offer an explicit retry. Finishing requires confirmation showing unanswered and flagged counts.
+
 ## Storage
 
 - `exam_blueprints`, `exam_blueprint_versions`, `exam_blueprint_sections` and `exam_blueprint_section_documents`: identities and immutable versions.
 - `exam_blueprint_paths`: one row per path with its blueprint.
-- `mock_exam_attempts`: learner, path, blueprint version, `status` (`in-progress`, `paused`, `finished`, `abandoned`) and `started_at`.
+- `mock_exam_attempts`: learner, path, blueprint version, `status` (`in-progress`, `paused`, `finished`, `abandoned`) and `started_at`, with the immutable submitted result and finish time. `mock_exam_attempt_section_results` stores the section scores.
 - `mock_exam_attempt_questions` and `mock_exam_attempt_answer_options`: references to revisions and answer IDs in attempt order, never content copies. A question row also holds the draft `selected_answer_id`, which must be one of its stored options, `is_flagged` and `version`.
 
 ## Client
 
-- `/egzamin-probny` shows the preview: duration, question count, pass threshold and sections with their documents, the unavailable reason, and a start or resume button. Starting stores the attempt in its query, refreshes the preview and replaces the history entry with the attempt's first question.
+- `/egzamin-probny/start` shows the preview: duration, question count, pass threshold and sections with their documents, the unavailable reason, and a start or resume button. Starting stores the attempt in its query, marks preview/history stale without refetching them and replaces the history entry with the attempt's first question.
 - `/egzamin-probny/podejscie/$attemptId/$questionNumber` shows the question with its section, an answer form and an icon toggle to come back later; its header and numbered navigation read the attempt, and the previous and next links preload their questions. The navigator marks answered and flagged questions.
-- "Zapisz odpowiedź" sends the selected option with the version the question was read at and moves to the next question at once, without waiting for the response. On an answered question the form offers "Następne pytanie" until another option is selected. A failed write shows an error message; every write then refetches the attempt and its questions.
+- "Zapisz odpowiedź" sends the selected option with the version the question was read at and moves to the next question at once, without waiting for the response. On an answered question the form offers "Następne pytanie" until another option is selected. A write optimistically updates the question and navigator. Its response caches the saved question; after success or failure, the current question and attempt are refetched to reconcile their state. Other question caches stay fresh, so next/previous render preloads are reused when navigating.
 - The "Egzamin próbny" tile on Start, for learners with written access, offers resuming an unfinished attempt, otherwise the exam page, or the unavailable reason.
-- Queries sit under `mockExamKeys.path(userId, pathId)`; an attempt and its questions under `mockExamKeys.attempt(userId, pathId, attemptId)`.
+- Route loaders preload the panel history, preview, current attempt/question and summary/review with exactly the options their views consume. Next/previous links preload their questions on render.
+- Draft queries sit under `mockExamKeys.path(userId, pathId)` and `mockExamKeys.attempt(userId, pathId, attemptId)`. Finished review questions sit under `mockExamKeys.reviewQuestions(userId)` so shared note/favourite writes can patch them without fetching result data.
 
 ## Seed
 

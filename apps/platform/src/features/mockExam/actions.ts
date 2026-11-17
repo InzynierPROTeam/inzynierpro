@@ -1,5 +1,7 @@
 import { runApi } from '@inzpro/api-client/lib/run-api'
 import {
+  finishMockExamAttempt,
+  type FinishMockExamAttemptRequest,
   flagAttemptQuestion,
   type FlagAttemptQuestionRequest,
   saveAttemptAnswer,
@@ -17,3 +19,6 @@ export const saveAnswer = (req: SaveAttemptAnswerRequest) =>
 
 export const flagQuestion = (req: FlagAttemptQuestionRequest) =>
   runApi(flagAttemptQuestion(req), apiHttpClient)
+
+export const finishExam = (req: FinishMockExamAttemptRequest) =>
+  runApi(finishMockExamAttempt(req), apiHttpClient)

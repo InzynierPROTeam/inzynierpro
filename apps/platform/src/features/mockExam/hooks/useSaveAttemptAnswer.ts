@@ -1,9 +1,14 @@
+import type { GetMockExamAttemptRequest } from '@inzpro/api-client/modules/mock-exams'
 import type { SaveAttemptAnswerError } from '@inzpro/api-client/modules/mock-exams'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import { mockExamKeys } from '@inzpro/queries/modules/mock-exams/keys'
+import {
+  mockExamAttemptQueryOptions,
+  attemptQuestionQueryOptions,
+} from '@inzpro/queries/modules/mock-exams/queries'
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Predicate } from 'effect'
+import { apiHttpClient } from '~platform/lib/api-client'
 
 import { saveAnswer } from '../actions'
 
@@ -23,15 +28,50 @@ const saveAnswerErrorMessage = (error: SaveAttemptAnswerError | Error) => {
   return 'Nie udało się zapisać odpowiedzi. Spróbuj ponownie.'
 }
 
-export const useSaveAttemptAnswer = (userId: UserId) => {
+export const useSaveAttemptAnswer = (
+  userId: UserId,
+  attemptParams: GetMockExamAttemptRequest['params'],
+) => {
   const client = useQueryClient()
+
+  const attempt = mockExamAttemptQueryOptions(apiHttpClient, userId, { params: attemptParams })
 
   return useMutation({
     mutationFn: saveAnswer,
+    onMutate: async req => {
+      const question = attemptQuestionQueryOptions(apiHttpClient, userId, { params: req.params })
+      await Promise.all([client.cancelQueries(attempt), client.cancelQueries(question)])
+      client.setQueryData(question.queryKey, current =>
+        current === undefined || current === null
+          ? current
+          : { ...current, selectedAnswerId: req.payload.answerId },
+      )
+      client.setQueryData(attempt.queryKey, current =>
+        current === undefined || current === null
+          ? current
+          : {
+              ...current,
+              questions: current.questions.map(question =>
+                question.position === req.params.position
+                  ? { ...question, isAnswered: true }
+                  : question,
+              ),
+            },
+      )
+    },
+    onSuccess: (question, req) => {
+      client.setQueryData(
+        attemptQuestionQueryOptions(apiHttpClient, userId, { params: req.params }).queryKey,
+        question,
+      )
+    },
     onError: error => toast.add({ type: 'error', title: saveAnswerErrorMessage(error) }),
-    onSettled: (_result, _error, { params }) =>
-      client.invalidateQueries({
-        queryKey: mockExamKeys.attempt(userId, params.qualificationPathId, params.attemptId),
-      }),
+    onSettled: (_result, _error, req) =>
+      Promise.all([
+        client.invalidateQueries(attempt),
+        client.invalidateQueries(
+          attemptQuestionQueryOptions(apiHttpClient, userId, { params: req.params }),
+        ),
+      ]),
   })
 }

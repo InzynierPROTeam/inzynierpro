@@ -51,12 +51,11 @@ describe('mock exam draw', () => {
     ...range(9, 16).map(n => candidate(2, n)),
   ]
 
-  it('draws each section count from its own candidates, sections in blueprint order', () => {
+  it('draws each section count from its own candidates', () => {
     const questions = drawn(draw([sectionOf(1, 5), sectionOf(2, 5)], twoDocuments))
 
-    expect(questions.map(question => question.section)).toStrictEqual([
-      1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
-    ])
+    expect(questions.filter(question => question.section === 1)).toHaveLength(5)
+    expect(questions.filter(question => question.section === 2)).toHaveLength(5)
     expect(
       questions
         .filter(question => question.section === 1)
@@ -75,6 +74,15 @@ describe('mock exam draw', () => {
             .includes(question.questionId),
         ),
     ).toBe(true)
+  })
+
+  it('mixes questions from different sections into one random attempt order', () => {
+    const questions = drawn(draw([sectionOf(1, 5), sectionOf(2, 5)], twoDocuments, 'mixed-order'))
+
+    expect(questions.map(question => question.section)).not.toStrictEqual([
+      1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
+    ])
+    expect(new Set(questions.map(question => question.questionId)).size).toBe(10)
   })
 
   it('chooses different questions for different random draws', () => {

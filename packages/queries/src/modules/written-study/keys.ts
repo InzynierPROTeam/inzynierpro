@@ -22,8 +22,12 @@ export const writtenStudyKeys = {
   account: (userId: UserId) => [...writtenStudyKeys.all, 'account', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
     [...writtenStudyKeys.account(userId), 'path', id] as const,
+  favorites: (userId: UserId) => [...writtenStudyKeys.account(userId), 'favorites'] as const,
+  questions: (userId: UserId) => [...writtenStudyKeys.account(userId), 'questions'] as const,
   progress: (userId: UserId, pathId: QualificationPathId) =>
     [...writtenStudyKeys.path(userId, pathId), 'progress'] as const,
+  session: (userId: UserId, pathId: QualificationPathId, id: StudySessionId) =>
+    [...writtenStudyKeys.path(userId, pathId), 'session', id] as const,
   getDocuments: (userId: UserId, req: GetDocumentsRequest) =>
     [
       ...writtenStudyKeys.progress(userId, req.params.qualificationPathId),
@@ -66,8 +70,6 @@ export const writtenStudyKeys = {
       'getFavoritesSession',
       req,
     ] as const,
-  favorites: (userId: UserId) => [...writtenStudyKeys.account(userId), 'favorites'] as const,
-  questions: (userId: UserId) => [...writtenStudyKeys.account(userId), 'questions'] as const,
   getFavoritesPreview: (userId: UserId, req: GetFavoritesPreviewRequest) =>
     [...writtenStudyKeys.favorites(userId), 'getFavoritesPreview', req] as const,
   getSessionNextStep: (userId: UserId, req: GetSessionNextStepRequest) =>
@@ -76,8 +78,6 @@ export const writtenStudyKeys = {
       'getSessionNextStep',
       req,
     ] as const,
-  session: (userId: UserId, pathId: QualificationPathId, id: StudySessionId) =>
-    [...writtenStudyKeys.path(userId, pathId), 'session', id] as const,
   getSession: (userId: UserId, req: GetSessionRequest) =>
     [
       ...writtenStudyKeys.session(userId, req.params.qualificationPathId, req.params.sessionId),

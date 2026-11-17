@@ -29,6 +29,7 @@ import { Route as appAuthenticatedOnboardedOralValidUstnyPowtorkaRouteImport } f
 import { Route as appAuthenticatedOnboardedOralValidUstnyStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
 import { Route as appAuthenticatedOnboardedOralValidUstnyUlubioneRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione'
 import { Route as appAuthenticatedOnboardedWrittenValidEgzaminProbnyIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/index'
+import { Route as appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/start'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/index'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
@@ -37,6 +38,7 @@ import { Route as appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRouteImpo
 import { Route as appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/sesja.$sessionId.$questionNumber'
 import { Route as appAuthenticatedOnboardedOralValidUstnySesjaSessionIdPodsumowanieRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/sesja.$sessionId.podsumowanie'
 import { Route as appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie.$attemptId.$questionNumber'
+import { Route as appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie.$attemptId.podsumowanie'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja.$sessionId.$questionNumber'
 import { Route as appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja.$sessionId.podsumowanie'
 
@@ -149,6 +151,12 @@ const appAuthenticatedOnboardedWrittenValidEgzaminProbnyIndexRoute =
     path: '/egzamin-probny/',
     getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
   } as any)
+const appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute =
+  appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRouteImport.update({
+    id: '/egzamin-probny/start',
+    path: '/egzamin-probny/start',
+    getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
+  } as any)
 const appAuthenticatedOnboardedWrittenValidNaukaIndexRoute =
   appAuthenticatedOnboardedWrittenValidNaukaIndexRouteImport.update({
     id: '/nauka/',
@@ -203,6 +211,14 @@ const appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuesti
       getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
     } as any,
   )
+const appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute =
+  appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRouteImport.update(
+    {
+      id: '/egzamin-probny/podejscie/$attemptId/podsumowanie',
+      path: '/egzamin-probny/podejscie/$attemptId/podsumowanie',
+      getParentRoute: () => appAuthenticatedOnboardedWrittenValidRoute,
+    } as any,
+  )
 const appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute =
   appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRouteImport.update(
     {
@@ -233,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
+  '/egzamin-probny/start': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute
   '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka/ulubione': typeof appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute
@@ -243,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/ustny/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute
   '/ustny/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdPodsumowanieRoute
   '/egzamin-probny/podejscie/$attemptId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRoute
+  '/egzamin-probny/podejscie/$attemptId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute
   '/nauka/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
   '/nauka/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
@@ -259,6 +277,7 @@ export interface FileRoutesByTo {
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
+  '/egzamin-probny/start': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute
   '/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/nauka/ulubione': typeof appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute
@@ -269,6 +288,7 @@ export interface FileRoutesByTo {
   '/ustny/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute
   '/ustny/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdPodsumowanieRoute
   '/egzamin-probny/podejscie/$attemptId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRoute
+  '/egzamin-probny/podejscie/$attemptId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute
   '/nauka/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
   '/nauka/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
@@ -292,6 +312,7 @@ export interface FileRoutesById {
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
+  '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/start': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka': typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start': typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/ulubione': typeof appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute
@@ -302,6 +323,7 @@ export interface FileRoutesById {
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdQuestionNumberRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedOralValidUstnySesjaSessionIdPodsumowanieRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie/$attemptId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRoute
+  '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie/$attemptId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
   '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie': typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
@@ -320,6 +342,7 @@ export interface FileRouteTypes {
     | '/ustny/powtorka'
     | '/ustny/start'
     | '/ustny/ulubione'
+    | '/egzamin-probny/start'
     | '/nauka/powtorka'
     | '/nauka/start'
     | '/nauka/ulubione'
@@ -330,6 +353,7 @@ export interface FileRouteTypes {
     | '/ustny/sesja/$sessionId/$questionNumber'
     | '/ustny/sesja/$sessionId/podsumowanie'
     | '/egzamin-probny/podejscie/$attemptId/$questionNumber'
+    | '/egzamin-probny/podejscie/$attemptId/podsumowanie'
     | '/nauka/sesja/$sessionId/$questionNumber'
     | '/nauka/sesja/$sessionId/podsumowanie'
   fileRoutesByTo: FileRoutesByTo
@@ -346,6 +370,7 @@ export interface FileRouteTypes {
     | '/ustny/powtorka'
     | '/ustny/start'
     | '/ustny/ulubione'
+    | '/egzamin-probny/start'
     | '/nauka/powtorka'
     | '/nauka/start'
     | '/nauka/ulubione'
@@ -356,6 +381,7 @@ export interface FileRouteTypes {
     | '/ustny/sesja/$sessionId/$questionNumber'
     | '/ustny/sesja/$sessionId/podsumowanie'
     | '/egzamin-probny/podejscie/$attemptId/$questionNumber'
+    | '/egzamin-probny/podejscie/$attemptId/podsumowanie'
     | '/nauka/sesja/$sessionId/$questionNumber'
     | '/nauka/sesja/$sessionId/podsumowanie'
   id:
@@ -378,6 +404,7 @@ export interface FileRouteTypes {
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione'
+    | '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/start'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/powtorka'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/start'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/ulubione'
@@ -388,6 +415,7 @@ export interface FileRouteTypes {
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/sesja/$sessionId/$questionNumber'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/sesja/$sessionId/podsumowanie'
     | '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie/$attemptId/$questionNumber'
+    | '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie/$attemptId/podsumowanie'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber'
     | '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/podsumowanie'
   fileRoutesById: FileRoutesById
@@ -540,6 +568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyIndexRouteImport
       parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
     }
+    '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/start': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/start'
+      path: '/egzamin-probny/start'
+      fullPath: '/egzamin-probny/start'
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
+    }
     '/(app)/_authenticated/_onboarded/_writtenValid/nauka/': {
       id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/'
       path: '/nauka'
@@ -596,6 +631,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRouteImport
       parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
     }
+    '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie/$attemptId/podsumowanie': {
+      id: '/(app)/_authenticated/_onboarded/_writtenValid/egzamin-probny/podejscie/$attemptId/podsumowanie'
+      path: '/egzamin-probny/podejscie/$attemptId/podsumowanie'
+      fullPath: '/egzamin-probny/podejscie/$attemptId/podsumowanie'
+      preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedWrittenValidRoute
+    }
     '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber': {
       id: '/(app)/_authenticated/_onboarded/_writtenValid/nauka/sesja/$sessionId/$questionNumber'
       path: '/nauka/sesja/$sessionId/$questionNumber'
@@ -644,6 +686,7 @@ const appAuthenticatedOnboardedOralValidRouteWithChildren =
   )
 
 interface appAuthenticatedOnboardedWrittenValidRouteChildren {
+  appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute: typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute
   appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute
   appAuthenticatedOnboardedWrittenValidNaukaStartRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaStartRoute
   appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaUlubioneRoute
@@ -651,12 +694,15 @@ interface appAuthenticatedOnboardedWrittenValidRouteChildren {
   appAuthenticatedOnboardedWrittenValidNaukaIndexRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaIndexRoute
   appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute
   appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRoute: typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRoute
+  appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute: typeof appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute
   appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute
   appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute: typeof appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute
 }
 
 const appAuthenticatedOnboardedWrittenValidRouteChildren: appAuthenticatedOnboardedWrittenValidRouteChildren =
   {
+    appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute:
+      appAuthenticatedOnboardedWrittenValidEgzaminProbnyStartRoute,
     appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute:
       appAuthenticatedOnboardedWrittenValidNaukaPowtorkaRoute,
     appAuthenticatedOnboardedWrittenValidNaukaStartRoute:
@@ -671,6 +717,8 @@ const appAuthenticatedOnboardedWrittenValidRouteChildren: appAuthenticatedOnboar
       appAuthenticatedOnboardedWrittenValidNaukaKategoriaIdRoute,
     appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRoute:
       appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdQuestionNumberRoute,
+    appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute:
+      appAuthenticatedOnboardedWrittenValidEgzaminProbnyPodejscieAttemptIdPodsumowanieRoute,
     appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute:
       appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdQuestionNumberRoute,
     appAuthenticatedOnboardedWrittenValidNaukaSesjaSessionIdPodsumowanieRoute:

@@ -38,7 +38,11 @@ export const AttemptAnswerForm: React.FC<AttemptAnswerFormProps> = ({ question }
 
   const { attemptId } = attemptQuestionRouteApi.useParams()
   const navigate = useNavigate()
-  const submission = useSaveAttemptAnswer(user.id)
+
+  const submission = useSaveAttemptAnswer(user.id, {
+    qualificationPathId: selectedPath.id,
+    attemptId,
+  })
 
   const { data: attempt } = useQuery(
     mockExamAttemptQueryOptions(apiHttpClient, user.id, {

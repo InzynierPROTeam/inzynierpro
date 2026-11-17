@@ -30,7 +30,7 @@ export const drawExamQuestions = Effect.fnUntraced(function* (
     drawn.push(...shuffled.slice(0, section.questionCount))
   }
 
-  return drawn
+  return yield* Random.shuffle(drawn)
 })
 
 export const shuffleAnswerOptions = (questions: ReadonlyArray<DrawnQuestion>) =>

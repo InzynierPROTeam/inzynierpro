@@ -158,7 +158,9 @@ describe('starting a mock exam attempt', () => {
     const questions = await learner.questions(attempt)
 
     expect(questions.map(question => question.position)).toStrictEqual([1, 2, 3, 4, 5])
-    expect(questions.map(question => question.section)).toStrictEqual([1, 1, 1, 2, 2])
+    expect(questions.filter(question => question.section === 1)).toHaveLength(3)
+    expect(questions.filter(question => question.section === 2)).toHaveLength(2)
+    expect(await learner.questions(attempt)).toStrictEqual(questions)
     expect(new Set(questions.map(question => question.questionId)).size).toBe(5)
     expect(await learner.question(attempt.id, 6)).toBeNull()
 
@@ -201,6 +203,8 @@ describe('starting a mock exam attempt', () => {
       id: first.id,
       status: 'in-progress',
       startedAt: first.startedAt,
+      finishedAt: null,
+      result: null,
     })
   })
 

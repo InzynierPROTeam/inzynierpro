@@ -15,6 +15,11 @@ import {
   MockExamPathParams,
   SaveAttemptAnswerPayload,
 } from '~api-contracts/modules/mock-exams/requests.js'
+import { MockExamPageQuery } from '~api-contracts/modules/mock-exams/requests.js'
+import {
+  AttemptReviewResponse,
+  MockExamHistoryResponse,
+} from '~api-contracts/modules/mock-exams/responses.js'
 import {
   AttemptQuestionResponse,
   FlagAttemptQuestionResponse,
@@ -24,6 +29,7 @@ import {
   StartMockExamAttemptResponse,
 } from '~api-contracts/modules/mock-exams/responses.js'
 import { PathAccessDenied } from '~api-contracts/modules/preparation/errors.js'
+import { InvalidRequest } from '~api-contracts/utils/api-error.js'
 import { InternalServerError, RateLimitExceeded } from '~api-contracts/utils/api-error.js'
 
 export const GetMockExamPreviewEndpoint = HttpApiEndpoint.get(
@@ -66,7 +72,7 @@ export const GetAttemptQuestionEndpoint = HttpApiEndpoint.get(
   },
 )
 
-// CONTRACT: A write the question already reflects succeeds with its current version, whatever expectedVersion it carries.
+// CONTRACT: An otherwise valid write matching the current value ignores expectedVersion and returns the current version.
 export const SaveAttemptAnswerEndpoint = HttpApiEndpoint.put(
   'SaveAttemptAnswer',
   '/paths/:qualificationPathId/attempts/:attemptId/questions/:position/answer',
@@ -87,7 +93,7 @@ export const SaveAttemptAnswerEndpoint = HttpApiEndpoint.put(
   },
 )
 
-// CONTRACT: A write the question already reflects succeeds with its current version, whatever expectedVersion it carries.
+// CONTRACT: An otherwise valid write matching the current value ignores expectedVersion and returns the current version.
 export const FlagAttemptQuestionEndpoint = HttpApiEndpoint.put(
   'FlagAttemptQuestion',
   '/paths/:qualificationPathId/attempts/:attemptId/questions/:position/flag',
@@ -106,6 +112,38 @@ export const FlagAttemptQuestionEndpoint = HttpApiEndpoint.put(
   },
 )
 
+export const FinishMockExamAttemptEndpoint = HttpApiEndpoint.post(
+  'FinishMockExamAttempt',
+  '/paths/:qualificationPathId/attempts/:attemptId/finish',
+  {
+    params: MockExamAttemptParams,
+    success: MockExamAttemptResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, MockExamAttemptNotInProgress],
+  },
+)
+
+export const GetAttemptReviewEndpoint = HttpApiEndpoint.get(
+  'GetAttemptReview',
+  '/paths/:qualificationPathId/attempts/:attemptId/review',
+  {
+    params: MockExamAttemptParams,
+    query: MockExamPageQuery,
+    success: AttemptReviewResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, InvalidRequest],
+  },
+)
+
+export const GetMockExamHistoryEndpoint = HttpApiEndpoint.get(
+  'GetMockExamHistory',
+  '/paths/:qualificationPathId/history',
+  {
+    params: MockExamPathParams,
+    query: MockExamPageQuery,
+    success: MockExamHistoryResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, InvalidRequest],
+  },
+)
+
 export const MockExamsApi = HttpApiGroup.make('MockExams')
   .add(GetMockExamPreviewEndpoint)
   .add(StartMockExamAttemptEndpoint)
@@ -113,5 +151,8 @@ export const MockExamsApi = HttpApiGroup.make('MockExams')
   .add(GetAttemptQuestionEndpoint)
   .add(SaveAttemptAnswerEndpoint)
   .add(FlagAttemptQuestionEndpoint)
+  .add(FinishMockExamAttemptEndpoint)
+  .add(GetAttemptReviewEndpoint)
+  .add(GetMockExamHistoryEndpoint)
   .middleware(Authentication)
   .prefix('/mock-exams')

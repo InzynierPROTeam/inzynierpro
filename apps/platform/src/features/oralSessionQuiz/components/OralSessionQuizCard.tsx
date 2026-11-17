@@ -15,6 +15,7 @@ import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { LoaderCircle } from 'lucide-react'
 import type React from 'react'
+import { InfiniteQueryFooter } from '~platform/components/InfiniteQueryFooter'
 import {
   SuspenseInfiniteQuery,
   SuspenseQueryWrapper,
@@ -136,7 +137,7 @@ const OralSessionQuizChecks: React.FC<OralSessionQuizChecksProps> = ({ quiz }) =
           isDataEmpty={data => data.pages.every(page => page.data.length === 0)}
           noDataFallback={null}
         >
-          {({ data, hasNextPage, isFetchingNextPage, fetchNextPage }) => (
+          {({ data, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage }) => (
             <>
               {data.pages
                 .flatMap(page => page.data)
@@ -158,17 +159,12 @@ const OralSessionQuizChecks: React.FC<OralSessionQuizChecksProps> = ({ quiz }) =
                     </CardContent>
                   </Card>
                 ))}
-              {hasNextPage && (
-                <Button
-                  variant="outline"
-                  className="self-center"
-                  disabled={isFetchingNextPage}
-                  onClick={() => void fetchNextPage()}
-                >
-                  {isFetchingNextPage && <LoaderCircle className="animate-spin" />}
-                  Pokaż kolejne pytania
-                </Button>
-              )}
+              <InfiniteQueryFooter
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                isFetchNextPageError={isFetchNextPageError}
+                fetchNextPage={fetchNextPage}
+              />
             </>
           )}
         </SuspenseInfiniteQuery>

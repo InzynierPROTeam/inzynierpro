@@ -17,7 +17,11 @@ export const AttemptFlagButton: React.FC<AttemptFlagButtonProps> = ({ question }
   } = onboardedRouteApi.useRouteContext()
 
   const { attemptId } = attemptQuestionRouteApi.useParams()
-  const mutation = useFlagAttemptQuestion(user.id)
+
+  const mutation = useFlagAttemptQuestion(user.id, {
+    qualificationPathId: selectedPath.id,
+    attemptId,
+  })
 
   const toggleFlag = () =>
     mutation.mutate({

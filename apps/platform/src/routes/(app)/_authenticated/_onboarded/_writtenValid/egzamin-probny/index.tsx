@@ -1,4 +1,4 @@
-import { mockExamPreviewQueryOptions } from '@inzpro/queries/modules/mock-exams/queries'
+import { mockExamHistoryInfiniteQueryOptions } from '@inzpro/queries/modules/mock-exams/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { constVoid } from 'effect/Function'
 import { seo } from '~platform/config/app'
@@ -10,9 +10,10 @@ export const Route = createFileRoute(
 )({
   loader: ({ context: { queryClient, session, selectedPath } }) => {
     void queryClient
-      .query(
-        mockExamPreviewQueryOptions(apiHttpClient, session.user.id, {
+      .infiniteQuery(
+        mockExamHistoryInfiniteQueryOptions(apiHttpClient, session.user.id, {
           params: { qualificationPathId: selectedPath.id },
+          query: {},
         }),
       )
       .catch(constVoid)

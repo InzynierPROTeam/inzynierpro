@@ -7,15 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@inzpro/ui/components/card'
-import { IconWrapper } from '@inzpro/ui/components/icon-wrapper'
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemMedia,
-  ItemTitle,
-} from '@inzpro/ui/components/item'
+import { ItemGroup } from '@inzpro/ui/components/item'
 import { Skeleton } from '@inzpro/ui/components/skeleton'
 import { TextSkeleton } from '@inzpro/ui/components/text-skeleton'
 import { CircleCheck, CircleSlash, LightbulbOff, ListChecks } from 'lucide-react'
@@ -23,6 +15,7 @@ import type React from 'react'
 import { sessionScopeLabel } from '~platform/features/learningSession/utils/session'
 
 import { SessionResultRing } from './SessionResultRing'
+import { SessionResultRow } from './SessionResultRow'
 
 type SessionResultCardProps = { summary: StudySessionSummary }
 
@@ -48,25 +41,25 @@ export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary })
         <div className="flex flex-col gap-4">
           <h3 className="text-muted-foreground text-sm">W tym:</h3>
           <ItemGroup>
-            <ResultRow
+            <SessionResultRow
               icon={<ListChecks />}
               iconClassName="bg-primary/10 text-primary"
               label="Odpowiedziano na"
               value={`${progress.answered} z ${scored} pytań`}
             />
-            <ResultRow
+            <SessionResultRow
               icon={<CircleCheck />}
               iconClassName="bg-success/10 text-success"
               label="W tym poprawne"
               value={`${result.correct} z ${progress.answered}`}
             />
-            <ResultRow
+            <SessionResultRow
               icon={<LightbulbOff />}
               label="Bez podpowiedzi"
               value={`${progress.answered - result.assisted} z ${progress.answered}`}
             />
             {progress.skipped > 0 && (
-              <ResultRow
+              <SessionResultRow
                 icon={<CircleSlash />}
                 iconClassName="bg-muted text-muted-foreground"
                 label="Wycofane pytania"
@@ -79,28 +72,6 @@ export const SessionResultCard: React.FC<SessionResultCardProps> = ({ summary })
     </Card>
   )
 }
-
-type ResultRowProps = {
-  icon: React.ReactNode
-  iconClassName?: string
-  label: string
-  value: string
-}
-
-const ResultRow: React.FC<ResultRowProps> = ({ icon, iconClassName, label, value }) => (
-  <Item
-    role="listitem"
-    className="p-0"
-  >
-    <ItemMedia>
-      <IconWrapper className={iconClassName}>{icon}</IconWrapper>
-    </ItemMedia>
-    <ItemContent className="gap-1">
-      <ItemDescription>{label}</ItemDescription>
-      <ItemTitle className="text-base font-normal">{value}</ItemTitle>
-    </ItemContent>
-  </Item>
-)
 
 export const SessionResultCardSkeleton = () => (
   <Card>

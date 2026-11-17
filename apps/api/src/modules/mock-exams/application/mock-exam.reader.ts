@@ -11,11 +11,16 @@ import type {
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect, type Option } from 'effect'
+import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
 import type { MockExamReadError } from '~api/modules/mock-exams/application/errors.js'
 import type {
   ExamBlueprint,
   ExamSectionEligibility,
 } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
+import type {
+  AttemptReviewQuestion,
+  AttemptScoreCounts,
+} from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import type {
   AttemptQuestion,
   CandidateAnswer,
@@ -27,6 +32,22 @@ import type {
 export class MockExamReader extends Context.Service<
   MockExamReader,
   {
+    readonly scoreAttempt: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      attemptId: MockExamAttemptId,
+    ) => Effect.Effect<Option.Option<AttemptScoreCounts>, MockExamReadError>
+    readonly history: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      page: CursorPageRequest,
+    ) => Effect.Effect<CursorPage<MockExamAttemptSummary>, MockExamReadError | InvalidCursor>
+    readonly review: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      attemptId: MockExamAttemptId,
+      page: CursorPageRequest,
+    ) => Effect.Effect<CursorPage<AttemptReviewQuestion>, MockExamReadError | InvalidCursor>
     readonly pathBlueprint: (
       pathId: QualificationPathId,
     ) => Effect.Effect<Option.Option<ExamBlueprint>, MockExamReadError>

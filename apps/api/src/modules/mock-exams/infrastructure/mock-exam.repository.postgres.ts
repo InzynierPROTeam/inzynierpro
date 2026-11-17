@@ -64,6 +64,21 @@ export const MockExamRepositoryLive = Layer.effect(
     const sql = yield* SqlClient.SqlClient
 
     return MockExamRepository.of({
+      finishAttempt: Effect.fn('MockExamRepository.finishAttempt')(
+        function* (attemptId, finishedAt, result) {
+          const finished = DateTime.formatIso(finishedAt)
+          const passed = Option.getOrNull(result.passed)
+          yield* sql`UPDATE mock_exam_attempt_questions q SET scored_withdrawn=r.withdrawn_at IS NOT NULL
+ FROM question_revisions r WHERE q.attempt_id=${attemptId} AND r.id=q.question_revision_id`
+          yield* sql`UPDATE mock_exam_attempts SET status='finished',end_reason='submitted',finished_at=${finished},correct_count=${result.correct},incorrect_count=${result.incorrect},unanswered_count=${result.unanswered},percent=${result.percent},passed=${passed},active_seconds=${result.activeSeconds}
+ WHERE id=${attemptId}`
+
+          for (const section of result.sections) {
+            yield* sql`INSERT INTO mock_exam_attempt_section_results (attempt_id,position,correct_count) VALUES (${attemptId},${section.position},${section.correct})`
+          }
+        },
+        Effect.mapError(cause => new MockExamWriteError({ cause })),
+      ),
       createBlueprint: Effect.fn('MockExamRepository.createBlueprint')(blueprintId =>
         sql`INSERT INTO exam_blueprints (id) VALUES (${blueprintId}) ON CONFLICT DO NOTHING`.pipe(
           Effect.asVoid,

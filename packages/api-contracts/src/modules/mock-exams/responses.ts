@@ -1,4 +1,5 @@
 import { UtcIsoDateTime } from '@inzpro/domain/common/date-time'
+import { Percent } from '@inzpro/domain/common/percent'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import {
   QuestionCount,
@@ -15,6 +16,10 @@ import {
   MockExamUnavailableReason,
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import {
+  ExamActiveSeconds,
+  ExamPauseCount,
+} from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
+import {
   AttemptQuestionPosition,
   AttemptQuestionVersion,
   MockExamAttemptId,
@@ -22,6 +27,9 @@ import {
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
+import { ResolvedRichContent } from '~api-contracts/modules/learning-content/responses.js'
+import { QuestionNote } from '~api-contracts/modules/learning/responses.js'
+import { CursorPaginatedResponse } from '~api-contracts/utils/pagination.js'
 
 export const ExamSectionDocument = Schema.Struct({
   id: ReferenceDocumentId,
@@ -47,10 +55,33 @@ export const MockExamBlueprintPreview = Schema.Struct({
 
 export type MockExamBlueprintPreview = typeof MockExamBlueprintPreview.Type
 
+export const AttemptSectionResult = Schema.Struct({
+  position: ExamSectionPosition,
+  name: ExamSectionName,
+  questionCount: QuestionCount,
+  correct: QuestionCount,
+})
+
+export const MockExamResult = Schema.Struct({
+  correct: QuestionCount,
+  incorrect: QuestionCount,
+  unanswered: QuestionCount,
+  percent: Percent,
+  passed: Schema.NullOr(Schema.Boolean),
+  activeSeconds: ExamActiveSeconds,
+  pauseCount: ExamPauseCount,
+  pauseSeconds: ExamActiveSeconds,
+  sections: Schema.Array(AttemptSectionResult),
+})
+
+export type MockExamResult = typeof MockExamResult.Type
+
 export const MockExamAttemptSummary = Schema.Struct({
   id: MockExamAttemptId,
   status: MockExamAttemptStatus,
   startedAt: UtcIsoDateTime,
+  finishedAt: Schema.NullOr(UtcIsoDateTime),
+  result: Schema.NullOr(MockExamResult),
 })
 
 export type MockExamAttemptSummary = typeof MockExamAttemptSummary.Type
@@ -80,7 +111,6 @@ export const AttemptQuestion = Schema.Struct({
   body: Schema.NonEmptyString,
   answers: Schema.Array(AttemptAnswerOption),
   isWithdrawn: Schema.Boolean,
-  // CONTRACT: null when no option has been selected.
   selectedAnswerId: Schema.NullOr(QuestionAnswerId),
   isFlagged: Schema.Boolean,
   version: AttemptQuestionVersion,
@@ -124,3 +154,16 @@ export const AttemptQuestionResponse = Schema.NullOr(AttemptQuestion)
 export const SaveAttemptAnswerResponse = AttemptQuestion
 
 export const FlagAttemptQuestionResponse = AttemptQuestion
+
+export const AttemptReviewQuestion = Schema.Struct({
+  ...AttemptQuestion.fields,
+  correctAnswerId: QuestionAnswerId,
+  explanation: ResolvedRichContent,
+  isFavorite: Schema.Boolean,
+  note: Schema.NullOr(QuestionNote),
+})
+
+export type AttemptReviewQuestion = typeof AttemptReviewQuestion.Type
+
+export const AttemptReviewResponse = CursorPaginatedResponse(AttemptReviewQuestion)
+export const MockExamHistoryResponse = CursorPaginatedResponse(MockExamAttemptSummary)

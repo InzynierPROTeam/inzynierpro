@@ -11,7 +11,7 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { runApi } from '~api-client/lib/run-api.js'
 
-import { flagAttemptQuestion, saveAttemptAnswer } from './mock-exams.js'
+import { finishMockExamAttempt, flagAttemptQuestion, saveAttemptAnswer } from './mock-exams.js'
 
 const firstAnswerId = '22000000-0000-4000-8000-000000000001'
 const secondAnswerId = '22000000-0000-4000-8000-000000000002'
@@ -125,6 +125,44 @@ test('a stale draft answer preserves the current question for the client to show
           httpClient,
         ),
       ).rejects.toStrictEqual(failure)
+    },
+  )
+})
+
+test('finishing an attempt decodes the saved score, dates and nullable pass result', () => {
+  const finished = {
+    id: params.attemptId,
+    status: 'finished',
+    startedAt: '2026-11-13T12:00:00.000Z',
+    finishedAt: '2026-11-13T12:03:00.000Z',
+    durationMinutes: 10,
+    questionCount: 2,
+    passThreshold: 1,
+    sections: [{ position: 1, name: 'Section', questionCount: 2 }],
+    questions: [],
+    result: {
+      correct: 1,
+      incorrect: 1,
+      unanswered: 1,
+      percent: 50,
+      passed: null,
+      activeSeconds: 180,
+      pauseCount: 0,
+      pauseSeconds: 0,
+      sections: [{ position: 1, name: 'Section', questionCount: 2, correct: 1 }],
+    },
+  }
+
+  return withHttpServer(
+    [
+      HttpRouter.route(
+        'POST',
+        `/api/v1/mock-exams/paths/${params.qualificationPathId}/attempts/${params.attemptId}/finish`,
+        HttpServerResponse.jsonUnsafe(finished),
+      ),
+    ],
+    async ({ httpClient }) => {
+      expect(await runApi(finishMockExamAttempt({ params }), httpClient)).toStrictEqual(finished)
     },
   )
 })

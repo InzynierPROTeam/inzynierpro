@@ -1,4 +1,5 @@
 import type {
+  AttemptReviewQuestion as AttemptReviewQuestionDto,
   AttemptQuestion as AttemptQuestionDto,
   MockExamAttempt as MockExamAttemptDto,
   MockExamAttemptSummary as MockExamAttemptSummaryDto,
@@ -8,18 +9,32 @@ import { dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import type { MockExamUnavailableReason } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Option } from 'effect'
+import type { CursorPage } from '~api/lib/cursor-pagination.js'
+import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
+import { toQuestionNoteDto } from '~api/modules/learning/http/mappers.js'
 import type { ExamBlueprintPreview } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
 import { blueprintQuestionCount } from '~api/modules/mock-exams/domain/exam-blueprint.rules.js'
 import type {
+  AttemptReviewQuestion,
   AttemptQuestion,
   MockExamAttempt,
   MockExamAttemptSummary,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 
-const toAttemptSummaryDto = (attempt: MockExamAttemptSummary): MockExamAttemptSummaryDto => ({
+export const toAttemptSummaryDto = (
+  attempt: MockExamAttemptSummary,
+): MockExamAttemptSummaryDto => ({
   id: attempt.id,
   status: attempt.status,
   startedAt: dateTimeUtcToUtcIsoDateTime(attempt.startedAt),
+  finishedAt: Option.match(attempt.finishedAt, {
+    onNone: () => null,
+    onSome: dateTimeUtcToUtcIsoDateTime,
+  }),
+  result: Option.match(attempt.result, {
+    onNone: () => null,
+    onSome: result => ({ ...result, passed: Option.getOrNull(result.passed) }),
+  }),
 })
 
 export const toMockExamPreviewDto = (preview: {
@@ -57,4 +72,22 @@ export const toMockExamAttemptDto = (attempt: MockExamAttempt): MockExamAttemptD
 export const toAttemptQuestionDto = (question: AttemptQuestion): AttemptQuestionDto => ({
   ...question,
   selectedAnswerId: Option.getOrNull(question.selectedAnswerId),
+})
+
+export const toAttemptReviewQuestionDto = (
+  question: AttemptReviewQuestion,
+): AttemptReviewQuestionDto => ({
+  ...toAttemptQuestionDto(question),
+  correctAnswerId: question.correctAnswerId,
+  explanation: toResolvedRichContentDto(question.explanation),
+  isFavorite: question.isFavorite,
+  note: Option.match(question.note, { onNone: () => null, onSome: toQuestionNoteDto }),
+})
+
+export const toMockExamPageDto = <A, B>(
+  page: CursorPage<A>,
+  map: (item: A) => B,
+): CursorPage<B> => ({
+  data: page.data.map(map),
+  meta: page.meta.nextCursor === undefined ? { hasMore: page.meta.hasMore } : page.meta,
 })
