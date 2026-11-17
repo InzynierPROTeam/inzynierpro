@@ -34,7 +34,10 @@ import {
   AnswerNotInQuestion,
   QuestionAlreadyAnswered,
 } from '~api/modules/written-study/domain/errors.js'
-import { noAssistance } from '~api/modules/written-study/domain/review-state.model.js'
+import {
+  noAssistance,
+  WrittenEvidenceSource,
+} from '~api/modules/written-study/domain/review-state.model.js'
 import { answerAssistance } from '~api/modules/written-study/domain/review-state.rules.js'
 
 const syncLearningRound = Effect.fn('Study.syncLearningRound')(function* (
@@ -129,11 +132,22 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
       const stored = yield* studyRepository.recordAnswer(answer)
       const isRegularStudy = session.kind === regularStudySession
 
-      yield* recordWrittenEvidence(answer, {
-        mode: sessionLearningModes[session.kind],
-        assistance,
-        answeredAt,
-      })
+      yield* recordWrittenEvidence(
+        {
+          userId,
+          qualificationPathId: pathId,
+          goalVersion: session.goalVersion,
+          questionId: question.questionId,
+          questionRevisionId,
+          isCorrect: option.isCorrect,
+          source: WrittenEvidenceSource.StudySessionAnswer({ sessionId, position }),
+        },
+        {
+          mode: sessionLearningModes[session.kind],
+          assistance,
+          answeredAt,
+        },
+      )
 
       if (isRegularStudy) {
         const round = yield* syncLearningRound(userId, pathId)

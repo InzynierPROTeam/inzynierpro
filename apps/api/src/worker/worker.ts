@@ -7,12 +7,16 @@ import { processTelemetryLayer } from '~api/lib/observability.js'
 import { TransactionLive } from '~api/lib/transaction.js'
 import { recordJobBacklog } from '~api/modules/background-jobs/application/job-backlog.service.js'
 import { BackgroundJobsReaderLive } from '~api/modules/background-jobs/infrastructure/background-jobs.reader.postgres.js'
+import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import {
   AttemptDeadlineQueueLive,
   processAttemptDeadlines,
 } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-exam.reader.postgres.js'
 import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
+import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
+import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 
 // EXTERNAL: Building Effect's SQL job store also runs its migrations.
 export const BackgroundJobsLive = Layer.unwrap(
@@ -23,6 +27,10 @@ export const BackgroundJobsLive = Layer.unwrap(
       TransactionLive,
       MockExamReaderLive,
       MockExamRepositoryLive,
+      PreparationRepositoryLive,
+      StudyReaderLive,
+      StudyRepositoryLive,
+      ReviewSchedulerLive,
     ).pipe(
       Layer.provideMerge(jobQueueStoreLayer()),
       Layer.provideMerge(databaseLayer({ url: config.DATABASE_URL })),

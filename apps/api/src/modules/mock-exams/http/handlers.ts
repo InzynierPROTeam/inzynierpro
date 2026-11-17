@@ -6,6 +6,8 @@ import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
+import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
+import { failStudyRead, failStudyWrite } from '~api/modules/learning/http/errors.js'
 import { AttemptDeadlineQueueLive } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { getAttemptQuestion } from '~api/modules/mock-exams/application/attempt-question.query.js'
 import {
@@ -53,6 +55,8 @@ import {
 } from '~api/modules/preparation/http/errors.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
+import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 
 export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
   handlers
@@ -71,6 +75,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -89,6 +96,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -107,6 +117,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           MockExamAttemptNotInProgress: () => mockExamAttemptNotInProgress,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -131,6 +144,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           TransactionError: failTransaction,
           InvalidCursor: () => invalidCursor,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -160,6 +176,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           TransactionError: failTransaction,
           InvalidCursor: () => invalidCursor,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -179,6 +198,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamReadError: failMockExamRead,
           MockExamWriteError: failMockExamWrite,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -197,6 +219,8 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamUnavailable: mockExamUnavailable,
           MockExamAttemptNotFound: failMissingMockExamAttempt,
           TransactionError: failTransaction,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -218,6 +242,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamReadError: failMockExamRead,
           MockExamWriteError: failMockExamWrite,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -246,6 +273,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamWriteError: failMockExamWrite,
           MockExamAttemptPaused: () => mockExamAttemptPaused,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -275,6 +305,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           InvalidAttemptAnswer: () => invalidAttemptAnswer,
           AttemptQuestionConflict: attemptQuestionConflict,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     )
@@ -302,6 +335,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           MockExamAttemptPaused: () => mockExamAttemptPaused,
           AttemptQuestionConflict: attemptQuestionConflict,
           TransactionError: failTransaction,
+          PreparationWriteError: failPreparationWrite,
+          StudyReadError: failStudyRead,
+          StudyWriteError: failStudyWrite,
         }),
       ),
     ),
@@ -314,4 +350,7 @@ export const MockExamsRequestServices = Layer.mergeAll(
   MockExamReaderLive,
   MockExamRepositoryLive,
   AttemptDeadlineQueueLive,
+  StudyReaderLive,
+  StudyRepositoryLive,
+  ReviewSchedulerLive,
 )

@@ -4,8 +4,17 @@ import type {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
+import type {
+  SessionQuestionPosition,
+  StudySessionId,
+} from '@inzpro/domain/modules/learning/study-session'
+import type {
+  AttemptQuestionPosition,
+  MockExamAttemptId,
+} from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
+import type { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Schema } from 'effect'
+import { Data, Schema } from 'effect'
 import type {
   LearningMode,
   LearningEventId,
@@ -30,6 +39,29 @@ export type LearningEventContext = {
   readonly mode: LearningMode
   readonly assistance: AssistanceLevel
   readonly answeredAt: DateTimeUtc
+}
+
+export type WrittenEvidenceSource = Data.TaggedEnum<{
+  StudySessionAnswer: {
+    readonly sessionId: StudySessionId
+    readonly position: SessionQuestionPosition
+  }
+  MockExamAnswer: {
+    readonly attemptId: MockExamAttemptId
+    readonly position: AttemptQuestionPosition
+  }
+}>
+
+export const WrittenEvidenceSource = Data.taggedEnum<WrittenEvidenceSource>()
+
+export type NewWrittenEvidence = {
+  readonly userId: UserId
+  readonly qualificationPathId: QualificationPathId
+  readonly goalVersion: UserExamGoalVersion
+  readonly questionId: WrittenQuestionId
+  readonly questionRevisionId: QuestionRevisionId
+  readonly isCorrect: boolean
+  readonly source: WrittenEvidenceSource
 }
 
 export type NewReviewState = {

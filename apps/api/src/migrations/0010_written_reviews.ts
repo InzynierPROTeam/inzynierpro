@@ -10,14 +10,20 @@ export default Effect.gen(function* () {
     user_exam_goal_version integer NOT NULL,
     question_id uuid NOT NULL,
     question_revision_id uuid NOT NULL,
-    mode text NOT NULL CHECK (mode IN ('study','review','favourites')),
+    mode text NOT NULL CHECK (mode IN ('study','review','favourites','exam')),
     is_correct boolean NOT NULL,
     assistance text NOT NULL CHECK (assistance IN ('none','note','explanation')),
     answered_at timestamptz(3) NOT NULL,
-    study_session_id uuid NOT NULL,
-    position integer NOT NULL,
+    study_session_id uuid,
+    position integer,
+    mock_exam_attempt_id uuid,
+    attempt_position integer,
     created_at timestamptz(3) NOT NULL DEFAULT now(),
+    CHECK (CASE WHEN mode='exam'
+      THEN study_session_id IS NULL AND position IS NULL AND mock_exam_attempt_id IS NOT NULL AND attempt_position IS NOT NULL AND assistance='none'
+      ELSE study_session_id IS NOT NULL AND position IS NOT NULL AND mock_exam_attempt_id IS NULL AND attempt_position IS NULL END),
     UNIQUE (study_session_id, position),
+    UNIQUE (mock_exam_attempt_id, attempt_position),
     FOREIGN KEY (study_session_id, position) REFERENCES written_study_answers(study_session_id, position) ON DELETE CASCADE,
     FOREIGN KEY (study_session_id, user_id, qualification_path_id, user_exam_goal_version) REFERENCES written_study_sessions(id, user_id, qualification_path_id, user_exam_goal_version) ON DELETE CASCADE,
     FOREIGN KEY (question_id, question_revision_id) REFERENCES question_revisions(question_id, id)

@@ -14,6 +14,7 @@ import {
   StudyWriteError,
 } from '~api/modules/written-study/application/errors.js'
 import { StudyRepository } from '~api/modules/written-study/application/study.repository.js'
+import { WrittenEvidenceSource } from '~api/modules/written-study/domain/review-state.model.js'
 import { StudySession } from '~api/modules/written-study/domain/study-session.model.js'
 
 const LearningEventRow = Schema.Struct({ id: LearningEventId })
@@ -181,12 +182,28 @@ export const StudyRepositoryLive = Layer.effect(
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
       recordLearningEvent: Effect.fn('StudyRepository.recordLearningEvent')(
-        function* (answer, context) {
+        function* (evidence, context) {
           const answeredAt = DateTime.formatIso(context.answeredAt)
 
+          const { sessionId, sessionPosition, attemptId, attemptPosition } =
+            WrittenEvidenceSource.$match(evidence.source, {
+              StudySessionAnswer: ({ sessionId, position }) => ({
+                sessionId,
+                sessionPosition: position,
+                attemptId: null,
+                attemptPosition: null,
+              }),
+              MockExamAnswer: ({ attemptId, position }) => ({
+                sessionId: null,
+                sessionPosition: null,
+                attemptId,
+                attemptPosition: position,
+              }),
+            })
+
           const rows =
-            yield* sql`INSERT INTO written_learning_events (user_id,qualification_path_id,user_exam_goal_version,question_id,question_revision_id,mode,is_correct,assistance,answered_at,study_session_id,position)
- VALUES (${answer.userId},${answer.qualificationPathId},${answer.goalVersion},${answer.questionId},${answer.questionRevisionId},${context.mode},${answer.isCorrect},${context.assistance},${answeredAt},${answer.sessionId},${answer.position})
+            yield* sql`INSERT INTO written_learning_events (user_id,qualification_path_id,user_exam_goal_version,question_id,question_revision_id,mode,is_correct,assistance,answered_at,study_session_id,position,mock_exam_attempt_id,attempt_position)
+ VALUES (${evidence.userId},${evidence.qualificationPathId},${evidence.goalVersion},${evidence.questionId},${evidence.questionRevisionId},${context.mode},${evidence.isCorrect},${context.assistance},${answeredAt},${sessionId},${sessionPosition},${attemptId},${attemptPosition})
  RETURNING id`
 
           const [event] = yield* Schema.decodeUnknownEffect(Schema.Tuple([LearningEventRow]))(rows)

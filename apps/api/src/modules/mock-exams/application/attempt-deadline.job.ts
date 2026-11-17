@@ -1,9 +1,11 @@
 import { Context, DateTime, Effect, Layer, Option } from 'effect'
 import { makeJobQueue } from '~api/lib/job-queue.js'
 import { Transaction } from '~api/lib/transaction.js'
-import { endLockedAttempt } from '~api/modules/mock-exams/application/attempt-ending.service.js'
+import {
+  endLockedAttempt,
+  lockAttemptForEnding,
+} from '~api/modules/mock-exams/application/attempt-ending.service.js'
 import { MockExamWriteError } from '~api/modules/mock-exams/application/errors.js'
-import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import {
   AttemptDeadlineJob,
   finishAtDeadline,
@@ -39,16 +41,11 @@ export const scheduleAttemptDeadline = Effect.fn('MockExams.scheduleAttemptDeadl
 export const finishAttemptAtDeadline = Effect.fn('MockExams.finishAttemptAtDeadline')(function* (
   job: AttemptDeadlineJob,
 ) {
-  const mockExamRepository = yield* MockExamRepository
   const transaction = yield* Transaction
 
   yield* transaction.run(
     Effect.gen(function* () {
-      const clock = yield* mockExamRepository.lockAttempt(
-        job.userId,
-        job.qualificationPathId,
-        job.attemptId,
-      )
+      const clock = yield* lockAttemptForEnding(job.userId, job.qualificationPathId, job.attemptId)
 
       if (Option.isNone(clock)) {
         return
