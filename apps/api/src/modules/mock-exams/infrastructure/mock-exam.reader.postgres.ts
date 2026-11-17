@@ -279,7 +279,7 @@ export const MockExamReaderLive = Layer.effect(
     })
 
     const storedSections = (attemptIds: ReadonlyArray<MockExamAttemptId>) =>
-      sql`SELECT sr.attempt_id,s.position,s.name,s.question_count,sr.correct_count AS correct
+      sql`SELECT sr.attempt_id,s.position,s.name,sr.question_count,sr.correct_count AS correct
  FROM mock_exam_attempt_section_results sr JOIN mock_exam_attempts a ON a.id=sr.attempt_id
  JOIN exam_blueprint_sections s ON s.blueprint_id=a.blueprint_id AND s.version=a.blueprint_version AND s.position=sr.position
  WHERE sr.attempt_id IN ${sql.in(attemptIds)} ORDER BY sr.attempt_id,s.position`.pipe(
@@ -320,36 +320,37 @@ export const MockExamReaderLive = Layer.effect(
     return MockExamReader.of({
       scoreAttempt: Effect.fn('MockExamReader.scoreAttempt')(
         function* (userId, pathId, attemptId) {
-          const [row] = yield* sql`SELECT v.pass_threshold, count(q.position)::integer AS total,
+          const [row] =
+            yield* sql`SELECT v.pass_threshold, count(q.position) FILTER (WHERE r.withdrawn_at IS NULL)::integer AS total,
  count(q.position) FILTER (WHERE qa.is_correct AND r.withdrawn_at IS NULL)::integer AS correct,
- count(q.position) FILTER (WHERE q.selected_answer_id IS NULL)::integer AS unanswered,
+ count(q.position) FILTER (WHERE q.selected_answer_id IS NULL AND r.withdrawn_at IS NULL)::integer AS unanswered,
  count(q.position) FILTER (WHERE r.withdrawn_at IS NOT NULL)::integer AS withdrawn
  FROM mock_exam_attempts a JOIN exam_blueprint_versions v ON v.blueprint_id=a.blueprint_id AND v.version=a.blueprint_version
  JOIN mock_exam_attempt_questions q ON q.attempt_id=a.id JOIN question_revisions r ON r.id=q.question_revision_id
  LEFT JOIN question_answers qa ON qa.id=q.selected_answer_id
  WHERE a.id=${attemptId} AND a.user_id=${userId} AND a.qualification_path_id=${pathId}
  GROUP BY a.id,v.pass_threshold`.pipe(
-            Effect.flatMap(
-              Schema.decodeUnknownEffect(
-                Schema.Array(
-                  Schema.Struct({
-                    passThreshold: QuestionCount,
-                    total: QuestionCount,
-                    correct: QuestionCount,
-                    unanswered: QuestionCount,
-                    withdrawn: QuestionCount,
-                  }),
+              Effect.flatMap(
+                Schema.decodeUnknownEffect(
+                  Schema.Array(
+                    Schema.Struct({
+                      passThreshold: QuestionCount,
+                      total: QuestionCount,
+                      correct: QuestionCount,
+                      unanswered: QuestionCount,
+                      withdrawn: QuestionCount,
+                    }),
+                  ),
                 ),
               ),
-            ),
-          )
+            )
 
           if (row === undefined) {
             return Option.none()
           }
 
           const sections =
-            yield* sql`SELECT s.position,s.name,s.question_count,count(q.position) FILTER (WHERE qa.is_correct AND r.withdrawn_at IS NULL)::integer AS correct
+            yield* sql`SELECT s.position,s.name,count(q.position) FILTER (WHERE r.withdrawn_at IS NULL)::integer AS question_count,count(q.position) FILTER (WHERE qa.is_correct AND r.withdrawn_at IS NULL)::integer AS correct
  FROM mock_exam_attempts a JOIN exam_blueprint_sections s ON s.blueprint_id=a.blueprint_id AND s.version=a.blueprint_version
  JOIN mock_exam_attempt_questions q ON q.attempt_id=a.id AND q.section_position=s.position
  JOIN question_revisions r ON r.id=q.question_revision_id LEFT JOIN question_answers qa ON qa.id=q.selected_answer_id

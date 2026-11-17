@@ -84,7 +84,7 @@ export const MockExamRepositoryLive = Layer.effect(
  WHERE id=${attemptId}`
 
           for (const section of result.sections) {
-            yield* sql`INSERT INTO mock_exam_attempt_section_results (attempt_id,position,correct_count) VALUES (${attemptId},${section.position},${section.correct})`
+            yield* sql`INSERT INTO mock_exam_attempt_section_results (attempt_id,position,question_count,correct_count) VALUES (${attemptId},${section.position},${section.questionCount},${section.correct})`
           }
         },
         Effect.mapError(cause => new MockExamWriteError({ cause })),
