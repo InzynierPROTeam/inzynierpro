@@ -19,14 +19,18 @@ The tests in `src/lib/job-queue.test.ts` run the real queue on PostgreSQL with t
 
 ### The job table belongs to Effect
 
-`background_jobs` is not created by our migrations. Effect's store creates and upgrades it with its own versioned migrations, tracked in `background_jobs_migrations`, whenever a process builds the store: today the worker and `worker:status`. Concurrent starts are safe, because Effect's migrator locks its migrations table. An upgrade of `effect` can therefore change this table when the first process starts after a deployment, so read the `PersistedQueue` changes in its changelog before upgrading. Our migrations never touch these two tables.
+`background_jobs` is not created by our migrations. Effect's store creates and upgrades it with its own versioned migrations, tracked in `background_jobs_migrations`, whenever a process builds the store: the API, which offers jobs, the worker and `worker:status`. Concurrent starts are safe, because Effect's migrator locks its migrations table. An upgrade of `effect` can therefore change this table when the first process starts after a deployment, so read the `PersistedQueue` changes in its changelog before upgrading. Our migrations never touch these two tables.
+
+## Queues
+
+- `mock-exam-attempt-deadlines` (`mock-exams`): finishes a mock exam attempt at its deadline when nobody returns to it ([mock-exams.md](mock-exams.md#clock-and-timeout)).
 
 ## Adding a queue
 
 A module that needs background work:
 
 1. Declares its payload schema in `domain/` and a queue service in `application/` built with `makeJobQueue` (name, schema, `maxAttempts`, optionally `retrySchedule`).
-2. Offers jobs from its commands. A handler receives the payload and `{ id, attempts }`, and makes its effect idempotent by the job ID.
+2. Offers jobs from its commands, optionally with a `delay` measured by the database clock. A handler receives the payload and `{ id, attempts }`, and makes its effect idempotent by the job ID.
 3. Is wired in `src/worker/worker.ts`: its layers merged into `BackgroundJobsLive` and its `process` loop forked in `WorkerLive`.
 
 Backlog reports, the gauge and `worker:status` cover every queue in the table, so they need no change. Payloads and failures are stored in the table and failures are logged, so they must not contain secrets or private content: pass IDs and load the data in the handler. A payload that no longer matches its schema, for example after a schema change, fails at once with the decoding error as its last failure, and that error can quote the stored values; with ID-only payloads it quotes only IDs.

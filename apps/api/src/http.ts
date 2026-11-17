@@ -12,6 +12,7 @@ import { Digest, SecureRandom } from 'effect/crypto'
 import { HttpEffect, HttpRouter, HttpServerResponse } from 'effect/http'
 import { ApiLive } from '~api/api.js'
 import { env, type Env } from '~api/lib/env.js'
+import { jobQueueStoreLayer } from '~api/lib/job-queue.js'
 import { processTelemetryLayer, untracedRequestsLayer } from '~api/lib/observability.js'
 import { RateLimitHeadersMiddleware, TrustedClientIpHeader } from '~api/lib/rate-limit.js'
 import { ApiErrorMiddleware } from '~api/middleware/api-error.js'
@@ -75,7 +76,7 @@ export const httpServerLayer = (config: Env) =>
     Layer.provideMerge(
       Layer.mergeAll(
         pgPoolLayer({ url: config.DATABASE_URL }),
-        databaseLayer({ url: config.DATABASE_URL }),
+        jobQueueStoreLayer().pipe(Layer.provideMerge(databaseLayer({ url: config.DATABASE_URL }))),
         RedisLayer({ url: config.REDIS_URL }),
       ),
     ),

@@ -145,6 +145,17 @@ export const formatDuration = (input: Duration.Input): string => {
   return `${padTwoDigits(hours)}:${padTwoDigits(parts.minutes)}:${padTwoDigits(parts.seconds)}`
 }
 
+export const getRemainingDuration = (
+  deadline: DateInput,
+  now: DateInput = getCurrentDate(),
+): Duration.Duration =>
+  Duration.max(DateTime.distance(toDateTime(now), toDateTime(deadline)), Duration.zero)
+
+export const getUtcIsoDateTimeAfter = (duration: Duration.Input): UtcIsoDateTime =>
+  dateTimeUtcToUtcIsoDateTime(
+    DateTime.addDuration(Effect.runSync(DateTime.now), Duration.fromInputUnsafe(duration)),
+  )
+
 export const formatDatePickerLabel = (date: DateInput): string => {
   const { year, month, day } = toWarsawZoned(date).pipe(DateTime.toParts)
 

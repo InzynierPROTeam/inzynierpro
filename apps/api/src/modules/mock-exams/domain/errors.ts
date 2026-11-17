@@ -25,6 +25,8 @@ export class AttemptQuestionWithdrawn extends Data.TaggedError('AttemptQuestionW
 
 export class InvalidAttemptAnswer extends Data.TaggedError('InvalidAttemptAnswer') {}
 
+export class AttemptDeadlineNotReached extends Data.TaggedError('AttemptDeadlineNotReached') {}
+
 export class AttemptQuestionConflict extends Data.TaggedError('AttemptQuestionConflict')<{
   readonly current: AttemptQuestion
 }> {}

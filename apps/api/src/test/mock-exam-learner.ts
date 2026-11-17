@@ -1,3 +1,4 @@
+import { CurrentSessionResponse } from '@inzpro/api-contracts/modules/identity/responses'
 import {
   FlagAttemptQuestionPayload,
   SaveAttemptAnswerPayload,
@@ -10,9 +11,10 @@ import {
   MockExamPreview,
 } from '@inzpro/api-contracts/modules/mock-exams/responses'
 import type { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
+import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
 import { expect } from 'vitest'
-import type { TestApi } from '~api/test/api-server.js'
+import type { TestApi, TestVisitor } from '~api/test/api-server.js'
 import { resolveFixturePath } from '~api/test/mock-exam-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
@@ -39,8 +41,16 @@ export const mockExamLearner = async (
 
   expect(onboarded.ok).toBe(true)
 
+  const { user } = Schema.decodeUnknownSync(CurrentSessionResponse)(
+    await (await visitor.session()).json(),
+  )
+
+  return { userId: user.id, ...learnerRequests(api.baseUrl, visitor, pathId) }
+}
+
+const learnerRequests = (baseUrl: string, visitor: TestVisitor, pathId: QualificationPathId) => {
   const request = (path: string, method = 'GET') =>
-    visitor.jar.fetch(new URL(`/api/v1/mock-exams/paths/${pathId}${path}`, api.baseUrl), {
+    visitor.jar.fetch(new URL(`/api/v1/mock-exams/paths/${pathId}${path}`, baseUrl), {
       method,
     })
 
@@ -48,14 +58,14 @@ export const mockExamLearner = async (
     path: string,
     payload: typeof SaveAttemptAnswerPayload.Encoded | typeof FlagAttemptQuestionPayload.Encoded,
   ) =>
-    visitor.jar.fetch(new URL(`/api/v1/mock-exams/paths/${pathId}${path}`, api.baseUrl), {
+    visitor.jar.fetch(new URL(`/api/v1/mock-exams/paths/${pathId}${path}`, baseUrl), {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
     })
 
   const studyRequest = (path: string) =>
-    visitor.jar.fetch(new URL(`/api/v1/study/paths/${pathId}${path}`, api.baseUrl))
+    visitor.jar.fetch(new URL(`/api/v1/study/paths/${pathId}${path}`, baseUrl))
 
   const questionPath = (attemptId: string, position: number) =>
     `/attempts/${attemptId}/questions/${position}`
@@ -92,5 +102,6 @@ export const mockExamLearner = async (
     ) => write(`${questionPath(attemptId, position)}/flag`, payload),
     request,
     studyRequest,
+    on: (other: TestApi) => learnerRequests(other.baseUrl, visitor, pathId),
   }
 }

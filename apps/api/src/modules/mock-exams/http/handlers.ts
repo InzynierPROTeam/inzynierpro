@@ -1,13 +1,17 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
-import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
+import { AttemptDeadlineQueueLive } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { getAttemptQuestion } from '~api/modules/mock-exams/application/attempt-question.query.js'
+import {
+  expireAttemptBeforeRead,
+  expireUnfinishedAttemptBeforeRead,
+} from '~api/modules/mock-exams/application/expire-attempt.command.js'
 import { finishAttempt } from '~api/modules/mock-exams/application/finish-attempt.command.js'
 import { flagAttemptQuestion } from '~api/modules/mock-exams/application/flag-attempt-question.command.js'
 import { getMockExamAttempt } from '~api/modules/mock-exams/application/mock-exam-attempt.query.js'
@@ -33,12 +37,12 @@ import {
 } from '~api/modules/mock-exams/http/mappers.js'
 import {
   toAttemptQuestionDto,
-  toMockExamAttemptDto,
+  toMockExamAttemptResponse,
+  toNullableMockExamAttemptResponse,
   toMockExamPreviewDto,
 } from '~api/modules/mock-exams/http/mappers.js'
 import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-exam.reader.postgres.js'
 import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
-import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import {
   failPreparationRead,
   failPreparationWrite,
@@ -56,8 +60,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
             finishAttempt(user.id, params.qualificationPathId, params.attemptId),
           ),
         ),
-        Effect.map(Option.map(toMockExamAttemptDto)),
-        Effect.map(Option.getOrNull),
+        Effect.flatMap(toNullableMockExamAttemptResponse),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
@@ -73,9 +76,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
         Effect.andThen(
           Effect.gen(function* () {
             const user = yield* CurrentUser
-            yield* requirePathAccess(user.id, params.qualificationPathId, {
-              part: writtenExamAccess,
-            })
+            yield* expireUnfinishedAttemptBeforeRead(user.id, params.qualificationPathId)
             const mockExamReader = yield* MockExamReader
 
             return toMockExamPageDto(
@@ -88,6 +89,8 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          TransactionError: failTransaction,
           InvalidCursor: () => invalidCursor,
         }),
       ),
@@ -97,9 +100,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
         Effect.andThen(
           Effect.gen(function* () {
             const user = yield* CurrentUser
-            yield* requirePathAccess(user.id, params.qualificationPathId, {
-              part: writtenExamAccess,
-            })
+            yield* expireAttemptBeforeRead(user.id, params.qualificationPathId, params.attemptId)
             const mockExamReader = yield* MockExamReader
 
             return toMockExamPageDto(
@@ -117,6 +118,8 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          TransactionError: failTransaction,
           InvalidCursor: () => invalidCursor,
         }),
       ),
@@ -125,7 +128,9 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
       limitByUser(accountReadLimit).pipe(
         Effect.andThen(
           Effect.flatMap(CurrentUser, user =>
-            getMockExamPreview(user.id, params.qualificationPathId),
+            expireUnfinishedAttemptBeforeRead(user.id, params.qualificationPathId).pipe(
+              Effect.andThen(getMockExamPreview(user.id, params.qualificationPathId)),
+            ),
           ),
         ),
         Effect.map(toMockExamPreviewDto),
@@ -133,6 +138,8 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -141,7 +148,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
         Effect.andThen(
           Effect.flatMap(CurrentUser, user => startAttempt(user.id, params.qualificationPathId)),
         ),
-        Effect.map(toMockExamAttemptDto),
+        Effect.flatMap(toMockExamAttemptResponse),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PreparationWriteError: failPreparationWrite,
@@ -158,15 +165,20 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
       limitByUser(accountReadLimit).pipe(
         Effect.andThen(
           Effect.flatMap(CurrentUser, user =>
-            getMockExamAttempt(user.id, params.qualificationPathId, params.attemptId),
+            expireAttemptBeforeRead(user.id, params.qualificationPathId, params.attemptId).pipe(
+              Effect.andThen(
+                getMockExamAttempt(user.id, params.qualificationPathId, params.attemptId),
+              ),
+            ),
           ),
         ),
-        Effect.map(Option.map(toMockExamAttemptDto)),
-        Effect.map(Option.getOrNull),
+        Effect.flatMap(toNullableMockExamAttemptResponse),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -174,11 +186,15 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
       limitByUser(accountReadLimit).pipe(
         Effect.andThen(
           Effect.flatMap(CurrentUser, user =>
-            getAttemptQuestion(
-              user.id,
-              params.qualificationPathId,
-              params.attemptId,
-              params.position,
+            expireAttemptBeforeRead(user.id, params.qualificationPathId, params.attemptId).pipe(
+              Effect.andThen(
+                getAttemptQuestion(
+                  user.id,
+                  params.qualificationPathId,
+                  params.attemptId,
+                  params.position,
+                ),
+              ),
             ),
           ),
         ),
@@ -188,6 +204,8 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
           MockExamReadError: failMockExamRead,
+          MockExamWriteError: failMockExamWrite,
+          TransactionError: failTransaction,
         }),
       ),
     )
@@ -253,4 +271,5 @@ export const MockExamsRequestServices = Layer.mergeAll(
   PreparationRepositoryLive,
   MockExamReaderLive,
   MockExamRepositoryLive,
+  AttemptDeadlineQueueLive,
 )

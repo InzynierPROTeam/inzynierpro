@@ -7,6 +7,7 @@ import {
   formatDuration,
   getCurrentFullYear,
   getDaysUntil,
+  getRemainingDuration,
   isDateTimeInput,
   warsawEndOfDay,
   warsawStartOfDay,
@@ -57,5 +58,16 @@ describe('Warsaw date boundaries', () => {
   it('formats elapsed durations without resetting at midnight', () => {
     expect(formatDuration(Duration.hours(25))).toBe('25:00:00')
     expect(formatDuration(Duration.seconds(65))).toBe('00:01:05')
+  })
+
+  it('measures the time left until a deadline and never goes below zero', () => {
+    expect(
+      Duration.toMillis(
+        getRemainingDuration('2026-11-13T12:10:00.000Z', '2026-11-13T12:07:30.000Z'),
+      ),
+    ).toBe(150_000)
+    expect(
+      Duration.isZero(getRemainingDuration('2026-11-13T12:10:00.000Z', '2026-11-13T12:11:00.000Z')),
+    ).toBe(true)
   })
 })

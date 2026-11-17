@@ -16,7 +16,9 @@ import {
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
+import { useOpenSummaryWhenFinished } from '../hooks/useOpenSummaryWhenFinished'
 import { attemptQuestionRouteApi } from '../utils'
+import { AttemptTimer } from './AttemptTimer'
 
 export const AttemptHeader = () => {
   const {
@@ -47,6 +49,8 @@ const AttemptHeaderContent: React.FC<AttemptHeaderContentProps> = ({ attempt }) 
   const { questionNumber } = attemptQuestionRouteApi.useParams()
   const total = attempt.questionCount
 
+  useOpenSummaryWhenFinished(attempt)
+
   return (
     <SessionHeader>
       <SessionHeaderNav aria-label="Przechodzenie między pytaniami">
@@ -72,6 +76,7 @@ const AttemptHeaderContent: React.FC<AttemptHeaderContentProps> = ({ attempt }) 
           )}
         </SessionHeaderNext>
       </SessionHeaderNav>
+      {attempt.status === 'in-progress' && <AttemptTimer attempt={attempt} />}
       <p className="text-muted-foreground text-center text-sm">
         Czas: {attempt.durationMinutes} min • Próg zaliczenia: {attempt.passThreshold} z {total}
       </p>

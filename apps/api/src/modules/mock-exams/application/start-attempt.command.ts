@@ -1,10 +1,15 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { noExamBlueprint } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
-import type { MockExamAttemptId } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
+import {
+  finishedAttempt,
+  type MockExamAttemptId,
+} from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
+import { scheduleAttemptDeadline } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
+import { finishAttemptIfExpired } from '~api/modules/mock-exams/application/expire-attempt.command.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import {
@@ -45,7 +50,12 @@ export const startAttempt = Effect.fn('MockExams.startAttempt')(function* (
       const unfinished = yield* mockExamReader.unfinishedAttempt(userId, pathId)
 
       if (Option.isSome(unfinished)) {
-        return yield* readAttempt(unfinished.value.id)
+        yield* finishAttemptIfExpired(userId, pathId, unfinished.value.id)
+        const attempt = yield* readAttempt(unfinished.value.id)
+
+        if (attempt.status !== finishedAttempt) {
+          return attempt
+        }
       }
 
       const blueprint = yield* mockExamReader.pathBlueprint(pathId)
@@ -80,7 +90,16 @@ export const startAttempt = Effect.fn('MockExams.startAttempt')(function* (
         questions,
       })
 
-      return yield* readAttempt(attemptId)
+      const attempt = yield* readAttempt(attemptId)
+
+      yield* scheduleAttemptDeadline({
+        attemptId,
+        userId,
+        qualificationPathId: pathId,
+        deadline: attempt.deadline,
+      })
+
+      return attempt
     }),
   )
 })

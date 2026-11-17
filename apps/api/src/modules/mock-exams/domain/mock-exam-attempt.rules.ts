@@ -5,17 +5,11 @@ import {
   ExamActiveSeconds,
   ExamPauseCount,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
-import {
-  inProgressAttempt,
-  type MockExamAttemptStatus,
-} from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { Option } from 'effect'
 import type {
   AttemptScoreCounts,
   MockExamResult,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
-
-export const acceptsDraftWrites = (status: MockExamAttemptStatus) => status === inProgressAttempt
 
 export const scoreAttempt = (
   counts: AttemptScoreCounts,

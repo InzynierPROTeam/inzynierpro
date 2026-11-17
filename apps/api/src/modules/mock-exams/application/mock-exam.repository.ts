@@ -1,4 +1,3 @@
-import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type { ExamBlueprintId } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
@@ -6,13 +5,16 @@ import type {
   AttemptQuestionPosition,
   AttemptQuestionVersion,
   MockExamAttemptId,
-  MockExamAttemptStatus,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect, type Option } from 'effect'
 import type { MockExamWriteError } from '~api/modules/mock-exams/application/errors.js'
 import type { NewExamBlueprintVersion } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
-import type { MockExamResult } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
+import type {
+  AttemptClock,
+  AttemptEnding,
+  MockExamResult,
+} from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import type { NewMockExamAttempt } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 
 export class MockExamRepository extends Context.Service<
@@ -20,7 +22,7 @@ export class MockExamRepository extends Context.Service<
   {
     readonly finishAttempt: (
       attemptId: MockExamAttemptId,
-      finishedAt: DateTimeUtc,
+      ending: AttemptEnding,
       result: MockExamResult,
     ) => Effect.Effect<void, MockExamWriteError>
     readonly createBlueprint: (
@@ -43,7 +45,7 @@ export class MockExamRepository extends Context.Service<
       userId: UserId,
       pathId: QualificationPathId,
       attemptId: MockExamAttemptId,
-    ) => Effect.Effect<Option.Option<MockExamAttemptStatus>, MockExamWriteError>
+    ) => Effect.Effect<Option.Option<AttemptClock>, MockExamWriteError>
     readonly saveAttemptAnswer: (
       attemptId: MockExamAttemptId,
       position: AttemptQuestionPosition,

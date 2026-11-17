@@ -24,6 +24,7 @@ import {
   AttemptQuestionVersion,
   MockExamAttemptId,
   MockExamAttemptStatus,
+  MockExamEndReason,
 } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
@@ -81,6 +82,7 @@ export const MockExamAttemptSummary = Schema.Struct({
   status: MockExamAttemptStatus,
   startedAt: UtcIsoDateTime,
   finishedAt: Schema.NullOr(UtcIsoDateTime),
+  endReason: Schema.NullOr(MockExamEndReason),
   result: Schema.NullOr(MockExamResult),
 })
 
@@ -134,6 +136,9 @@ export type AttemptQuestionState = typeof AttemptQuestionState.Type
 
 export const MockExamAttempt = Schema.Struct({
   ...MockExamAttemptSummary.fields,
+  deadline: UtcIsoDateTime,
+  // CONTRACT: The backend time when the response was produced; clients count down from deadline minus serverTime.
+  serverTime: UtcIsoDateTime,
   durationMinutes: ExamDurationMinutes,
   passThreshold: QuestionCount,
   questionCount: QuestionCount,

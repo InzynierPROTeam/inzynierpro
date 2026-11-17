@@ -1,3 +1,4 @@
+import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type {
   QuestionCount,
@@ -10,11 +11,13 @@ import type {
 import {
   type ExamBlueprintId,
   type ExamBlueprintVersion,
+  ExamDurationMinutes,
   type ExamSectionName,
   ExamSectionPosition,
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import {
   AttemptQuestionPosition,
+  ExamActiveSeconds,
   type AttemptQuestionVersion,
   initialAttemptQuestionVersion,
   inProgressAttempt,
@@ -65,12 +68,12 @@ export const MockExamRepositoryLive = Layer.effect(
 
     return MockExamRepository.of({
       finishAttempt: Effect.fn('MockExamRepository.finishAttempt')(
-        function* (attemptId, finishedAt, result) {
-          const finished = DateTime.formatIso(finishedAt)
+        function* (attemptId, ending, result) {
+          const finished = DateTime.formatIso(ending.finishedAt)
           const passed = Option.getOrNull(result.passed)
           yield* sql`UPDATE mock_exam_attempt_questions q SET scored_withdrawn=r.withdrawn_at IS NOT NULL
  FROM question_revisions r WHERE q.attempt_id=${attemptId} AND r.id=q.question_revision_id`
-          yield* sql`UPDATE mock_exam_attempts SET status='finished',end_reason='submitted',finished_at=${finished},correct_count=${result.correct},incorrect_count=${result.incorrect},unanswered_count=${result.unanswered},percent=${result.percent},passed=${passed},active_seconds=${result.activeSeconds}
+          yield* sql`UPDATE mock_exam_attempts SET status='finished',end_reason=${ending.endReason},finished_at=${finished},correct_count=${result.correct},incorrect_count=${result.incorrect},unanswered_count=${result.unanswered},percent=${result.percent},passed=${passed},active_seconds=${result.activeSeconds}
  WHERE id=${attemptId}`
 
           for (const section of result.sections) {
@@ -184,14 +187,23 @@ export const MockExamRepositoryLive = Layer.effect(
       ),
       lockAttempt: Effect.fn('MockExamRepository.lockAttempt')(
         function* (userId, pathId, attemptId) {
-          const rows = yield* sql`SELECT status FROM mock_exam_attempts
- WHERE id=${attemptId} AND user_id=${userId} AND qualification_path_id=${pathId} LIMIT 1 FOR UPDATE`
+          const rows =
+            yield* sql`SELECT a.status,a.started_at,v.duration_minutes,a.pause_seconds FROM mock_exam_attempts a
+ JOIN exam_blueprint_versions v ON v.blueprint_id=a.blueprint_id AND v.version=a.blueprint_version
+ WHERE a.id=${attemptId} AND a.user_id=${userId} AND a.qualification_path_id=${pathId} LIMIT 1 FOR UPDATE OF a`
 
           const attempts = yield* Schema.decodeUnknownEffect(
-            Schema.Array(Schema.Struct({ status: MockExamAttemptStatus })),
+            Schema.Array(
+              Schema.Struct({
+                status: MockExamAttemptStatus,
+                startedAt: DateTimeUtc,
+                durationMinutes: ExamDurationMinutes,
+                pauseSeconds: ExamActiveSeconds,
+              }),
+            ),
           )(rows)
 
-          return Option.map(Arr.head(attempts), attempt => attempt.status)
+          return Arr.head(attempts)
         },
         Effect.mapError(cause => new MockExamWriteError({ cause })),
       ),

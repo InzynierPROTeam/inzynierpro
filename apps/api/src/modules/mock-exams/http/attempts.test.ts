@@ -204,6 +204,7 @@ describe('starting a mock exam attempt', () => {
       status: 'in-progress',
       startedAt: first.startedAt,
       finishedAt: null,
+      endReason: null,
       result: null,
     })
   })

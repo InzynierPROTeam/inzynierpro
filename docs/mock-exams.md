@@ -1,6 +1,6 @@
 # Mock exams
 
-How written mock exams are configured and started, and how an attempt and its questions are read. The decisions are in [ADR-0004](adr/0004-mock-exam-lifecycle.md) (lifecycle, blueprint and draw) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal). This document covers what is implemented so far: blueprints, the preview, starting an attempt, reading it, draft answers with flags, finishing and result history. Finishing, result review and history are available; the clock and pause come later. Endpoints sit under `/mock-exams/paths/:qualificationPathId` and require written access on the assignment (`PathAccessDenied`, 403, otherwise).
+How written mock exams are configured and started, and how an attempt and its questions are read. The decisions are in [ADR-0004](adr/0004-mock-exam-lifecycle.md) (lifecycle, blueprint and draw) and [ADR-0003](adr/0003-shared-revisions-publication-and-withdrawal.md) (revisions and withdrawal). This document covers what is implemented so far: blueprints, the preview, starting an attempt, reading it, draft answers with flags, the clock and timeout, finishing and result history. Explicit pause comes later. Endpoints sit under `/mock-exams/paths/:qualificationPathId` and require written access on the assignment (`PathAccessDenied`, 403, otherwise).
 
 ## Blueprints
 
@@ -26,10 +26,19 @@ The `mock-exams` API module owns ExamBlueprints. A blueprint has a stable identi
 
 Like study sessions, an attempt is read separately from its questions, one question per request:
 
-- `GET /attempts/:attemptId` returns the status, start time, `questionCount`, the version's duration, threshold and sections, and `questions`: each position with `isAnswered` and `isFlagged`, for the navigator.
+- `GET /attempts/:attemptId` returns the status, start time, `deadline`, the backend's `serverTime`, `endReason`, `questionCount`, the version's duration, threshold and sections, and `questions`: each position with `isAnswered` and `isFlagged`, for the navigator.
 - `GET /attempts/:attemptId/questions/:position` returns one question: its section, pinned body, options in the stored order, `isWithdrawn`, and the draft state `selectedAnswerId`, `isFlagged` and `version`. It never contains correctness, explanations or notes.
 
 Another account's attempt, one on another path, or a position outside the attempt reads as `null`.
+
+## Clock and timeout
+
+The backend owns time. The deadline is `started_at` plus the version's duration plus the attempt's total pause time (zero until pause exists). Closing the app or losing the connection never stops the clock.
+
+- Every read or write of an attempt first locks it and, when it is in progress and past its deadline, finishes it from the last saved answers with end reason `time-expired`, `finished_at` at the deadline and the full duration as active time. This covers the attempt, question, review and history reads, answer and flag writes, finishing, the preview and starting, so an expired attempt is never offered for resuming and starting draws a new one.
+- Answer and flag writes are then refused with `MockExamAttemptNotInProgress` (409) when the attempt is not in progress or its deadline has passed. A finish request after the deadline stores `time-expired` instead of `submitted`.
+- Starting an attempt offers a job on the `mock-exam-attempt-deadlines` queue, delayed until the deadline, with only the attempt, learner and path IDs and the deadline it was scheduled for. The worker finishes the attempt if it is still in progress and due. A job that finds the attempt missing, finished, paused or with a later deadline does nothing; one delivered before the deadline fails and is retried.
+- All finishing paths lock the attempt row and check its status first, so concurrent lazy, explicit and worker finishing store one result.
 
 ## Draft answers and flags
 
@@ -42,7 +51,7 @@ Each attempt question holds an optional selected option, a "come back later" fla
 
 ## Finishing and review
 
-`POST /attempts/:attemptId/finish` authorizes the owner, locks the attempt and stores the submitted result in one transaction. Repeating it returns the stored result. Unanswered questions count as wrong, and the threshold is inclusive. A withdrawn question makes the result incomplete (`passed: null`). The stored total and section scores remain stable after later content changes. Active time is measured by the backend; pause count and time are zero until explicit pause is implemented.
+`POST /attempts/:attemptId/finish` authorizes the owner, locks the attempt and stores the submitted result in one transaction. Repeating it returns the stored result. Unanswered questions count as wrong, and the threshold is inclusive. A withdrawn question makes the result incomplete (`passed: null`). The stored total and section scores remain stable after later content changes. Active time is measured by the backend from the start to the finish time, less pause time; pause count and time are zero until explicit pause is implemented. `endReason` is `submitted` or `time-expired`.
 
 `GET /attempts/:attemptId/review` returns a cursor page in attempt order, with the pinned question revision, stored option order, selected and correct answers, resolved rich explanation, current favourite mark and personal note. Unfinished, missing and foreign attempts return an empty page. Notes and favourites reuse the written-study actions and remain shared across paths. `GET /history` returns the owner's attempts on the path, newest first, with a date, status and saved result. Both collections accept `cursor` and `limit`.
 
@@ -52,13 +61,14 @@ The stable owner-only summary URL is `/egzamin-probny/podejscie/$attemptId/podsu
 
 - `exam_blueprints`, `exam_blueprint_versions`, `exam_blueprint_sections` and `exam_blueprint_section_documents`: identities and immutable versions.
 - `exam_blueprint_paths`: one row per path with its blueprint.
-- `mock_exam_attempts`: learner, path, blueprint version, `status` (`in-progress`, `paused`, `finished`, `abandoned`) and `started_at`, with the immutable submitted result and finish time. `mock_exam_attempt_section_results` stores the section scores.
+- `mock_exam_attempts`: learner, path, blueprint version, `status` (`in-progress`, `paused`, `finished`, `abandoned`) and `started_at`, with the immutable result, finish time and `end_reason`. `mock_exam_attempt_section_results` stores the section scores.
 - `mock_exam_attempt_questions` and `mock_exam_attempt_answer_options`: references to revisions and answer IDs in attempt order, never content copies. A question row also holds the draft `selected_answer_id`, which must be one of its stored options, `is_flagged` and `version`.
 
 ## Client
 
 - `/egzamin-probny/start` shows the preview: duration, question count, pass threshold and sections with their documents, the unavailable reason, and a start or resume button. Starting stores the attempt in its query, marks preview/history stale without refetching them and replaces the history entry with the attempt's first question.
 - `/egzamin-probny/podejscie/$attemptId/$questionNumber` shows the question with its section, an answer form and an icon toggle to come back later; its header and numbered navigation read the attempt, and the previous and next links preload their questions. The navigator marks answered and flagged questions.
+- The attempt header counts down from `deadline` minus `serverTime`, measured from when the attempt was read, so the device clock's offset does not matter; each refetch restarts it from the server's values. At zero it refetches the attempt, which finishes it on the backend. Whenever the question page's attempt reads as finished, whether by timeout, the worker, another device or "Zakończ egzamin", the page marks the panel and review stale and replaces itself with the summary. The summary notes that time ran out.
 - "Zapisz odpowiedź" sends the selected option with the version the question was read at and moves to the next question at once, without waiting for the response. On an answered question the form offers "Następne pytanie" until another option is selected. A write optimistically updates the question and navigator. Its response caches the saved question; after success or failure, the current question and attempt are refetched to reconcile their state. Other question caches stay fresh, so next/previous render preloads are reused when navigating.
 - The "Egzamin próbny" tile on Start, for learners with written access, offers resuming an unfinished attempt, otherwise the exam page, or the unavailable reason.
 - Route loaders preload the panel history, preview, current attempt/question and summary/review with exactly the options their views consume. Next/previous links preload their questions on render.

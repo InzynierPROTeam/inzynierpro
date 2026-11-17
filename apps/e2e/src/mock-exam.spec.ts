@@ -21,6 +21,9 @@ test('a learner starts the seeded mock exam from Start, browses its questions an
 
   await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 10' })).toBeVisible()
   await expect(page.getByText(/^(Prawo budowlane|Warunki techniczne)$/)).toBeVisible()
+  await expect(page.getByRole('timer', { name: 'Pozostały czas' })).toHaveText(
+    /^00:(10:00|09:\d{2})$/,
+  )
 
   const answers = page.getByRole('radiogroup', { name: 'Wybierz odpowiedź' }).getByRole('radio')
 
