@@ -26,6 +26,10 @@ export const Route = createFileRoute(
       mockExamAttemptQueryOptions(apiHttpClient, session.user.id, { params: attemptParams }),
     )
 
+    if (attempt?.status === 'abandoned') {
+      throw redirect({ to: '/egzamin-probny', replace: true })
+    }
+
     if (attempt?.status === 'finished') {
       throw redirect({
         to: '/egzamin-probny/podejscie/$attemptId/podsumowanie',

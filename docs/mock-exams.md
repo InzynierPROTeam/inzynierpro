@@ -67,6 +67,12 @@ Each attempt question holds an optional selected option, a "come back later" fla
 
 The stable owner-only summary URL is `/egzamin-probny/podejscie/$attemptId/podsumowanie`. Its result card uses the learning summary animation and displays pass/fail or incomplete, counts, solving time, pauses and section scores. Question cards below show the selected answer, the correct answer after a mistake or omission, the explanation and note, with favourite and note-editing actions. The exam panel shows the last attempt and links to its result or unfinished questions, then cursor-paginated history. Starting a new exam first opens `/egzamin-probny/start`, which shows the blueprint preview. Every infinite list loads its next cursor page when its sentinel enters the viewport; only failed page loads offer an explicit retry. Finishing requires confirmation showing unanswered and flagged counts.
 
+## Abandoning
+
+`POST /attempts/:attemptId/abandon` authorizes the owner and serializes with draft writes, finishing and starting another attempt. It abandons an unfinished attempt, including a paused one, closes an open pause and records its end time, with its pause count and duration available independently of the result, without a score or learning evidence. Repeating abandonment returns the stored attempt; a finished attempt refuses abandonment. If the running attempt has already expired, the transaction finishes it from the saved answers and the command returns a conflict. Abandoned attempts remain in history without a summary link, and no longer block starting another exam.
+
+“Porzuć egzamin” opens a confirmation explaining that the attempt will have no result or effect on reviews. Confirming stores the returned attempt, marks the path queries stale and returns to the exam panel. Opening an abandoned attempt's question URL also returns to that panel.
+
 ## Storage
 
 - `exam_blueprints`, `exam_blueprint_versions`, `exam_blueprint_sections` and `exam_blueprint_section_documents`: identities and immutable versions.

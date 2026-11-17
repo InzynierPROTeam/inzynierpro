@@ -1,5 +1,7 @@
 import { runApi } from '@inzpro/api-client/lib/run-api'
 import {
+  abandonMockExamAttempt,
+  type AbandonMockExamAttemptRequest,
   finishMockExamAttempt,
   type FinishMockExamAttemptRequest,
   flagAttemptQuestion,
@@ -32,3 +34,6 @@ export const resumeExam = (req: ResumeMockExamAttemptRequest) =>
 
 export const finishExam = (req: FinishMockExamAttemptRequest) =>
   runApi(finishMockExamAttempt(req), apiHttpClient)
+
+export const abandonExam = (req: AbandonMockExamAttemptRequest) =>
+  runApi(abandonMockExamAttempt(req), apiHttpClient)
