@@ -1,4 +1,7 @@
-import { AttemptQuestionConflict } from '@inzpro/api-contracts/modules/mock-exams/errors'
+import {
+  AttemptQuestionConflict,
+  MockExamAttemptNotInProgress,
+} from '@inzpro/api-contracts/modules/mock-exams/errors'
 import {
   FlagAttemptQuestionPayload,
   MockExamAttemptParams,
@@ -12,6 +15,7 @@ import { expect, test } from 'vitest'
 import { runApi } from '~api-client/lib/run-api.js'
 
 import {
+  abandonMockExamAttempt,
   finishMockExamAttempt,
   flagAttemptQuestion,
   pauseMockExamAttempt,
@@ -139,6 +143,8 @@ test('finishing an attempt decodes the saved score, dates and nullable pass resu
   const finished = {
     id: params.attemptId,
     status: 'finished',
+    pauseCount: 0,
+    pauseSeconds: 0,
     startedAt: '2026-11-13T12:00:00.000Z',
     finishedAt: '2026-11-13T12:03:00.000Z',
     endReason: 'submitted',
@@ -180,6 +186,8 @@ test('pausing and resuming an attempt post to their commands and decode the atte
   const attempt = {
     id: params.attemptId,
     status: 'paused',
+    pauseCount: 0,
+    pauseSeconds: 0,
     startedAt: '2026-11-13T12:00:00.000Z',
     finishedAt: null,
     endReason: null,
@@ -211,6 +219,55 @@ test('pausing and resuming an attempt post to their commands and decode the atte
         status: 'in-progress',
         deadline: '2026-11-13T12:13:00.000Z',
       })
+    },
+  )
+})
+
+test('abandoning posts to the command and decodes a scoreless attempt or its typed conflict', () => {
+  const abandoned = {
+    id: params.attemptId,
+    status: 'abandoned',
+    startedAt: '2026-11-13T12:00:00.000Z',
+    finishedAt: '2026-11-13T12:05:00.000Z',
+    endReason: null,
+    deadline: '2026-11-13T12:13:00.000Z',
+    serverTime: '2026-11-13T12:05:00.000Z',
+    durationMinutes: 10,
+    questionCount: 2,
+    passThreshold: 1,
+    pauseCount: 1,
+    pauseSeconds: 180,
+    sections: [{ position: 1, name: 'Section', questionCount: 2 }],
+    questions: [],
+    result: null,
+  }
+
+  const failure = new MockExamAttemptNotInProgress({
+    type: 'mock_exam_attempt_not_in_progress',
+    message: 'This attempt has already finished.',
+  })
+
+  const encodedFailure = Schema.encodeSync(MockExamAttemptNotInProgress)(failure)
+  let finished = false
+
+  return withHttpServer(
+    [
+      HttpRouter.route(
+        'POST',
+        `/api/v1/mock-exams/paths/${params.qualificationPathId}/attempts/${params.attemptId}/abandon`,
+        Effect.sync(() =>
+          finished
+            ? HttpServerResponse.jsonUnsafe(encodedFailure, { status: 409 })
+            : HttpServerResponse.jsonUnsafe(abandoned),
+        ),
+      ),
+    ],
+    async ({ httpClient }) => {
+      expect(await runApi(abandonMockExamAttempt({ params }), httpClient)).toStrictEqual(abandoned)
+      finished = true
+      await expect(runApi(abandonMockExamAttempt({ params }), httpClient)).rejects.toStrictEqual(
+        failure,
+      )
     },
   )
 })
