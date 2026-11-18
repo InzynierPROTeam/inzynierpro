@@ -1,3 +1,4 @@
+import { examPassedDailyPlan } from '@inzpro/domain/modules/daily-plan/daily-plan'
 import {
   oralDailyPlanQueryOptions,
   oralReviewPreviewQueryOptions,
@@ -9,6 +10,7 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 import { DailyPlanSection, DailyPlanSectionSkeleton } from './DailyPlanSection'
 import { DailyPlanSummary } from './DailyPlanSummary'
+import { OralDailyPlanSettings } from './OralDailyPlanSettings'
 
 export const OralDailyPlan = () => {
   const {
@@ -25,7 +27,12 @@ export const OralDailyPlan = () => {
           options={oralDailyPlanQueryOptions(apiHttpClient, user.id, { params })}
           isDataEmpty={() => false}
         >
-          {plan => <DailyPlanSummary plan={plan} />}
+          {plan => (
+            <>
+              <DailyPlanSummary plan={plan} />
+              {plan.status !== examPassedDailyPlan && <OralDailyPlanSettings plan={plan} />}
+            </>
+          )}
         </SuspenseQuery>
       </SuspenseQueryWrapper>
       <SuspenseQueryWrapper fallback={null}>
