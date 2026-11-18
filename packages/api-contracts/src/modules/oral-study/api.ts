@@ -1,5 +1,10 @@
 import { HttpApiEndpoint, HttpApiGroup } from 'effect/http-api'
 import { Authentication } from '~api-contracts/middleware/authentication/api.js'
+import {
+  DailyPlanSettingsConflict,
+  InvalidDailyPlanSettings,
+} from '~api-contracts/modules/daily-plan/errors.js'
+import { ChangeDailyPlanSettingsPayload } from '~api-contracts/modules/daily-plan/requests.js'
 import { DailyPlan } from '~api-contracts/modules/daily-plan/responses.js'
 import {
   QuestionNotFound,
@@ -216,6 +221,23 @@ export const GetOralDailyPlanEndpoint = HttpApiEndpoint.get(
   },
 )
 
+export const ChangeOralDailyPlanSettingsEndpoint = HttpApiEndpoint.put(
+  'ChangeOralDailyPlanSettings',
+  '/paths/:qualificationPathId/oral/daily-plan/settings',
+  {
+    params: OralPathParams,
+    payload: ChangeDailyPlanSettingsPayload,
+    success: DailyPlan,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      InvalidDailyPlanSettings,
+      DailyPlanSettingsConflict,
+    ],
+  },
+)
+
 export const GetOralReviewPreviewEndpoint = HttpApiEndpoint.get(
   'GetOralReviewPreview',
   '/paths/:qualificationPathId/oral/review-preview',
@@ -404,6 +426,7 @@ export const OralStudyApi = HttpApiGroup.make('OralStudy')
   .add(GetOralFavoritesSessionEndpoint)
   .add(StartOralFavoritesSessionEndpoint)
   .add(GetOralDailyPlanEndpoint)
+  .add(ChangeOralDailyPlanSettingsEndpoint)
   .add(GetOralReviewPreviewEndpoint)
   .add(GetOralReviewSessionEndpoint)
   .add(StartOralReviewSessionEndpoint)

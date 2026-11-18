@@ -29,3 +29,28 @@ export const scheduledDailyPlanStatusValues = [
 export const ScheduledDailyPlanStatus = Schema.Literals(scheduledDailyPlanStatusValues)
 
 export type ScheduledDailyPlanStatus = typeof ScheduledDailyPlanStatus.Type
+
+export const nextDailyPlanSettingsVersion = (version: DailyPlanSettingsVersion) =>
+  DailyPlanSettingsVersion.make(version + 1)
+
+export const maxDailyQuestionCount = 200
+
+export const DailyQuestionCount = Schema.Int.check(
+  Schema.isBetween({ minimum: 1, maximum: maxDailyQuestionCount }),
+).pipe(Schema.brand('DailyQuestionCount'))
+
+export type DailyQuestionCount = typeof DailyQuestionCount.Type
+
+export const defaultPlanPreference = 'default'
+export const targetDatePlanPreference = 'target_date'
+export const dailyCountPlanPreference = 'daily_count'
+
+export const planPreferenceValues = [
+  defaultPlanPreference,
+  targetDatePlanPreference,
+  dailyCountPlanPreference,
+] as const
+
+export const PlanPreferenceMode = Schema.Literals(planPreferenceValues)
+
+export type PlanPreferenceMode = typeof PlanPreferenceMode.Type

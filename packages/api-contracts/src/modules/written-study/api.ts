@@ -1,5 +1,10 @@
 import { HttpApiEndpoint, HttpApiGroup } from 'effect/http-api'
 import { Authentication } from '~api-contracts/middleware/authentication/api.js'
+import {
+  DailyPlanSettingsConflict,
+  InvalidDailyPlanSettings,
+} from '~api-contracts/modules/daily-plan/errors.js'
+import { ChangeDailyPlanSettingsPayload } from '~api-contracts/modules/daily-plan/requests.js'
 import { DailyPlan } from '~api-contracts/modules/daily-plan/responses.js'
 import {
   QuestionNotFound,
@@ -126,6 +131,23 @@ export const GetDailyPlanEndpoint = HttpApiEndpoint.get(
     params: GetDocumentsParams,
     success: DailyPlan,
     error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
+export const ChangeDailyPlanSettingsEndpoint = HttpApiEndpoint.put(
+  'ChangeDailyPlanSettings',
+  '/paths/:qualificationPathId/daily-plan/settings',
+  {
+    params: GetDocumentsParams,
+    payload: ChangeDailyPlanSettingsPayload,
+    success: DailyPlan,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      PathAccessDenied,
+      InvalidDailyPlanSettings,
+      DailyPlanSettingsConflict,
+    ],
   },
 )
 
@@ -363,6 +385,7 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(GetSessionPreviewEndpoint)
   .add(StartSessionEndpoint)
   .add(GetDailyPlanEndpoint)
+  .add(ChangeDailyPlanSettingsEndpoint)
   .add(GetReviewPreviewEndpoint)
   .add(GetReviewSessionEndpoint)
   .add(StartReviewSessionEndpoint)
