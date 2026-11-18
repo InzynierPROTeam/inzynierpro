@@ -14,6 +14,7 @@ import {
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import { learningRewardToasts } from '~platform/features/learningXp/utils/rewards'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 import { apiHttpClient } from '~platform/lib/api-client'
 
@@ -36,8 +37,18 @@ export const FinishAttemptButton = () => {
 
   const mutation = useMutation({
     mutationFn: finishExam,
-    onSuccess: result =>
-      client.setQueryData(mockExamKeys.getMockExamAttempt(user.id, { params }), result),
+    onSuccess: result => {
+      const attemptKey = mockExamKeys.getMockExamAttempt(user.id, { params })
+
+      if (result === null) {
+        client.setQueryData(attemptKey, null)
+
+        return
+      }
+
+      client.setQueryData(attemptKey, result.attempt)
+      learningRewardToasts(result.rewards).forEach(reward => toast.add(reward))
+    },
   })
 
   const finish = () =>

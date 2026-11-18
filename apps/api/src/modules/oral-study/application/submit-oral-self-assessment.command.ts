@@ -12,7 +12,15 @@ import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import { closesPlannedRound } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
-import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import {
+  awardXp,
+  grantLearningRewards,
+} from '~api/modules/learning-xp/application/award-xp.service.js'
+import {
+  LearningAchievement,
+  noLearningRewards,
+} from '~api/modules/learning-xp/domain/learning-reward.model.js'
+import { reachedStreakAchievements } from '~api/modules/learning-xp/domain/learning-reward.rules.js'
 import { oralSelfAssessmentXpReason } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { xpStudyDate } from '~api/modules/learning-xp/domain/learning-xp.rules.js'
 import {
@@ -90,7 +98,7 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
 
       if (Option.isSome(question.selfAssessment)) {
         if (question.selfAssessment.value.value === selfAssessment) {
-          return { question, session }
+          return { question, session, rewards: noLearningRewards }
         }
 
         return yield* new OralQuestionAlreadyAssessed()
@@ -141,6 +149,8 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         answeredAt,
       })
 
+      const achievements: Array<LearningAchievement> = []
+
       if (session.kind === regularStudySession) {
         const round = yield* syncOralLearningRound(userId, pathId)
         const before = yield* oralStudyReader.learningRound(userId, pathId)
@@ -160,12 +170,20 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
             userId,
             completedRoundBridgeOf(pathId, oralExamAccess, after.round, answeredAt),
           )
+          achievements.push(
+            LearningAchievement.CompletedRound({ part: oralExamAccess, round: after.round }),
+          )
         }
 
         yield* syncOralLearningRound(userId, pathId)
       }
 
-      yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
+      const streak = yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
+
+      const rewards = yield* grantLearningRewards(
+        { userId, pathId, examSessionId: goal.examSessionId, at: answeredAt },
+        [...achievements, ...reachedStreakAchievements(streak)],
+      )
 
       const next = yield* oralStudyReader.nextOpenPosition(sessionId, position)
 
@@ -174,7 +192,11 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         Option.getOrElse(next, () => position),
       )
 
-      return { question: { ...question, selfAssessment: Option.some(stored) }, session: moved }
+      return {
+        question: { ...question, selfAssessment: Option.some(stored) },
+        session: moved,
+        rewards,
+      }
     }),
   )
 })

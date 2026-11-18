@@ -11,6 +11,8 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { DateTime, Effect, Option } from 'effect'
 import type { CursorPage } from '~api/lib/cursor-pagination.js'
 import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
+import type { LearningRewards } from '~api/modules/learning-xp/domain/learning-reward.model.js'
+import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import { toQuestionNoteDto } from '~api/modules/learning/http/mappers.js'
 import type { ExamBlueprintPreview } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
 import { blueprintQuestionCount } from '~api/modules/mock-exams/domain/exam-blueprint.rules.js'
@@ -85,6 +87,18 @@ export const toNullableMockExamAttemptResponse = (attempt: Option.Option<MockExa
   Option.match(attempt, {
     onNone: () => Effect.succeed(null),
     onSome: toMockExamAttemptResponse,
+  })
+
+export const toFinishMockExamAttemptResponse = (
+  finished: Option.Option<{ readonly attempt: MockExamAttempt; readonly rewards: LearningRewards }>,
+) =>
+  Option.match(finished, {
+    onNone: () => Effect.succeed(null),
+    onSome: ({ attempt, rewards }) =>
+      Effect.map(toMockExamAttemptResponse(attempt), response => ({
+        attempt: response,
+        rewards: toLearningRewardsDto(rewards),
+      })),
   })
 
 export const toAttemptQuestionDto = (question: AttemptQuestion): AttemptQuestionDto => ({

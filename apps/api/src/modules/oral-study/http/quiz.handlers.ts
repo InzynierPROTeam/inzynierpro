@@ -6,7 +6,8 @@ import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
-import { failXpWrite } from '~api/modules/learning-xp/http/errors.js'
+import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
+import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import {
   failStudyRead,
   failStudyWrite,
@@ -109,7 +110,8 @@ export const quizHandlers = {
           ),
         ),
       ),
-      Effect.map(({ check, quiz }) => ({
+      Effect.map(({ check, quiz, rewards }) => ({
+        rewards: toLearningRewardsDto(rewards),
         check: toOralQuizCheckDto(check),
         quiz: toOralSessionQuizDto(quiz),
       })),
@@ -124,6 +126,7 @@ export const quizHandlers = {
         OralQuizSelectionNotAllowed: () => invalidOralQuizSelection,
         StreakReadError: failStreakRead,
         StreakWriteError: failStreakWrite,
+        XpReadError: failXpRead,
         XpWriteError: failXpWrite,
         TransactionError: failTransaction,
       }),

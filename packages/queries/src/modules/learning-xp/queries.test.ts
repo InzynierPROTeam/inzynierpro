@@ -9,7 +9,10 @@ import { withQueryClient } from '~queries/test/query-client.js'
 
 const userId = Schema.decodeSync(UserId)('0190f6a2-9c1d-7c3e-8a4b-1f2e3d4c5b6a')
 
-const learningXp = { total: 8 }
+const learningXp = {
+  total: 8,
+  badges: [{ code: 'streak_7', earnedAt: '2026-11-13T12:00:00.000Z' }],
+}
 
 test('the account learning XP is cached per account and refreshed through the account group', () =>
   withHttpServer(

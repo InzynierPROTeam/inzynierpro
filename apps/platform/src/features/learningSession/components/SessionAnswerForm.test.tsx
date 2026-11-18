@@ -149,6 +149,7 @@ test.each([0, 3])(
         },
         session,
         awardedXp: responseXp,
+        rewards: { roundReward: null, badges: [] },
       }),
     )
     await renderForm()

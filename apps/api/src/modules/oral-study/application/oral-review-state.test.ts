@@ -16,6 +16,7 @@ import { DateTime, Effect, Exit, Layer, Option, Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { TransactionLive } from '~api/lib/transaction.js'
 import { cosmeticChange } from '~api/modules/learning-content/domain/learning-content.model.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { OralStudyRepository } from '~api/modules/oral-study/application/oral-study.repository.js'
@@ -54,6 +55,7 @@ const commandServices = Layer.mergeAll(
   ReviewSchedulerLive,
   StreakReaderLive,
   StreakRepositoryLive,
+  XpReaderLive,
   XpRepositoryLive,
 )
 

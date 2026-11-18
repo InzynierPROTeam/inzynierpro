@@ -6,6 +6,7 @@ import {
 import {
   AttemptQuestion,
   AttemptQuestionResponse,
+  FinishMockExamAttemptResponse,
   MockExamAttempt,
   MockExamAttemptResponse,
   MockExamPreview,
@@ -25,6 +26,14 @@ export const decodeResponse =
 
     return Schema.decodeUnknownSync(schema)(await response.json())
   }
+
+export const decodeFinishedAttempt = async (response: Response) => {
+  const finished = await decodeResponse(FinishMockExamAttemptResponse)(response)
+
+  expect(finished).not.toBeNull()
+
+  return finished!.attempt
+}
 
 export const mockExamLearner = async (
   api: TestApi,

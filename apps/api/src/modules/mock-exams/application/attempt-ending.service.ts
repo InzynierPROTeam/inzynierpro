@@ -4,7 +4,15 @@ import type { MockExamAttemptId } from '@inzpro/domain/modules/mock-exams/mock-e
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { type DateTime, Effect, Option } from 'effect'
-import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import {
+  awardXp,
+  grantLearningRewards,
+} from '~api/modules/learning-xp/application/award-xp.service.js'
+import {
+  LearningAchievement,
+  noLearningRewards,
+} from '~api/modules/learning-xp/domain/learning-reward.model.js'
+import { reachedStreakAchievements } from '~api/modules/learning-xp/domain/learning-reward.rules.js'
 import {
   examAnswerXpReason,
   finishedExamXpReason,
@@ -59,7 +67,7 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
   const score = yield* mockExamReader.scoreAttempt(userId, pathId, attemptId)
 
   if (Option.isNone(score)) {
-    return
+    return noLearningRewards
   }
 
   const ending = attemptEnding(clock, now)
@@ -114,9 +122,23 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
 
   yield* mockExamRepository.finishAttempt(attemptId, ending, result, earnedXp)
 
-  if (Option.getOrElse(result.passed, () => false)) {
+  const passed = Option.getOrElse(result.passed, () => false)
+
+  if (passed) {
     yield* grantStreakBridges(userId, passedMockExamBridgeOf(ending.finishedAt))
   }
 
-  yield* recordStreakAnswers(userId, ending.finishedAt, DailyAnswerCount.make(finalAnswers.length))
+  const streak = yield* recordStreakAnswers(
+    userId,
+    ending.finishedAt,
+    DailyAnswerCount.make(finalAnswers.length),
+  )
+
+  return yield* grantLearningRewards(
+    { userId, pathId, examSessionId: goal.examSessionId, at: ending.finishedAt },
+    [
+      ...(passed ? [LearningAchievement.PassedMockExam()] : []),
+      ...reachedStreakAchievements(streak),
+    ],
+  )
 })

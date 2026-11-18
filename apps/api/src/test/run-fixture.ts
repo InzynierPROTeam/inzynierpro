@@ -5,7 +5,9 @@ import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/e
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
+import { XpReader } from '~api/modules/learning-xp/application/learning-xp.reader.js'
 import { XpRepository } from '~api/modules/learning-xp/application/learning-xp.repository.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import {
   ReviewScheduler,
@@ -47,6 +49,7 @@ const fixturesLayer = Layer.mergeAll(
   ReviewSchedulerLive,
   StreakReaderLive,
   StreakRepositoryLive,
+  XpReaderLive,
   XpRepositoryLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
@@ -62,6 +65,7 @@ export const runFixture = <A, E>(
     | OralStudyReader
     | MockExamReader
     | MockExamRepository
+    | XpReader
     | XpRepository
     | PreparationReader
     | PreparationRepository

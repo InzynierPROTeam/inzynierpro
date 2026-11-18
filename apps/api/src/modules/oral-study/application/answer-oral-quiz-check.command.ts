@@ -7,7 +7,12 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
-import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import {
+  awardXp,
+  grantLearningRewards,
+} from '~api/modules/learning-xp/application/award-xp.service.js'
+import { noLearningRewards } from '~api/modules/learning-xp/domain/learning-reward.model.js'
+import { reachedStreakAchievements } from '~api/modules/learning-xp/domain/learning-reward.rules.js'
 import { quizCheckXpReason } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { ReviewScheduler } from '~api/modules/learning/application/review-scheduler.service.js'
 import { OralSessionQuizReader } from '~api/modules/oral-study/application/oral-session-quiz.reader.js'
@@ -97,6 +102,7 @@ export const answerOralQuizCheck = Effect.fn('Study.answerOralQuizCheck')(functi
       }
 
       const check = found.value
+      let rewards = noLearningRewards
 
       if (Option.isSome(check.answer)) {
         if (!sameSelection(check.answer.value.selectedOptionIds, optionIds)) {
@@ -127,7 +133,12 @@ export const answerOralQuizCheck = Effect.fn('Study.answerOralQuizCheck')(functi
           answeredAt,
         })
         yield* applyQuizEvidence(userId, pathId, check, isCorrect, answeredAt)
-        yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
+        const streak = yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
+
+        rewards = yield* grantLearningRewards(
+          { userId, pathId, examSessionId: goal.examSessionId, at: answeredAt },
+          reachedStreakAchievements(streak),
+        )
       }
 
       const result = Option.all({
@@ -139,7 +150,7 @@ export const answerOralQuizCheck = Effect.fn('Study.answerOralQuizCheck')(functi
         return yield* new OralQuizCheckMissing()
       }
 
-      return result.value
+      return { ...result.value, rewards }
     }),
   )
 })

@@ -8,11 +8,13 @@ export default Effect.gen(function* () {
     award_key text NOT NULL,
     amount integer NOT NULL CHECK (amount > 0),
     reason text NOT NULL,
+    badge_code text,
     awarded_at timestamptz(3) NOT NULL,
     qualification_path_id uuid NOT NULL REFERENCES qualification_paths(id),
     exam_session_id uuid NOT NULL REFERENCES exam_sessions(id),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
-    PRIMARY KEY (user_id, award_key)
+    PRIMARY KEY (user_id, award_key),
+    CHECK ((reason = 'badge') = (badge_code IS NOT NULL))
   )`
   yield* sql`CREATE INDEX xp_events_user_awarded_at ON xp_events (user_id, awarded_at)`
   yield* sql`CREATE TABLE user_period_xp (

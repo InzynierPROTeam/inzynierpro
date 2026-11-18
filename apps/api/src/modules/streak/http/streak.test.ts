@@ -516,7 +516,7 @@ test('a passed mock exam earns one bridge a day', async () => {
 
     const finished = await learner.request(`/attempts/${attempt.id}/finish`, 'POST')
 
-    expect(await finished.json()).toMatchObject({ result: { passed: true } })
+    expect(await finished.json()).toMatchObject({ attempt: { result: { passed: true } } })
   }
 
   expect(await streakOf(learner.visitor)).toMatchObject({ bridgeCount: 1 })
@@ -602,7 +602,7 @@ test('a bridge from a mock exam passed on the return day covers the gap, and a f
     return decode(Schema.Unknown)(await learner.request(`/attempts/${attempt.id}/finish`, 'POST'))
   }
 
-  expect(await finish()).toMatchObject({ result: { passed: false } })
+  expect(await finish()).toMatchObject({ attempt: { result: { passed: false } } })
   expect(await streakOf(learner.visitor)).toMatchObject({
     currentStreak: 0,
     longestStreak: 2,
@@ -610,7 +610,7 @@ test('a bridge from a mock exam passed on the return day covers the gap, and a f
     todayAnswerCount: 0,
   })
 
-  expect(await finish('A')).toMatchObject({ result: { passed: true } })
+  expect(await finish('A')).toMatchObject({ attempt: { result: { passed: true } } })
   expect(await streakOf(learner.visitor)).toMatchObject({
     currentStreak: 3,
     longestStreak: 3,

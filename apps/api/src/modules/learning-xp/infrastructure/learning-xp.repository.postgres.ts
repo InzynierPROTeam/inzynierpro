@@ -27,6 +27,19 @@ export const XpRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new XpWriteError({ cause })),
       ),
+      recordBadge: Effect.fn('XpRepository.recordBadge')(
+        function* (award) {
+          const awardedAt = DateTime.formatIso(award.awardedAt)
+
+          const rows =
+            yield* sql`INSERT INTO xp_events (user_id, amount, reason, badge_code, award_key, awarded_at, qualification_path_id, exam_session_id)
+      VALUES (${award.userId}, ${award.amount}, ${award.reason}, ${award.badgeCode}, ${award.awardKey}, ${awardedAt}, ${award.pathId}, ${award.examSessionId})
+      ON CONFLICT (user_id, award_key) DO NOTHING RETURNING award_key`
+
+          return rows.length > 0
+        },
+        Effect.mapError(cause => new XpWriteError({ cause })),
+      ),
       addPeriodXp: Effect.fn('XpRepository.addPeriodXp')(
         function* (award, period, reachedAt) {
           const reached = DateTime.formatIso(reachedAt)

@@ -1,10 +1,10 @@
-import { MockExamAttempt } from '@inzpro/api-contracts/modules/mock-exams/responses'
 import { DocumentResponse } from '@inzpro/api-contracts/modules/written-study/responses'
 import { databaseLayerFromConfig } from '@inzpro/db'
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import { DateTime, Effect, Exit, Layer, Option } from 'effect'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { TransactionLive } from '~api/lib/transaction.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewScheduler } from '~api/modules/learning/application/review-scheduler.service.js'
 import { finishAttemptAtDeadline } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
@@ -24,7 +24,11 @@ import {
   mockExamPathConfiguration,
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
-import { decodeResponse, mockExamLearner } from '~api/test/mock-exam-learner.js'
+import {
+  decodeResponse,
+  mockExamLearner,
+  decodeFinishedAttempt,
+} from '~api/test/mock-exam-learner.js'
 import { runFixture } from '~api/test/run-fixture.js'
 import {
   currentReviewState,
@@ -80,7 +84,7 @@ const option = (
 }
 
 const finish = async (learner: Learner, attemptId: string) =>
-  decodeResponse(MockExamAttempt)(await learner.request(`/attempts/${attemptId}/finish`, 'POST'))
+  decodeFinishedAttempt(await learner.request(`/attempts/${attemptId}/finish`, 'POST'))
 
 const reviewState = async (learner: Learner, questionId: WrittenQuestionId) =>
   Option.getOrNull(await currentReviewState(learner.userId, learner.pathId, questionId))
@@ -262,6 +266,7 @@ it('leaves neither a result nor SRS evidence when finishing fails', async () => 
           StudyRepositoryLive,
           StreakReaderLive,
           StreakRepositoryLive,
+          XpReaderLive,
           XpRepositoryLive,
           failingScheduler,
         ).pipe(Layer.provideMerge(databaseLayerFromConfig)),
@@ -273,7 +278,7 @@ it('leaves neither a result nor SRS evidence when finishing fails', async () => 
   expect(Exit.isFailure(exit)).toBe(true)
   expect(
     await (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json(),
-  ).toEqual({ total: 0 })
+  ).toEqual({ total: 0, badges: [] })
   expect(await learner.attempt(attempt.id)).toMatchObject({ status: 'in-progress', result: null })
   expect(await reviewState(learner, question.questionId)).toBeNull()
   expect(await hasLearningEvent(learner, question)).toBe(false)

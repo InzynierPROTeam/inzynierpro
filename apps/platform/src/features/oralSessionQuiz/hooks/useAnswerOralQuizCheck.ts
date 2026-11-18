@@ -11,6 +11,7 @@ import { streakKeys } from '@inzpro/queries/modules/streak/keys'
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Predicate } from 'effect'
+import { learningRewardToasts } from '~platform/features/learningXp/utils/rewards'
 import { checkOralQuizAnswer } from '~platform/features/oralSessionQuiz/actions'
 import { apiHttpClient } from '~platform/lib/api-client'
 
@@ -39,6 +40,7 @@ export const useAnswerOralQuizCheck = (userId: UserId) => {
       const state: OralSessionQuizState = { quiz: result.quiz, availableFormats: [] }
 
       client.setQueryData(quiz.queryKey, state)
+      learningRewardToasts(result.rewards).forEach(reward => toast.add(reward))
       client.setQueryData(checks.queryKey, current =>
         current === undefined
           ? current

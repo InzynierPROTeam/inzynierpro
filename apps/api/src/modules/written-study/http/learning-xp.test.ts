@@ -101,7 +101,7 @@ test.each([
   'a $assistance answer with correctness $correct awards $expected XP',
   async ({ correct, assistance, expected }) => {
     const user = await learner()
-    expect(await user.total()).toEqual({ total: 0 })
+    expect(await user.total()).toMatchObject({ total: 0 })
     const session = await user.start()
     const question = await user.shown(session)
 
@@ -129,11 +129,11 @@ test.each([
     }
 
     expect((await user.answer(session, correct)).awardedXp).toBe(expected)
-    expect(await user.total()).toEqual({ total: expected })
+    expect(await user.total()).toMatchObject({ total: expected })
   },
 )
 
-test('retries and later modes earn zero until the next Warsaw day', async () => {
+test('retries and later modes earn zero until the next Warsaw day, beside the first session badge', async () => {
   const user = await learner()
   const session = await user.start()
   expect((await user.answer(session)).awardedXp).toBe(3)
@@ -160,7 +160,7 @@ test('retries and later modes earn zero until the next Warsaw day', async () => 
   await user.request(`/sessions/${favorites.id}/end`, {})
   const tomorrow = await user.start(nextDay)
   expect((await user.answer(tomorrow, true, nextDay)).awardedXp).toBe(3)
-  expect(await user.total()).toEqual({ total: 6 })
+  expect(await user.total()).toMatchObject({ total: 106 })
 })
 
 test('concurrent answers on different paths share the daily question limit', async () => {
@@ -208,10 +208,10 @@ test('concurrent answers on different paths share the daily question limit', asy
   expect(results.map(result => result.awardedXp).sort((left, right) => left - right)).toEqual([
     0, 3,
   ])
-  expect(await user.total()).toEqual({ total: 3 })
+  expect(await user.total()).toMatchObject({ total: 3 })
 })
 
-test('a due review adds one XP and every period receives exactly the awarded amount', async () => {
+test('a due review adds one XP and every period receives exactly the awarded amount with the first session badge', async () => {
   const user = await learner()
   const session = await user.start()
   expect((await user.answer(session, false)).awardedXp).toBe(1)
@@ -222,7 +222,7 @@ test('a due review adds one XP and every period receives exactly the awarded amo
   )
 
   expect((await user.answer(review, true, nextDay)).awardedXp).toBe(4)
-  expect(await user.total()).toEqual({ total: 5 })
+  expect(await user.total()).toMatchObject({ total: 105 })
 
   for (const period of [
     { kind: 'week', key: '2026-11-09' },
@@ -237,7 +237,7 @@ test('a due review adds one XP and every period receives exactly the awarded amo
       ),
     )
 
-    expect(Option.map(total, value => value.total)).toEqual(Option.some(5))
+    expect(Option.map(total, value => value.total)).toEqual(Option.some(105))
   }
 })
 

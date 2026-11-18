@@ -24,7 +24,11 @@ import {
   mockExamPathConfiguration,
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
-import { decodeResponse, mockExamLearner } from '~api/test/mock-exam-learner.js'
+import {
+  decodeResponse,
+  mockExamLearner,
+  decodeFinishedAttempt,
+} from '~api/test/mock-exam-learner.js'
 import { learningRequest } from '~api/test/preparation.js'
 import { runFixture } from '~api/test/run-fixture.js'
 
@@ -124,7 +128,7 @@ it('finishes an expired attempt on the first read after the deadline', async () 
 it('submits with time expired when finishing is requested after the deadline', async () => {
   const { learner, attempt } = await startedExam()
 
-  const finished = await decodeResponse(MockExamAttempt)(
+  const finished = await decodeFinishedAttempt(
     await learner.on(lateApi).request(`/attempts/${attempt.id}/finish`, 'POST'),
   )
 
@@ -167,7 +171,7 @@ it('produces one result when lazy and worker finishing run concurrently', async 
 
   const [read, finished] = await Promise.all([
     late.attempt(attempt.id),
-    decodeResponse(MockExamAttempt)(await late.request(`/attempts/${attempt.id}/finish`, 'POST')),
+    decodeFinishedAttempt(await late.request(`/attempts/${attempt.id}/finish`, 'POST')),
     runDeadlineJob(learner, attempt, afterDeadline),
     runDeadlineJob(learner, attempt, afterDeadline),
     late.question(attempt.id, 1),
@@ -259,12 +263,12 @@ it('records the time XP totals are reached when an expired exam is processed aft
     { kind: 'month', key: '2026-11-01' },
     { kind: 'exam_session', key: examPath.examSessionId },
   ] as const) {
-    expect(await readTotal(period)).toEqual({ total: 25, reachedAt: processedAt })
+    expect(await readTotal(period)).toEqual({ total: 125, reachedAt: processedAt })
   }
 
   await runDeadlineJob(learner, attempt, DateTime.add(processedAt, { hours: 1 }))
   expect(await readTotal({ kind: 'all_time', key: 'all' })).toEqual({
-    total: 25,
+    total: 125,
     reachedAt: processedAt,
   })
 })

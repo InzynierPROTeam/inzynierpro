@@ -7,6 +7,7 @@ import { processTelemetryLayer } from '~api/lib/observability.js'
 import { TransactionLive } from '~api/lib/transaction.js'
 import { recordJobBacklog } from '~api/modules/background-jobs/application/job-backlog.service.js'
 import { BackgroundJobsReaderLive } from '~api/modules/background-jobs/infrastructure/background-jobs.reader.postgres.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import {
@@ -38,6 +39,7 @@ export const BackgroundJobsLive = Layer.unwrap(
       ReviewSchedulerLive,
       StreakReaderLive,
       StreakRepositoryLive,
+      XpReaderLive,
       XpRepositoryLive,
     ).pipe(
       Layer.provideMerge(jobQueueStoreLayer()),

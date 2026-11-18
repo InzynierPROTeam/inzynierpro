@@ -331,6 +331,7 @@ test('oral quiz actions forward the supported formats and the checked options', 
           expect(yield* request.json.pipe(Effect.orDie)).toEqual({ optionIds: [selectedOptionId] })
 
           return HttpServerResponse.jsonUnsafe({
+            rewards: { roundReward: null, badges: [] },
             quiz: { ...quiz, answeredCount: 1, isCompleted: true },
             check: {
               ...check,

@@ -3,6 +3,7 @@ import { Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { OralSessionQuizReaderLive } from '~api/modules/oral-study/infrastructure/oral-session-quiz.reader.postgres.js'
@@ -45,5 +46,6 @@ export const OralStudyRequestServices = Layer.mergeAll(
   ReviewSchedulerLive,
   StreakReaderLive,
   StreakRepositoryLive,
+  XpReaderLive,
   XpRepositoryLive,
 )

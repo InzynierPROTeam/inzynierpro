@@ -71,11 +71,11 @@ const renderTotal = async () => {
 
 test('the shell shows the current account total and refreshes when the cache changes', async () => {
   const options = learningXpQueryOptions(apiHttpClient, userId)
-  queryClient.setQueryData(options.queryKey, { total: LearningXp.make(8) })
+  queryClient.setQueryData(options.queryKey, { total: LearningXp.make(8), badges: [] })
   await renderTotal()
   expect(container.querySelector('[aria-label="Punkty za naukę: 8 XP"]')?.textContent).toBe('8 XP')
   await act(async () => {
-    queryClient.setQueryData(options.queryKey, { total: LearningXp.make(11) })
+    queryClient.setQueryData(options.queryKey, { total: LearningXp.make(11), badges: [] })
   })
   await vi.waitFor(() => expect(container.textContent).toBe('11 XP'))
 })

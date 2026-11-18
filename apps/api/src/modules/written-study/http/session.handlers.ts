@@ -11,7 +11,8 @@ import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
-import { failXpWrite } from '~api/modules/learning-xp/http/errors.js'
+import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
+import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import {
   failStudyRead,
   failStudyWrite,
@@ -173,7 +174,10 @@ export const sessionHandlers = {
           endSession(user.id, params.qualificationPathId, params.sessionId),
         ),
       ),
-      Effect.map(toStudySessionDto),
+      Effect.map(({ session, rewards }) => ({
+        session: toStudySessionDto(session),
+        rewards: toLearningRewardsDto(rewards),
+      })),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PreparationWriteError: failPreparationWrite,
@@ -182,6 +186,8 @@ export const sessionHandlers = {
         StudyWriteError: failStudyWrite,
         StudySessionMissing: () => studySessionNotFound,
         TransactionError: failTransaction,
+        XpReadError: failXpRead,
+        XpWriteError: failXpWrite,
       }),
     ),
   GetSessionQuestion: ({ params }) =>
@@ -241,8 +247,9 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.map(({ question, session, awardedXp }) => ({
+      Effect.map(({ question, session, awardedXp, rewards }) => ({
         awardedXp,
+        rewards: toLearningRewardsDto(rewards),
         question: toSessionQuestionDto(question),
         session: toStudySessionDto(session),
       })),
@@ -259,6 +266,7 @@ export const sessionHandlers = {
         QuestionAlreadyAnswered: () => sessionAnswerAlreadySubmitted,
         StreakReadError: failStreakRead,
         StreakWriteError: failStreakWrite,
+        XpReadError: failXpRead,
         XpWriteError: failXpWrite,
         TransactionError: failTransaction,
       }),

@@ -12,7 +12,11 @@ import {
   mockExamPathConfiguration,
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
-import { decodeResponse, mockExamLearner } from '~api/test/mock-exam-learner.js'
+import {
+  decodeResponse,
+  mockExamLearner,
+  decodeFinishedAttempt,
+} from '~api/test/mock-exam-learner.js'
 import { learningRequest } from '~api/test/preparation.js'
 import { withdrawFixtureRevision } from '~api/test/written-learning-fixtures.js'
 
@@ -54,7 +58,7 @@ it('finishes at the pass threshold, counts unanswered as wrong and preserves the
 
   const response = await learner.request(`/attempts/${attempt.id}/finish`, 'POST')
   expect(response.status).toBe(200)
-  const finished = await decodeResponse(MockExamAttempt)(response)
+  const finished = await decodeFinishedAttempt(response)
   expect(finished).toMatchObject({
     status: 'finished',
     result: {
@@ -69,7 +73,7 @@ it('finishes at the pass threshold, counts unanswered as wrong and preserves the
   })
   expect(finished.result?.sections).toMatchObject([{ correct: 2 }, { correct: 0 }])
   expect(
-    await (await learner.request(`/attempts/${attempt.id}/finish`, 'POST')).json(),
+    await decodeFinishedAttempt(await learner.request(`/attempts/${attempt.id}/finish`, 'POST')),
   ).toStrictEqual(finished)
   const question = questions[0]
 
@@ -187,7 +191,7 @@ it('fails below the threshold and gives an incomplete result after withdrawal wh
     expectedVersion: first.version,
   })
 
-  const finished = await decodeResponse(MockExamAttempt)(
+  const finished = await decodeFinishedAttempt(
     await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
   )
 
@@ -202,7 +206,7 @@ it('fails below the threshold and gives an incomplete result after withdrawal wh
 
   await withdrawFixtureRevision(withdrawn.questionRevisionId)
 
-  const incomplete = await decodeResponse(MockExamAttempt)(
+  const incomplete = await decodeFinishedAttempt(
     await learner.request(`/attempts/${next.id}/finish`, 'POST'),
   )
 
@@ -254,7 +258,7 @@ it('scores only valid questions and freezes incomplete results in history and re
     }
   }
 
-  const finished = await decodeResponse(MockExamAttempt)(
+  const finished = await decodeFinishedAttempt(
     await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
   )
 
@@ -302,7 +306,7 @@ it('finishes with no scored questions when every question was withdrawn', async 
     await withdrawFixtureRevision(question.questionRevisionId)
   }
 
-  const finished = await decodeResponse(MockExamAttempt)(
+  const finished = await decodeFinishedAttempt(
     await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
   )
 
@@ -327,7 +331,12 @@ it('awards final answer XP and caps finished exam rewards at three per Warsaw da
       await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl)),
     )
 
-  for (const expected of [23, 23, 23, 3]) {
+  for (const { expected, badgeXp } of [
+    { expected: 23, badgeXp: 100 },
+    { expected: 23, badgeXp: 0 },
+    { expected: 23, badgeXp: 0 },
+    { expected: 3, badgeXp: 0 },
+  ]) {
     const attempt = await learner.started()
     const questions = await learner.questions(attempt)
 
@@ -349,13 +358,13 @@ it('awards final answer XP and caps finished exam rewards at three per Warsaw da
     const before = await total()
     const response = await learner.request(`/attempts/${attempt.id}/finish`, 'POST')
     expect(response.status).toBe(200)
-    const finished = await response.json()
+    const finished = await decodeFinishedAttempt(response)
     expect(finished).toMatchObject({ earnedXp: expected })
-    expect(await total()).toEqual({ total: before.total + expected })
-    expect(await (await learner.request(`/attempts/${attempt.id}/finish`, 'POST')).json()).toEqual(
-      finished,
-    )
-    expect(await total()).toEqual({ total: before.total + expected })
+    expect((await total()).total).toBe(before.total + expected + badgeXp)
+    expect(
+      await decodeFinishedAttempt(await learner.request(`/attempts/${attempt.id}/finish`, 'POST')),
+    ).toEqual(finished)
+    expect((await total()).total).toBe(before.total + expected + badgeXp)
   }
 })
 
@@ -374,11 +383,8 @@ it('shares the finished exam limit across paths under concurrency and renews it 
   for (let index = 0; index < 2; index++) {
     const attempt = await learner.started()
     expect(
-      (
-        await decodeResponse(MockExamAttempt)(
-          await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
-        )
-      ).earnedXp,
+      (await decodeFinishedAttempt(await learner.request(`/attempts/${attempt.id}/finish`, 'POST')))
+        .earnedXp,
     ).toBe(10)
   }
 
@@ -393,8 +399,8 @@ it('shares the finished exam limit across paths under concurrency and renews it 
   const second = await decodeResponse(MockExamAttempt)(await otherRequest('/attempts'))
 
   const ended = await Promise.all([
-    learner.request(`/attempts/${first.id}/finish`, 'POST').then(decodeResponse(MockExamAttempt)),
-    otherRequest(`/attempts/${second.id}/finish`).then(decodeResponse(MockExamAttempt)),
+    learner.request(`/attempts/${first.id}/finish`, 'POST').then(decodeFinishedAttempt),
+    otherRequest(`/attempts/${second.id}/finish`).then(decodeFinishedAttempt),
   ])
 
   expect(ended.map(attempt => attempt.earnedXp).sort((a, b) => a - b)).toEqual([0, 10])
@@ -405,7 +411,7 @@ it('shares the finished exam limit across paths under concurrency and renews it 
     const next = learner.on(tomorrow)
     const attempt = await next.started()
 
-    const finished = await decodeResponse(MockExamAttempt)(
+    const finished = await decodeFinishedAttempt(
       await next.request(`/attempts/${attempt.id}/finish`, 'POST'),
     )
 

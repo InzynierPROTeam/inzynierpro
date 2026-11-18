@@ -543,12 +543,15 @@ test('oral self-assessments earn XP once per question each day and retain the se
     (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json()
 
   const first = await learner.finishedSession()
-  expect(await total()).toEqual({ total: 2 })
+  expect(await total()).toEqual({
+    total: 102,
+    badges: [{ code: 'first_finished_session', earnedAt: expect.any(String) }],
+  })
   expect(await (await learner.request(`/sessions/${first.id}/summary`)).json()).toMatchObject({
     result: { earnedXp: 2 },
   })
   const repeated = await learner.finishedSession()
-  expect(await total()).toEqual({ total: 2 })
+  expect(await total()).toMatchObject({ total: 102 })
   expect(await (await learner.request(`/sessions/${repeated.id}/summary`)).json()).toMatchObject({
     result: { earnedXp: 0 },
   })
@@ -580,7 +583,7 @@ test('oral self-assessments earn XP once per question each day and retain the se
         })
       ).status,
     ).toBe(200)
-    expect(await total()).toEqual({ total: 4 })
+    expect(await total()).toMatchObject({ total: 104 })
   } finally {
     await tomorrow.close()
   }
@@ -595,8 +598,8 @@ test('quiz checks earn one XP plus a correct bonus once in each quiz', async () 
     (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json()
 
   for (const [correct, quizXp, totalXp] of [
-    [false, 1, 3],
-    [true, 2, 5],
+    [false, 1, 103],
+    [true, 2, 105],
   ] as const) {
     const session = await learner.finishedSession()
     expect((await learner.startQuiz(session.id)).status).toBe(200)
@@ -606,9 +609,9 @@ test('quiz checks earn one XP plus a correct bonus once in each quiz', async () 
     expect(response.status).toBe(200)
     const answered = await response.json()
     expect(answered).toMatchObject({ quiz: { earnedXp: quizXp, isCompleted: true } })
-    expect(await total()).toEqual({ total: totalXp })
+    expect(await total()).toMatchObject({ total: totalXp })
     expect(await (await learner.answer(session.id, 1, selected)).json()).toEqual(answered)
-    expect(await total()).toEqual({ total: totalXp })
+    expect(await total()).toMatchObject({ total: totalXp })
     expect(await learner.quizState(session.id)).toMatchObject({ quiz: { earnedXp: quizXp } })
   }
 })
@@ -653,5 +656,5 @@ test('concurrent oral answers on different paths share the question daily limit'
   await Promise.all([submit(learner.fixture.pathId, first.id), submit(other.pathId, second.id)])
   expect(
     await (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json(),
-  ).toEqual({ total: 2 })
+  ).toEqual({ total: 2, badges: [] })
 })
