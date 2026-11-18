@@ -16,6 +16,8 @@ import { OralStudyReaderLive } from '~api/modules/oral-study/infrastructure/oral
 import { OralStudyRepositoryLive } from '~api/modules/oral-study/infrastructure/oral-study.repository.postgres.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
+import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 
 import { catalogueTestTime, fixedWallClockLayer } from './clock.js'
@@ -32,6 +34,8 @@ const services = Layer.mergeAll(
   OralStudyRepositoryLive,
   StudyRepositoryLive,
   ReviewSchedulerLive,
+  StreakReaderLive,
+  StreakRepositoryLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
 await Effect.runPromise(

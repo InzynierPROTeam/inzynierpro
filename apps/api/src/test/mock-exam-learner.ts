@@ -45,7 +45,7 @@ export const mockExamLearner = async (
     await (await visitor.session()).json(),
   )
 
-  return { userId: user.id, ...learnerRequests(api.baseUrl, visitor, pathId) }
+  return { userId: user.id, visitor, ...learnerRequests(api.baseUrl, visitor, pathId) }
 }
 
 const learnerRequests = (baseUrl: string, visitor: TestVisitor, pathId: QualificationPathId) => {

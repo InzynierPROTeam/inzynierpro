@@ -13,6 +13,8 @@ import { cosmeticChange } from '~api/modules/learning-content/domain/learning-co
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
+import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 import { StudyRepository } from '~api/modules/written-study/application/study.repository.js'
 import { submitAnswer } from '~api/modules/written-study/application/submit-answer.command.js'
 import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
@@ -41,6 +43,8 @@ const commandServices = Layer.mergeAll(
   PreparationReaderLive,
   PreparationRepositoryLive,
   ReviewSchedulerLive,
+  StreakReaderLive,
+  StreakRepositoryLive,
 )
 
 const commandLayer = Layer.merge(StudyRepositoryLive, commandServices).pipe(

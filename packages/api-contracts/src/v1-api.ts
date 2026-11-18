@@ -6,6 +6,7 @@ import { MockExamsApi } from '~api-contracts/modules/mock-exams/api.js'
 import { OralStudyApi } from '~api-contracts/modules/oral-study/api.js'
 import { PreparationApi } from '~api-contracts/modules/preparation/api.js'
 import { QualificationPathsApi } from '~api-contracts/modules/qualification-paths/api.js'
+import { StreakApi } from '~api-contracts/modules/streak/api.js'
 import { StudyApi } from '~api-contracts/modules/written-study/api.js'
 
 export class V1Api extends HttpApi.make('v1')
@@ -17,4 +18,5 @@ export class V1Api extends HttpApi.make('v1')
   .add(StudyApi)
   .add(OralStudyApi)
   .add(MockExamsApi)
+  .add(StreakApi)
   .prefix('/v1') {}

@@ -25,6 +25,7 @@ import {
   failPreparationRead,
   failPreparationWrite,
 } from '~api/modules/preparation/http/errors.js'
+import { failStreakRead, failStreakWrite } from '~api/modules/streak/http/errors.js'
 import { endSession } from '~api/modules/written-study/application/end-session.command.js'
 import { getLatestSession } from '~api/modules/written-study/application/latest-session.query.js'
 import {
@@ -254,6 +255,8 @@ export const sessionHandlers = {
         QuestionRevisionWithdrawn: () => sessionQuestionWithdrawn,
         AnswerNotInQuestion: () => invalidSessionAnswer,
         QuestionAlreadyAnswered: () => sessionAnswerAlreadySubmitted,
+        StreakReadError: failStreakRead,
+        StreakWriteError: failStreakWrite,
         TransactionError: failTransaction,
       }),
     ),

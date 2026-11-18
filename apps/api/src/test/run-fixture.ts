@@ -19,6 +19,10 @@ import { PreparationRepository } from '~api/modules/preparation/application/prep
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
+import { StreakReader } from '~api/modules/streak/application/streak.reader.js'
+import { StreakRepository } from '~api/modules/streak/application/streak.repository.js'
+import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
+import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 import { StudyReader } from '~api/modules/written-study/application/study.reader.js'
 import { StudyRepository } from '~api/modules/written-study/application/study.repository.js'
 import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
@@ -36,6 +40,8 @@ const fixturesLayer = Layer.mergeAll(
   MockExamRepositoryLive,
   PreparationRepositoryLive,
   ReviewSchedulerLive,
+  StreakReaderLive,
+  StreakRepositoryLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
 export const runFixture = <A, E>(
@@ -52,6 +58,8 @@ export const runFixture = <A, E>(
     | MockExamRepository
     | PreparationRepository
     | ReviewScheduler
+    | StreakReader
+    | StreakRepository
     | Transaction
   >,
 ) => Effect.runPromise(operation.pipe(Effect.provide(fixturesLayer), Effect.scoped))

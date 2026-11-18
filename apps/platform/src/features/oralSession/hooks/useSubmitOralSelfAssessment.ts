@@ -5,6 +5,7 @@ import {
   oralSessionQueryOptions,
   oralSessionQuestionQueryOptions,
 } from '@inzpro/queries/modules/oral-study/queries'
+import { streakKeys } from '@inzpro/queries/modules/streak/keys'
 import { toast } from '@inzpro/ui/components/toast'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Predicate } from 'effect'
@@ -51,8 +52,11 @@ export const useSubmitOralSelfAssessment = (userId: UserId) => {
       await Promise.all([client.invalidateQueries(question), client.invalidateQueries(session)])
     },
     onSettled: (_result, _error, { params }) =>
-      client.invalidateQueries({
-        queryKey: oralStudyKeys.oralProgress(userId, params.qualificationPathId),
-      }),
+      Promise.all([
+        client.invalidateQueries({
+          queryKey: oralStudyKeys.oralProgress(userId, params.qualificationPathId),
+        }),
+        client.invalidateQueries({ queryKey: streakKeys.account(userId) }),
+      ]),
   })
 }

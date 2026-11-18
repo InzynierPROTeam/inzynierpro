@@ -8,8 +8,10 @@ import type {
 } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
+import { closesPlannedRound } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
 import {
   QuestionRevisionWithdrawn,
   SessionAlreadyEnded,
@@ -30,6 +32,11 @@ import {
 import { oralExamAt } from '~api/modules/oral-study/domain/oral-exam-day.rules.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
+import {
+  grantStreakBridges,
+  recordStreakAnswers,
+} from '~api/modules/streak/application/streak-activity.service.js'
+import { completedRoundBridgeOf } from '~api/modules/streak/domain/streak.rules.js'
 
 const syncOralLearningRound = Effect.fn('Study.syncOralLearningRound')(function* (
   userId: UserId,
@@ -131,8 +138,18 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         )
         const after = yield* oralStudyReader.learningRound(userId, pathId)
         yield* recordOralDailyPlanAnswer(userId, pathId, answeredAt, { before, after })
+
+        if (closesPlannedRound({ before, after })) {
+          yield* grantStreakBridges(
+            userId,
+            completedRoundBridgeOf(pathId, oralExamAccess, after.round, answeredAt),
+          )
+        }
+
         yield* syncOralLearningRound(userId, pathId)
       }
+
+      yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
 
       const next = yield* oralStudyReader.nextOpenPosition(sessionId, position)
 

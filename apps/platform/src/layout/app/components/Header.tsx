@@ -1,6 +1,7 @@
 import { ThemeSwitchButton } from '@inzpro/ui/components/theme-switch'
 import { Link } from '@tanstack/react-router'
 import { appName } from '~platform/config/app'
+import { StreakButton } from '~platform/features/streak/components/StreakButton'
 import { LogoVertical, LogoHorizontal } from '~platform/layout/components/Logo'
 import { ProfileButton } from '~platform/layout/components/ProfileButton'
 
@@ -37,6 +38,7 @@ export const Header = () => (
           </Link>
         </div>
         <div className="flex h-min items-center justify-center gap-2 justify-self-end max-lg:order-1 max-lg:flex-row-reverse max-lg:justify-self-start">
+          <StreakButton />
           <ThemeSwitchButton />
           <ProfileButton />
         </div>

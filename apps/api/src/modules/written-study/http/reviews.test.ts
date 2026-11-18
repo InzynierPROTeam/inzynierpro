@@ -19,6 +19,8 @@ import { cosmeticChange } from '~api/modules/learning-content/domain/learning-co
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
+import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 import { submitAnswer } from '~api/modules/written-study/application/submit-answer.command.js'
 import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
@@ -52,6 +54,8 @@ const commandLayer = Layer.mergeAll(
   PreparationReaderLive,
   PreparationRepositoryLive,
   ReviewSchedulerLive,
+  StreakReaderLive,
+  StreakRepositoryLive,
 ).pipe(Layer.provideMerge(databaseLayerFromConfig))
 
 const daysBeforeNow = (days: number) => DateTime.subtract(catalogueTestTime, { days })

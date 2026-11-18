@@ -1,3 +1,4 @@
+import { Email } from '@inzpro/domain/common/email'
 import { config } from 'dotenv'
 import { Config, type Effect, Schema } from 'effect'
 
@@ -35,3 +36,9 @@ export const env = Config.all({
 })
 
 export type Env = Effect.Success<typeof env>
+
+export const seedEnv = Config.all({
+  SEED_DEMO_EMAIL: Config.option(
+    Config.schema(Schema.Trim.pipe(Schema.decodeTo(Email)), 'SEED_DEMO_EMAIL'),
+  ),
+})

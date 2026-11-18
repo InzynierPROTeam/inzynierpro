@@ -10,6 +10,8 @@ import { OralStudyReaderLive } from '~api/modules/oral-study/infrastructure/oral
 import { OralStudyRepositoryLive } from '~api/modules/oral-study/infrastructure/oral-study.repository.postgres.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
+import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 
 import { dailyPlanHandlers } from './daily-plan.handlers.js'
 import { favoritesHandlers } from './favorites.handlers.js'
@@ -40,4 +42,6 @@ export const OralStudyRequestServices = Layer.mergeAll(
   OralSessionQuizReaderLive,
   OralSessionQuizRepositoryLive,
   ReviewSchedulerLive,
+  StreakReaderLive,
+  StreakRepositoryLive,
 )
