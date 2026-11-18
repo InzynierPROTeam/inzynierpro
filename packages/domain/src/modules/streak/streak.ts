@@ -11,3 +11,9 @@ export const DailyAnswerCount = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0
 )
 
 export type DailyAnswerCount = typeof DailyAnswerCount.Type
+
+export const BridgeCount = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)).pipe(
+  Schema.brand('BridgeCount'),
+)
+
+export type BridgeCount = typeof BridgeCount.Type
