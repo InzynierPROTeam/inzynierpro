@@ -8,6 +8,7 @@ import type {
 } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import {
@@ -30,6 +31,7 @@ import {
 import { oralExamAt } from '~api/modules/oral-study/domain/oral-exam-day.rules.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
+import { recordStreakAnswers } from '~api/modules/streak/application/streak-activity.service.js'
 
 const syncOralLearningRound = Effect.fn('Study.syncOralLearningRound')(function* (
   userId: UserId,
@@ -104,6 +106,7 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
       )
 
       const answeredAt = yield* DateTime.now
+      yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
 
       yield* recordOralEvidence({
         userId,

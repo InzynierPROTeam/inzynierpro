@@ -1,6 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { MockExamAttemptId } from '@inzpro/domain/modules/mock-exams/mock-exam-attempt'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { type DateTime, Effect, Option } from 'effect'
 import { examMode } from '~api/modules/learning/domain/review-state.model.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
@@ -9,6 +10,7 @@ import type { AttemptClock } from '~api/modules/mock-exams/domain/mock-exam-atte
 import { scoreAttempt } from '~api/modules/mock-exams/domain/mock-exam-attempt.rules.js'
 import { attemptEnding } from '~api/modules/mock-exams/domain/mock-exam-clock.rules.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
+import { recordStreakAnswers } from '~api/modules/streak/application/streak-activity.service.js'
 import { recordWrittenEvidence } from '~api/modules/written-study/application/review-state.service.js'
 import {
   noAssistance,
@@ -47,7 +49,9 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
 
   yield* mockExamRepository.finishAttempt(attemptId, ending, scoreAttempt(score.value, ending))
 
-  for (const answer of yield* mockExamReader.finalAnswers(attemptId)) {
+  const finalAnswers = yield* mockExamReader.finalAnswers(attemptId)
+
+  for (const answer of finalAnswers) {
     yield* recordWrittenEvidence(
       {
         userId,
@@ -61,4 +65,6 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
       { mode: examMode, assistance: noAssistance, answeredAt: ending.finishedAt },
     )
   }
+
+  yield* recordStreakAnswers(userId, ending.finishedAt, DailyAnswerCount.make(finalAnswers.length))
 })

@@ -12,6 +12,8 @@ import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-
 import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
+import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
@@ -257,6 +259,8 @@ it('leaves neither a result nor SRS evidence when finishing fails', async () => 
           PreparationRepositoryLive,
           StudyReaderLive,
           StudyRepositoryLive,
+          StreakReaderLive,
+          StreakRepositoryLive,
           failingScheduler,
         ).pipe(Layer.provideMerge(databaseLayerFromConfig)),
       ),

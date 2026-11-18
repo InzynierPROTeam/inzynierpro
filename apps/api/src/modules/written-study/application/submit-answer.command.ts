@@ -11,6 +11,7 @@ import {
 } from '@inzpro/domain/modules/learning/study-session'
 import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import {
@@ -27,6 +28,7 @@ import {
 } from '~api/modules/learning/domain/review-state.model.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
+import { recordStreakAnswers } from '~api/modules/streak/application/streak-activity.service.js'
 import {
   recordDailyPlanAnswer,
   prepareDailyPlan,
@@ -134,6 +136,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
       }
 
       const stored = yield* studyRepository.recordAnswer(answer)
+      yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
       const isRegularStudy = session.kind === regularStudySession
 
       yield* recordWrittenEvidence(

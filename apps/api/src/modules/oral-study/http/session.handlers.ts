@@ -46,6 +46,7 @@ import {
   failPreparationWrite,
   pathAccessDenied,
 } from '~api/modules/preparation/http/errors.js'
+import { failStreakRead, failStreakWrite } from '~api/modules/streak/http/errors.js'
 
 export const sessionHandlers = {
   StartOralSession: ({ params, payload }) =>
@@ -221,6 +222,8 @@ export const sessionHandlers = {
         QuestionRevisionWithdrawn: () => sessionQuestionWithdrawn,
         OralRevisionNotInSession: () => invalidOralSelfAssessment,
         OralQuestionAlreadyAssessed: () => oralSelfAssessmentAlreadySubmitted,
+        StreakReadError: failStreakRead,
+        StreakWriteError: failStreakWrite,
         TransactionError: failTransaction,
       }),
     ),

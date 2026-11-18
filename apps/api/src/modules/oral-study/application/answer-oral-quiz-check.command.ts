@@ -4,6 +4,7 @@ import type { OralQuizCheckPosition } from '@inzpro/domain/modules/oral-study/or
 import type { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { oralExamAccess } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import { ReviewScheduler } from '~api/modules/learning/application/review-scheduler.service.js'
@@ -28,6 +29,7 @@ import {
 } from '~api/modules/oral-study/domain/oral-session-quiz.rules.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
+import { recordStreakAnswers } from '~api/modules/streak/application/streak-activity.service.js'
 
 const sameSelection = (
   stored: ReadonlyArray<OralKnowledgeCheckOptionId>,
@@ -110,6 +112,7 @@ export const answerOralQuizCheck = Effect.fn('Study.answerOralQuizCheck')(functi
           answeredAt,
         })
         yield* applyQuizEvidence(userId, pathId, check, isCorrect, answeredAt)
+        yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
       }
 
       const result = Option.all({

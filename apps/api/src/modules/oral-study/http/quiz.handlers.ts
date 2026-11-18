@@ -30,6 +30,7 @@ import {
   failPreparationWrite,
   pathAccessDenied,
 } from '~api/modules/preparation/http/errors.js'
+import { failStreakRead, failStreakWrite } from '~api/modules/streak/http/errors.js'
 
 export const quizHandlers = {
   GetOralSessionQuiz: ({ params }) =>
@@ -120,6 +121,8 @@ export const quizHandlers = {
         OralQuizCheckMissing: () => oralQuizCheckNotFound,
         OralQuizCheckAlreadyChecked: () => oralQuizCheckAlreadyAnswered,
         OralQuizSelectionNotAllowed: () => invalidOralQuizSelection,
+        StreakReadError: failStreakRead,
+        StreakWriteError: failStreakWrite,
         TransactionError: failTransaction,
       }),
     ),

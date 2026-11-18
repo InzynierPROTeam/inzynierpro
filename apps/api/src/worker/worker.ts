@@ -15,6 +15,8 @@ import {
 import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-exam.reader.postgres.js'
 import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
+import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
+import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 
@@ -31,6 +33,8 @@ export const BackgroundJobsLive = Layer.unwrap(
       StudyReaderLive,
       StudyRepositoryLive,
       ReviewSchedulerLive,
+      StreakReaderLive,
+      StreakRepositoryLive,
     ).pipe(
       Layer.provideMerge(jobQueueStoreLayer()),
       Layer.provideMerge(databaseLayer({ url: config.DATABASE_URL })),
