@@ -2,6 +2,9 @@ import { DateTime, Duration } from 'effect'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  addWarsawDays,
+  pickedDayToUtcIsoDateTime,
+  toPickerDate,
   dateTimeInputToUtc,
   formatDateTimeInput,
   formatDuration,
@@ -16,6 +19,23 @@ import {
 const instant = DateTime.makeUnsafe
 
 afterEach(() => vi.unstubAllEnvs())
+
+describe('Warsaw calendar days', () => {
+  it.each(['UTC', 'America/Los_Angeles'])('map a picked day to its Warsaw start in %s', zone => {
+    vi.stubEnv('TZ', zone)
+    expect(pickedDayToUtcIsoDateTime(toPickerDate('2026-11-23T10:00:00.000Z'))).toBe(
+      '2026-11-22T23:00:00.000Z',
+    )
+    expect(pickedDayToUtcIsoDateTime(toPickerDate('2027-05-14T10:00:00.000Z'))).toBe(
+      '2027-05-13T22:00:00.000Z',
+    )
+  })
+
+  it('step whole Warsaw days across a time change', () =>
+    expect(DateTime.formatIso(addWarsawDays('2026-03-29T10:00:00.000Z', -1))).toBe(
+      '2026-03-27T23:00:00.000Z',
+    ))
+})
 
 describe('Warsaw date boundaries', () => {
   it.each(['UTC', 'America/Los_Angeles', 'Asia/Tokyo'])('ignores the device timezone %s', zone => {
