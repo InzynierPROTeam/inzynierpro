@@ -10,6 +10,7 @@ import {
   nextQuestionPosition,
   scoredQuestionCount,
 } from '@inzpro/domain/modules/learning/study-session'
+import { streakKeys } from '@inzpro/queries/modules/streak/keys'
 import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
 import {
   sessionQueryOptions,
@@ -101,8 +102,11 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
       await Promise.all([client.invalidateQueries(question), client.invalidateQueries(session)])
     },
     onSettled: (_result, _error, { params }) =>
-      client.invalidateQueries({
-        queryKey: writtenStudyKeys.progress(userId, params.qualificationPathId),
-      }),
+      Promise.all([
+        client.invalidateQueries({
+          queryKey: writtenStudyKeys.progress(userId, params.qualificationPathId),
+        }),
+        client.invalidateQueries({ queryKey: streakKeys.account(userId) }),
+      ]),
   })
 }
