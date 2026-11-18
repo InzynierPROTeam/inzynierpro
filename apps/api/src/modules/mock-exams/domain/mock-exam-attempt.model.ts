@@ -7,6 +7,7 @@ import {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
+import type { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import type {
   ExamBlueprintId,
   ExamBlueprintVersion,
@@ -51,6 +52,7 @@ export type AttemptReviewQuestion = AttemptQuestion & {
 }
 
 export type MockExamAttemptSummary = {
+  readonly earnedXp: LearningXp
   readonly id: MockExamAttemptId
   readonly status: MockExamAttemptStatus
   readonly startedAt: DateTimeUtc

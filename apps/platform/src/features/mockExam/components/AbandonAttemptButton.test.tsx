@@ -33,6 +33,7 @@ const pathId = QualificationPathId.make('10000000-0000-4000-8000-000000000002')
 const attempt = Schema.decodeSync(MockExamAttempt)({
   id: '10000000-0000-4000-8000-000000000003',
   status: 'paused',
+  earnedXp: 0,
   startedAt: '2026-11-17T12:00:00.000Z',
   finishedAt: null,
   deadline: '2026-11-17T12:10:00.000Z',

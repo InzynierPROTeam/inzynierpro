@@ -143,6 +143,7 @@ test('finishing an attempt decodes the saved score, dates and nullable pass resu
   const finished = {
     id: params.attemptId,
     status: 'finished',
+    earnedXp: 22,
     pauseCount: 0,
     pauseSeconds: 0,
     startedAt: '2026-11-13T12:00:00.000Z',
@@ -186,6 +187,7 @@ test('pausing and resuming an attempt post to their commands and decode the atte
   const attempt = {
     id: params.attemptId,
     status: 'paused',
+    earnedXp: 0,
     pauseCount: 0,
     pauseSeconds: 0,
     startedAt: '2026-11-13T12:00:00.000Z',
@@ -227,6 +229,7 @@ test('abandoning posts to the command and decodes a scoreless attempt or its typ
   const abandoned = {
     id: params.attemptId,
     status: 'abandoned',
+    earnedXp: 0,
     startedAt: '2026-11-13T12:00:00.000Z',
     finishedAt: '2026-11-13T12:05:00.000Z',
     endReason: null,

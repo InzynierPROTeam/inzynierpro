@@ -1,4 +1,5 @@
 import type { MockExamAttempt } from '@inzpro/api-contracts/modules/mock-exams/responses'
+import { learningXpKeys } from '@inzpro/queries/modules/learning-xp/keys'
 import { mockExamKeys } from '@inzpro/queries/modules/mock-exams/keys'
 import { streakKeys } from '@inzpro/queries/modules/streak/keys'
 import { useQueryClient } from '@tanstack/react-query'
@@ -26,6 +27,7 @@ export const useLeaveEndedAttempt = (attempt: MockExamAttempt) => {
         refetchType: 'none',
       }),
       client.invalidateQueries({ queryKey: streakKeys.account(user.id) }),
+      client.invalidateQueries({ queryKey: learningXpKeys.account(user.id) }),
     ])
 
     if (attempt.status === 'abandoned') {

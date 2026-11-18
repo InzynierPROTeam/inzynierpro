@@ -1,8 +1,10 @@
+import { LearningXpResponse } from '@inzpro/api-contracts/modules/learning-xp/responses'
 import {
   AttemptReviewResponse,
   MockExamHistoryResponse,
   MockExamAttempt,
 } from '@inzpro/api-contracts/modules/mock-exams/responses'
+import { DateTime } from 'effect'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import {
@@ -11,6 +13,7 @@ import {
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
 import { decodeResponse, mockExamLearner } from '~api/test/mock-exam-learner.js'
+import { learningRequest } from '~api/test/preparation.js'
 import { withdrawFixtureRevision } from '~api/test/written-learning-fixtures.js'
 
 let api: TestApi
@@ -189,6 +192,7 @@ it('fails below the threshold and gives an incomplete result after withdrawal wh
   )
 
   expect(finished.result).toMatchObject({ correct: 1, percent: 50, passed: false })
+  expect(finished.earnedXp).toBe(12)
   const next = await learner.started()
   const withdrawn = await learner.question(next.id, 1)
 
@@ -203,6 +207,7 @@ it('fails below the threshold and gives an incomplete result after withdrawal wh
   )
 
   expect(incomplete.result).toMatchObject({ correct: 0, passed: null, sections: [{ correct: 0 }] })
+  expect(incomplete.earnedXp).toBe(10)
   expect((await learner.attempt(attempt.id))?.result).toStrictEqual(finished.result)
 })
 
@@ -264,6 +269,7 @@ it('scores only valid questions and freezes incomplete results in history and re
       { questionCount: 0, correct: 0 },
     ],
   })
+  expect(finished.earnedXp).toBe(12)
   const valid = ordered[0]
 
   if (valid === undefined) {
@@ -308,4 +314,103 @@ it('finishes with no scored questions when every question was withdrawn', async 
     passed: null,
     sections: [{ questionCount: 0, correct: 0 }],
   })
+})
+
+it('awards final answer XP and caps finished exam rewards at three per Warsaw day', async () => {
+  const configuration = mockExamPathConfiguration('60000000-0000-4000-8000-000000000003')
+  const pathId = await resolveFixturePath(configuration)
+  await createMockExamFixture(pathId, [{ questionCount: 2, eligibleQuestions: 2 }], 1)
+  const learner = await mockExamLearner(api, configuration)
+
+  const total = async () =>
+    decodeResponse(LearningXpResponse)(
+      await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl)),
+    )
+
+  for (const expected of [23, 23, 23, 3]) {
+    const attempt = await learner.started()
+    const questions = await learner.questions(attempt)
+
+    for (const question of questions) {
+      const answer = question.answers.find(
+        option => option.text === (question.position === 1 ? 'A' : 'B'),
+      )!
+
+      expect(
+        (
+          await learner.saveAnswer(attempt.id, question.position, {
+            answerId: answer.id,
+            expectedVersion: question.version,
+          })
+        ).status,
+      ).toBe(200)
+    }
+
+    const before = await total()
+    const response = await learner.request(`/attempts/${attempt.id}/finish`, 'POST')
+    expect(response.status).toBe(200)
+    const finished = await response.json()
+    expect(finished).toMatchObject({ earnedXp: expected })
+    expect(await total()).toEqual({ total: before.total + expected })
+    expect(await (await learner.request(`/attempts/${attempt.id}/finish`, 'POST')).json()).toEqual(
+      finished,
+    )
+    expect(await total()).toEqual({ total: before.total + expected })
+  }
+})
+
+it('shares the finished exam limit across paths under concurrency and renews it at Warsaw midnight', async () => {
+  const configuration = mockExamPathConfiguration('60000000-0000-4000-8000-000000000003')
+  const otherConfiguration = mockExamPathConfiguration('60000000-0000-4000-8000-000000000004')
+  const pathId = await resolveFixturePath(configuration)
+  const otherPathId = await resolveFixturePath(otherConfiguration)
+  await createMockExamFixture(pathId, [{ questionCount: 1, eligibleQuestions: 1 }], 1)
+  await createMockExamFixture(otherPathId, [{ questionCount: 1, eligibleQuestions: 1 }], 1)
+  const learner = await mockExamLearner(api, configuration)
+  expect(
+    (await learningRequest(api, learner.visitor, '/onboarding', otherConfiguration)).status,
+  ).toBe(200)
+
+  for (let index = 0; index < 2; index++) {
+    const attempt = await learner.started()
+    expect(
+      (
+        await decodeResponse(MockExamAttempt)(
+          await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
+        )
+      ).earnedXp,
+    ).toBe(10)
+  }
+
+  const first = await learner.started()
+
+  const otherRequest = (path: string) =>
+    learner.visitor.jar.fetch(
+      new URL(`/api/v1/mock-exams/paths/${otherPathId}${path}`, api.baseUrl),
+      { method: 'POST' },
+    )
+
+  const second = await decodeResponse(MockExamAttempt)(await otherRequest('/attempts'))
+
+  const ended = await Promise.all([
+    learner.request(`/attempts/${first.id}/finish`, 'POST').then(decodeResponse(MockExamAttempt)),
+    otherRequest(`/attempts/${second.id}/finish`).then(decodeResponse(MockExamAttempt)),
+  ])
+
+  expect(ended.map(attempt => attempt.earnedXp).sort((a, b) => a - b)).toEqual([0, 10])
+
+  const tomorrow = await startTestApi({ now: DateTime.makeUnsafe('2026-11-13T23:00:00Z') })
+
+  try {
+    const next = learner.on(tomorrow)
+    const attempt = await next.started()
+
+    const finished = await decodeResponse(MockExamAttempt)(
+      await next.request(`/attempts/${attempt.id}/finish`, 'POST'),
+    )
+
+    expect(finished.earnedXp).toBe(10)
+  } finally {
+    await tomorrow.close()
+  }
 })

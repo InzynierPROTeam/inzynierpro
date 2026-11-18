@@ -53,6 +53,7 @@ export const AttemptResultCard: React.FC<AttemptResultCardProps> = ({ attempt, r
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-8">
+        <p className="text-center font-medium">Zdobyte punkty: {attempt.earnedXp} XP</p>
         <SessionResultRing
           total={scoredQuestionCount}
           answered={scoredQuestionCount - result.unanswered}

@@ -9,6 +9,7 @@ import {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   ExamDurationMinutes,
   ExamSectionName,
@@ -78,6 +79,7 @@ export const MockExamResult = Schema.Struct({
 export type MockExamResult = typeof MockExamResult.Type
 
 export const MockExamAttemptSummary = Schema.Struct({
+  earnedXp: LearningXp,
   id: MockExamAttemptId,
   status: MockExamAttemptStatus,
   startedAt: UtcIsoDateTime,

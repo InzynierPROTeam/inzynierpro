@@ -3,8 +3,18 @@ import {
   MockExamAttempt,
   MockExamHistoryResponse,
 } from '@inzpro/api-contracts/modules/mock-exams/responses'
-import { DateTime, Effect } from 'effect'
-import { afterAll, beforeAll, expect, it } from 'vitest'
+import {
+  StudySession,
+  SessionQuestion,
+  SessionPreview,
+  SubmitSessionAnswerResponse,
+} from '@inzpro/api-contracts/modules/written-study/responses'
+import { databaseLayerFromConfig } from '@inzpro/db'
+import { DateTime, Effect, Layer, Option } from 'effect'
+import { afterAll, beforeAll, expect, it, onTestFinished } from 'vitest'
+import { XpReader } from '~api/modules/learning-xp/application/learning-xp.reader.js'
+import type { XpPeriod } from '~api/modules/learning-xp/domain/learning-xp.model.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { finishAttemptAtDeadline } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { AttemptDeadlineNotReached } from '~api/modules/mock-exams/domain/errors.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
@@ -15,6 +25,7 @@ import {
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
 import { decodeResponse, mockExamLearner } from '~api/test/mock-exam-learner.js'
+import { learningRequest } from '~api/test/preparation.js'
 import { runFixture } from '~api/test/run-fixture.js'
 
 const examPath = mockExamPathConfiguration('60000000-0000-4000-8000-000000000001')
@@ -31,7 +42,13 @@ afterAll(() => Promise.all([api.close(), lateApi.close()]))
 
 const startedExam = async () => {
   const pathId = await resolveFixturePath(examPath)
-  await createMockExamFixture(pathId, [{ questionCount: 2, eligibleQuestions: 2 }], 1)
+
+  const { documents } = await createMockExamFixture(
+    pathId,
+    [{ questionCount: 2, eligibleQuestions: 2 }],
+    1,
+  )
+
   const learner = await mockExamLearner(api, examPath)
   const attempt = await learner.started()
   const [first] = await learner.questions(attempt)
@@ -46,7 +63,7 @@ const startedExam = async () => {
     expectedVersion: first.version,
   })
 
-  return { learner, attempt, first }
+  return { learner, attempt, first, documentId: documents[0]!.documentId }
 }
 
 const runDeadlineJob = (
@@ -179,4 +196,75 @@ it('finishes an expired attempt when history or its review is read after the dea
   )
 
   expect(review.data).toHaveLength(2)
+})
+
+it('records the time XP totals are reached when an expired exam is processed after newer study XP', async () => {
+  const { learner, attempt, documentId } = await startedExam()
+  const studyAt = DateTime.add(catalogueTestTime, { hours: 2 })
+  const processedAt = DateTime.add(catalogueTestTime, { hours: 3 })
+  const studyApi = await startTestApi({ now: studyAt })
+  onTestFinished(() => studyApi.close())
+
+  const request = <Body>(path: string, body?: Body) =>
+    learningRequest(studyApi, learner.visitor, `/paths/${learner.pathId}${path}`, body)
+
+  const preview = await decodeResponse(SessionPreview)(
+    await request(`/preview?documentId=${documentId}`),
+  )
+
+  const session = await decodeResponse(StudySession)(
+    await request('/sessions', {
+      documentId,
+      questionCount: preview.settings.defaultQuestionCount,
+      questionSelection: preview.questionSelection,
+    }),
+  )
+
+  const question = await decodeResponse(SessionQuestion)(
+    await request(`/sessions/${session.id}/questions/1`),
+  )
+
+  const answer = await decodeResponse(SubmitSessionAnswerResponse)(
+    await request(`/sessions/${session.id}/questions/1/answer`, {
+      questionRevisionId: question.questionRevisionId,
+      answerId: question.answers.find(option => option.isCorrect)!.id,
+    }),
+  )
+
+  expect(answer.awardedXp).toBe(3)
+
+  const readTotal = (period: XpPeriod) =>
+    Effect.runPromise(
+      XpReader.use(xpReader => xpReader.periodTotal(learner.userId, period)).pipe(
+        Effect.provide(XpReaderLive.pipe(Layer.provide(databaseLayerFromConfig))),
+        Effect.scoped,
+        Effect.map(Option.getOrThrow),
+      ),
+    )
+
+  expect(await readTotal({ kind: 'all_time', key: 'all' })).toEqual({
+    total: 3,
+    reachedAt: studyAt,
+  })
+
+  await runDeadlineJob(learner, attempt, processedAt)
+  expect(await learner.attempt(attempt.id)).toMatchObject({
+    finishedAt: attempt.deadline,
+    earnedXp: 22,
+  })
+
+  for (const period of [
+    { kind: 'all_time', key: 'all' },
+    { kind: 'week', key: '2026-11-09' },
+    { kind: 'month', key: '2026-11-01' },
+    { kind: 'exam_session', key: examPath.examSessionId },
+  ] as const) {
+    expect(await readTotal(period)).toEqual({ total: 25, reachedAt: processedAt })
+  }
+
+  await runDeadlineJob(learner, attempt, DateTime.add(processedAt, { hours: 1 }))
+  expect(await readTotal({ kind: 'all_time', key: 'all' })).toEqual({
+    total: 25,
+    reachedAt: processedAt,
+  })
 })
