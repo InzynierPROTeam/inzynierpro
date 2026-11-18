@@ -34,6 +34,20 @@ Regular study moves through repeated LearningRounds ([ADR-0002](adr/0002-study-s
 
 Document progress (`completedQuestionCount`), previews and session candidates all count the current round.
 
+## Daily plan
+
+`GET /study/paths/:id/daily-plan` returns today's written DailyGoal (#84, [ADR-0010](adr/0010-learning-gamification-and-study-day.md#daily-goal-and-streak)); the oral plan has the same shape at `/study/paths/:id/oral/daily-plan`. The `daily-plan` module owns the pure rules (target date, formula, states, pace) and the response; each mode owns its table (`written_daily_plans`, `oral_daily_plans`), its pool, its exam day and the counting in its answer transaction.
+
+- **Exam day.** Written uses the session's `written_at`; oral uses the goal's `oral_exam_date`, or the session's `oral_planning_at` without one. Days are Europe/Warsaw days.
+- **Target date.** The exam day minus a 7-day buffer. When fewer than buffer + 1 days remain, the target is the day before the exam and the state is `final_days`.
+- **Target.** `ceil(uncovered questions of the current round / days until the target date, today included)`. A complete stored round plans the whole pool of the next round.
+- **Freezing.** The first read (a transactional command behind the GET, under the user lock and the write rate limit) or the first counted answer of a day creates its record with the target, round, target date, the uncovered count it used and the plan settings version. Later material, round or goal changes take effect from the next day; earlier records are kept.
+- **Counting.** In the answer transaction, a regular-study answer counts when it raises the round's covered count, correct or not. Reviews, favourites, mock exams and the mini-quiz never count. Completion above the target is surplus. The answer that closes the round marks the day `round_completed`.
+- **Pace.** `questionsBehindPace` compares today's frozen uncovered count, less today's counted answers, with a linear line from the first record of the current round to the target date, so new material affects it from the next day.
+- **States.** `planned`, `final_days`, `round_completed` (target 0 until tomorrow), `exam_passed` (from the day after the exam, nothing is computed) and `no_material` (no record on an empty path). On the exam day the plan is `final_days` with target 0 and no pace.
+
+The Start page shows both plans in the „Plan na dziś” tile, with due reviews linked separately and outside the target.
+
 ## Preview and start
 
 The preview picks a document:

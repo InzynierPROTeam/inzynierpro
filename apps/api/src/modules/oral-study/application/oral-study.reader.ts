@@ -10,8 +10,9 @@ import type { QuestionCount } from '@inzpro/domain/modules/learning-content/refe
 import type { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
 import type { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Context, type Effect, type Option } from 'effect'
+import { Context, type DateTime, type Effect, type Option } from 'effect'
 import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
+import type { DailyPlanRecord } from '~api/modules/daily-plan/domain/daily-plan.model.js'
 import type {
   LearningRoundNumber,
   LearningRoundProgress,
@@ -82,6 +83,16 @@ export class OralStudyReader extends Context.Service<
       oralRevisionId: OralRevisionId,
       day: StudyDay,
     ) => Effect.Effect<boolean, StudyReadError>
+    readonly dailyPlan: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      studyDay: DateTime.Utc,
+    ) => Effect.Effect<Option.Option<DailyPlanRecord>, StudyReadError>
+    readonly firstDailyPlanOfRound: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      round: LearningRoundNumber,
+    ) => Effect.Effect<Option.Option<DailyPlanRecord>, StudyReadError>
     readonly learningRound: (
       userId: UserId,
       pathId: QualificationPathId,

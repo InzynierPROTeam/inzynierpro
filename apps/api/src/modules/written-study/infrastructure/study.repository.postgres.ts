@@ -249,6 +249,34 @@ export const StudyRepositoryLive = Layer.effect(
           )
         },
       ),
+      createDailyPlan: Effect.fn('StudyRepository.createDailyPlan')(
+        function* (userId, pathId, plan) {
+          return yield* sql`INSERT INTO written_daily_plans (user_id,qualification_path_id,study_day,round_number,target_date,remaining_question_count,target_question_count,plan_settings_version)
+ VALUES (${userId},${pathId},${DateTime.formatIso(plan.studyDay)},${plan.round},${DateTime.formatIso(plan.targetDate)},${plan.remainingQuestionCount},${plan.targetQuestionCount},${plan.settingsVersion})
+ ON CONFLICT (user_id,qualification_path_id,study_day) DO NOTHING`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new StudyWriteError({ cause })),
+          )
+        },
+      ),
+      countDailyPlanAnswer: Effect.fn('StudyRepository.countDailyPlanAnswer')(
+        function* (userId, pathId, studyDay) {
+          return yield* sql`UPDATE written_daily_plans SET completed_question_count=completed_question_count+1
+ WHERE user_id=${userId} AND qualification_path_id=${pathId} AND study_day=${DateTime.formatIso(studyDay)}`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new StudyWriteError({ cause })),
+          )
+        },
+      ),
+      completeDailyPlanRound: Effect.fn('StudyRepository.completeDailyPlanRound')(
+        function* (userId, pathId, studyDay) {
+          return yield* sql`UPDATE written_daily_plans SET round_completed_at=coalesce(round_completed_at,clock_timestamp())
+ WHERE user_id=${userId} AND qualification_path_id=${pathId} AND study_day=${DateTime.formatIso(studyDay)}`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new StudyWriteError({ cause })),
+          )
+        },
+      ),
       storeLearningRound: Effect.fn('StudyRepository.storeLearningRound')(
         function* (userId, pathId, round) {
           return yield* sql`INSERT INTO written_learning_rounds (user_id,qualification_path_id,round_number) VALUES (${userId},${pathId},${round})

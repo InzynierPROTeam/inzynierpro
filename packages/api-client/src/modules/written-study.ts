@@ -3,6 +3,7 @@ import type {
   GetDocumentEndpoint,
   GetSessionPreviewEndpoint,
   StartSessionEndpoint,
+  GetDailyPlanEndpoint,
   GetReviewPreviewEndpoint,
   GetReviewSessionEndpoint,
   StartReviewSessionEndpoint,
@@ -61,6 +62,15 @@ export type StartSessionRequest = InferEndpointRequest<typeof StartSessionEndpoi
 export type StartSessionRes = Effect.Success<ReturnType<typeof startSession>>
 
 export type StartSessionError = Effect.Error<ReturnType<typeof startSession>>
+
+export const getDailyPlan = (req: GetDailyPlanRequest) =>
+  apiAction(api => api.Study.GetDailyPlan(req))
+
+export type GetDailyPlanRequest = InferEndpointRequest<typeof GetDailyPlanEndpoint>
+
+export type GetDailyPlanRes = Effect.Success<ReturnType<typeof getDailyPlan>>
+
+export type GetDailyPlanError = Effect.Error<ReturnType<typeof getDailyPlan>>
 
 export const getReviewPreview = (req: GetReviewPreviewRequest) =>
   apiAction(api => api.Study.GetReviewPreview(req))

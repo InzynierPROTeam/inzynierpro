@@ -16,6 +16,10 @@ import {
   SessionQuestionMissing,
 } from '~api/modules/learning/domain/errors.js'
 import { currentLearningRound } from '~api/modules/learning/domain/learning-round.rules.js'
+import {
+  recordOralDailyPlanAnswer,
+  prepareOralDailyPlan,
+} from '~api/modules/oral-study/application/oral-daily-plan.service.js'
 import { recordOralEvidence } from '~api/modules/oral-study/application/oral-review-state.service.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
 import { OralStudyRepository } from '~api/modules/oral-study/application/oral-study.repository.js'
@@ -23,6 +27,7 @@ import {
   OralQuestionAlreadyAssessed,
   OralRevisionNotInSession,
 } from '~api/modules/oral-study/domain/errors.js'
+import { oralExamAt } from '~api/modules/oral-study/domain/oral-exam-day.rules.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 
@@ -58,7 +63,7 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
   return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
+      const { goal } = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
 
       const found = Option.all({
         session: yield* oralStudyReader.session(userId, pathId, sessionId),
@@ -98,6 +103,8 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         selfAssessment,
       )
 
+      const answeredAt = yield* DateTime.now
+
       yield* recordOralEvidence({
         userId,
         qualificationPathId: pathId,
@@ -108,11 +115,13 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         position,
         selfAssessment,
         mode: session.kind,
-        answeredAt: yield* DateTime.now,
+        answeredAt,
       })
 
       if (session.kind === regularStudySession) {
         const round = yield* syncOralLearningRound(userId, pathId)
+        const before = yield* oralStudyReader.learningRound(userId, pathId)
+        yield* prepareOralDailyPlan(userId, pathId, oralExamAt(goal), before, answeredAt)
         yield* oralStudyRepository.recordCoverage(
           userId,
           pathId,
@@ -120,6 +129,8 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
           oralRevisionId,
           round,
         )
+        const after = yield* oralStudyReader.learningRound(userId, pathId)
+        yield* recordOralDailyPlanAnswer(userId, pathId, answeredAt, { before, after })
         yield* syncOralLearningRound(userId, pathId)
       }
 

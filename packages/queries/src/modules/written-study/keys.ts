@@ -3,6 +3,7 @@ import type {
   GetDocumentsRequest,
   GetSessionPreviewRequest,
   GetLatestSessionRequest,
+  GetDailyPlanRequest,
   GetReviewPreviewRequest,
   GetReviewSessionRequest,
   GetFavoritesPreviewRequest,
@@ -50,6 +51,12 @@ export const writtenStudyKeys = {
     [
       ...writtenStudyKeys.progress(userId, req.params.qualificationPathId),
       'getLatestSession',
+      req,
+    ] as const,
+  getDailyPlan: (userId: UserId, req: GetDailyPlanRequest) =>
+    [
+      ...writtenStudyKeys.progress(userId, req.params.qualificationPathId),
+      'getDailyPlan',
       req,
     ] as const,
   getReviewPreview: (userId: UserId, req: GetReviewPreviewRequest) =>

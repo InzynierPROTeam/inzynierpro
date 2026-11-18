@@ -3,6 +3,8 @@ import {
   type GetOralFavoritesPreviewRequest,
   getOralFavoritesSession,
   type GetOralFavoritesSessionRequest,
+  getOralDailyPlan,
+  type GetOralDailyPlanRequest,
   getOralReviewPreview,
   type GetOralReviewPreviewRequest,
   getOralReviewSession,
@@ -121,6 +123,13 @@ export const oralSessionResultsInfiniteQueryOptions = (
     httpClient,
     req.query.cursor,
   )
+
+export const oralDailyPlanQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralDailyPlanRequest,
+) =>
+  effectQueryOptions(oralStudyKeys.getOralDailyPlan(userId, req), getOralDailyPlan(req), httpClient)
 
 export const oralReviewPreviewQueryOptions = (
   httpClient: HttpClient.HttpClient,

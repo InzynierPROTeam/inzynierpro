@@ -6,6 +6,7 @@ import type {
   UnmarkOralFavoriteQuestionEndpoint,
   SaveOralQuestionNoteEndpoint,
   ClearOralQuestionNoteEndpoint,
+  GetOralDailyPlanEndpoint,
   GetOralReviewPreviewEndpoint,
   GetOralReviewSessionEndpoint,
   StartOralReviewSessionEndpoint,
@@ -143,6 +144,15 @@ export type SubmitOralSelfAssessmentRes = Effect.Success<
 export type SubmitOralSelfAssessmentError = Effect.Error<
   ReturnType<typeof submitOralSelfAssessment>
 >
+
+export const getOralDailyPlan = (req: GetOralDailyPlanRequest) =>
+  apiAction(api => api.OralStudy.GetOralDailyPlan(req))
+
+export type GetOralDailyPlanRequest = InferEndpointRequest<typeof GetOralDailyPlanEndpoint>
+
+export type GetOralDailyPlanRes = Effect.Success<ReturnType<typeof getOralDailyPlan>>
+
+export type GetOralDailyPlanError = Effect.Error<ReturnType<typeof getOralDailyPlan>>
 
 export const getOralReviewPreview = (req: GetOralReviewPreviewRequest) =>
   apiAction(api => api.OralStudy.GetOralReviewPreview(req))

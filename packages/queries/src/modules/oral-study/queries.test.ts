@@ -8,6 +8,7 @@ import { Effect, Schema } from 'effect'
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import {
+  oralDailyPlanQueryOptions,
   oralFavoritesPreviewQueryOptions,
   oralFavoritesSessionQueryOptions,
   oralSessionQuestionQueryOptions,
@@ -253,3 +254,33 @@ test('oral quiz queries belong to their oral session, page through checks and le
       }),
   )
 })
+
+test('the oral daily plan refreshes with oral progress and stays per account and path', () =>
+  withHttpServer(
+    [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/oral/daily-plan`,
+        HttpServerResponse.jsonUnsafe({ status: 'no_material' }),
+      ),
+    ],
+    ({ httpClient }) =>
+      withQueryClient(async client => {
+        const plan = oralDailyPlanQueryOptions(httpClient, userId, {
+          params: { qualificationPathId: pathA },
+        })
+
+        const otherPath = oralDailyPlanQueryOptions(httpClient, userId, {
+          params: { qualificationPathId: pathB },
+        })
+
+        expect(await client.query(plan)).toEqual({ status: 'no_material' })
+        client.setQueryData(otherPath.queryKey, { status: 'no_material' })
+        await client.invalidateQueries({
+          queryKey: oralStudyKeys.oralProgress(userId, pathA),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(plan.queryKey)?.isInvalidated).toBe(true)
+        expect(client.getQueryState(otherPath.queryKey)?.isInvalidated).toBe(false)
+      }),
+  ))
