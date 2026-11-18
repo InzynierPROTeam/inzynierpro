@@ -7,6 +7,7 @@ import type {
   SaveOralQuestionNoteEndpoint,
   ClearOralQuestionNoteEndpoint,
   GetOralDailyPlanEndpoint,
+  ChangeOralDailyPlanSettingsEndpoint,
   GetOralReviewPreviewEndpoint,
   GetOralReviewSessionEndpoint,
   StartOralReviewSessionEndpoint,
@@ -153,6 +154,21 @@ export type GetOralDailyPlanRequest = InferEndpointRequest<typeof GetOralDailyPl
 export type GetOralDailyPlanRes = Effect.Success<ReturnType<typeof getOralDailyPlan>>
 
 export type GetOralDailyPlanError = Effect.Error<ReturnType<typeof getOralDailyPlan>>
+
+export const changeOralDailyPlanSettings = (req: ChangeOralDailyPlanSettingsRequest) =>
+  apiAction(api => api.OralStudy.ChangeOralDailyPlanSettings(req))
+
+export type ChangeOralDailyPlanSettingsRequest = InferEndpointRequest<
+  typeof ChangeOralDailyPlanSettingsEndpoint
+>
+
+export type ChangeOralDailyPlanSettingsRes = Effect.Success<
+  ReturnType<typeof changeOralDailyPlanSettings>
+>
+
+export type ChangeOralDailyPlanSettingsError = Effect.Error<
+  ReturnType<typeof changeOralDailyPlanSettings>
+>
 
 export const getOralReviewPreview = (req: GetOralReviewPreviewRequest) =>
   apiAction(api => api.OralStudy.GetOralReviewPreview(req))

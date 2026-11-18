@@ -1,4 +1,5 @@
 import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import type { DailyPlanSettingsVersion } from '@inzpro/domain/modules/daily-plan/daily-plan'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type {
   QuestionCount,
@@ -17,7 +18,10 @@ import type {
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type DateTime, type Effect, type Option } from 'effect'
 import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
-import type { DailyPlanRecord } from '~api/modules/daily-plan/domain/daily-plan.model.js'
+import type {
+  DailyPlanRecord,
+  DailyPlanSettings,
+} from '~api/modules/daily-plan/domain/daily-plan.model.js'
 import type {
   LearningRoundNumber,
   LearningRoundProgress,
@@ -49,11 +53,16 @@ export class StudyReader extends Context.Service<
       pathId: QualificationPathId,
       studyDay: DateTime.Utc,
     ) => Effect.Effect<Option.Option<DailyPlanRecord>, StudyReadError>
-    readonly firstDailyPlanOfRound: (
+    readonly firstDailyPlanOfPace: (
       userId: UserId,
       pathId: QualificationPathId,
       round: LearningRoundNumber,
+      settingsVersion: DailyPlanSettingsVersion,
     ) => Effect.Effect<Option.Option<DailyPlanRecord>, StudyReadError>
+    readonly dailyPlanSettings: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<DailyPlanSettings, StudyReadError>
     readonly documents: (
       userId: UserId,
       pathId: QualificationPathId,

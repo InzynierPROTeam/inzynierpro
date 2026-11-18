@@ -1,4 +1,8 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import {
+  dailyCountPlanPreference,
+  targetDatePlanPreference,
+} from '@inzpro/domain/modules/daily-plan/daily-plan'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type {
   QuestionRevisionId,
@@ -259,6 +263,34 @@ export const StudyRepositoryLive = Layer.effect(
           )
         },
       ),
+      replanDailyPlan: Effect.fn('StudyRepository.replanDailyPlan')(
+        function* (userId, pathId, plan) {
+          return yield* sql`UPDATE written_daily_plans SET target_date=${DateTime.formatIso(plan.targetDate)},target_question_count=${plan.targetQuestionCount},plan_settings_version=${plan.settingsVersion}
+ WHERE user_id=${userId} AND qualification_path_id=${pathId} AND study_day=${DateTime.formatIso(plan.studyDay)}`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new StudyWriteError({ cause })),
+          )
+        },
+      ),
+      appendDailyPlanSettings: Effect.fn('StudyRepository.appendDailyPlanSettings')(function* (
+        userId,
+        pathId,
+        { version, preference },
+      ) {
+        const targetDate =
+          preference.mode === targetDatePlanPreference
+            ? DateTime.formatIso(preference.targetDate)
+            : null
+
+        const dailyQuestionCount =
+          preference.mode === dailyCountPlanPreference ? preference.dailyQuestionCount : null
+
+        return yield* sql`INSERT INTO written_daily_plan_settings (user_id,qualification_path_id,version,mode,target_date,daily_question_count)
+ VALUES (${userId},${pathId},${version},${preference.mode},${targetDate},${dailyQuestionCount})`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new StudyWriteError({ cause })),
+        )
+      }),
       countDailyPlanAnswer: Effect.fn('StudyRepository.countDailyPlanAnswer')(
         function* (userId, pathId, studyDay) {
           return yield* sql`UPDATE written_daily_plans SET completed_question_count=completed_question_count+1

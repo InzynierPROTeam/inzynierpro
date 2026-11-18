@@ -1,3 +1,4 @@
+import type { ChangeDailyPlanSettingsPayload } from '@inzpro/api-contracts/modules/daily-plan/requests'
 import { DailyPlan } from '@inzpro/api-contracts/modules/daily-plan/responses'
 import {
   OralMaterialsResponse,
@@ -34,6 +35,8 @@ const oralPlanConfiguration = {
   examSessionId: '90000000-0000-4000-8000-000000000015',
 } satisfies typeof CompleteOnboardingPayload.Encoded
 
+const defaultSettings = { version: 1, preference: { mode: 'default' } }
+
 const decode =
   <T, E>(schema: Schema.Codec<T, E>) =>
   async (response: Response) => {
@@ -61,7 +64,17 @@ const learnerOnPath = async (config: typeof CompleteOnboardingPayload.Encoded) =
   const pool = async () =>
     (await categories()).reduce((sum, category) => sum + category.availableQuestionCount, 0)
 
-  return { request, plan, categories, pool }
+  const changeSettings = (body: typeof ChangeDailyPlanSettingsPayload.Encoded) =>
+    visitor.jar.fetch(
+      new URL(`/api/v1/study/paths/${pathId}/oral/daily-plan/settings`, api.baseUrl),
+      {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    )
+
+  return { request, plan, categories, pool, changeSettings }
 }
 
 test('the oral plan targets a week before the oral planning date when the goal has no oral date', async () => {
@@ -76,6 +89,7 @@ test('the oral plan targets a week before the oral planning date when the goal h
     targetQuestionCount: Math.ceil(available / 15),
     completedQuestionCount: 0,
     questionsBehindPace: 0,
+    settings: defaultSettings,
   })
 })
 
@@ -128,5 +142,33 @@ test('oral self-assessments in regular study count towards the oral target', asy
 test('a path without oral material has a distinct state', async () => {
   const learner = await learnerOnPath({ ...technicalConfiguration, accessScope: 'oral' })
 
-  expect(await learner.plan()).toEqual({ status: 'no_material' })
+  expect(await learner.plan()).toEqual({
+    status: 'no_material',
+    settings: defaultSettings,
+  })
+})
+
+test('the oral plan takes a fixed daily count and refuses a stale settings version', async () => {
+  const learner = await learnerOnPath(oralPlanConfiguration)
+
+  await learner.plan()
+
+  expect(
+    await decode(DailyPlan)(
+      await learner.changeSettings({
+        preference: { mode: 'daily_count', dailyQuestionCount: 2 },
+        expectedVersion: 1,
+      }),
+    ),
+  ).toMatchObject({
+    targetQuestionCount: 2,
+    settings: { version: 2, preference: { mode: 'daily_count', dailyQuestionCount: 2 } },
+  })
+
+  const stale = await learner.changeSettings({
+    preference: { mode: 'default' },
+    expectedVersion: 1,
+  })
+
+  expect(stale.status).toBe(409)
 })

@@ -1,10 +1,47 @@
+import { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import {
+  dailyCountPlanPreference,
+  DailyPlanSettingsVersion,
+  DailyQuestionCount,
+  PlanPreferenceMode,
+  targetDatePlanPreference,
+} from '@inzpro/domain/modules/daily-plan/daily-plan'
 import { DateTime, Effect, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
-import { DailyPlanRecord } from '~api/modules/daily-plan/domain/daily-plan.model.js'
+import {
+  DailyPlanRecord,
+  type DailyPlanSettings,
+  defaultDailyPlanSettings,
+} from '~api/modules/daily-plan/domain/daily-plan.model.js'
 import { StudyReadError } from '~api/modules/oral-study/application/errors.js'
 import type { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
 
-type DailyPlanReader = Pick<OralStudyReader['Service'], 'dailyPlan' | 'firstDailyPlanOfRound'>
+type DailyPlanReader = Pick<
+  OralStudyReader['Service'],
+  'dailyPlan' | 'firstDailyPlanOfPace' | 'dailyPlanSettings'
+>
+
+const DailyPlanSettingsRow = Schema.Struct({
+  version: DailyPlanSettingsVersion,
+  mode: PlanPreferenceMode,
+  targetDate: Schema.NullOr(DateTimeUtc),
+  dailyQuestionCount: Schema.NullOr(DailyQuestionCount),
+})
+
+const settingsOf = (row: typeof DailyPlanSettingsRow.Type): DailyPlanSettings => {
+  if (row.mode === targetDatePlanPreference && row.targetDate !== null) {
+    return { version: row.version, preference: { mode: row.mode, targetDate: row.targetDate } }
+  }
+
+  if (row.mode === dailyCountPlanPreference && row.dailyQuestionCount !== null) {
+    return {
+      version: row.version,
+      preference: { mode: row.mode, dailyQuestionCount: row.dailyQuestionCount },
+    }
+  }
+
+  return { version: row.version, preference: defaultDailyPlanSettings.preference }
+}
 
 export const oralDailyPlanReader = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
@@ -24,11 +61,23 @@ export const oralDailyPlanReader = Effect.gen(function* () {
         sql`SELECT ${columns} FROM oral_daily_plans WHERE user_id=${userId} AND qualification_path_id=${pathId} AND study_day=${DateTime.formatIso(studyDay)} LIMIT 1`,
       ),
     ),
-    firstDailyPlanOfRound: Effect.fn('OralStudyReader.firstDailyPlanOfRound')(
-      (userId, pathId, round) =>
+    firstDailyPlanOfPace: Effect.fn('OralStudyReader.firstDailyPlanOfPace')(
+      (userId, pathId, round, settingsVersion) =>
         firstPlan(
-          sql`SELECT ${columns} FROM oral_daily_plans WHERE user_id=${userId} AND qualification_path_id=${pathId} AND round_number=${round} ORDER BY study_day LIMIT 1`,
+          sql`SELECT ${columns} FROM oral_daily_plans WHERE user_id=${userId} AND qualification_path_id=${pathId} AND round_number=${round} AND plan_settings_version=${settingsVersion} ORDER BY study_day LIMIT 1`,
         ),
+    ),
+    dailyPlanSettings: Effect.fn('OralStudyReader.dailyPlanSettings')((userId, pathId) =>
+      sql`SELECT version,mode,target_date,daily_question_count FROM oral_daily_plan_settings WHERE user_id=${userId} AND qualification_path_id=${pathId} ORDER BY version DESC LIMIT 1`.pipe(
+        Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(DailyPlanSettingsRow))),
+        Effect.map(rows =>
+          Option.match(Option.fromNullishOr(rows[0]), {
+            onNone: () => defaultDailyPlanSettings,
+            onSome: settingsOf,
+          }),
+        ),
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
     ),
   } satisfies DailyPlanReader
 })

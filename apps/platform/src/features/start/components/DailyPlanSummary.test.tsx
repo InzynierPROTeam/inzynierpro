@@ -29,7 +29,10 @@ afterEach(async () => {
   vi.unstubAllGlobals()
 })
 
+const settings = { version: 1, preference: { mode: 'default' } } as const
+
 const scheduled = {
+  settings,
   examDate: '2026-11-19T23:00:00.000Z',
   targetDate: '2026-11-18T23:00:00.000Z',
   daysUntilExam: 7,
@@ -101,13 +104,13 @@ test('marks the day done once the round closes', async () => {
 })
 
 test('asks to update the goal once the exam date has passed', async () => {
-  await renderPlan({ status: 'exam_passed', examDate: '2026-11-19T23:00:00.000Z' })
+  await renderPlan({ status: 'exam_passed', examDate: '2026-11-19T23:00:00.000Z', settings })
 
   expect(container.textContent).toContain('Termin egzaminu (20 listopada 2026) minął')
   expect(container.querySelector('a')?.getAttribute('href')).toBe('/profil')
 })
 
 test('has a distinct message for a path without material', async () =>
-  expect(await renderPlan({ status: 'no_material' })).toContain(
+  expect(await renderPlan({ status: 'no_material', settings })).toContain(
     'Na tej ścieżce nie ma jeszcze materiału',
   ))

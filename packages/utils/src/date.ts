@@ -233,3 +233,11 @@ export const isDateTimeInput = (value: string): boolean =>
 
 export const getWarsawMonth = (date: DateInput): number =>
   DateTime.toParts(toWarsawZoned(date)).month
+
+export const toPickerDate = (date: DateInput): Date => DateTime.toDateUtc(toDateTime(date))
+
+export const pickedDayToUtcIsoDateTime = (date: Date): UtcIsoDateTime =>
+  dateTimeUtcToUtcIsoDateTime(warsawStartOfDay(date))
+
+export const addWarsawDays = (date: DateInput, days: number): DateTime.Utc =>
+  DateTime.toUtc(DateTime.startOf(DateTime.add(toWarsawZoned(date), { days }), 'day'))
