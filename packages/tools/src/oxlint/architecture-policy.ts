@@ -61,8 +61,9 @@ export const apiModuleDependencies = {
   preparation: ['exam-calendar', 'qualification-paths'],
   'qualification-paths': [],
   learning: [],
-  'written-study': ['preparation', 'learning-content', 'learning'],
-  'oral-study': ['preparation', 'learning-content', 'learning'],
+  'daily-plan': ['learning'],
+  'written-study': ['preparation', 'learning-content', 'learning', 'daily-plan'],
+  'oral-study': ['preparation', 'learning-content', 'learning', 'daily-plan'],
   'mock-exams': ['preparation', 'learning-content', 'learning', 'written-study'],
 } as const satisfies Record<string, ReadonlyArray<string>>
 
