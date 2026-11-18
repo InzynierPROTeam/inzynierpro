@@ -2,7 +2,7 @@ import { POLAND_TIME_ZONE } from '@inzpro/config/localization'
 import { DateTime } from 'effect'
 
 import {
-  allTimeXp,
+  allTimeXpPeriod,
   examSessionXp,
   monthlyXp,
   weeklyXp,
@@ -25,6 +25,6 @@ export const xpPeriodsOf = (
     },
     { kind: monthlyXp, key: DateTime.formatIsoDate(DateTime.startOf(local, 'month')) },
     { kind: examSessionXp, key: award.examSessionId },
-    { kind: allTimeXp, key: 'all' },
+    allTimeXpPeriod,
   ]
 }

@@ -16,7 +16,15 @@ import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import { closesPlannedRound } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
-import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import {
+  awardXp,
+  grantLearningRewards,
+} from '~api/modules/learning-xp/application/award-xp.service.js'
+import {
+  LearningAchievement,
+  noLearningRewards,
+} from '~api/modules/learning-xp/domain/learning-reward.model.js'
+import { reachedStreakAchievements } from '~api/modules/learning-xp/domain/learning-reward.rules.js'
 import { writtenAnswerXpReason } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { xpStudyDate } from '~api/modules/learning-xp/domain/learning-xp.rules.js'
 import {
@@ -109,7 +117,12 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
 
       if (Option.isSome(question.answer)) {
         if (question.answer.value.answerId === answerId) {
-          return { question, session, awardedXp: LearningXp.make(0) }
+          return {
+            question,
+            session,
+            awardedXp: LearningXp.make(0),
+            rewards: noLearningRewards,
+          }
         }
 
         return yield* new QuestionAlreadyAnswered()
@@ -164,6 +177,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
 
       const stored = yield* studyRepository.recordAnswer(answer)
       const isRegularStudy = session.kind === regularStudySession
+      const achievements: Array<LearningAchievement> = []
 
       yield* recordWrittenEvidence(
         {
@@ -201,12 +215,20 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
             userId,
             completedRoundBridgeOf(pathId, writtenExamAccess, after.round, answeredAt),
           )
+          achievements.push(
+            LearningAchievement.CompletedRound({ part: writtenExamAccess, round: after.round }),
+          )
         }
 
         yield* syncLearningRound(userId, pathId)
       }
 
-      yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
+      const streak = yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
+
+      const rewards = yield* grantLearningRewards(
+        { userId, pathId, examSessionId: goal.examSessionId, at: answeredAt },
+        [...achievements, ...reachedStreakAchievements(streak)],
+      )
 
       const next = yield* studyReader.nextOpenPosition(sessionId, position)
 
@@ -215,7 +237,12 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         Option.getOrElse(next, () => position),
       )
 
-      return { question: { ...question, answer: Option.some(stored) }, session: moved, awardedXp }
+      return {
+        question: { ...question, answer: Option.some(stored) },
+        session: moved,
+        awardedXp,
+        rewards,
+      }
     }),
   )
 })

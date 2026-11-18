@@ -7,6 +7,7 @@ import { pathOralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-st
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { TransactionLive } from '~api/lib/transaction.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { endOralSession } from '~api/modules/oral-study/application/end-oral-session.command.js'
@@ -37,6 +38,7 @@ const services = Layer.mergeAll(
   ReviewSchedulerLive,
   StreakReaderLive,
   StreakRepositoryLive,
+  XpReaderLive,
   XpRepositoryLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 

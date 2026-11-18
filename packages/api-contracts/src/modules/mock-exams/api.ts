@@ -24,6 +24,7 @@ import {
 import {
   AttemptQuestionResponse,
   FlagAttemptQuestionResponse,
+  FinishMockExamAttemptResponse,
   MockExamAttemptResponse,
   MockExamPreviewResponse,
   SaveAttemptAnswerResponse,
@@ -140,7 +141,7 @@ export const FinishMockExamAttemptEndpoint = HttpApiEndpoint.post(
   '/paths/:qualificationPathId/attempts/:attemptId/finish',
   {
     params: MockExamAttemptParams,
-    success: MockExamAttemptResponse,
+    success: FinishMockExamAttemptResponse,
     error: [InternalServerError, RateLimitExceeded, PathAccessDenied, MockExamAttemptNotInProgress],
   },
 )

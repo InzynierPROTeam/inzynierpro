@@ -23,6 +23,7 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
 import { ResolvedRichContent } from '~api-contracts/modules/learning-content/responses.js'
+import { LearningRewards } from '~api-contracts/modules/learning-xp/responses.js'
 import {
   SessionCountSettings,
   StudySessionProgress,
@@ -153,7 +154,9 @@ export type SessionNextStep = typeof SessionNextStep.Type
 
 export const SessionNextStepResponse = Schema.NullOr(SessionNextStep)
 
-export const EndSessionResponse = StudySession
+export const EndSessionResponse = Schema.Struct({ session: StudySession, rewards: LearningRewards })
+
+export type EndSessionResponse = typeof EndSessionResponse.Type
 
 export const StudySessionResult = Schema.Struct({
   correct: QuestionCount,
@@ -224,6 +227,7 @@ export const SessionQuestionResponse = Schema.NullOr(SessionQuestion)
 
 export const SubmitSessionAnswerResponse = Schema.Struct({
   awardedXp: LearningXp,
+  rewards: LearningRewards,
   question: SessionQuestion,
   session: StudySession,
 })

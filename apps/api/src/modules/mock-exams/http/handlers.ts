@@ -6,7 +6,8 @@ import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
-import { failXpWrite } from '~api/modules/learning-xp/http/errors.js'
+import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
+import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { failStudyRead, failStudyWrite } from '~api/modules/learning/http/errors.js'
@@ -46,6 +47,7 @@ import {
 import {
   toAttemptQuestionDto,
   toMockExamAttemptResponse,
+  toFinishMockExamAttemptResponse,
   toNullableMockExamAttemptResponse,
   toMockExamPreviewDto,
 } from '~api/modules/mock-exams/http/mappers.js'
@@ -73,7 +75,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
             finishAttempt(user.id, params.qualificationPathId, params.attemptId),
           ),
         ),
-        Effect.flatMap(toNullableMockExamAttemptResponse),
+        Effect.flatMap(toFinishMockExamAttemptResponse),
         Effect.catchTags({
           PreparationReadError: failPreparationRead,
           PathPermissionDenied: () => pathAccessDenied,
@@ -86,6 +88,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -110,6 +113,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -134,6 +138,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -158,6 +163,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -188,6 +194,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -223,6 +230,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -248,6 +256,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -271,6 +280,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -298,6 +308,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -332,6 +343,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -367,6 +379,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -400,6 +413,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
           StudyWriteError: failStudyWrite,
           StreakReadError: failStreakRead,
           StreakWriteError: failStreakWrite,
+          XpReadError: failXpRead,
           XpWriteError: failXpWrite,
         }),
       ),
@@ -418,5 +432,6 @@ export const MockExamsRequestServices = Layer.mergeAll(
   ReviewSchedulerLive,
   StreakReaderLive,
   StreakRepositoryLive,
+  XpReaderLive,
   XpRepositoryLive,
 )

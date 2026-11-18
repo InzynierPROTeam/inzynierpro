@@ -11,7 +11,11 @@ import {
   mockExamPathConfiguration,
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
-import { decodeResponse, mockExamLearner } from '~api/test/mock-exam-learner.js'
+import {
+  decodeResponse,
+  mockExamLearner,
+  decodeFinishedAttempt,
+} from '~api/test/mock-exam-learner.js'
 
 const examPath = mockExamPathConfiguration('60000000-0000-4000-8000-000000000010')
 let api: TestApi
@@ -119,7 +123,7 @@ it('refuses abandoning a finished attempt and hides foreign and missing attempts
   ).toBeNull()
   expect((await learner.attempt(attempt.id))?.status).toBe('in-progress')
 
-  const finished = await decodeResponse(MockExamAttempt)(
+  const finished = await decodeFinishedAttempt(
     await learner.request(`/attempts/${attempt.id}/finish`, 'POST'),
   )
 

@@ -1,5 +1,9 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import { BridgeCount, type DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
+import {
+  BridgeCount,
+  type DailyAnswerCount,
+  type StreakLength,
+} from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { StreakReader } from '~api/modules/streak/application/streak.reader.js'
@@ -74,7 +78,7 @@ export const recordStreakAnswers = Effect.fn('Streak.recordStreakAnswers')(funct
   answerCount: DailyAnswerCount,
 ) {
   if (answerCount === 0) {
-    return
+    return Option.none<StreakLength>()
   }
 
   const streakReader = yield* StreakReader
@@ -83,7 +87,7 @@ export const recordStreakAnswers = Effect.fn('Streak.recordStreakAnswers')(funct
   const activity = yield* streakRepository.addDailyAnswers(userId, studyDay, answerCount)
 
   if (activity.isQualifying || !qualifiesStudyDay(activity.answerCount)) {
-    return
+    return Option.none<StreakLength>()
   }
 
   yield* spendBridgesOnGap(userId, studyDay)
@@ -95,7 +99,7 @@ export const recordStreakAnswers = Effect.fn('Streak.recordStreakAnswers')(funct
   )
 
   if (Option.isNone(record)) {
-    return
+    return Option.none<StreakLength>()
   }
 
   yield* streakRepository.storeStreak(userId, record.value)
@@ -103,4 +107,6 @@ export const recordStreakAnswers = Effect.fn('Streak.recordStreakAnswers')(funct
   if (reachesStreakMilestone(record.value, studyDay)) {
     yield* grantStreakBridges(userId, streakMilestoneBridgeOf(studyDay))
   }
+
+  return Option.some(record.value.currentStreak)
 })

@@ -2,6 +2,7 @@ import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/prepara
 import {
   SessionQuestion,
   SessionResultsResponse,
+  EndSessionResponse,
   StudySession,
   StudySessionSummary,
 } from '@inzpro/api-contracts/modules/written-study/responses'
@@ -83,7 +84,7 @@ const learnerInSession = async (questionCount: number) => {
 
     expect(response.status).toBe(200)
 
-    return Schema.decodeUnknownSync(StudySession)(await response.json())
+    return Schema.decodeUnknownSync(EndSessionResponse)(await response.json()).session
   }
 
   const summary = async () =>

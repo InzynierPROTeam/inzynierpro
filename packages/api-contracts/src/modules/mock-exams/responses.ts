@@ -30,6 +30,7 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
 import { ResolvedRichContent } from '~api-contracts/modules/learning-content/responses.js'
+import { LearningRewards } from '~api-contracts/modules/learning-xp/responses.js'
 import { QuestionNote } from '~api-contracts/modules/learning/responses.js'
 import { CursorPaginatedResponse } from '~api-contracts/utils/pagination.js'
 
@@ -157,6 +158,13 @@ export const StartMockExamAttemptResponse = MockExamAttempt
 
 // CONTRACT: null when the attempt does not exist on this path or belongs to another account.
 export const MockExamAttemptResponse = Schema.NullOr(MockExamAttempt)
+
+// CONTRACT: null when the attempt does not exist on this path or belongs to another account.
+export const FinishMockExamAttemptResponse = Schema.NullOr(
+  Schema.Struct({ attempt: MockExamAttempt, rewards: LearningRewards }),
+)
+
+export type FinishMockExamAttemptResponse = typeof FinishMockExamAttemptResponse.Type
 
 // CONTRACT: null when the attempt is not the learner's on this path or has no question at this position.
 export const AttemptQuestionResponse = Schema.NullOr(AttemptQuestion)

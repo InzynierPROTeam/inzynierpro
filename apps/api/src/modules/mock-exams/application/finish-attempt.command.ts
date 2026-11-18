@@ -8,6 +8,7 @@ import { writtenExamAccess } from '@inzpro/domain/modules/preparation/exam-acces
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
+import { noLearningRewards } from '~api/modules/learning-xp/domain/learning-reward.model.js'
 import {
   endLockedAttempt,
   lockAttemptForEnding,
@@ -37,11 +38,14 @@ export const finishAttempt = Effect.fn('MockExams.finishAttempt')(function* (
         return yield* new MockExamAttemptNotInProgress()
       }
 
-      if (clock.value.status !== finishedAttempt) {
-        yield* endLockedAttempt(userId, pathId, attemptId, clock.value, yield* DateTime.now)
-      }
+      const rewards =
+        clock.value.status === finishedAttempt
+          ? noLearningRewards
+          : yield* endLockedAttempt(userId, pathId, attemptId, clock.value, yield* DateTime.now)
 
-      return yield* mockExamReader.attempt(userId, pathId, attemptId)
+      const attempt = yield* mockExamReader.attempt(userId, pathId, attemptId)
+
+      return Option.map(attempt, finished => ({ attempt: finished, rewards }))
     }),
   )
 })

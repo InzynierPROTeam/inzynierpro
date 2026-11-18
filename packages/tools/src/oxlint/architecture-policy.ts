@@ -63,7 +63,7 @@ export const apiModuleDependencies = {
   learning: [],
   'daily-plan': ['learning'],
   streak: ['learning'],
-  'learning-xp': [],
+  'learning-xp': ['learning'],
   'written-study': [
     'preparation',
     'learning-content',

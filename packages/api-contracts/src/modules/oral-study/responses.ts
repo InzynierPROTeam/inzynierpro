@@ -30,6 +30,7 @@ import {
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
 import { ResolvedRichContent } from '~api-contracts/modules/learning-content/responses.js'
+import { LearningRewards } from '~api-contracts/modules/learning-xp/responses.js'
 import {
   SessionCountSettings,
   StudySessionProgress,
@@ -82,7 +83,12 @@ export const StartOralSessionResponse = OralStudySession
 
 export const OralStudySessionResponse = Schema.NullOr(OralStudySession)
 
-export const EndOralSessionResponse = OralStudySession
+export const EndOralSessionResponse = Schema.Struct({
+  session: OralStudySession,
+  rewards: LearningRewards,
+})
+
+export type EndOralSessionResponse = typeof EndOralSessionResponse.Type
 
 export const StoredOralSelfAssessment = Schema.Struct({
   value: OralSelfAssessment,
@@ -109,6 +115,7 @@ export type OralSessionQuestion = typeof OralSessionQuestion.Type
 export const OralSessionQuestionResponse = Schema.NullOr(OralSessionQuestion)
 
 export const SubmitOralSelfAssessmentResponse = Schema.Struct({
+  rewards: LearningRewards,
   question: OralSessionQuestion,
   session: OralStudySession,
 })
@@ -246,6 +253,7 @@ export const OralSessionQuizStateResponse = Schema.NullOr(OralSessionQuizState)
 export const StartOralSessionQuizResponse = OralSessionQuiz
 
 export const AnswerOralQuizCheckResponse = Schema.Struct({
+  rewards: LearningRewards,
   check: OralQuizCheck,
   quiz: OralSessionQuiz,
 })

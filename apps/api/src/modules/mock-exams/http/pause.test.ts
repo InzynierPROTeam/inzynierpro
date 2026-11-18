@@ -15,7 +15,11 @@ import {
   mockExamPathConfiguration,
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
-import { decodeResponse, mockExamLearner } from '~api/test/mock-exam-learner.js'
+import {
+  decodeResponse,
+  mockExamLearner,
+  decodeFinishedAttempt,
+} from '~api/test/mock-exam-learner.js'
 import { runFixture } from '~api/test/run-fixture.js'
 
 const examPath = mockExamPathConfiguration('60000000-0000-4000-8000-000000000001')
@@ -110,7 +114,7 @@ it('repeats a pause or resume that already took effect without recording another
   await command(learner.on(resumingApi), attempt.id, 'resume')
   await command(learner.on(finishingApi), attempt.id, 'resume')
 
-  const finished = await decodeResponse(MockExamAttempt)(
+  const finished = await decodeFinishedAttempt(
     await learner.on(finishingApi).request(`/attempts/${attempt.id}/finish`, 'POST'),
   )
 
@@ -180,7 +184,7 @@ it('finishes a paused attempt with the open pause excluded from its active time'
 
   await command(learner.on(pausingApi), attempt.id, 'pause')
 
-  const finished = await decodeResponse(MockExamAttempt)(
+  const finished = await decodeFinishedAttempt(
     await learner.on(resumingApi).request(`/attempts/${attempt.id}/finish`, 'POST'),
   )
 

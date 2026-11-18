@@ -4,6 +4,7 @@ import {
   SessionPreview,
   SessionQuestion,
   SessionResultsResponse,
+  EndSessionResponse,
   StudySession,
   StudySessionSummary,
   SubmitSessionAnswerResponse,
@@ -142,7 +143,7 @@ test('answering moves to the next unanswered question and the session stays open
 
   expect(ended.status).toBe(200)
 
-  const endedSession = Schema.decodeUnknownSync(StudySession)(await ended.json())
+  const endedSession = Schema.decodeUnknownSync(EndSessionResponse)(await ended.json()).session
 
   expect(endedSession).toMatchObject({ status: 'ended', progress: { answered: 3 } })
   expect(endedSession.endedAt).not.toBeNull()
@@ -222,7 +223,7 @@ test('ending a session keeps its answers, refuses new ones and lets a new sessio
   const ended = await request(`/sessions/${first.id}/end`, {})
 
   expect(ended.status).toBe(200)
-  expect(Schema.decodeUnknownSync(StudySession)(await ended.json())).toMatchObject({
+  expect(Schema.decodeUnknownSync(EndSessionResponse)(await ended.json()).session).toMatchObject({
     id: first.id,
     status: 'ended',
     progress: { answered: 1 },
