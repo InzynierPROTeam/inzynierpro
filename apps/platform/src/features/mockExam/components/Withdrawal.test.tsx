@@ -39,6 +39,7 @@ const pathId = QualificationPathId.make('10000000-0000-4000-8000-000000000002')
 const attempt = Schema.decodeSync(MockExamAttempt)({
   id: '10000000-0000-4000-8000-000000000003',
   status: 'finished',
+  earnedXp: 12,
   pauseCount: 0,
   pauseSeconds: 0,
   startedAt: '2026-11-17T12:00:00.000Z',
@@ -198,6 +199,7 @@ it('explains an incomplete result and uses only valid questions in summary total
     ),
   )
   expect(container.textContent).toContain('Wynik: niepełny')
+  expect(container.textContent).toContain('12 XP')
   expect(container.textContent).toContain(
     'Egzamin zawiera wycofane pytanie i nie ma oceny zaliczenia.',
   )

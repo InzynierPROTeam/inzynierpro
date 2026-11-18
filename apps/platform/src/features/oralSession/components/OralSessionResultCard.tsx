@@ -37,6 +37,7 @@ export const OralSessionResultCard: React.FC<OralSessionResultCardProps> = ({ su
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <p className="mb-6 font-medium">Zdobyte punkty: {result.earnedXp} XP</p>
         <ItemGroup>
           {oralSelfAssessmentValues.map(value => {
             const { Icon, iconClassName, label } = selfAssessmentLevels[value]

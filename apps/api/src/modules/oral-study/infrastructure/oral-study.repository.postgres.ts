@@ -159,10 +159,10 @@ export const OralStudyRepositoryLive = Layer.effect(
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
       recordSelfAssessment: Effect.fn('OralStudyRepository.recordSelfAssessment')(
-        function* (sessionId, position, oralRevisionId, selfAssessment) {
+        function* (sessionId, position, oralRevisionId, selfAssessment, earnedXp) {
           const rows =
-            yield* sql`INSERT INTO oral_study_self_assessments (study_session_id,position,oral_revision_id,self_assessment)
- VALUES (${sessionId},${position},${oralRevisionId},${selfAssessment})
+            yield* sql`INSERT INTO oral_study_self_assessments (study_session_id,position,oral_revision_id,self_assessment,earned_xp)
+ VALUES (${sessionId},${position},${oralRevisionId},${selfAssessment},${earnedXp})
  RETURNING self_assessment AS value,created_at AS assessed_at`
 
           const [stored] = yield* Schema.decodeUnknownEffect(Schema.Tuple([SelfAssessmentRow]))(

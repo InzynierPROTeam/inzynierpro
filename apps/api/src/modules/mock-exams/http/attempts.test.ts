@@ -200,6 +200,7 @@ describe('starting a mock exam attempt', () => {
 
     expect(second).toStrictEqual(first)
     expect((await learner.preview()).unfinishedAttempt).toStrictEqual({
+      earnedXp: 0,
       id: first.id,
       status: 'in-progress',
       pauseCount: 0,

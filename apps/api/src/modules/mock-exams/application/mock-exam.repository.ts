@@ -1,5 +1,6 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
+import type { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import type { ExamBlueprintId } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type {
   AttemptQuestionPosition,
@@ -28,6 +29,7 @@ export class MockExamRepository extends Context.Service<
       attemptId: MockExamAttemptId,
       ending: AttemptEnding,
       result: MockExamResult,
+      earnedXp: LearningXp,
     ) => Effect.Effect<void, MockExamWriteError>
     readonly createBlueprint: (
       blueprintId: ExamBlueprintId,

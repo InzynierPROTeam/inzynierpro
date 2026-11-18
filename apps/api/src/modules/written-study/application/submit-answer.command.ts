@@ -17,6 +17,7 @@ import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import { closesPlannedRound } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
 import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import { writtenAnswerXpReason } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { xpStudyDate } from '~api/modules/learning-xp/domain/learning-xp.rules.js'
 import {
   QuestionRevisionWithdrawn,
@@ -152,6 +153,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         DateTime.isLessThanOrEqualTo(reviewCard.value.dueAt, answeredAt)
 
       const awardedXp = yield* awardXp({
+        reason: writtenAnswerXpReason,
         userId,
         pathId,
         examSessionId: goal.examSessionId,

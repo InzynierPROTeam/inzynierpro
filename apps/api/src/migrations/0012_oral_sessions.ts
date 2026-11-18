@@ -65,6 +65,7 @@ export default Effect.gen(function* () {
     study_session_id uuid NOT NULL,
     position integer NOT NULL,
     oral_revision_id uuid NOT NULL,
+    earned_xp integer NOT NULL DEFAULT 0 CHECK (earned_xp >= 0),
     self_assessment text NOT NULL CHECK (self_assessment IN ('hard','medium','easy')),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     PRIMARY KEY (study_session_id, position),

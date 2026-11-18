@@ -128,6 +128,7 @@ const OralSessionQuizChecks: React.FC<OralSessionQuizChecksProps> = ({ quiz }) =
           Odpowiedziano {quiz.answeredCount} / {quiz.checkCount}
         </p>
       </div>
+      <p className="font-medium">Zdobyte punkty: {quiz.earnedXp} XP</p>
       <SuspenseQueryWrapper fallback={<OralQuizCheckSkeleton />}>
         <SuspenseInfiniteQuery
           options={oralQuizChecksInfiniteQueryOptions(apiHttpClient, user.id, {

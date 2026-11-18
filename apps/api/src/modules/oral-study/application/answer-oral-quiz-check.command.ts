@@ -7,6 +7,8 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
+import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import { quizCheckXpReason } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { ReviewScheduler } from '~api/modules/learning/application/review-scheduler.service.js'
 import { OralSessionQuizReader } from '~api/modules/oral-study/application/oral-session-quiz.reader.js'
 import { OralSessionQuizRepository } from '~api/modules/oral-study/application/oral-session-quiz.repository.js'
@@ -30,6 +32,8 @@ import {
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 import { recordStreakAnswers } from '~api/modules/streak/application/streak-activity.service.js'
+
+import { quizCheckXp } from '../domain/oral-xp.rules.js'
 
 const sameSelection = (
   stored: ReadonlyArray<OralKnowledgeCheckOptionId>,
@@ -85,7 +89,7 @@ export const answerOralQuizCheck = Effect.fn('Study.answerOralQuizCheck')(functi
   return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
+      const { goal } = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
       const found = yield* oralSessionQuizReader.check(userId, pathId, sessionId, position)
 
       if (Option.isNone(found)) {
@@ -106,7 +110,18 @@ export const answerOralQuizCheck = Effect.fn('Study.answerOralQuizCheck')(functi
         const isCorrect = isCorrectSelection(check.options, optionIds)
         const answeredAt = yield* DateTime.now
 
+        const earnedXp = yield* awardXp({
+          userId,
+          pathId,
+          examSessionId: goal.examSessionId,
+          reason: quizCheckXpReason,
+          amount: quizCheckXp(isCorrect),
+          awardKey: `quiz:${check.quizId}:${position}`,
+          awardedAt: answeredAt,
+        })
+
         yield* oralSessionQuizRepository.recordAnswer(check.quizId, position, {
+          earnedXp,
           selectedOptionIds: optionIds,
           isCorrect,
           answeredAt,

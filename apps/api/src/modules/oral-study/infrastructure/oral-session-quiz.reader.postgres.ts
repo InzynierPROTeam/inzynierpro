@@ -10,6 +10,7 @@ import {
   OralRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
 import {
   OralQuizCheckPosition,
@@ -39,6 +40,7 @@ const CandidateRow = Schema.Struct({
 })
 
 const QuizRow = Schema.Struct({
+  earnedXp: LearningXp,
   id: OralSessionQuizId,
   sessionId: OralStudySessionId,
   checkCount: QuestionCount,
@@ -54,6 +56,7 @@ const CheckRow = Schema.Struct({
   prompt: Schema.NonEmptyString,
   explanation: RichContent,
   answerIsCorrect: Schema.NullOr(Schema.Boolean),
+  earnedXp: Schema.NullOr(LearningXp),
   answeredAt: Schema.NullOr(DateTimeUtc),
 })
 
@@ -78,7 +81,7 @@ const toCandidates = (
   )
 
 const toCheck = (
-  { answerIsCorrect, answeredAt, ...check }: typeof CheckRow.Type,
+  { answerIsCorrect, answeredAt, earnedXp, ...check }: typeof CheckRow.Type,
   optionRows: ReadonlyArray<typeof OptionRow.Type>,
 ): OralQuizCheck => {
   const options = optionRows.filter(option => option.position === check.position)
@@ -91,6 +94,7 @@ const toCheck = (
         ? Option.none()
         : Option.some({
             isCorrect: answerIsCorrect,
+            earnedXp: earnedXp ?? LearningXp.make(0),
             answeredAt,
             selectedOptionIds: options.flatMap(option => (option.isSelected ? [option.id] : [])),
           }),
@@ -122,7 +126,7 @@ export const OralSessionQuizReaderLive = Layer.effect(
       ordering: Statement.Fragment,
       limit: number,
     ) =>
-      sql`SELECT z.id AS quiz_id,c.position,sq.question_id,c.oral_revision_id,kr.format,kr.prompt,kr.explanation,a.is_correct AS answer_is_correct,a.answered_at
+      sql`SELECT z.id AS quiz_id,c.position,sq.question_id,c.oral_revision_id,kr.format,kr.prompt,kr.explanation,a.is_correct AS answer_is_correct,a.answered_at,a.earned_xp
  FROM oral_session_quizzes z
  JOIN oral_study_sessions s ON s.id=z.study_session_id
  JOIN oral_session_quiz_checks c ON c.quiz_id=z.id
@@ -189,7 +193,7 @@ export const OralSessionQuizReaderLive = Layer.effect(
       quiz: Effect.fn('OralSessionQuizReader.quiz')(
         function* (userId, pathId, sessionId) {
           const quizRows = yield* Schema.decodeUnknownEffect(Schema.Array(QuizRow))(
-            yield* sql`SELECT z.id,z.study_session_id AS session_id,count(c.position)::integer AS check_count,count(a.position)::integer AS answered_count
+            yield* sql`SELECT z.id,z.study_session_id AS session_id,count(c.position)::integer AS check_count,count(a.position)::integer AS answered_count,coalesce(sum(a.earned_xp),0)::integer AS earned_xp
  FROM oral_session_quizzes z
  JOIN oral_study_sessions s ON s.id=z.study_session_id
  JOIN oral_session_quiz_checks c ON c.quiz_id=z.id

@@ -25,6 +25,7 @@ export const toAttemptSummaryDto = (
   attempt: MockExamAttemptSummary,
 ): MockExamAttemptSummaryDto => ({
   id: attempt.id,
+  earnedXp: attempt.earnedXp,
   status: attempt.status,
   startedAt: dateTimeUtcToUtcIsoDateTime(attempt.startedAt),
   finishedAt: Option.match(attempt.finishedAt, {

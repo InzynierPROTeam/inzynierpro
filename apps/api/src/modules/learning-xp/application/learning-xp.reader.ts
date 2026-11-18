@@ -1,8 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
-import { Context, type Effect } from 'effect'
+import { Context, type Effect, type Option } from 'effect'
 
-import type { XpPeriod } from '../domain/learning-xp.model.js'
+import type { XpPeriod, XpPeriodTotal } from '../domain/learning-xp.model.js'
 import type { XpReadError } from './errors.js'
 
 export class XpReader extends Context.Service<
@@ -11,6 +10,6 @@ export class XpReader extends Context.Service<
     readonly periodTotal: (
       userId: UserId,
       period: XpPeriod,
-    ) => Effect.Effect<LearningXp, XpReadError>
+    ) => Effect.Effect<Option.Option<XpPeriodTotal>, XpReadError>
   }
 >()('api/modules/learning-xp/XpReader') {}

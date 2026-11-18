@@ -10,6 +10,7 @@ import {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   ExamBlueprintId,
   ExamBlueprintVersion,
@@ -81,6 +82,7 @@ const CandidateAnswerRow = Schema.Struct({
 })
 
 const AttemptSummaryRow = Schema.Struct({
+  earnedXp: LearningXp,
   id: MockExamAttemptId,
   status: MockExamAttemptStatus,
   startedAt: DateTimeUtc,
@@ -237,7 +239,7 @@ export const MockExamReaderLive = Layer.effect(
     )
 
     const summaryColumns = sql.literal(
-      'a.id,a.status,a.started_at,a.finished_at,a.end_reason,a.correct_count,a.incorrect_count,a.unanswered_count,a.percent,a.passed,a.active_seconds,a.pause_count,a.pause_seconds',
+      'a.earned_xp,a.id,a.status,a.started_at,a.finished_at,a.end_reason,a.correct_count,a.incorrect_count,a.unanswered_count,a.percent,a.passed,a.active_seconds,a.pause_count,a.pause_seconds',
     )
 
     const sectionResultRow = Schema.Struct({
@@ -252,6 +254,7 @@ export const MockExamReaderLive = Layer.effect(
       sections: ReadonlyArray<typeof sectionResultRow.Type>,
     ): MockExamAttemptSummary => ({
       id: row.id,
+      earnedXp: row.earnedXp,
       status: row.status,
       startedAt: row.startedAt,
       finishedAt: row.finishedAt,

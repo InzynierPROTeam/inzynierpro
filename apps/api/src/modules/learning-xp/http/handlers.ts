@@ -1,6 +1,7 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
-import { Effect, Layer } from 'effect'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
+import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { accountReadLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { AuthenticationLive } from '~api/middleware/authentication.js'
@@ -18,7 +19,14 @@ export const LearningXpLive = HttpApiBuilder.group(Api, 'LearningXp', handlers =
           const user = yield* CurrentUser
           const xpReader = yield* XpReader
 
-          return { total: yield* xpReader.periodTotal(user.id, { kind: allTimeXp, key: 'all' }) }
+          const total = yield* xpReader.periodTotal(user.id, { kind: allTimeXp, key: 'all' })
+
+          return {
+            total: Option.match(total, {
+              onNone: () => LearningXp.make(0),
+              onSome: value => value.total,
+            }),
+          }
         }),
       ),
       Effect.catchTags({ XpReadError: failXpRead }),

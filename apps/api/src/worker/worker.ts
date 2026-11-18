@@ -7,6 +7,7 @@ import { processTelemetryLayer } from '~api/lib/observability.js'
 import { TransactionLive } from '~api/lib/transaction.js'
 import { recordJobBacklog } from '~api/modules/background-jobs/application/job-backlog.service.js'
 import { BackgroundJobsReaderLive } from '~api/modules/background-jobs/infrastructure/background-jobs.reader.postgres.js'
+import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import {
   AttemptDeadlineQueueLive,
@@ -14,6 +15,7 @@ import {
 } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-exam.reader.postgres.js'
 import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
+import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
 import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
 import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
@@ -30,11 +32,13 @@ export const BackgroundJobsLive = Layer.unwrap(
       MockExamReaderLive,
       MockExamRepositoryLive,
       PreparationRepositoryLive,
+      PreparationReaderLive,
       StudyReaderLive,
       StudyRepositoryLive,
       ReviewSchedulerLive,
       StreakReaderLive,
       StreakRepositoryLive,
+      XpRepositoryLive,
     ).pipe(
       Layer.provideMerge(jobQueueStoreLayer()),
       Layer.provideMerge(databaseLayer({ url: config.DATABASE_URL })),

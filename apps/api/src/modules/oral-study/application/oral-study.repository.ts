@@ -3,6 +3,7 @@ import type {
   OralQuestionId,
   OralRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-question'
+import type { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import type { QuestionNoteText } from '@inzpro/domain/modules/learning/question-note'
 import type { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
 import type {
@@ -62,6 +63,7 @@ export class OralStudyRepository extends Context.Service<
       position: SessionQuestionPosition,
       oralRevisionId: OralRevisionId,
       selfAssessment: OralSelfAssessment,
+      earnedXp: LearningXp,
     ) => Effect.Effect<StoredOralSelfAssessment, StudyWriteError>
     readonly moveSession: (
       sessionId: OralStudySessionId,

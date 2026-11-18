@@ -70,6 +70,7 @@ const quiz = Schema.decodeSync(OralSessionQuiz)({
   checkCount: 1,
   answeredCount: 0,
   isCompleted: false,
+  earnedXp: 0,
 })
 
 const check = {

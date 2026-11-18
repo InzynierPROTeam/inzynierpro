@@ -5,6 +5,7 @@ import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/
 import { DateTime, Effect, Exit, Layer, Option } from 'effect'
 import { afterAll, beforeAll, expect, it } from 'vitest'
 import { TransactionLive } from '~api/lib/transaction.js'
+import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewScheduler } from '~api/modules/learning/application/review-scheduler.service.js'
 import { finishAttemptAtDeadline } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { finishAttempt } from '~api/modules/mock-exams/application/finish-attempt.command.js'
@@ -261,6 +262,7 @@ it('leaves neither a result nor SRS evidence when finishing fails', async () => 
           StudyRepositoryLive,
           StreakReaderLive,
           StreakRepositoryLive,
+          XpRepositoryLive,
           failingScheduler,
         ).pipe(Layer.provideMerge(databaseLayerFromConfig)),
       ),
@@ -269,6 +271,9 @@ it('leaves neither a result nor SRS evidence when finishing fails', async () => 
   )
 
   expect(Exit.isFailure(exit)).toBe(true)
+  expect(
+    await (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json(),
+  ).toEqual({ total: 0 })
   expect(await learner.attempt(attempt.id)).toMatchObject({ status: 'in-progress', result: null })
   expect(await reviewState(learner, question.questionId)).toBeNull()
   expect(await hasLearningEvent(learner, question)).toBe(false)

@@ -72,8 +72,22 @@ export const apiModuleDependencies = {
     'streak',
     'learning-xp',
   ],
-  'oral-study': ['preparation', 'learning-content', 'learning', 'daily-plan', 'streak'],
-  'mock-exams': ['preparation', 'learning-content', 'learning', 'written-study', 'streak'],
+  'oral-study': [
+    'learning-xp',
+    'preparation',
+    'learning-content',
+    'learning',
+    'daily-plan',
+    'streak',
+  ],
+  'mock-exams': [
+    'learning-xp',
+    'preparation',
+    'learning-content',
+    'learning',
+    'written-study',
+    'streak',
+  ],
 } as const satisfies Record<string, ReadonlyArray<string>>
 
 export const universalPackages = [

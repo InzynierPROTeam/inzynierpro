@@ -57,6 +57,7 @@ export default Effect.gen(function* () {
     blueprint_id uuid NOT NULL,
     blueprint_version integer NOT NULL,
     user_exam_goal_version integer NOT NULL,
+    earned_xp integer NOT NULL DEFAULT 0 CHECK (earned_xp >= 0),
     status text NOT NULL CHECK (status IN ('in-progress','paused','finished','abandoned')),
     started_at timestamptz(3) NOT NULL,
     finished_at timestamptz(3),

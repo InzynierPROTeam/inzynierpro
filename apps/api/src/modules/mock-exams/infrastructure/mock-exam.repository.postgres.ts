@@ -82,13 +82,13 @@ export const MockExamRepositoryLive = Layer.effect(
         Effect.mapError(cause => new MockExamWriteError({ cause })),
       ),
       finishAttempt: Effect.fn('MockExamRepository.finishAttempt')(
-        function* (attemptId, ending, result) {
+        function* (attemptId, ending, result, earnedXp) {
           const finished = DateTime.formatIso(ending.finishedAt)
           const passed = Option.getOrNull(result.passed)
           yield* sql`UPDATE mock_exam_attempt_questions q SET scored_withdrawn=r.withdrawn_at IS NOT NULL
  FROM question_revisions r WHERE q.attempt_id=${attemptId} AND r.id=q.question_revision_id`
           yield* sql`UPDATE mock_exam_attempt_pauses SET ended_at=${finished} WHERE attempt_id=${attemptId} AND ended_at IS NULL`
-          yield* sql`UPDATE mock_exam_attempts SET status='finished',end_reason=${ending.endReason},finished_at=${finished},correct_count=${result.correct},incorrect_count=${result.incorrect},unanswered_count=${result.unanswered},percent=${result.percent},passed=${passed},active_seconds=${result.activeSeconds},pause_count=${result.pauseCount},pause_seconds=${result.pauseSeconds}
+          yield* sql`UPDATE mock_exam_attempts SET earned_xp=${earnedXp},status='finished',end_reason=${ending.endReason},finished_at=${finished},correct_count=${result.correct},incorrect_count=${result.incorrect},unanswered_count=${result.unanswered},percent=${result.percent},passed=${passed},active_seconds=${result.activeSeconds},pause_count=${result.pauseCount},pause_seconds=${result.pauseSeconds}
  WHERE id=${attemptId}`
 
           for (const section of result.sections) {

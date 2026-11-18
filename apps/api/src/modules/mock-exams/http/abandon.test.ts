@@ -76,7 +76,7 @@ it('allows abandoning while paused and refuses every further write', async () =>
     await decodeResponse(MockExamAttempt)(
       await learner.request(`/attempts/${attempt.id}/abandon`, 'POST'),
     ),
-  ).toMatchObject({ status: 'abandoned', result: null })
+  ).toMatchObject({ status: 'abandoned', result: null, earnedXp: 0 })
 
   for (const action of ['finish', 'pause', 'resume']) {
     expect((await learner.request(`/attempts/${attempt.id}/${action}`, 'POST')).status).toBe(409)
