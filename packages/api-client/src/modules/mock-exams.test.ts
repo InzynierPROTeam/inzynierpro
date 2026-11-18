@@ -139,7 +139,9 @@ test('a stale draft answer preserves the current question for the client to show
   )
 })
 
-test('finishing an attempt decodes the saved score, dates and nullable pass result', () => {
+test('finishing an attempt decodes the saved score, dates, nullable pass result and rewards', () => {
+  const rewards = { roundReward: null, badges: [{ code: 'first_passed_mock_exam', xp: 100 }] }
+
   const finished = {
     id: params.attemptId,
     status: 'finished',
@@ -174,11 +176,14 @@ test('finishing an attempt decodes the saved score, dates and nullable pass resu
       HttpRouter.route(
         'POST',
         `/api/v1/mock-exams/paths/${params.qualificationPathId}/attempts/${params.attemptId}/finish`,
-        HttpServerResponse.jsonUnsafe(finished),
+        HttpServerResponse.jsonUnsafe({ attempt: finished, rewards }),
       ),
     ],
     async ({ httpClient }) => {
-      expect(await runApi(finishMockExamAttempt({ params }), httpClient)).toStrictEqual(finished)
+      expect(await runApi(finishMockExamAttempt({ params }), httpClient)).toStrictEqual({
+        attempt: finished,
+        rewards,
+      })
     },
   )
 })
