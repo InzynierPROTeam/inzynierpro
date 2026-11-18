@@ -8,6 +8,7 @@ import { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/writ
 import { Effect, Exit, Layer, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { TransactionLive } from '~api/lib/transaction.js'
+import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
@@ -51,6 +52,7 @@ const commandLayer = Layer.mergeAll(
   ReviewSchedulerLive,
   StreakReaderLive,
   StreakRepositoryLive,
+  XpRepositoryLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
 ).pipe(Layer.provideMerge(databaseLayerFromConfig))
@@ -102,6 +104,9 @@ test('a failure inside the answer transaction keeps no answer or progress, and a
   expect(Exit.isFailure(exit)).toBe(true)
   expect(JSON.stringify(exit)).toContain('StudyWriteError')
   expect((await readQuestion()).answer).toBeNull()
+  expect(
+    await (await visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json(),
+  ).toEqual({ total: 0 })
   expect(
     Schema.decodeUnknownSync(StudySession)(await (await request(`/sessions/${session.id}`)).json())
       .progress,

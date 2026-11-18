@@ -63,7 +63,15 @@ export const apiModuleDependencies = {
   learning: [],
   'daily-plan': ['learning'],
   streak: ['learning'],
-  'written-study': ['preparation', 'learning-content', 'learning', 'daily-plan', 'streak'],
+  'learning-xp': [],
+  'written-study': [
+    'preparation',
+    'learning-content',
+    'learning',
+    'daily-plan',
+    'streak',
+    'learning-xp',
+  ],
   'oral-study': ['preparation', 'learning-content', 'learning', 'daily-plan', 'streak'],
   'mock-exams': ['preparation', 'learning-content', 'learning', 'written-study', 'streak'],
 } as const satisfies Record<string, ReadonlyArray<string>>

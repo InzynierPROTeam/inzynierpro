@@ -177,7 +177,7 @@ test('retrying an answer after a lost response returns the stored result without
   const retried = await submit(1, body)
 
   expect(retried.status).toBe(200)
-  expect(await decodeResult(retried)).toEqual(original)
+  expect(await decodeResult(retried)).toEqual({ ...original, awardedXp: 0 })
   expect((await progress()).answered).toBe(1)
 })
 
@@ -341,6 +341,6 @@ test('extending access, changing the goal, archiving and restoring keep the stor
   expect((await question(1)).answer).toEqual(stored.question.answer)
   expect(await progress()).toEqual(stored.session.progress)
   expect(await completed()).toMatchObject({ document: { completedQuestionCount: 1 } })
-  expect(await decodeResult(await submit(1, body))).toEqual(stored)
+  expect(await decodeResult(await submit(1, body))).toEqual({ ...stored, awardedXp: 0 })
   expect((await progress()).answered).toBe(1)
 })

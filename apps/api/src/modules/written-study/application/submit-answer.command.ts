@@ -1,6 +1,7 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/written-question'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   favoritesStudySession,
   regularStudySession,
@@ -15,6 +16,8 @@ import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import { closesPlannedRound } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
+import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import { xpStudyDate } from '~api/modules/learning-xp/domain/learning-xp.rules.js'
 import {
   QuestionRevisionWithdrawn,
   SessionAlreadyEnded,
@@ -50,6 +53,7 @@ import {
   WrittenEvidenceSource,
 } from '~api/modules/written-study/domain/review-state.model.js'
 import { answerAssistance } from '~api/modules/written-study/domain/review-state.rules.js'
+import { writtenAnswerXp } from '~api/modules/written-study/domain/written-xp.rules.js'
 
 const syncLearningRound = Effect.fn('Study.syncLearningRound')(function* (
   userId: UserId,
@@ -104,7 +108,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
 
       if (Option.isSome(question.answer)) {
         if (question.answer.value.answerId === answerId) {
-          return { question, session }
+          return { question, session, awardedXp: LearningXp.make(0) }
         }
 
         return yield* new QuestionAlreadyAnswered()
@@ -139,6 +143,22 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         isCorrect: option.isCorrect,
         isAssisted: assistance !== noAssistance,
       }
+
+      const reviewCard = yield* studyReader.reviewState(userId, pathId, question.questionId)
+
+      const isDueReview =
+        session.kind === reviewStudySession &&
+        Option.isSome(reviewCard) &&
+        DateTime.isLessThanOrEqualTo(reviewCard.value.dueAt, answeredAt)
+
+      const awardedXp = yield* awardXp({
+        userId,
+        pathId,
+        examSessionId: goal.examSessionId,
+        amount: writtenAnswerXp({ isCorrect: option.isCorrect, assistance, isDueReview }),
+        awardKey: `written:${question.questionId}:${xpStudyDate(answeredAt)}`,
+        awardedAt: answeredAt,
+      })
 
       const stored = yield* studyRepository.recordAnswer(answer)
       const isRegularStudy = session.kind === regularStudySession
@@ -193,7 +213,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         Option.getOrElse(next, () => position),
       )
 
-      return { question: { ...question, answer: Option.some(stored) }, session: moved }
+      return { question: { ...question, answer: Option.some(stored) }, session: moved, awardedXp }
     }),
   )
 })

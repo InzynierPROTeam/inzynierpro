@@ -144,6 +144,14 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
         }}
       </form.Field>
 
+      {submission.isSuccess && submission.data.awardedXp > 0 && (
+        <p
+          role="status"
+          className="text-muted-foreground text-sm"
+        >
+          +{submission.data.awardedXp} XP
+        </p>
+      )}
       {submitted !== null && <SessionAnswerExplanation explanation={question.explanation} />}
 
       {Match.value(sessionWithdrawalNotice(question, session)).pipe(

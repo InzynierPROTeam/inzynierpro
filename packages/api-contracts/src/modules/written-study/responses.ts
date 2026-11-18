@@ -9,6 +9,7 @@ import {
   QuestionRevisionId,
   WrittenQuestionId,
 } from '@inzpro/domain/modules/learning-content/written-question'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   continueStudyNextStep,
   reviewNextStep,
@@ -128,7 +129,6 @@ export const StartFavoritesSessionResponse = StudySession
 
 export const StudySessionResponse = Schema.NullOr(StudySession)
 
-// CONTRACT: Contains regular-study sessions only.
 export const LatestStudySession = Schema.Struct({
   ...StudySession.fields,
   document: SessionDocument,
@@ -209,7 +209,6 @@ export const SessionQuestion = Schema.Struct({
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
   explanation: ResolvedRichContent,
-  // CONTRACT: Options retain the session's stored presentation order.
   answers: Schema.Array(SessionAnswerOption),
   isWithdrawn: Schema.Boolean,
   explanationOpenedAt: Schema.NullOr(UtcIsoDateTime),
@@ -224,6 +223,7 @@ export type SessionQuestion = typeof SessionQuestion.Type
 export const SessionQuestionResponse = Schema.NullOr(SessionQuestion)
 
 export const SubmitSessionAnswerResponse = Schema.Struct({
+  awardedXp: LearningXp,
   question: SessionQuestion,
   session: StudySession,
 })

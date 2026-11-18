@@ -11,6 +11,7 @@ import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
+import { failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import {
   failStudyRead,
   failStudyWrite,
@@ -240,7 +241,8 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.map(({ question, session }) => ({
+      Effect.map(({ question, session, awardedXp }) => ({
+        awardedXp,
         question: toSessionQuestionDto(question),
         session: toStudySessionDto(session),
       })),
@@ -257,6 +259,7 @@ export const sessionHandlers = {
         QuestionAlreadyAnswered: () => sessionAnswerAlreadySubmitted,
         StreakReadError: failStreakRead,
         StreakWriteError: failStreakWrite,
+        XpWriteError: failXpWrite,
         TransactionError: failTransaction,
       }),
     ),
