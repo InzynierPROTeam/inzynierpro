@@ -22,6 +22,7 @@ import { getCurrentUtcIsoDateTime } from '@inzpro/utils/date'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Predicate } from 'effect'
 import { withdrawnQuestion } from '~platform/features/learningSession/utils/session'
+import { learningRewardToasts } from '~platform/features/learningXp/utils/rewards'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { submitStudySessionAnswer } from '../actions'
@@ -88,6 +89,7 @@ export const useSubmitSessionAnswer = (userId: UserId) => {
 
       client.setQueryData(question.queryKey, result.question)
       client.setQueryData(session.queryKey, result.session)
+      learningRewardToasts(result.rewards).forEach(reward => toast.add(reward))
     },
     onError: async (error, req) => {
       const { question, session } = sessionQueries(userId, req)
