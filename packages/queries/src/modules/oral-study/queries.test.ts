@@ -22,6 +22,11 @@ import { withQueryClient } from '~queries/test/query-client.js'
 
 import { oralStudyKeys } from './keys.js'
 
+const noMaterialPlan = {
+  status: 'no_material',
+  settings: { version: 1, preference: { mode: 'default' } },
+} as const
+
 const oralCategoryId = OralQuestionCategoryId.make('32000000-0000-4000-8000-000000000001')
 
 const pathA = QualificationPathId.make('10000000-0000-4000-8000-000000000001')
@@ -261,7 +266,7 @@ test('the oral daily plan refreshes with oral progress and stays per account and
       HttpRouter.route(
         'GET',
         `/api/v1/study/paths/${pathA}/oral/daily-plan`,
-        HttpServerResponse.jsonUnsafe({ status: 'no_material' }),
+        HttpServerResponse.jsonUnsafe(noMaterialPlan),
       ),
     ],
     ({ httpClient }) =>
@@ -274,8 +279,10 @@ test('the oral daily plan refreshes with oral progress and stays per account and
           params: { qualificationPathId: pathB },
         })
 
-        expect(await client.query(plan)).toEqual({ status: 'no_material' })
-        client.setQueryData(otherPath.queryKey, { status: 'no_material' })
+        const fetched = await client.query(plan)
+
+        expect(fetched).toEqual(noMaterialPlan)
+        client.setQueryData(otherPath.queryKey, fetched)
         await client.invalidateQueries({
           queryKey: oralStudyKeys.oralProgress(userId, pathA),
           refetchType: 'none',

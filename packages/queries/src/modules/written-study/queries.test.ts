@@ -329,6 +329,7 @@ test('the written daily plan refreshes with the progress group an answer invalid
           targetQuestionCount: 3,
           completedQuestionCount: 4,
           questionsBehindPace: 0,
+          settings: { version: 1, preference: { mode: 'default' } },
         }),
       ),
     ],
