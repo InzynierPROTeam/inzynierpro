@@ -2,6 +2,7 @@ import { oralExamAccess, writtenExamAccess } from '@inzpro/domain/modules/prepar
 import { hasExamAccess } from '@inzpro/utils/exam-access'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
 
+import { DailyPlanTile } from './DailyPlanTile'
 import { ExamSessionTile } from './ExamSessionTile'
 import { FavoritesTile } from './FavoritesTile'
 import { MobileAppBanner } from './MobileAppBanner'
@@ -23,6 +24,7 @@ export const StartSection = () => {
       <div className="grid grid-cols-12 place-content-stretch gap-8 max-sm:gap-x-4">
         <SelectedPathTile />
         <ExamSessionTile />
+        <DailyPlanTile />
         {hasExamAccess(selectedPath.accessScope, writtenExamAccess) && (
           <>
             <WrittenLearningTile />
