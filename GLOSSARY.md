@@ -180,6 +180,9 @@ The number of questions planned for a day, separately for written and oral study
 **Streak** (UI: _seria dni nauki_):
 The number of consecutive days meeting the learning-activity condition, shared by the account. It motivates; it does not measure knowledge.
 
+**StreakBridge** (UI: _most_):
+An earned account item that covers one missed day so the Streak continues. It is spent automatically when the next day qualifies and never lengthens the Streak.
+
 **XpLedger** (UI: _historia punktów_):
 The append-only record of every XP award, each with a unique award key, its path and the exam session of that path's goal. It is the source of XP totals and rankings, and the minimal reward ledger that survives a path reset.
 
@@ -190,4 +193,4 @@ A one-off account achievement, such as a streak length or a first passed mock ex
 The order of users by XP earned in a period: this week, this month, an exam session or all time. Private profiles keep their rows.
 
 **PathReset** (UI: _reset postępu ścieżki_):
-An explicit removal of a user's private learning state on one path, in both study kinds. It keeps the assignment, goal, notes, favourites, XP ledger, badges and streak.
+An explicit removal of a user's private learning state on one path, in both study kinds. It keeps the assignment, goal, notes, favourites, XP ledger, badges, streak and streak bridges.
