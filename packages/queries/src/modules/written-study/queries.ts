@@ -7,6 +7,8 @@ import {
   type GetSessionPreviewRequest,
   getLatestSession,
   type GetLatestSessionRequest,
+  getDailyPlan,
+  type GetDailyPlanRequest,
   getReviewPreview,
   type GetReviewPreviewRequest,
   getReviewSession,
@@ -74,6 +76,12 @@ export const latestSessionQueryOptions = (
     getLatestSession(req),
     httpClient,
   )
+
+export const dailyPlanQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetDailyPlanRequest,
+) => effectQueryOptions(writtenStudyKeys.getDailyPlan(userId, req), getDailyPlan(req), httpClient)
 
 export const reviewPreviewQueryOptions = (
   httpClient: HttpClient.HttpClient,

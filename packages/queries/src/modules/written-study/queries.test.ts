@@ -11,6 +11,7 @@ import { expect, test } from 'vitest'
 import { preparationKeys } from '~queries/modules/preparation/keys.js'
 import { pathsQueryOptions } from '~queries/modules/preparation/queries.js'
 import {
+  dailyPlanQueryOptions,
   documentQueryOptions,
   documentsInfiniteQueryOptions,
   sessionPreviewQueryOptions,
@@ -313,3 +314,38 @@ test('the unfinished favourites session refreshes with the progress group of its
     true,
   )
 })
+
+test('the written daily plan refreshes with the progress group an answer invalidates', () =>
+  withHttpServer(
+    [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/daily-plan`,
+        HttpServerResponse.jsonUnsafe({
+          status: 'planned',
+          examDate: '2027-05-20T22:00:00.000Z',
+          targetDate: '2027-05-13T22:00:00.000Z',
+          daysUntilExam: 189,
+          targetQuestionCount: 3,
+          completedQuestionCount: 4,
+          questionsBehindPace: 0,
+        }),
+      ),
+    ],
+    ({ httpClient }) =>
+      withQueryClient(async client => {
+        const plan = dailyPlanQueryOptions(httpClient, userId, {
+          params: { qualificationPathId: pathA },
+        })
+
+        expect(await client.query(plan)).toMatchObject({
+          status: 'planned',
+          completedQuestionCount: 4,
+        })
+        await client.invalidateQueries({
+          queryKey: writtenStudyKeys.progress(userId, pathA),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(plan.queryKey)?.isInvalidated).toBe(true)
+      }),
+  ))
