@@ -1,12 +1,19 @@
-import { Context, type Effect } from 'effect'
+import { Context, type DateTime, type Effect } from 'effect'
 
-import type { XpAward, XpPeriod } from '../domain/learning-xp.model.js'
+import type { DailyXpAwardLimit, XpAward, XpPeriod } from '../domain/learning-xp.model.js'
 import type { XpWriteError } from './errors.js'
 
 export class XpRepository extends Context.Service<
   XpRepository,
   {
-    readonly recordAward: (award: XpAward) => Effect.Effect<boolean, XpWriteError>
-    readonly addPeriodXp: (award: XpAward, period: XpPeriod) => Effect.Effect<void, XpWriteError>
+    readonly recordAward: (
+      award: XpAward,
+      dailyLimit?: DailyXpAwardLimit,
+    ) => Effect.Effect<boolean, XpWriteError>
+    readonly addPeriodXp: (
+      award: XpAward,
+      period: XpPeriod,
+      reachedAt: DateTime.Utc,
+    ) => Effect.Effect<void, XpWriteError>
   }
 >()('api/modules/learning-xp/XpRepository') {}

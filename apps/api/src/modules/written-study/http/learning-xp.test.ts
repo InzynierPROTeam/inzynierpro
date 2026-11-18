@@ -7,7 +7,7 @@ import {
   SubmitSessionAnswerResponse,
 } from '@inzpro/api-contracts/modules/written-study/responses'
 import { databaseLayerFromConfig } from '@inzpro/db'
-import { DateTime, Effect, Layer, Schema } from 'effect'
+import { DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { XpReader } from '~api/modules/learning-xp/application/learning-xp.reader.js'
 import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
@@ -237,7 +237,7 @@ test('a due review adds one XP and every period receives exactly the awarded amo
       ),
     )
 
-    expect(total).toBe(5)
+    expect(Option.map(total, value => value.total)).toEqual(Option.some(5))
   }
 })
 

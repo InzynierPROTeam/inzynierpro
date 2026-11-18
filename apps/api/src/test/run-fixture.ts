@@ -5,6 +5,8 @@ import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/e
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
+import { XpRepository } from '~api/modules/learning-xp/application/learning-xp.repository.js'
+import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import {
   ReviewScheduler,
   ReviewSchedulerLive,
@@ -15,7 +17,9 @@ import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-
 import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
 import { OralStudyReaderLive } from '~api/modules/oral-study/infrastructure/oral-study.reader.postgres.js'
+import { PreparationReader } from '~api/modules/preparation/application/preparation.reader.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
+import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
@@ -39,9 +43,11 @@ const fixturesLayer = Layer.mergeAll(
   MockExamReaderLive,
   MockExamRepositoryLive,
   PreparationRepositoryLive,
+  PreparationReaderLive,
   ReviewSchedulerLive,
   StreakReaderLive,
   StreakRepositoryLive,
+  XpRepositoryLive,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
 export const runFixture = <A, E>(
@@ -56,6 +62,8 @@ export const runFixture = <A, E>(
     | OralStudyReader
     | MockExamReader
     | MockExamRepository
+    | XpRepository
+    | PreparationReader
     | PreparationRepository
     | ReviewScheduler
     | StreakReader
