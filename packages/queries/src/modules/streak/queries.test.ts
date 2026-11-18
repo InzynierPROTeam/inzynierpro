@@ -15,6 +15,9 @@ const streak = {
   todayAnswerCount: 5,
   dailyAnswerThreshold: 5,
   todayQualifies: true,
+  bridgeCount: 0,
+  bridgeLimit: 5,
+  pendingBridgeCount: 0,
 }
 
 test('the account streak is cached per account and refreshed through the account group', () =>

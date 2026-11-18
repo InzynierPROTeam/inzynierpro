@@ -10,6 +10,9 @@ const streak = {
   todayAnswerCount: 2,
   dailyAnswerThreshold: 5,
   todayQualifies: false,
+  bridgeCount: 2,
+  bridgeLimit: 5,
+  pendingBridgeCount: 1,
 }
 
 test('the account streak is read from the shared contract', () =>
