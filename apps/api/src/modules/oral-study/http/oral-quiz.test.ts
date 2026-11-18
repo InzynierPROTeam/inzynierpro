@@ -6,16 +6,18 @@ import {
   OralSessionQuiz,
   OralSessionQuizState,
   OralStudySession,
+  SubmitOralSelfAssessmentResponse,
 } from '@inzpro/api-contracts/modules/oral-study/responses'
 import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import type { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
-import { Option, Schema } from 'effect'
+import { DateTime, Option, Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import {
   addFixtureKnowledgeCheck,
   addFixtureOralCategory,
   addFixtureOralQuestion,
+  assignFixtureOralQuestion,
   currentOralReviewState,
   publishFixtureOralRevision,
 } from '~api/test/oral-learning-fixtures.js'
@@ -143,6 +145,7 @@ const learnerWithQuestions = async (questionCount: number) => {
   return {
     visitor,
     fixture,
+    categoryId,
     questions,
     question,
     request,
@@ -531,4 +534,124 @@ describe('quiz evidence', () => {
 
     expect(await learner.state()).toEqual(before)
   })
+})
+
+test('oral self-assessments earn XP once per question each day and retain the session total', async () => {
+  const learner = await learnerWithQuestions(1)
+
+  const total = async () =>
+    (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json()
+
+  const first = await learner.finishedSession()
+  expect(await total()).toEqual({ total: 2 })
+  expect(await (await learner.request(`/sessions/${first.id}/summary`)).json()).toMatchObject({
+    result: { earnedXp: 2 },
+  })
+  const repeated = await learner.finishedSession()
+  expect(await total()).toEqual({ total: 2 })
+  expect(await (await learner.request(`/sessions/${repeated.id}/summary`)).json()).toMatchObject({
+    result: { earnedXp: 0 },
+  })
+  const tomorrow = await startTestApi({ now: DateTime.makeUnsafe('2026-11-13T23:00:00Z') })
+
+  try {
+    const request = <Body>(path: string, body?: Body) =>
+      learningRequest(
+        tomorrow,
+        learner.visitor,
+        `/paths/${learner.fixture.pathId}/oral${path}`,
+        body,
+      )
+
+    const session = Schema.decodeUnknownSync(OralStudySession)(
+      await (
+        await request('/sessions', {
+          categoryId: learner.categoryId,
+          questionCount: 1,
+        })
+      ).json(),
+    )
+
+    expect(
+      (
+        await request(`/sessions/${session.id}/questions/1/self-assessment`, {
+          oralRevisionId: learner.question(0).revisionId,
+          selfAssessment: 'hard',
+        })
+      ).status,
+    ).toBe(200)
+    expect(await total()).toEqual({ total: 4 })
+  } finally {
+    await tomorrow.close()
+  }
+})
+
+test('quiz checks earn one XP plus a correct bonus once in each quiz', async () => {
+  const learner = await learnerWithQuestions(1)
+  const question = learner.question(0)
+  await addFixtureKnowledgeCheck(question.id, question.revisionId, 'single_choice', singleChoice)
+
+  const total = async () =>
+    (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json()
+
+  for (const [correct, quizXp, totalXp] of [
+    [false, 1, 3],
+    [true, 2, 5],
+  ] as const) {
+    const session = await learner.finishedSession()
+    expect((await learner.startQuiz(session.id)).status).toBe(200)
+    const check = await learner.readCheck(session.id, 1)
+    const selected = optionIdsByText(check, [correct ? 'Right' : 'Wrong one'])
+    const response = await learner.answer(session.id, 1, selected)
+    expect(response.status).toBe(200)
+    const answered = await response.json()
+    expect(answered).toMatchObject({ quiz: { earnedXp: quizXp, isCompleted: true } })
+    expect(await total()).toEqual({ total: totalXp })
+    expect(await (await learner.answer(session.id, 1, selected)).json()).toEqual(answered)
+    expect(await total()).toEqual({ total: totalXp })
+    expect(await learner.quizState(session.id)).toMatchObject({ quiz: { earnedXp: quizXp } })
+  }
+})
+
+test('concurrent oral answers on different paths share the question daily limit', async () => {
+  const learner = await learnerWithQuestions(1)
+  const other = await createStudyFixture('60000000-0000-4000-8000-000000000006')
+  await assignFixtureOralQuestion(other.pathId, learner.question(0).id)
+  await learningRequest(
+    api,
+    learner.visitor,
+    '/onboarding',
+    Schema.encodeSync(CompleteOnboardingPayload)(other.config),
+  )
+  const first = await learner.startSession()
+
+  const second = Schema.decodeUnknownSync(OralStudySession)(
+    await (
+      await learningRequest(api, learner.visitor, `/paths/${other.pathId}/oral/sessions`, {
+        categoryId: learner.categoryId,
+        questionCount: 1,
+      })
+    ).json(),
+  )
+
+  const submit = async (pathId: string, sessionId: string) => {
+    const response = await learningRequest(
+      api,
+      learner.visitor,
+      `/paths/${pathId}/oral/sessions/${sessionId}/questions/1/self-assessment`,
+      {
+        oralRevisionId: learner.question(0).revisionId,
+        selfAssessment: 'easy',
+      },
+    )
+
+    expect(response.status).toBe(200)
+
+    return Schema.decodeUnknownSync(SubmitOralSelfAssessmentResponse)(await response.json())
+  }
+
+  await Promise.all([submit(learner.fixture.pathId, first.id), submit(other.pathId, second.id)])
+  expect(
+    await (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json(),
+  ).toEqual({ total: 2 })
 })

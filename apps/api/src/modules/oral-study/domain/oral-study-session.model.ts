@@ -6,6 +6,7 @@ import type {
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   StudySessionKind,
   SessionQuestionPosition,
@@ -69,6 +70,7 @@ export type NewOralStudySession = {
 }
 
 export const OralSessionResultCounts = Schema.Struct({
+  earnedXp: LearningXp,
   hard: QuestionCount,
   medium: QuestionCount,
   easy: QuestionCount,

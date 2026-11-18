@@ -1,6 +1,7 @@
 import type { AnswerOralQuizCheckRequest } from '@inzpro/api-client/modules/oral-study'
 import type { OralSessionQuizState } from '@inzpro/api-contracts/modules/oral-study/responses'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import { learningXpKeys } from '@inzpro/queries/modules/learning-xp/keys'
 import { oralStudyKeys } from '@inzpro/queries/modules/oral-study/keys'
 import {
   oralQuizChecksInfiniteQueryOptions,
@@ -69,6 +70,7 @@ export const useAnswerOralQuizCheck = (userId: UserId) => {
           queryKey: oralStudyKeys.oralProgress(userId, params.qualificationPathId),
         }),
         client.invalidateQueries({ queryKey: streakKeys.account(userId) }),
+        client.invalidateQueries({ queryKey: learningXpKeys.account(userId) }),
       ]),
   })
 }

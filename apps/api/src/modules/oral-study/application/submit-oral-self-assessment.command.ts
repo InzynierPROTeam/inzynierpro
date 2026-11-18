@@ -12,6 +12,9 @@ import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
 import { closesPlannedRound } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
+import { awardXp } from '~api/modules/learning-xp/application/award-xp.service.js'
+import { oralSelfAssessmentXpReason } from '~api/modules/learning-xp/domain/learning-xp.model.js'
+import { xpStudyDate } from '~api/modules/learning-xp/domain/learning-xp.rules.js'
 import {
   QuestionRevisionWithdrawn,
   SessionAlreadyEnded,
@@ -37,6 +40,8 @@ import {
   recordStreakAnswers,
 } from '~api/modules/streak/application/streak-activity.service.js'
 import { completedRoundBridgeOf } from '~api/modules/streak/domain/streak.rules.js'
+
+import { oralSelfAssessmentXp } from '../domain/oral-xp.rules.js'
 
 const syncOralLearningRound = Effect.fn('Study.syncOralLearningRound')(function* (
   userId: UserId,
@@ -103,14 +108,25 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
         return yield* new QuestionRevisionWithdrawn()
       }
 
+      const answeredAt = yield* DateTime.now
+
+      const earnedXp = yield* awardXp({
+        userId,
+        pathId,
+        examSessionId: goal.examSessionId,
+        reason: oralSelfAssessmentXpReason,
+        amount: oralSelfAssessmentXp,
+        awardKey: `oral:${question.questionId}:${xpStudyDate(answeredAt)}`,
+        awardedAt: answeredAt,
+      })
+
       const stored = yield* oralStudyRepository.recordSelfAssessment(
         sessionId,
         position,
         oralRevisionId,
         selfAssessment,
+        earnedXp,
       )
-
-      const answeredAt = yield* DateTime.now
 
       yield* recordOralEvidence({
         userId,

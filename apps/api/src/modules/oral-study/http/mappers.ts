@@ -152,10 +152,12 @@ export const toOralSessionQuizDto = ({
   sessionId,
   checkCount,
   answeredCount,
+  earnedXp,
 }: OralSessionQuiz): OralSessionQuizDto => ({
   id,
   sessionId,
   checkCount,
   answeredCount,
   isCompleted: answeredCount === checkCount,
+  earnedXp,
 })

@@ -170,7 +170,7 @@ export const oralSessionReader = Effect.gen(function* () {
         const rows =
           yield* sql`SELECT count(*) FILTER (WHERE self_assessment='hard')::integer AS hard,
  count(*) FILTER (WHERE self_assessment='medium')::integer AS medium,
- count(*) FILTER (WHERE self_assessment='easy')::integer AS easy
+ count(*) FILTER (WHERE self_assessment='easy')::integer AS easy,coalesce(sum(earned_xp),0)::integer AS earned_xp
  FROM oral_study_self_assessments WHERE study_session_id=${sessionId}`
 
         const [counts] = yield* Schema.decodeUnknownEffect(Schema.Tuple([OralSessionResultCounts]))(

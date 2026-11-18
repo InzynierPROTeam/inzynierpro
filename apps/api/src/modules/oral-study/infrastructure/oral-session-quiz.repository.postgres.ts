@@ -79,7 +79,7 @@ export const OralSessionQuizRepositoryLive = Layer.effect(
       ),
       recordAnswer: Effect.fn('OralSessionQuizRepository.recordAnswer')(
         function* (quizId, position, answer) {
-          yield* sql`INSERT INTO oral_session_quiz_answers (quiz_id,position,is_correct,answered_at) VALUES (${quizId},${position},${answer.isCorrect},${DateTime.formatIso(answer.answeredAt)})`
+          yield* sql`INSERT INTO oral_session_quiz_answers (quiz_id,position,is_correct,answered_at,earned_xp) VALUES (${quizId},${position},${answer.isCorrect},${DateTime.formatIso(answer.answeredAt)},${answer.earnedXp})`
 
           const selected: ReadonlyArray<QuizAnswerOptionInsert> = answer.selectedOptionIds.map(
             optionId => ({ quizId, position, optionId }),

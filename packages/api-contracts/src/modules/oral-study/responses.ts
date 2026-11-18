@@ -9,6 +9,7 @@ import {
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   continueStudyNextStep,
   reviewNextStep,
@@ -115,6 +116,7 @@ export const SubmitOralSelfAssessmentResponse = Schema.Struct({
 export type SubmitOralSelfAssessmentResponse = typeof SubmitOralSelfAssessmentResponse.Type
 
 export const OralSessionResult = Schema.Struct({
+  earnedXp: LearningXp,
   hard: QuestionCount,
   medium: QuestionCount,
   easy: QuestionCount,
@@ -220,6 +222,7 @@ export type OralQuizCheck = typeof OralQuizCheck.Type
 export const OralQuizChecksResponse = CursorPaginatedResponse(OralQuizCheck)
 
 export const OralSessionQuiz = Schema.Struct({
+  earnedXp: LearningXp,
   id: OralSessionQuizId,
   sessionId: OralStudySessionId,
   checkCount: QuestionCount,

@@ -9,6 +9,7 @@ import type {
   OralRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import type { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
 import type {
   OralQuizCheckPosition,
@@ -43,6 +44,7 @@ export type OralQuizAnswer = {
   readonly selectedOptionIds: ReadonlyArray<OralKnowledgeCheckOptionId>
   readonly isCorrect: boolean
   readonly answeredAt: DateTimeUtc
+  readonly earnedXp: LearningXp
 }
 
 export type OralQuizCheck = {
@@ -58,6 +60,7 @@ export type OralQuizCheck = {
 }
 
 export type OralSessionQuiz = {
+  readonly earnedXp: LearningXp
   readonly id: OralSessionQuizId
   readonly sessionId: OralStudySessionId
   readonly checkCount: QuestionCount

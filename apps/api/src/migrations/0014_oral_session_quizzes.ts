@@ -38,6 +38,7 @@ export default Effect.gen(function* () {
   yield* sql`CREATE TABLE oral_session_quiz_answers (
     quiz_id uuid NOT NULL,
     position integer NOT NULL,
+    earned_xp integer NOT NULL DEFAULT 0 CHECK (earned_xp >= 0),
     is_correct boolean NOT NULL,
     answered_at timestamptz(3) NOT NULL,
     created_at timestamptz(3) NOT NULL DEFAULT now(),
