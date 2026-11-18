@@ -3,6 +3,7 @@ import { Uuid } from '@inzpro/domain/common/id'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { DateTime, Effect, Option, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
+import { defaultDailyPlanSettings } from '~api/modules/daily-plan/domain/daily-plan.model.js'
 import { draftDailyPlan } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
 import { LearningRoundNumber } from '~api/modules/learning/domain/learning-round.model.js'
 
@@ -71,7 +72,13 @@ const seedWrittenHistory = (now: DateTime.Utc, writtenAt: DateTime.Utc) =>
     for (const [index, answers] of writtenAnswersOnEarlierDays.entries()) {
       const day = earlierDay(now, writtenAnswersOnEarlierDays, index)
       const progress = progressBefore(pool, writtenAnswersOnEarlierDays, index)
-      const plan = draftDailyPlan({ now: day, examAt: writtenAt, progress })
+
+      const plan = draftDailyPlan({
+        now: day,
+        examAt: writtenAt,
+        progress,
+        settings: defaultDailyPlanSettings,
+      })
 
       if (Option.isSome(plan)) {
         const { studyDay, round, targetDate, remainingQuestionCount, targetQuestionCount } =
@@ -114,7 +121,13 @@ const seedOralHistory = (now: DateTime.Utc, oralPlanningAt: DateTime.Utc) =>
     for (const [index, answers] of oralAnswersOnEarlierDays.entries()) {
       const day = earlierDay(now, oralAnswersOnEarlierDays, index)
       const progress = progressBefore(pool, oralAnswersOnEarlierDays, index)
-      const plan = draftDailyPlan({ now: day, examAt: oralPlanningAt, progress })
+
+      const plan = draftDailyPlan({
+        now: day,
+        examAt: oralPlanningAt,
+        progress,
+        settings: defaultDailyPlanSettings,
+      })
 
       if (Option.isSome(plan)) {
         const { studyDay, round, targetDate, remainingQuestionCount, targetQuestionCount } =

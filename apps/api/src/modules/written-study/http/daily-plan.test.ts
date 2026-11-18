@@ -1,3 +1,4 @@
+import { ChangeDailyPlanSettingsPayload } from '@inzpro/api-contracts/modules/daily-plan/requests'
 import { DailyPlan } from '@inzpro/api-contracts/modules/daily-plan/responses'
 import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import {
@@ -59,6 +60,8 @@ const planSpecializations = {
   buffer: '60000000-0000-4000-8000-000000000010',
 }
 
+const defaultSettings = { version: 1, preference: { mode: 'default' } }
+
 const decode =
   <T, E>(schema: Schema.Codec<T, E>) =>
   async (response: Response) =>
@@ -100,7 +103,22 @@ const learnerOnPath = async (specializationId: string, examSessionId = sessionIn
       ),
     )
 
-  return { pathId, visitor, request, plan, pool }
+  const changeSettings = (body: typeof ChangeDailyPlanSettingsPayload.Encoded, api = today) =>
+    visitor.jar.fetch(new URL(`/api/v1/study/paths/${pathId}/daily-plan/settings`, api.baseUrl), {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  const changedPlan = async (body: typeof ChangeDailyPlanSettingsPayload.Encoded, api = today) => {
+    const response = await changeSettings(body, api)
+
+    expect(response.status).toBe(200)
+
+    return decode(DailyPlan)(response)
+  }
+
+  return { pathId, visitor, request, plan, pool, changeSettings, changedPlan }
 }
 
 type Learner = Awaited<ReturnType<typeof learnerOnPath>>
@@ -191,6 +209,7 @@ test('the plan keeps a week of buffer before a distant written exam', async () =
     targetQuestionCount: Math.ceil(available / 183),
     completedQuestionCount: 0,
     questionsBehindPace: 0,
+    settings: defaultSettings,
   })
 })
 
@@ -207,6 +226,7 @@ test("today's target shrinks to the day before a close exam, stays frozen during
     targetQuestionCount: target,
     completedQuestionCount: 0,
     questionsBehindPace: 0,
+    settings: defaultSettings,
   })
 
   const session = await startStudy(learner)
@@ -306,6 +326,7 @@ test('the exam day has no target and the next day asks for a new goal', async ()
   expect(await learner.plan(afterExam)).toEqual({
     status: 'exam_passed',
     examDate: '2026-11-19T23:00:00.000Z',
+    settings: defaultSettings,
   })
 })
 
@@ -329,4 +350,124 @@ test('the plan of a learner without written access is refused', async () => {
   )
 
   expect(response.status).toBe(403)
+})
+
+test('an own end date and a fixed daily count each drive the target, and restoring the default brings back the buffer', async () => {
+  const learner = await learnerOnPath(planSpecializations.buffer, sessionInMay)
+  const { available } = await learner.pool()
+  const bufferedTarget = Math.ceil(available / 183)
+
+  await learner.plan()
+
+  const session = await startStudy(learner)
+  await answer(learner, session.id, 1)
+  await answer(learner, session.id, 2)
+
+  expect(
+    await learner.changedPlan({
+      preference: { mode: 'target_date', targetDate: '2026-11-23T10:00:00.000Z' },
+      expectedVersion: 1,
+    }),
+  ).toEqual({
+    status: 'planned',
+    examDate: '2027-05-20T22:00:00.000Z',
+    targetDate: '2026-11-22T23:00:00.000Z',
+    daysUntilExam: 189,
+    targetQuestionCount: Math.ceil(available / 11),
+    completedQuestionCount: 2,
+    questionsBehindPace: 0,
+    settings: {
+      version: 2,
+      preference: { mode: 'target_date', targetDate: '2026-11-22T23:00:00.000Z' },
+    },
+  })
+
+  expect(
+    await learner.changedPlan({
+      preference: { mode: 'daily_count', dailyQuestionCount: 3 },
+      expectedVersion: 2,
+    }),
+  ).toMatchObject({
+    status: 'planned',
+    targetQuestionCount: 3,
+    completedQuestionCount: 2,
+    settings: { version: 3, preference: { mode: 'daily_count', dailyQuestionCount: 3 } },
+  })
+
+  expect(
+    await learner.changedPlan({ preference: { mode: 'default' }, expectedVersion: 3 }),
+  ).toMatchObject({
+    targetDate: '2027-05-13T22:00:00.000Z',
+    targetQuestionCount: bufferedTarget,
+    settings: { version: 4, preference: { mode: 'default' } },
+  })
+  expect(await learner.plan()).toMatchObject({
+    targetQuestionCount: bufferedTarget,
+    settings: { version: 4 },
+  })
+})
+
+test("only a deliberate change recomputes today's target, and earlier days keep theirs", async () => {
+  const learner = await learnerOnPath(planSpecializations.buffer, sessionInMay)
+  const { available } = await learner.pool()
+  const bufferedTarget = Math.ceil(available / 183)
+
+  await learner.plan()
+
+  const goalChange = await learner.request('/goal', {
+    examSessionId: sessionInAWeek,
+    oralExamDate: null,
+    expectedVersion: 1,
+  })
+
+  expect(goalChange.status).toBe(200)
+  expect(await learner.plan()).toMatchObject({ targetQuestionCount: bufferedTarget })
+
+  expect(
+    await learner.changedPlan(
+      { preference: { mode: 'daily_count', dailyQuestionCount: 4 }, expectedVersion: 1 },
+      tomorrow,
+    ),
+  ).toMatchObject({ targetQuestionCount: 4, settings: { version: 2 } })
+
+  expect(await learner.plan()).toMatchObject({
+    targetQuestionCount: bufferedTarget,
+    settings: { version: 2 },
+  })
+})
+
+test('a stale settings version is refused unless the preference is already in place', async () => {
+  const learner = await learnerOnPath(planSpecializations.buffer, sessionInMay)
+  const preference = { mode: 'daily_count', dailyQuestionCount: 4 } as const
+
+  await learner.changedPlan({ preference, expectedVersion: 1 })
+
+  expect(await learner.changedPlan({ preference, expectedVersion: 1 })).toMatchObject({
+    settings: { version: 2 },
+  })
+
+  const stale = await learner.changeSettings({
+    preference: { mode: 'default' },
+    expectedVersion: 1,
+  })
+
+  expect(stale.status).toBe(409)
+  expect(await learner.plan()).toMatchObject({ targetQuestionCount: 4, settings: { version: 2 } })
+})
+
+test('an own end date outside today and the day before the exam is refused', async () => {
+  const learner = await learnerOnPath(planSpecializations.buffer, sessionInMay)
+
+  const onExamDay = await learner.changeSettings({
+    preference: { mode: 'target_date', targetDate: '2027-05-21T10:00:00.000Z' },
+    expectedVersion: 1,
+  })
+
+  const yesterday = await learner.changeSettings({
+    preference: { mode: 'target_date', targetDate: '2026-11-12T10:00:00.000Z' },
+    expectedVersion: 1,
+  })
+
+  expect([onExamDay.status, yesterday.status]).toEqual([400, 400])
+  expect(await learner.plan()).toMatchObject({ settings: defaultSettings })
 })

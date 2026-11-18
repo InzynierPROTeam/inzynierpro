@@ -11,7 +11,10 @@ import type {
 } from '@inzpro/domain/modules/learning/study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type DateTime, type Effect } from 'effect'
-import type { NewDailyPlan } from '~api/modules/daily-plan/domain/daily-plan.model.js'
+import type {
+  DailyPlanSettings,
+  NewDailyPlan,
+} from '~api/modules/daily-plan/domain/daily-plan.model.js'
 import type { LearningRoundNumber } from '~api/modules/learning/domain/learning-round.model.js'
 import type { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
 import type { LearningEventId } from '~api/modules/learning/domain/review-state.model.js'
@@ -91,6 +94,16 @@ export class StudyRepository extends Context.Service<
       userId: UserId,
       pathId: QualificationPathId,
       plan: NewDailyPlan,
+    ) => Effect.Effect<void, StudyWriteError>
+    readonly replanDailyPlan: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      plan: NewDailyPlan,
+    ) => Effect.Effect<void, StudyWriteError>
+    readonly appendDailyPlanSettings: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      settings: DailyPlanSettings,
     ) => Effect.Effect<void, StudyWriteError>
     readonly countDailyPlanAnswer: (
       userId: UserId,
