@@ -38,6 +38,24 @@ export const StreakRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new StreakWriteError({ cause })),
       ),
+      recordBridgeEvent: Effect.fn('StreakRepository.recordBridgeEvent')(
+        function* (userId, event) {
+          const rows =
+            yield* sql`INSERT INTO streak_bridge_events (user_id,event_key,reason,study_day,bridge_change)
+ VALUES (${userId},${event.key},${event.reason},${DateTime.formatIso(event.studyDay)},${event.bridgeChange})
+ ON CONFLICT (user_id,event_key) DO NOTHING RETURNING event_key`
+
+          return rows.length > 0
+        },
+        Effect.mapError(cause => new StreakWriteError({ cause })),
+      ),
+      storeBridgeCount: Effect.fn('StreakRepository.storeBridgeCount')(
+        function* (userId, bridgeCount) {
+          yield* sql`INSERT INTO streak_bridge_balances (user_id,bridge_count) VALUES (${userId},${bridgeCount})
+ ON CONFLICT (user_id) DO UPDATE SET bridge_count=EXCLUDED.bridge_count`
+        },
+        Effect.mapError(cause => new StreakWriteError({ cause })),
+      ),
     })
   }),
 )

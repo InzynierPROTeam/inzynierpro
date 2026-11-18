@@ -14,6 +14,7 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option } from 'effect'
 import { Transaction } from '~api/lib/transaction.js'
+import { closesPlannedRound } from '~api/modules/daily-plan/domain/daily-plan.rules.js'
 import {
   QuestionRevisionWithdrawn,
   SessionAlreadyEnded,
@@ -28,7 +29,11 @@ import {
 } from '~api/modules/learning/domain/review-state.model.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
-import { recordStreakAnswers } from '~api/modules/streak/application/streak-activity.service.js'
+import {
+  grantStreakBridges,
+  recordStreakAnswers,
+} from '~api/modules/streak/application/streak-activity.service.js'
+import { completedRoundBridgeOf } from '~api/modules/streak/domain/streak.rules.js'
 import {
   recordDailyPlanAnswer,
   prepareDailyPlan,
@@ -136,7 +141,6 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
       }
 
       const stored = yield* studyRepository.recordAnswer(answer)
-      yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
       const isRegularStudy = session.kind === regularStudySession
 
       yield* recordWrittenEvidence(
@@ -169,8 +173,18 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
         )
         const after = yield* studyReader.learningRound(userId, pathId)
         yield* recordDailyPlanAnswer(userId, pathId, answeredAt, { before, after })
+
+        if (closesPlannedRound({ before, after })) {
+          yield* grantStreakBridges(
+            userId,
+            completedRoundBridgeOf(pathId, writtenExamAccess, after.round, answeredAt),
+          )
+        }
+
         yield* syncLearningRound(userId, pathId)
       }
+
+      yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))
 
       const next = yield* studyReader.nextOpenPosition(sessionId, position)
 

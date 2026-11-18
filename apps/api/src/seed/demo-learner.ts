@@ -182,7 +182,7 @@ const seedStreakHistory = (userId: UserId, now: DateTime.Utc) =>
  VALUES (${userId},${DateTime.formatIso(studyDay)},${answerCount},${qualifiedAt})`
     }
 
-    const record = streakRecordOf(qualifyingDays)
+    const record = streakRecordOf(qualifyingDays, [])
 
     if (Option.isSome(record)) {
       const { currentStreak, longestStreak, lastQualifyingDay } = record.value

@@ -9,6 +9,7 @@ export const currentStreak = Effect.fn('Streak.currentStreak')(function* (userId
   const now = yield* DateTime.now
   const record = yield* streakReader.streak(userId)
   const todayAnswerCount = yield* streakReader.dailyAnswerCount(userId, studyDayOf(now).start)
+  const bridgeCount = yield* streakReader.bridgeCount(userId)
 
-  return streakOf(record, todayAnswerCount, now)
+  return streakOf(record, todayAnswerCount, now, bridgeCount)
 })
