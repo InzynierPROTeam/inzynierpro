@@ -27,6 +27,10 @@ import {
 } from '~api/modules/learning/domain/review-state.model.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
+import {
+  recordDailyPlanAnswer,
+  prepareDailyPlan,
+} from '~api/modules/written-study/application/daily-plan.service.js'
 import { recordWrittenEvidence } from '~api/modules/written-study/application/review-state.service.js'
 import { StudyReader } from '~api/modules/written-study/application/study.reader.js'
 import { StudyRepository } from '~api/modules/written-study/application/study.repository.js'
@@ -78,7 +82,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
   return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
+      const { goal } = yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
 
       const found = Option.all({
         session: yield* studyReader.session(userId, pathId, sessionId),
@@ -151,6 +155,8 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
 
       if (isRegularStudy) {
         const round = yield* syncLearningRound(userId, pathId)
+        const before = yield* studyReader.learningRound(userId, pathId)
+        yield* prepareDailyPlan(userId, pathId, goal.writtenAt, before, answeredAt)
         yield* studyRepository.recordCoverage(
           userId,
           pathId,
@@ -158,6 +164,8 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
           questionRevisionId,
           round,
         )
+        const after = yield* studyReader.learningRound(userId, pathId)
+        yield* recordDailyPlanAnswer(userId, pathId, answeredAt, { before, after })
         yield* syncLearningRound(userId, pathId)
       }
 

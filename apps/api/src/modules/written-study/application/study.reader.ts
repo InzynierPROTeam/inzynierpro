@@ -15,8 +15,9 @@ import type {
   StudySessionKind,
 } from '@inzpro/domain/modules/learning/study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Context, type Effect, type Option } from 'effect'
+import { Context, type DateTime, type Effect, type Option } from 'effect'
 import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
+import type { DailyPlanRecord } from '~api/modules/daily-plan/domain/daily-plan.model.js'
 import type {
   LearningRoundNumber,
   LearningRoundProgress,
@@ -43,6 +44,16 @@ export class StudyReader extends Context.Service<
       userId: UserId,
       pathId: QualificationPathId,
     ) => Effect.Effect<LearningRoundProgress, StudyReadError>
+    readonly dailyPlan: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      studyDay: DateTime.Utc,
+    ) => Effect.Effect<Option.Option<DailyPlanRecord>, StudyReadError>
+    readonly firstDailyPlanOfRound: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      round: LearningRoundNumber,
+    ) => Effect.Effect<Option.Option<DailyPlanRecord>, StudyReadError>
     readonly documents: (
       userId: UserId,
       pathId: QualificationPathId,

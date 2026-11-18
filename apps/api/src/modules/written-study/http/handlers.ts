@@ -9,6 +9,7 @@ import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructu
 import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 
+import { dailyPlanHandlers } from './daily-plan.handlers.js'
 import { favoritesHandlers } from './favorites.handlers.js'
 import { materialHandlers } from './material.handlers.js'
 import { notesHandlers } from './notes.handlers.js'
@@ -20,6 +21,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
     ...materialHandlers,
     ...sessionHandlers,
     ...reviewHandlers,
+    ...dailyPlanHandlers,
     ...favoritesHandlers,
     ...notesHandlers,
   }),

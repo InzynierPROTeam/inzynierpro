@@ -10,7 +10,8 @@ import type {
   OralStudySessionId,
 } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import { Context, type Effect } from 'effect'
+import { Context, type DateTime, type Effect } from 'effect'
+import type { NewDailyPlan } from '~api/modules/daily-plan/domain/daily-plan.model.js'
 import type { LearningRoundNumber } from '~api/modules/learning/domain/learning-round.model.js'
 import type { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
 import type { LearningEventId } from '~api/modules/learning/domain/review-state.model.js'
@@ -77,6 +78,21 @@ export class OralStudyRepository extends Context.Service<
       userId: UserId,
       pathId: QualificationPathId,
       round: LearningRoundNumber,
+    ) => Effect.Effect<void, StudyWriteError>
+    readonly createDailyPlan: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      plan: NewDailyPlan,
+    ) => Effect.Effect<void, StudyWriteError>
+    readonly countDailyPlanAnswer: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      studyDay: DateTime.Utc,
+    ) => Effect.Effect<void, StudyWriteError>
+    readonly completeDailyPlanRound: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      studyDay: DateTime.Utc,
     ) => Effect.Effect<void, StudyWriteError>
   }
 >()('api/modules/study/OralStudyRepository') {}

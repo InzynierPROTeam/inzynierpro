@@ -11,6 +11,7 @@ import { OralStudyRepositoryLive } from '~api/modules/oral-study/infrastructure/
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
 
+import { dailyPlanHandlers } from './daily-plan.handlers.js'
 import { favoritesHandlers } from './favorites.handlers.js'
 import { materialHandlers } from './material.handlers.js'
 import { notesHandlers } from './notes.handlers.js'
@@ -23,6 +24,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
     ...notesHandlers,
     ...favoritesHandlers,
     ...reviewHandlers,
+    ...dailyPlanHandlers,
     ...materialHandlers,
     ...sessionHandlers,
     ...quizHandlers,
