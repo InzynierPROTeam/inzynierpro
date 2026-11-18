@@ -41,7 +41,9 @@ export const StreakButton = () => {
         <Flame
           className={cx(
             'size-5',
-            streak.todayQualifies ? 'fill-orange-500 text-orange-500' : 'text-muted-foreground',
+            streak.todayQualifies && 'fill-orange-500 text-orange-500',
+            !streak.todayQualifies && streak.pendingBridgeCount > 0 && 'text-orange-500/60',
+            !streak.todayQualifies && streak.pendingBridgeCount === 0 && 'text-muted-foreground',
           )}
         />
         {streak.currentStreak}
@@ -56,6 +58,10 @@ export const StreakButton = () => {
           <dd className="font-medium">{formatDays(streak.currentStreak)}</dd>
           <dt className="text-muted-foreground">Najdłuższa seria</dt>
           <dd className="font-medium">{formatDays(streak.longestStreak)}</dd>
+          <dt className="text-muted-foreground">Mosty</dt>
+          <dd className="font-medium">
+            {streak.bridgeCount} z {streak.bridgeLimit}
+          </dd>
         </dl>
       </PopoverContent>
     </Popover>
@@ -66,7 +72,21 @@ type TodayProgressProps = {
   streak: Streak
 }
 
-const TodayProgress = ({ streak }: TodayProgressProps) =>
-  streak.todayQualifies
-    ? 'Dzisiejszy dzień już się liczy do serii.'
-    : `Dzisiaj: ${streak.todayAnswerCount} z ${streak.dailyAnswerThreshold} odpowiedzi potrzebnych do serii.`
+const formatMissedDays = (days: number) =>
+  days === 1 ? 'Wczoraj nie było nauki.' : `Ostatnie ${days} dni bez nauki.`
+
+const formatBridges = (bridges: number) => `${bridges} ${bridges === 1 ? 'mostowi' : 'mostom'}`
+
+const TodayProgress = ({ streak }: TodayProgressProps) => {
+  if (streak.todayQualifies) {
+    return 'Dzisiejszy dzień już się liczy do serii.'
+  }
+
+  const progress = `Dzisiaj: ${streak.todayAnswerCount} z ${streak.dailyAnswerThreshold} odpowiedzi potrzebnych do serii.`
+
+  if (streak.pendingBridgeCount === 0) {
+    return progress
+  }
+
+  return `${formatMissedDays(streak.pendingBridgeCount)} Zalicz dzisiejszy dzień, a seria przetrwa dzięki ${formatBridges(streak.pendingBridgeCount)}. ${progress}`
+}
