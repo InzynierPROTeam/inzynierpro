@@ -1,6 +1,7 @@
 import { PageLimit } from '@inzpro/domain/common/pagination'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
 import { pathsQueryOptions } from '@inzpro/queries/modules/preparation/queries'
+import { profileSettingsQueryOptions } from '@inzpro/queries/modules/profiles/queries'
 import { createFileRoute } from '@tanstack/react-router'
 import { constVoid } from 'effect/Function'
 import { seo } from '~platform/config/app'
@@ -9,13 +10,14 @@ import { apiHttpClient } from '~platform/lib/api-client'
 
 export const Route = createFileRoute('/(app)/_authenticated/profil')({
   loader: ({ context: { queryClient, session } }) => {
-    void queryClient
-      .query(
+    void Promise.all([
+      queryClient.query(
         pathsQueryOptions(apiHttpClient, session.user.id, {
           query: { limit: PageLimit.make(maxUserQualificationPaths) },
         }),
-      )
-      .catch(constVoid)
+      ),
+      queryClient.query(profileSettingsQueryOptions(apiHttpClient, session.user.id)),
+    ]).catch(constVoid)
   },
   staticData: { backLabel: 'Konto' },
   component: ProfilePage,

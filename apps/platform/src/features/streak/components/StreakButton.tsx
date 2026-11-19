@@ -14,7 +14,7 @@ import { cx } from 'tailwind-variants'
 import { authenticatedRouteApi } from '~platform/features/auth/utils'
 import { apiHttpClient } from '~platform/lib/api-client'
 
-const formatDays = (days: number) => `${days} ${days === 1 ? 'dzień' : 'dni'}`
+import { formatDays } from '../utils'
 
 export const StreakButton = () => {
   const {

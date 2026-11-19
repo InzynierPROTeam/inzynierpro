@@ -13,7 +13,9 @@ import { Award } from 'lucide-react'
 
 import { badgeNames } from '../config/badges'
 
-type EarnedBadgesProps = { readonly badges: ReadonlyArray<EarnedBadge> }
+type EarnedBadgesProps = {
+  readonly badges: ReadonlyArray<Pick<EarnedBadge, 'code'> & Partial<Pick<EarnedBadge, 'earnedAt'>>>
+}
 
 export const EarnedBadges = ({ badges }: EarnedBadgesProps) => (
   <ItemGroup aria-label="Zdobyte odznaki">
@@ -33,9 +35,11 @@ export const EarnedBadges = ({ badges }: EarnedBadgesProps) => (
         </ItemMedia>
         <ItemContent className="gap-1">
           <ItemTitle>{badgeNames[badge.code]}</ItemTitle>
-          <ItemDescription className="text-xs">
-            Zdobyta {formatDate(badge.earnedAt)}
-          </ItemDescription>
+          {badge.earnedAt && (
+            <ItemDescription className="text-xs">
+              Zdobyta {formatDate(badge.earnedAt)}
+            </ItemDescription>
+          )}
         </ItemContent>
       </Item>
     ))}
