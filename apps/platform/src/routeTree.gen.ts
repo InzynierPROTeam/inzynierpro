@@ -21,6 +21,7 @@ import { Route as appAuthenticatedOnboardedOralValidRouteImport } from './routes
 import { Route as appAuthenticatedOnboardedWrittenValidRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid'
 import { Route as appAuthenticatedOnboardedRozszerzDostepRouteImport } from './routes/(app)/_authenticated/_onboarded/rozszerz-dostep'
 import { Route as appAuthenticatedOnboardedStartRouteImport } from './routes/(app)/_authenticated/_onboarded/start'
+import { Route as appAuthenticatedUzytkownikUserIdRouteImport } from './routes/(app)/_authenticated/uzytkownik.$userId'
 import { Route as publicLayoutNotauthenticatedIndexRouteImport } from './routes/(public)/_layout/_notauthenticated/index'
 import { Route as publicLayoutNotauthenticatedLogowanieRouteImport } from './routes/(public)/_layout/_notauthenticated/logowanie'
 import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
@@ -102,6 +103,12 @@ const appAuthenticatedOnboardedStartRoute =
     id: '/start',
     path: '/start',
     getParentRoute: () => appAuthenticatedOnboardedRoute,
+  } as any)
+const appAuthenticatedUzytkownikUserIdRoute =
+  appAuthenticatedUzytkownikUserIdRouteImport.update({
+    id: '/uzytkownik/$userId',
+    path: '/uzytkownik/$userId',
+    getParentRoute: () => appAuthenticatedRoute,
   } as any)
 const publicLayoutNotauthenticatedIndexRoute =
   publicLayoutNotauthenticatedIndexRouteImport.update({
@@ -244,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/zacznij': typeof publicLayoutZacznijRoute
   '/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
   '/start': typeof appAuthenticatedOnboardedStartRoute
+  '/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
@@ -272,6 +280,7 @@ export interface FileRoutesByTo {
   '/zacznij': typeof publicLayoutZacznijRoute
   '/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
   '/start': typeof appAuthenticatedOnboardedStartRoute
+  '/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
@@ -306,6 +315,7 @@ export interface FileRoutesById {
   '/(app)/_authenticated/_onboarded/_writtenValid': typeof appAuthenticatedOnboardedWrittenValidRouteWithChildren
   '/(app)/_authenticated/_onboarded/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
   '/(app)/_authenticated/_onboarded/start': typeof appAuthenticatedOnboardedStartRoute
+  '/(app)/_authenticated/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
   '/(public)/_layout/_notauthenticated/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/zacznij'
     | '/rozszerz-dostep'
     | '/start'
+    | '/uzytkownik/$userId'
     | '/logowanie'
     | '/zweryfikuj-otp'
     | '/ustny/powtorka'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/zacznij'
     | '/rozszerz-dostep'
     | '/start'
+    | '/uzytkownik/$userId'
     | '/logowanie'
     | '/zweryfikuj-otp'
     | '/ustny/powtorka'
@@ -398,6 +410,7 @@ export interface FileRouteTypes {
     | '/(app)/_authenticated/_onboarded/_writtenValid'
     | '/(app)/_authenticated/_onboarded/rozszerz-dostep'
     | '/(app)/_authenticated/_onboarded/start'
+    | '/(app)/_authenticated/uzytkownik/$userId'
     | '/(public)/_layout/_notauthenticated/logowanie'
     | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
     | '/(public)/_layout/_notauthenticated/'
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/start'
       preLoaderRoute: typeof appAuthenticatedOnboardedStartRouteImport
       parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(app)/_authenticated/uzytkownik/$userId': {
+      id: '/(app)/_authenticated/uzytkownik/$userId'
+      path: '/uzytkownik/$userId'
+      fullPath: '/uzytkownik/$userId'
+      preLoaderRoute: typeof appAuthenticatedUzytkownikUserIdRouteImport
+      parentRoute: typeof appAuthenticatedRoute
     }
     '/(public)/_layout/_notauthenticated/': {
       id: '/(public)/_layout/_notauthenticated/'
@@ -757,12 +777,14 @@ interface appAuthenticatedRouteChildren {
   appAuthenticatedOnboardedRoute: typeof appAuthenticatedOnboardedRouteWithChildren
   appAuthenticatedPierwszeKrokiRoute: typeof appAuthenticatedPierwszeKrokiRoute
   appAuthenticatedProfilRoute: typeof appAuthenticatedProfilRoute
+  appAuthenticatedUzytkownikUserIdRoute: typeof appAuthenticatedUzytkownikUserIdRoute
 }
 
 const appAuthenticatedRouteChildren: appAuthenticatedRouteChildren = {
   appAuthenticatedOnboardedRoute: appAuthenticatedOnboardedRouteWithChildren,
   appAuthenticatedPierwszeKrokiRoute: appAuthenticatedPierwszeKrokiRoute,
   appAuthenticatedProfilRoute: appAuthenticatedProfilRoute,
+  appAuthenticatedUzytkownikUserIdRoute: appAuthenticatedUzytkownikUserIdRoute,
 }
 
 const appAuthenticatedRouteWithChildren =

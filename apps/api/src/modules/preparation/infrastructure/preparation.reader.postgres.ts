@@ -164,6 +164,17 @@ export const PreparationReaderLive = Layer.effect(
           SchemaError: cause => Effect.fail(new PreparationReadError({ cause })),
         }),
       ),
+      activePaths: Effect.fn('PreparationReader.activePaths')(
+        function* (userId) {
+          const rows =
+            yield* sql`SELECT ${assignmentColumns} ${assignmentTables} WHERE up.user_id=${userId} AND up.archived_at IS NULL AND ${latestGoal} ORDER BY up.updated_at DESC,p.id LIMIT ${maxUserQualificationPaths}`
+
+          const data = yield* Schema.decodeUnknownEffect(Schema.Array(AssignmentRow))(rows)
+
+          return data.map(assignmentFromRow)
+        },
+        Effect.mapError(cause => new PreparationReadError({ cause })),
+      ),
       path: Effect.fn('PreparationReader.path')(
         function* (userId, pathId) {
           const rows =

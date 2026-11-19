@@ -45,8 +45,9 @@ export const apiLayerRoles = {
       '<concept>.command.ts, .query.ts, .policy.ts, .reader.ts, .repository.ts, .service.ts, .job.ts, .event-handler.ts and [<topic>.]errors.ts',
   },
   infrastructure: {
-    pattern: /^[a-z0-9-]+\.(?:reader|repository|service|client)\.(?:postgres|http|redis|file)\.ts$/,
-    description: '<concept>.<reader|repository|service|client>.<postgres|http|redis|file>.ts',
+    pattern:
+      /^[a-z0-9-]+\.(?:reader|repository|service|client)\.(?:postgres|http|redis|file|auth)\.ts$/,
+    description: '<concept>.<reader|repository|service|client>.<postgres|http|redis|file|auth>.ts',
   },
   http: {
     pattern: /^(?:[a-z0-9-]+\.)?(?:handlers|mappers|errors)\.ts$/,

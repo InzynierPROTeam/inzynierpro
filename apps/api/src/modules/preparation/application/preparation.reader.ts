@@ -17,6 +17,9 @@ export class PreparationReader extends Context.Service<
       userId: UserId,
       page: CursorPageRequest,
     ) => Effect.Effect<CursorPage<UserQualificationPath>, PreparationReadError | InvalidCursor>
+    readonly activePaths: (
+      userId: UserId,
+    ) => Effect.Effect<ReadonlyArray<UserQualificationPath>, PreparationReadError>
     readonly path: (
       userId: UserId,
       pathId: QualificationPathId,
