@@ -3,6 +3,7 @@ import { appName } from '@inzpro/config/app'
 import { PgPool } from '@inzpro/db/pool'
 import { Email } from '@inzpro/domain/common/email'
 import { Uuid } from '@inzpro/domain/common/id'
+import { normalizeProfileName } from '@inzpro/domain/modules/profiles/profile'
 import { EmailService } from '@inzpro/email/email-service'
 import { getSender } from '@inzpro/email/lib/address'
 import { SignInCode, signInCodeSubject } from '@inzpro/email/templates/sign-in-code'
@@ -88,8 +89,10 @@ const makeAuth = (
       user: {
         create: {
           before: async user => {
-            if (user.name.trim() !== '') {
-              return
+            const name = normalizeProfileName(user.name)
+
+            if (name !== '') {
+              return { data: { ...user, name } }
             }
 
             return {
@@ -176,6 +179,15 @@ const makeAuth = (
         createdAt: 'created_at',
         updatedAt: 'updated_at',
       },
+      additionalFields: {
+        privateProfile: {
+          type: 'boolean',
+          fieldName: 'private_profile',
+          required: false,
+          defaultValue: false,
+          input: false,
+        },
+      },
     },
     session: {
       modelName: 'auth_sessions',
@@ -226,6 +238,7 @@ const makeAuth = (
         }
       }),
     },
+    disabledPaths: ['/update-user'],
     telemetry: { enabled: false },
     logger: {
       level: 'warn',

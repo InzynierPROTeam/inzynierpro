@@ -18,6 +18,7 @@ export default Effect.gen(function* () {
       email text NOT NULL,
       email_verified boolean NOT NULL DEFAULT false,
       image text,
+      private_profile boolean NOT NULL DEFAULT false,
       created_at timestamptz(3) NOT NULL DEFAULT now(),
       updated_at timestamptz(3) NOT NULL DEFAULT now(),
       CONSTRAINT users_email_key UNIQUE (email),
