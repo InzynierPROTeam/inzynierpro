@@ -64,6 +64,7 @@ export const apiModuleDependencies = {
   'daily-plan': ['learning'],
   streak: ['learning'],
   'learning-xp': ['learning'],
+  profiles: ['learning-xp', 'streak', 'preparation', 'qualification-paths'],
   'written-study': [
     'preparation',
     'learning-content',

@@ -18,6 +18,7 @@ import {
   PreparationLive,
   PreparationRequestServices,
 } from '~api/modules/preparation/http/handlers.js'
+import { ProfilesLive, ProfilesRequestServices } from '~api/modules/profiles/http/handlers.js'
 import {
   QualificationPathsLive,
   QualificationPathsRequestServices,
@@ -39,6 +40,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       ExamCalendarLive,
       StreakLive,
       LearningXpLive,
+      ProfilesLive,
     ),
   ),
   HttpRouter.provideRequest(
@@ -52,6 +54,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       ExamCalendarRequestServices,
       StreakRequestServices,
       LearningXpRequestServices,
+      ProfilesRequestServices,
     ),
   ),
 )

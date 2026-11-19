@@ -16,6 +16,7 @@ tester.run('conventions/module-layers', moduleLayersRule, {
       code: "import { HttpClient } from 'effect/http'",
     },
     { filename: file('infrastructure/cache/goal.reader.redis.ts'), code: '' },
+    { filename: file('infrastructure/profile.repository.auth.ts'), code: '' },
     { filename: file('http/goal/goal.mappers.ts'), code: '' },
     { filename: file('http/goal/goal.errors.ts'), code: '' },
 
@@ -107,6 +108,11 @@ tester.run('conventions/module-layers', moduleLayersRule, {
     },
     {
       filename: file('infrastructure/preparation.reader.ts'),
+      code: '',
+      errors: [{ messageId: 'role' }],
+    },
+    {
+      filename: file('infrastructure/profile.repository.better-auth.ts'),
       code: '',
       errors: [{ messageId: 'role' }],
     },

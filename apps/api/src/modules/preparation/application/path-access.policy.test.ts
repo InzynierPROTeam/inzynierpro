@@ -57,6 +57,7 @@ const readerWith = (found: Option.Option<UserQualificationPath>) =>
   Layer.succeed(PreparationReader)({
     hasReachedPathLimit: () => Effect.die('unused by the policies'),
     paths: () => Effect.die('unused by the policies'),
+    activePaths: () => Effect.die('unused by the policies'),
     goals: () => Effect.die('unused by the policies'),
     path: (requestedUser, requestedPath) =>
       Effect.succeed(requestedUser === userId && requestedPath === pathId ? found : Option.none()),
