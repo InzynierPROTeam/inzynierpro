@@ -29,6 +29,7 @@ const first = Schema.decodeSync(UserQualificationPath)({
     name: 'Bez ograniczeń',
   },
   accessScope: 'written',
+  version: 1,
   archived: false,
   districtChamber: null,
   goal: {
