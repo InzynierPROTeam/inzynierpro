@@ -10,12 +10,15 @@ import {
   SubmitSessionAnswerResponse,
 } from '@inzpro/api-contracts/modules/written-study/responses'
 import { databaseLayerFromConfig } from '@inzpro/db'
-import { DateTime, Effect, Layer, Option } from 'effect'
+import { DateTime, Effect, Exit, Layer, Option, Schedule, Scope } from 'effect'
 import { afterAll, beforeAll, expect, it, onTestFinished } from 'vitest'
 import { XpReader } from '~api/modules/learning-xp/application/learning-xp.reader.js'
 import type { XpPeriod } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
-import { finishAttemptAtDeadline } from '~api/modules/mock-exams/application/attempt-deadline.job.js'
+import {
+  AttemptDeadlineQueue,
+  finishAttemptAtDeadline,
+} from '~api/modules/mock-exams/application/attempt-deadline.job.js'
 import { AttemptDeadlineNotReached } from '~api/modules/mock-exams/domain/errors.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import { catalogueTestTime, fixedWallClockLayer } from '~api/test/clock.js'
@@ -31,6 +34,7 @@ import {
 } from '~api/test/mock-exam-learner.js'
 import { learningRequest } from '~api/test/preparation.js'
 import { runFixture } from '~api/test/run-fixture.js'
+import { BackgroundJobsLive, WorkerLive } from '~api/worker/worker.js'
 
 const examPath = mockExamPathConfiguration('60000000-0000-4000-8000-000000000001')
 const afterDeadline = DateTime.add(catalogueTestTime, { minutes: 10, seconds: 1 })
@@ -150,6 +154,44 @@ it('finishes an attempt nobody returns to when its deadline job runs', async () 
   await runDeadlineJob(learner, attempt, afterDeadline)
 
   expect(await learner.attempt(attempt.id)).toMatchObject({
+    status: 'finished',
+    endReason: 'time-expired',
+    result: { correct: 1, unanswered: 1 },
+  })
+})
+
+it('processes a persisted deadline job when the worker starts', { timeout: 20_000 }, async () => {
+  const { learner, attempt } = await startedExam()
+
+  await Effect.runPromise(
+    AttemptDeadlineQueue.use(queue =>
+      queue.offer({
+        attemptId: attempt.id,
+        userId: learner.userId,
+        qualificationPathId: learner.pathId,
+        deadline: DateTime.makeUnsafe(attempt.deadline),
+      }),
+    ).pipe(Effect.provide(BackgroundJobsLive), Effect.scoped),
+  )
+
+  const scope = Scope.makeUnsafe()
+  onTestFinished(() => Effect.runPromise(Scope.close(scope, Exit.void)))
+
+  await Effect.runPromise(
+    Layer.buildWithScope(WorkerLive.pipe(Layer.provide(fixedWallClockLayer(afterDeadline))), scope),
+  )
+
+  const finished = await Effect.runPromise(
+    Effect.promise(() => learner.attempt(attempt.id)).pipe(
+      Effect.repeat({
+        schedule: Schedule.spaced('50 millis'),
+        until: current => current?.status === 'finished',
+      }),
+      Effect.timeout('10 seconds'),
+    ),
+  )
+
+  expect(finished).toMatchObject({
     status: 'finished',
     endReason: 'time-expired',
     result: { correct: 1, unanswered: 1 },

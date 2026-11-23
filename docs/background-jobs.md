@@ -43,7 +43,7 @@ With development services up and migrations applied:
 pnpm --filter @inzpro/api dev:worker
 ```
 
-The worker logs `Worker started`; with `LOG_LEVEL=Debug` it also logs the backlog of each queue every minute. Check the queues from another terminal:
+The worker checks that it can read the queue table before starting cleanup and job processing. A failed check stops startup instead of repeatedly polling an unavailable schema. The worker logs `Worker started`; with `LOG_LEVEL=Debug` it also logs the backlog of each queue every minute. Check the queues from another terminal:
 
 ```sh
 pnpm --filter @inzpro/api worker:status
@@ -61,3 +61,4 @@ Every job log line carries `app.job.queue`, `app.job.id` and `app.job.attempt`, 
 - **A failed job:** `worker:status` lists the latest failed jobs of all queues with their attempts and the first line of the last failure. Search the logs for the job ID for every attempt, or its trace for the spans of each attempt and of the operation that offered it.
 - **A stuck job:** `running` stays above zero while no `JobQueue.process` span ends. Stopping that worker releases the job; a killed worker's job is taken again after the lock expires. A worker killed during the last allowed attempt cannot retry it: a running worker of that queue marks the job failed with `Lock expired after final attempt` once the lock expires.
 - **SQL:** `SELECT queue_name, id, state, attempts, last_failure, updated_at FROM background_jobs ORDER BY sequence DESC LIMIT 20;`. To run a failed job again after fixing its cause: `UPDATE background_jobs SET state = 'pending', attempts = 0, acquired_at = NULL, acquired_by = NULL, visible_at = localtimestamp WHERE id = '<job id>' AND queue_name = '<queue>';`.
+- **Missing queue table:** `relation "background_jobs" does not exist` concerns Effect's queue schema, so rerunning application migrations does not create it. If `background_jobs_migrations` records completed migrations while the queue table is missing, Effect skips recreating it. A partial schema reset can leave this inconsistent state. For disposable local development data, stop the API and worker and recreate the PostgreSQL volume, then run application migrations and the technical seed before restarting the processes. Keep Redis's separate volume. For retained data, investigate and restore the queue schema and its migration history together before restarting; do not clear migration records on a live database.

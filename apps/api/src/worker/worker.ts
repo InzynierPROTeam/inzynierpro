@@ -5,6 +5,7 @@ import { processEnv } from '~api/lib/env.js'
 import { jobQueueStoreLayer } from '~api/lib/job-queue.js'
 import { processTelemetryLayer } from '~api/lib/observability.js'
 import { TransactionLive } from '~api/lib/transaction.js'
+import { BackgroundJobsReader } from '~api/modules/background-jobs/application/background-jobs.reader.js'
 import { recordJobBacklog } from '~api/modules/background-jobs/application/job-backlog.service.js'
 import { BackgroundJobsReaderLive } from '~api/modules/background-jobs/infrastructure/background-jobs.reader.postgres.js'
 import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
@@ -57,6 +58,10 @@ const recordBacklog = recordJobBacklog().pipe(
 // EXTERNAL: Effect cleanup retains completed jobs for 30 days by default; their IDs remain deduplicated during that period. Failed jobs remain stored.
 const CleanupLive = PersistedQueue.layerCleanup()
 
+const QueueReadinessLive = Layer.effectDiscard(
+  BackgroundJobsReader.use(backgroundJobsReader => backgroundJobsReader.backlog),
+)
+
 export const WorkerLive = Layer.effectDiscard(
   Effect.gen(function* () {
     yield* Effect.forkScoped(recordBacklog)
@@ -65,4 +70,8 @@ export const WorkerLive = Layer.effectDiscard(
     yield* Effect.logInfo('Worker started')
     yield* Effect.addFinalizer(() => Effect.logInfo('Worker stopped'))
   }),
-).pipe(Layer.provideMerge(CleanupLive), Layer.provideMerge(BackgroundJobsLive))
+).pipe(
+  Layer.provideMerge(CleanupLive),
+  Layer.provideMerge(QueueReadinessLive),
+  Layer.provideMerge(BackgroundJobsLive),
+)
