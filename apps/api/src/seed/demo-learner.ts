@@ -1,8 +1,11 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { Email } from '@inzpro/domain/common/email'
 import { Uuid } from '@inzpro/domain/common/id'
+import { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
 import { UserId } from '@inzpro/domain/modules/identity/user'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import { firstFinishedSessionBadge } from '@inzpro/domain/modules/learning-xp/badge'
+import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DailyAnswerCount } from '@inzpro/domain/modules/streak/streak'
 import { DateTime, Effect, Option, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
@@ -13,6 +16,9 @@ import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { qualifiesStudyDay, streakRecordOf } from '~api/modules/streak/domain/streak.rules.js'
 
 import { catalogueId } from './catalogue-id.js'
+import { seedLearnerXp } from './ranked-learners.js'
+
+const demoLearnerName = 'Jan Kowalski'
 
 const writtenPath = catalogueId('10', 1)
 
@@ -199,7 +205,7 @@ export const seedDemoLearner = Effect.fn('Seed.seedDemoLearner')(function* (emai
   const now = yield* DateTime.now
   const normalizedEmail = email.toLowerCase()
 
-  yield* sql`INSERT INTO users (name,email,email_verified) VALUES ('',${normalizedEmail},true) ON CONFLICT (email) DO NOTHING`
+  yield* sql`INSERT INTO users (name,email,email_verified) VALUES (${demoLearnerName},${normalizedEmail},true) ON CONFLICT (email) DO UPDATE SET name=EXCLUDED.name WHERE users.name=''`
 
   const [{ id: userId }] =
     yield* sql`SELECT id FROM users WHERE email=${normalizedEmail} LIMIT 1`.pipe(
@@ -221,4 +227,18 @@ export const seedDemoLearner = Effect.fn('Seed.seedDemoLearner')(function* (emai
   yield* seedWrittenHistory(userId, now, dates.writtenAt)
   yield* seedOralHistory(userId, now, dates.oralPlanningAt)
   yield* seedStreakHistory(userId, now)
+  yield* seedLearnerXp(now, {
+    userId,
+    pathId: yield* Schema.decodeEffect(QualificationPathId)(writtenPath),
+    examSessionId: yield* Schema.decodeEffect(ExamSessionId)(demoExamSession),
+    dailyXp: [
+      [0, 70],
+      [1, 30],
+      [2, 120],
+      [3, 50],
+      [5, 90],
+      [13, 110],
+    ],
+    badges: [firstFinishedSessionBadge],
+  })
 })
