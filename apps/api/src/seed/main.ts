@@ -1,8 +1,9 @@
 import { NodeRuntime } from '@effect/platform-node'
 import { databaseLayerFromConfig } from '@inzpro/db'
-import { Effect, Option } from 'effect'
+import { Effect, Layer, Option } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { seedEnv } from '~api/lib/env.js'
+import { fileStorageS3LayerFromConfig } from '~api/modules/learning-content/infrastructure/file-storage.service.s3.js'
 import { seedDemoLearner } from '~api/seed/demo-learner.js'
 import { seedRankedLearners } from '~api/seed/ranked-learners.js'
 import { seedTechnicalCatalogue } from '~api/seed/technical-catalogue.js'
@@ -24,4 +25,8 @@ Effect.gen(function* () {
   yield* Effect.logInfo(
     'Seeded demo learning data for the SEED_DEMO_EMAIL account and ranked learners',
   )
-}).pipe(Effect.provide(databaseLayerFromConfig), Effect.scoped, NodeRuntime.runMain)
+}).pipe(
+  Effect.provide(Layer.mergeAll(databaseLayerFromConfig, fileStorageS3LayerFromConfig)),
+  Effect.scoped,
+  NodeRuntime.runMain,
+)

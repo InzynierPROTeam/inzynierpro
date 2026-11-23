@@ -1,4 +1,9 @@
-import { RichContent, richContentVersion, type Text } from '@inzpro/rich-content/rich-content'
+import {
+  type Image,
+  RichContent,
+  richContentVersion,
+  type Text,
+} from '@inzpro/rich-content/rich-content'
 import { Effect, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 import {
@@ -7,18 +12,26 @@ import {
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
 import { catalogueId } from './catalogue-id.js'
+import { seedContentAssets } from './content-assets.js'
 import { buildingLaw, questions, laterRevisions } from './written-content.js'
 
-const explanationJson = (paragraph: ReadonlyArray<Text>) =>
+const explanationJson = (paragraph: ReadonlyArray<Text>, figure?: Image['attrs']) =>
   Schema.decodeEffect(RichContent)({
     version: richContentVersion,
-    doc: { type: 'doc', content: [{ type: 'paragraph', content: paragraph }] },
+    doc: {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: paragraph },
+        ...(figure === undefined ? [] : [{ type: 'image' as const, attrs: figure }]),
+      ],
+    },
   }).pipe(Effect.map(content => JSON.stringify(content)))
 
 export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* (
   cataloguePathIds: ReadonlyArray<string>,
 ) {
   const sql = yield* SqlClient.SqlClient
+  yield* seedContentAssets
   yield* sql`INSERT INTO reference_documents (id, title) VALUES
       ('20000000-0000-4000-8000-000000000001', 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'),
       ('20000000-0000-4000-8000-000000000002', 'Warunki techniczne, jakim powinny odpowiadać budynki i ich usytuowanie') ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title`
@@ -42,7 +55,7 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
     const questionId = catalogueId('30', n)
     const revisionId = catalogueId('43', n)
     const { documentId } = question
-    const explanation = yield* explanationJson(question.explanation)
+    const explanation = yield* explanationJson(question.explanation, question.figure)
     yield* sql`INSERT INTO written_questions (id, document_id) VALUES (${questionId}, ${documentId}) ON CONFLICT DO NOTHING`
     yield* sql`INSERT INTO question_revisions (id,question_id,body,explanation,change_kind,substantive_revision_id)
         VALUES (${revisionId},${questionId},${question.body},${explanation}::jsonb,${initialRevision},${revisionId}) ON CONFLICT DO NOTHING`
