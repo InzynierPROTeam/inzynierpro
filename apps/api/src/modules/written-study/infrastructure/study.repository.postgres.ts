@@ -216,6 +216,20 @@ export const StudyRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
+      recordAnswerStatistic: Effect.fn('StudyRepository.recordAnswerStatistic')(
+        function* (statistic) {
+          const studyDay = DateTime.formatIso(statistic.studyDay)
+          const correctCount = statistic.isCorrect ? 1 : 0
+
+          yield* sql`INSERT INTO written_question_statistics (question_revision_id,mode,assistance,study_day,answer_count,correct_count)
+ VALUES (${statistic.questionRevisionId},${statistic.mode},${statistic.assistance},${studyDay},1,${correctCount})
+ ON CONFLICT (question_revision_id,mode,assistance,study_day) DO UPDATE SET answer_count=written_question_statistics.answer_count+1,correct_count=written_question_statistics.correct_count+EXCLUDED.correct_count`
+          yield* sql`INSERT INTO written_answer_option_statistics (question_revision_id,question_answer_id,mode,assistance,study_day,selection_count)
+ VALUES (${statistic.questionRevisionId},${statistic.answerId},${statistic.mode},${statistic.assistance},${studyDay},1)
+ ON CONFLICT (question_revision_id,mode,assistance,study_day,question_answer_id) DO UPDATE SET selection_count=written_answer_option_statistics.selection_count+1`
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
       storeReviewState: Effect.fn('StudyRepository.storeReviewState')(function* (state) {
         const { card } = state
         const dueAt = DateTime.formatIso(card.dueAt)

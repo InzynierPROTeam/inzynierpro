@@ -31,6 +31,15 @@ export const recordWrittenEvidence = Effect.fn('Study.recordWrittenEvidence')(fu
   )
 
   const learningEventId = yield* studyRepository.recordLearningEvent(evidence, context)
+
+  yield* studyRepository.recordAnswerStatistic({
+    questionRevisionId: evidence.questionRevisionId,
+    answerId: evidence.answerId,
+    isCorrect: evidence.isCorrect,
+    mode: context.mode,
+    assistance: context.assistance,
+    studyDay: studyDayOf(context.answeredAt).start,
+  })
   const card = yield* studyReader.reviewState(userId, pathId, questionId)
 
   const rating = writtenReviewRating({

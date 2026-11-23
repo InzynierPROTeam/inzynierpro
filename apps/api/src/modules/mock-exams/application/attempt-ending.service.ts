@@ -98,6 +98,7 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
         goalVersion: answer.goalVersion,
         questionId: answer.questionId,
         questionRevisionId: answer.questionRevisionId,
+        answerId: answer.answerId,
         isCorrect: answer.isCorrect,
         source: WrittenEvidenceSource.MockExamAnswer({ attemptId, position: answer.position }),
       },

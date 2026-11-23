@@ -1,5 +1,6 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type {
   QuestionRevisionId,
   WrittenQuestionId,
@@ -60,6 +61,7 @@ export type NewWrittenEvidence = {
   readonly goalVersion: UserExamGoalVersion
   readonly questionId: WrittenQuestionId
   readonly questionRevisionId: QuestionRevisionId
+  readonly answerId: QuestionAnswerId
   readonly isCorrect: boolean
   readonly source: WrittenEvidenceSource
 }
