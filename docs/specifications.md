@@ -16,6 +16,7 @@ GitHub Issues for InzynierPROTeam/inzynierpro own delivery scope and acceptance 
 - [My chamber: district chamber choice, contacts and the oral filter](https://github.com/InzynierPROTeam/inzynierpro/issues/132)
 - [Qualification process guide and personal checklist](https://github.com/InzynierPROTeam/inzynierpro/issues/136)
 - [Question reports, recalled exam questions and post-exam feedback](https://github.com/InzynierPROTeam/inzynierpro/issues/141)
+- [Account deletion, notifications, sharing and saved-question lists](https://github.com/InzynierPROTeam/inzynierpro/issues/147)
 
 Before implementation read the applicable issue, glossary and ADRs. [platform.md](platform.md) describes how the web platform guards routes and loads data, [written-study.md](written-study.md) how written study sessions work, [mock-exams.md](mock-exams.md) how mock exams are configured and started, and [background-jobs.md](background-jobs.md) how the worker runs durable jobs. Treat V1 at `../inzynier-pro` as read-only reference, not an implicit V2 specification or permission to access production data. Leave changes uncommitted unless publication is explicitly requested.
 
