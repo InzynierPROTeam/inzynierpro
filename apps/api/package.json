@@ -34,6 +34,7 @@
     "@inzpro/redis": "workspace:*",
     "@inzpro/rich-content": "workspace:*",
     "@inzpro/utils": "workspace:*",
+    "aws4fetch": "catalog:",
     "dotenv": "catalog:",
     "effect": "catalog:",
     "ts-fsrs": "catalog:"

@@ -19,6 +19,7 @@ import { ApiErrorMiddleware } from '~api/middleware/api-error.js'
 import { RequestIdMiddleware } from '~api/middleware/request-id.js'
 import { SecureHeadersMiddleware } from '~api/middleware/secure-headers.js'
 import { AuthHttp } from '~api/modules/identity/http/handlers.js'
+import { fileStorageS3Layer } from '~api/modules/learning-content/infrastructure/file-storage.service.s3.js'
 
 export const httpServerLayer = (config: Env) =>
   HttpRouter.serve(
@@ -78,6 +79,7 @@ export const httpServerLayer = (config: Env) =>
         pgPoolLayer({ url: config.DATABASE_URL }),
         jobQueueStoreLayer().pipe(Layer.provideMerge(databaseLayer({ url: config.DATABASE_URL }))),
         RedisLayer({ url: config.REDIS_URL }),
+        fileStorageS3Layer(config.FILE_STORAGE),
       ),
     ),
     Layer.provide([

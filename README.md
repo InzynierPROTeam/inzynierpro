@@ -32,7 +32,7 @@ pnpm --filter @inzpro/api migrate:latest
 pnpm dev
 ```
 
-Open <http://localhost:8001>; the API runs on port 4000. Migrations run explicitly, not on server restarts.
+Open <http://localhost:8001>; the API runs on port 4000. Migrations run explicitly, not on server restarts. `services:up` also starts MinIO, the local S3-compatible file storage, and creates its private bucket; its console runs on <http://localhost:9001> with the `FILE_STORAGE_*` credentials from `apps/api/.env`.
 
 Sign in at <http://localhost:8001/login>. Sign-in codes are sent through Resend: the API does not start without `RESEND_API_KEY` in `apps/api/.env`. Preview email templates with `pnpm --filter @inzpro/email email:dev` (<http://localhost:3030>). There is no test login shortcut: tests sign in through the same code flow with an in-memory email adapter.
 
@@ -50,7 +50,7 @@ Automated Google checks cover our authorization URL configuration and callback a
 
 ## Tests
 
-Test services use separate databases and ports. Integration tests connect to real PostgreSQL and Redis; mail delivery uses an in-memory outbox. Auth tests cover our mounted routes, email sign-in into the protected API, durable session/cache integration, revocation, Redis outages, mail failures, rate-limit storage, logging and CORS. Google checks use test-only credentials to inspect authorization URLs and reject untrusted callbacks, without contacting Google. Better Auth's internal OTP and OAuth/linking behavior is left to the library's tests.
+Test services use separate databases and ports. Integration tests connect to real PostgreSQL, Redis and MinIO; mail delivery uses an in-memory outbox. Auth tests cover our mounted routes, email sign-in into the protected API, durable session/cache integration, revocation, Redis outages, mail failures, rate-limit storage, logging and CORS. Google checks use test-only credentials to inspect authorization URLs and reject untrusted callbacks, without contacting Google. Better Auth's internal OTP and OAuth/linking behavior is left to the library's tests.
 
 ```sh
 cp apps/api/.env.test.example apps/api/.env.test
@@ -58,7 +58,7 @@ cp packages/db/.env.test.example packages/db/.env.test
 pnpm check
 ```
 
-`pnpm test` (and so `pnpm check`) starts fresh test PostgreSQL and Redis, applies migrations, runs the tests and removes the services, even when a test fails. Test data lives only in memory, so every run starts from an empty database. To run a single file, wrap the command the same way:
+`pnpm test` (and so `pnpm check`) starts fresh test PostgreSQL, Redis and MinIO, applies migrations, runs the tests and removes the services, even when a test fails. Test data lives only in memory, so every run starts from an empty database. To run a single file, wrap the command the same way:
 
 ```sh
 scripts/with-test-services.sh pnpm --filter @inzpro/api exec vitest run src/modules/study/http.test.ts

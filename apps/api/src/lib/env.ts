@@ -12,6 +12,14 @@ const processVariables = {
 
 export const processEnv = Config.all(processVariables)
 
+export const fileStorageEnv = Config.all({
+  endpoint: Config.URL('FILE_STORAGE_ENDPOINT'),
+  region: Config.NonEmptyString('FILE_STORAGE_REGION').pipe(Config.withDefault('auto')),
+  bucket: Config.NonEmptyString('FILE_STORAGE_BUCKET'),
+  accessKeyId: Config.NonEmptyString('FILE_STORAGE_ACCESS_KEY_ID'),
+  secretAccessKey: Config.Redacted('FILE_STORAGE_SECRET_ACCESS_KEY'),
+})
+
 export type ProcessEnv = Effect.Success<typeof processEnv>
 
 export const env = Config.all({
@@ -33,6 +41,7 @@ export const env = Config.all({
   // EXTERNAL: Trust this proxy address header only when the origin accepts traffic exclusively from that proxy.
   TRUSTED_CLIENT_IP_HEADER: Config.option(Config.NonEmptyString('TRUSTED_CLIENT_IP_HEADER')),
   RESEND_API_KEY: Config.Redacted('RESEND_API_KEY'),
+  FILE_STORAGE: fileStorageEnv,
 })
 
 export type Env = Effect.Success<typeof env>

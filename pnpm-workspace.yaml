@@ -73,6 +73,7 @@ catalog:
   '@alchemy.run/cloudflare': 2.0.0-beta.87
   alchemy: 2.0.0-beta.87
   ts-fsrs: 6.0.0
+  aws4fetch: 1.0.20
 catalogMode: prefer
 dedupePeers: true
 saveExact: true

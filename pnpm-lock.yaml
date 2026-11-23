@@ -267,6 +267,9 @@ catalogs:
     alchemy:
       specifier: 2.0.0-beta.87
       version: 2.0.0-beta.87
+    aws4fetch:
+      specifier: 1.0.20
+      version: 1.0.20
     better-auth:
       specifier: 1.7.25
       version: 1.7.25
@@ -527,6 +530,9 @@ importers:
       '@inzpro/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      aws4fetch:
+        specifier: 'catalog:'
+        version: 1.0.20
       dotenv:
         specifier: 'catalog:'
         version: 18.0.10
@@ -3885,6 +3891,9 @@ packages:
 
   atomically@2.1.1:
     resolution: {integrity: sha512-P4w9o2dqARji6P7MHprklbfiArZAWvo07yW7qs3pdljb3BWr12FIB7W+p0zJiuiVsUpRO0iZn1kFFcpPegg0tQ==}
+
+  aws4fetch@1.0.20:
+    resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
 
   babel-dead-code-elimination@1.0.12:
     resolution: {integrity: sha512-GERT7L2TiYcYDtYk1IpD+ASAYXjKbLTDPhBtYj7X1NuRMDTMtAx9kyBenub1Ev41lo91OHCKdmP+egTDmfQ7Ig==}
@@ -8441,6 +8450,8 @@ snapshots:
     dependencies:
       stubborn-fs: 2.0.0
       when-exit: 2.1.5
+
+  aws4fetch@1.0.20: {}
 
   babel-dead-code-elimination@1.0.12(supports-color@10.2.2):
     dependencies:
