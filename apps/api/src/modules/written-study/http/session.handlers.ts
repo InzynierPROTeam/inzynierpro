@@ -11,6 +11,7 @@ import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
+import { withContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
 import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import {
@@ -55,6 +56,11 @@ import {
   toStudySessionSummaryDto,
   toSessionNextStepDto,
 } from '~api/modules/written-study/http/mappers.js'
+
+const signedSessionQuestionDto = withContentAssetAddresses(
+  question => [question.explanation],
+  toSessionQuestionDto,
+)
 
 const assistanceRecords = {
   [explanationAssistanceKind]: recordExplanationOpening,
@@ -202,8 +208,9 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.map(Option.map(toSessionQuestionDto)),
-      Effect.map(Option.getOrNull),
+      Effect.flatMap(
+        Option.match({ onNone: () => Effect.succeed(null), onSome: signedSessionQuestionDto }),
+      ),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PathPermissionDenied: () => pathAccessDenied,
@@ -222,7 +229,7 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.map(toSessionQuestionDto),
+      Effect.flatMap(signedSessionQuestionDto),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PreparationWriteError: failPreparationWrite,
@@ -247,12 +254,14 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.map(({ question, session, awardedXp, rewards }) => ({
-        awardedXp,
-        rewards: toLearningRewardsDto(rewards),
-        question: toSessionQuestionDto(question),
-        session: toStudySessionDto(session),
-      })),
+      Effect.flatMap(({ question, session, awardedXp, rewards }) =>
+        Effect.map(signedSessionQuestionDto(question), questionDto => ({
+          awardedXp,
+          rewards: toLearningRewardsDto(rewards),
+          question: questionDto,
+          session: toStudySessionDto(session),
+        })),
+      ),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PreparationWriteError: failPreparationWrite,

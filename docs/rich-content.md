@@ -24,7 +24,11 @@ Writes decode content with `Schema.decodeEffect(RichContent)`: unknown nodes and
 
 ## Reading
 
-Responses carry `ResolvedRichContent`: the stored content plus an `assets` list of `ContentAssetAddress`, each referenced asset's `url`. No file storage exists yet, so every `url` is `null`. The contract decodes content with the permissive `AnyRichContent`, so a client older than the content still receives it.
+Responses carry `ResolvedRichContent`: the stored content plus an `assets` list of `ContentAssetAddress`, each referenced asset's `url`. Files live in a private S3-compatible bucket behind the learning-content `FileStorage` port (ADR-0017): MinIO locally and in tests, Cloudflare R2 when deployed. The S3 adapter uses only `PutObject` and presigned `GetObject`, both supported by R2.
+
+A handler signs addresses only after its read has authorized the content: path access, and published or session content the learner may see. Mappers stay pure and take the addresses as an argument; the handler wraps them with `withContentAssetAddresses(contentsOf, toDto)`, so one response signs once. `signContentAssetAddresses` collects the image asset IDs of the returned content (for a quiz check, only once it is answered), reads their storage keys in one query and signs a `GET` address valid for one hour. An asset without a stored row keeps `url: null`; when the addresses cannot be signed, the response keeps every `url` `null` and the API logs a warning, so the content stays readable with placeholders. The contract decodes content with the permissive `AnyRichContent`, so a client older than the content still receives it.
+
+There is no upload API yet. The technical seed uploads its diagram from `apps/api/src/seed/assets` and records it in `content_assets`.
 
 ## Web renderer
 

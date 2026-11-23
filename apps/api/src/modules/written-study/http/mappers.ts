@@ -16,6 +16,7 @@ import {
   startStudyNextStep,
 } from '@inzpro/domain/modules/learning/study-session'
 import { Match, Option } from 'effect'
+import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
 import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
 import type { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
 import {
@@ -59,16 +60,12 @@ const sessionDocument = (session: StudySession): Option.Option<SessionDocument> 
 export const toLatestStudySessionDto = (session: StudySession): Option.Option<LatestStudySession> =>
   Option.map(sessionDocument(session), document => ({ ...toStudySessionDto(session), document }))
 
-export const toSessionQuestionDto = ({
-  explanation,
-  explanationOpenedAt,
-  noteOpenedAt,
-  note,
-  answer,
-  ...question
-}: SessionQuestion): SessionQuestionDto => ({
+export const toSessionQuestionDto = (
+  { explanation, explanationOpenedAt, noteOpenedAt, note, answer, ...question }: SessionQuestion,
+  addresses: ContentAssetAddresses,
+): SessionQuestionDto => ({
   ...question,
-  explanation: toResolvedRichContentDto(explanation),
+  explanation: toResolvedRichContentDto(explanation, addresses),
   explanationOpenedAt: Option.match(explanationOpenedAt, {
     onNone: () => null,
     onSome: dateTimeUtcToUtcIsoDateTime,

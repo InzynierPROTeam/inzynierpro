@@ -51,6 +51,13 @@ export const ContentAsset = Schema.Struct({
 
 export type ContentAsset = typeof ContentAsset.Type
 
+export const ContentAssetLocation = Schema.Struct({
+  id: ContentAssetId,
+  storageKey: Schema.NonEmptyString,
+})
+
+export type ContentAssetLocation = typeof ContentAssetLocation.Type
+
 const NewQuestionAnswer = Schema.Struct({
   id: QuestionAnswerId,
   questionRevisionId: QuestionRevisionId,

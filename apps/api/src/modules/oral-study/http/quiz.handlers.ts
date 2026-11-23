@@ -2,10 +2,11 @@ import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
 import { Effect, Option } from 'effect'
 import type { HttpApiEndpoint } from 'effect/http-api'
-import { mapCursorPage } from '~api/lib/cursor-pagination.js'
+import { type CursorPage, mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
+import { withContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
 import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import {
@@ -19,6 +20,7 @@ import {
   getOralSessionQuizState,
 } from '~api/modules/oral-study/application/oral-session-quiz.query.js'
 import { startOralSessionQuiz } from '~api/modules/oral-study/application/start-oral-session-quiz.command.js'
+import type { OralQuizCheck } from '~api/modules/oral-study/domain/oral-session-quiz.model.js'
 import {
   invalidOralQuizSelection,
   oralQuizCheckAlreadyAnswered,
@@ -26,13 +28,27 @@ import {
   oralQuizFormatUnsupported,
   oralQuizUnavailable,
 } from '~api/modules/oral-study/http/errors.js'
-import { toOralQuizCheckDto, toOralSessionQuizDto } from '~api/modules/oral-study/http/mappers.js'
+import {
+  revealedQuizCheckContents,
+  toOralQuizCheckDto,
+  toOralSessionQuizDto,
+} from '~api/modules/oral-study/http/mappers.js'
 import {
   failPreparationRead,
   failPreparationWrite,
   pathAccessDenied,
 } from '~api/modules/preparation/http/errors.js'
 import { failStreakRead, failStreakWrite } from '~api/modules/streak/http/errors.js'
+
+const signedOralQuizCheckDto = withContentAssetAddresses(
+  check => revealedQuizCheckContents([check]),
+  toOralQuizCheckDto,
+)
+
+const signedOralQuizCheckPage = withContentAssetAddresses(
+  (page: CursorPage<OralQuizCheck>) => revealedQuizCheckContents(page.data),
+  (page, addresses) => mapCursorPage(page, check => toOralQuizCheckDto(check, addresses)),
+)
 
 export const quizHandlers = {
   GetOralSessionQuiz: ({ params }) =>
@@ -64,7 +80,7 @@ export const quizHandlers = {
           getOralQuizChecks(user.id, params.qualificationPathId, params.sessionId, query),
         ),
       ),
-      Effect.map(page => mapCursorPage(page, toOralQuizCheckDto)),
+      Effect.flatMap(signedOralQuizCheckPage),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PathPermissionDenied: () => pathAccessDenied,
@@ -110,11 +126,13 @@ export const quizHandlers = {
           ),
         ),
       ),
-      Effect.map(({ check, quiz, rewards }) => ({
-        rewards: toLearningRewardsDto(rewards),
-        check: toOralQuizCheckDto(check),
-        quiz: toOralSessionQuizDto(quiz),
-      })),
+      Effect.flatMap(({ check, quiz, rewards }) =>
+        Effect.map(signedOralQuizCheckDto(check), checkDto => ({
+          rewards: toLearningRewardsDto(rewards),
+          check: checkDto,
+          quiz: toOralSessionQuizDto(quiz),
+        })),
+      ),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PreparationWriteError: failPreparationWrite,

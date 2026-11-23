@@ -11,6 +11,11 @@ import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import { catalogueTestTime } from '~api/test/clock.js'
 import {
+  addFixtureAsset,
+  contentWithImage,
+  expectStoredImageAddress,
+} from '~api/test/content-fixtures.js'
+import {
   createMockExamFixture,
   mockExamPathConfiguration,
   mockExamScoreStatistics,
@@ -483,4 +488,30 @@ it('finished attempts update anonymous mock exam and written question statistics
       { mode: 'exam', assistance: 'none', studyDay, answerCount: 1, correctCount: 1 },
     ])
   }
+})
+
+it('reviews a finished attempt with a signed address for each explanation image', async () => {
+  const configuration = mockExamPathConfiguration('60000000-0000-4000-8000-000000000003')
+  const pathId = await resolveFixturePath(configuration)
+  const assetId = await addFixtureAsset()
+  await createMockExamFixture(
+    pathId,
+    [{ questionCount: 1, eligibleQuestions: 1 }],
+    1,
+    contentWithImage(assetId),
+  )
+  const learner = await mockExamLearner(api, configuration)
+  const attempt = await learner.started()
+
+  expect(await (await learner.request(`/attempts/${attempt.id}/review`)).text()).not.toContain(
+    assetId,
+  )
+
+  await learner.request(`/attempts/${attempt.id}/finish`, 'POST')
+
+  const review = await decodeResponse(AttemptReviewResponse)(
+    await learner.request(`/attempts/${attempt.id}/review`),
+  )
+
+  await expectStoredImageAddress(review.data[0]!.explanation, assetId)
 })

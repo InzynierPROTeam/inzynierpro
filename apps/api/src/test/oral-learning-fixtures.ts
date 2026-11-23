@@ -192,6 +192,7 @@ export const addFixtureKnowledgeCheck = (
   format: KnowledgeCheckFormat,
   options: ReadonlyArray<FixtureKnowledgeCheckOption>,
   published = true,
+  explanation: typeof RichContent.Encoded = paragraphs('Test-only check explanation'),
 ) =>
   runFixture(
     Effect.gen(function* () {
@@ -205,7 +206,7 @@ export const addFixtureKnowledgeCheck = (
         format,
         prompt: `Test-only ${format} check`,
         options: options.map(option => ({ id: crypto.randomUUID(), ...option })),
-        explanation: paragraphs('Test-only check explanation'),
+        explanation,
         published,
       })
 

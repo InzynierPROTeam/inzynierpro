@@ -10,6 +10,7 @@ import type { MockExamUnavailableReason } from '@inzpro/domain/modules/mock-exam
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option } from 'effect'
 import type { CursorPage } from '~api/lib/cursor-pagination.js'
+import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
 import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
 import type { LearningRewards } from '~api/modules/learning-xp/domain/learning-reward.model.js'
 import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
@@ -108,10 +109,11 @@ export const toAttemptQuestionDto = (question: AttemptQuestion): AttemptQuestion
 
 export const toAttemptReviewQuestionDto = (
   question: AttemptReviewQuestion,
+  addresses: ContentAssetAddresses,
 ): AttemptReviewQuestionDto => ({
   ...toAttemptQuestionDto(question),
   correctAnswerId: question.correctAnswerId,
-  explanation: toResolvedRichContentDto(question.explanation),
+  explanation: toResolvedRichContentDto(question.explanation, addresses),
   isFavorite: question.isFavorite,
   note: Option.match(question.note, { onNone: () => null, onSome: toQuestionNoteDto }),
 })

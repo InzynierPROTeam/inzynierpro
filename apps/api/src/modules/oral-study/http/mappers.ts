@@ -15,6 +15,7 @@ import {
   startStudyNextStep,
 } from '@inzpro/domain/modules/learning/study-session'
 import { Match, Option } from 'effect'
+import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
 import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
 import {
   answeredPercent,
@@ -53,16 +54,13 @@ export const toOralStudySessionDto = (session: OralStudySession): OralStudySessi
   }),
 })
 
-export const toOralSessionQuestionDto = ({
-  body,
-  answer,
-  note,
-  selfAssessment,
-  ...question
-}: OralSessionQuestion): OralSessionQuestionDto => ({
+export const toOralSessionQuestionDto = (
+  { body, answer, note, selfAssessment, ...question }: OralSessionQuestion,
+  addresses: ContentAssetAddresses,
+): OralSessionQuestionDto => ({
   ...question,
-  body: toResolvedRichContentDto(body),
-  answer: toResolvedRichContentDto(answer),
+  body: toResolvedRichContentDto(body, addresses),
+  answer: toResolvedRichContentDto(answer, addresses),
   note: Option.match(note, { onNone: () => null, onSome: toQuestionNoteDto }),
   selfAssessment: Option.match(selfAssessment, {
     onNone: () => null,
@@ -123,14 +121,10 @@ export const toOralReviewPreviewDto = (preview: OralReviewPreview): OralReviewPr
   settings: Option.getOrNull(preview.settings),
 })
 
-export const toOralQuizCheckDto = ({
-  position,
-  format,
-  prompt,
-  options,
-  explanation,
-  answer,
-}: OralQuizCheck): OralQuizCheckDto => ({
+export const toOralQuizCheckDto = (
+  { position, format, prompt, options, explanation, answer }: OralQuizCheck,
+  addresses: ContentAssetAddresses,
+): OralQuizCheckDto => ({
   position,
   format,
   prompt,
@@ -141,11 +135,14 @@ export const toOralQuizCheckDto = ({
       isCorrect,
       selectedOptionIds,
       correctOptionIds: options.filter(option => option.isCorrect).map(option => option.id),
-      explanation: toResolvedRichContentDto(explanation),
+      explanation: toResolvedRichContentDto(explanation, addresses),
       answeredAt: dateTimeUtcToUtcIsoDateTime(answeredAt),
     }),
   }),
 })
+
+export const revealedQuizCheckContents = (checks: ReadonlyArray<OralQuizCheck>) =>
+  checks.flatMap(check => (Option.isSome(check.answer) ? [check.explanation] : []))
 
 export const toOralSessionQuizDto = ({
   id,
