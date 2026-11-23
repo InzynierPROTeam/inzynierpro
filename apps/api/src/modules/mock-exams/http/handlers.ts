@@ -5,7 +5,6 @@ import { HttpApiBuilder } from 'effect/http-api'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
-import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
@@ -418,7 +417,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
         }),
       ),
     ),
-).pipe(Layer.provide(AuthenticationLive))
+)
 
 export const MockExamsRequestServices = Layer.mergeAll(
   TransactionLive,

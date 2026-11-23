@@ -2,6 +2,7 @@ import { Api } from '@inzpro/api-contracts/api'
 import { Layer } from 'effect'
 import { HttpRouter } from 'effect/http'
 import { HttpApiBuilder } from 'effect/http-api'
+import { AuthenticationLive } from '~api/middleware/authentication.js'
 import {
   ExamCalendarLive,
   ExamCalendarRequestServices,
@@ -41,7 +42,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       StreakLive,
       LearningXpLive,
       ProfilesLive,
-    ),
+    ).pipe(Layer.provide(AuthenticationLive)),
   ),
   HttpRouter.provideRequest(
     Layer.mergeAll(
