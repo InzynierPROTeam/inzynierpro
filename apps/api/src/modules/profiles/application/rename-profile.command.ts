@@ -11,7 +11,7 @@ export const renameProfile = Effect.fn('Profiles.renameProfile')(function* (
 ) {
   const profileRepository = yield* ProfileRepository
 
-  const profileName = yield* Schema.decodeUnknownEffect(ProfileName)(name.trim()).pipe(
+  const profileName = yield* Schema.decodeEffect(ProfileName)(name.trim()).pipe(
     Effect.mapError(() => new InvalidProfileName()),
   )
 
