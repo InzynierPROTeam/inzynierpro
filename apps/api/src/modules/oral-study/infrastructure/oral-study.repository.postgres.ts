@@ -257,6 +257,18 @@ export const OralStudyRepositoryLive = Layer.effect(
           )
         },
       ),
+      resetPath: Effect.fn('OralStudyRepository.resetPath')(
+        function* (userId, pathId) {
+          yield* sql`DELETE FROM oral_review_states WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM oral_learning_events WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM oral_study_sessions WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM oral_question_coverage WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM oral_learning_rounds WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM oral_daily_plans WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM oral_daily_plan_settings WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
       storeLearningRound: Effect.fn('OralStudyRepository.storeLearningRound')(
         (userId, pathId, round) =>
           sql`INSERT INTO oral_learning_rounds (user_id,qualification_path_id,round_number) VALUES (${userId},${pathId},${round})

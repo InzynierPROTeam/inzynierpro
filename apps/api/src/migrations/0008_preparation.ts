@@ -8,6 +8,7 @@ export default Effect.gen(function* () {
     qualification_path_id uuid NOT NULL REFERENCES qualification_paths(id),
     access_scope text NOT NULL CHECK (access_scope IN ('written', 'oral', 'both')),
     district_chamber_id uuid REFERENCES district_chambers(id),
+    version integer NOT NULL DEFAULT 1 CHECK (version > 0),
     archived_at timestamptz(3), created_at timestamptz(3) NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, qualification_path_id),
     updated_at timestamptz(3) NOT NULL DEFAULT now()

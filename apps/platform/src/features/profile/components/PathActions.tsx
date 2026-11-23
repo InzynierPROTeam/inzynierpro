@@ -8,13 +8,15 @@ import {
   DropdownMenuSeparator,
 } from '@inzpro/ui/components/dropdown-menu'
 import { toast } from '@inzpro/ui/components/toast'
-import { Archive, ArchiveRestore, Check, Ellipsis, Trash2 } from 'lucide-react'
+import { Archive, ArchiveRestore, Check, Ellipsis, RotateCcw, Trash2 } from 'lucide-react'
 import type React from 'react'
+import { useState } from 'react'
 import { useArchivePath } from '~platform/features/examPaths/hooks/useArchivePath'
 import { useRestorePath } from '~platform/features/examPaths/hooks/useRestorePath'
 import { useSelectPath } from '~platform/features/examPaths/hooks/useSelectPath'
 
 import { profileRouteApi } from '../utils'
+import { ResetPathDialog } from './ResetPathDialog'
 
 type PathActionsProps = {
   path: UserQualificationPath
@@ -30,6 +32,7 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
   const restore = useRestorePath(user.id)
   const selectPath = useSelectPath(user.id)
   const isPending = archive.isPending || restore.isPending
+  const [isResetOpen, setIsResetOpen] = useState(false)
 
   const toggleArchived = () =>
     toast.promise(
@@ -48,42 +51,55 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
     )
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="outline"
-            size="icon-sm"
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="outline"
+              size="icon-sm"
+              disabled={isPending}
+              aria-label={`Opcje ścieżki: ${path.name}`}
+            />
+          }
+        >
+          <Ellipsis />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            disabled={isSelected || path.archived || isPending}
+            onClick={() => void selectPath(path.id)}
+          >
+            <Check /> Wybierz
+          </DropdownMenuItem>
+          <DropdownMenuItem
             disabled={isPending}
-            aria-label={`Opcje ścieżki: ${path.name}`}
-          />
-        }
-      >
-        <Ellipsis />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          disabled={isSelected || path.archived || isPending}
-          onClick={() => void selectPath(path.id)}
-        >
-          <Check /> Wybierz
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          disabled={isPending}
-          onClick={toggleArchived}
-        >
-          {path.archived ? <ArchiveRestore /> : <Archive />}
-          {path.archived ? 'Przywróć' : 'Archiwizuj'}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {/* TODO: enable removal when the backend exposes an explicit delete-path operation. */}
-        <DropdownMenuItem
-          variant="destructive"
-          disabled
-        >
-          <Trash2 /> Usuń
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            onClick={toggleArchived}
+          >
+            {path.archived ? <ArchiveRestore /> : <Archive />}
+            {path.archived ? 'Przywróć' : 'Archiwizuj'}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={isPending}
+            onClick={() => setIsResetOpen(true)}
+          >
+            <RotateCcw /> Resetuj postęp
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {/* TODO: enable removal when the backend exposes an explicit delete-path operation. */}
+          <DropdownMenuItem
+            variant="destructive"
+            disabled
+          >
+            <Trash2 /> Usuń
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ResetPathDialog
+        path={path}
+        isOpen={isResetOpen}
+        onOpenChange={setIsResetOpen}
+      />
+    </>
   )
 }

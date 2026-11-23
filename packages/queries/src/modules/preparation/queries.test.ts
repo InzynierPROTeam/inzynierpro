@@ -62,6 +62,7 @@ test('HTTP goal dates stay ISO and null through query cache hydration', () => {
       name: 'Bez ograniczeń',
     },
     accessScope: 'both',
+    version: 1,
     archived: false,
     districtChamber: null,
     goal: {

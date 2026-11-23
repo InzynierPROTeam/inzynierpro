@@ -2,6 +2,7 @@ import { UtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
 import { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
 import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
+import { UserQualificationPathVersion } from '@inzpro/domain/modules/preparation/user-qualification-path'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
 import {
@@ -35,6 +36,7 @@ export const UserQualificationPath = Schema.Struct({
   qualificationKind: QualificationKind,
   qualificationScope: QualificationScope,
   accessScope: ExamAccessScope,
+  version: UserQualificationPathVersion,
   archived: Schema.Boolean,
   districtChamber: Schema.NullOr(DistrictChamber),
   goal: UserExamGoal,

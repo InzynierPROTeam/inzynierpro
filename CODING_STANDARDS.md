@@ -123,6 +123,7 @@ ADR-0015 sets the strategy; this section is how to apply it. Name tests after be
 Data and isolation:
 
 - Every test creates its own account with a unique e-mail. Tests never truncate tables or depend on order, so files and workers run in parallel against one database.
+- Test bodies and fixtures write no SQL. The only exception is a file in `apps/api/src/test/sql/` listed with its reason in `testSqlFiles` of the `conventions/backend-boundaries` lint rule, such as the PostgreSQL catalogue read behind the path reset table inventory. A new entry needs a check that repositories cannot express.
 - The catalogue comes from the idempotent technical seed. Test-specific content goes through module repositories (`apps/api/src/test/{content,preparation,written-learning,oral-learning}-fixtures.ts`); test bodies write no SQL.
 - Business time is fixed (`catalogueTestTime`), so exam sessions do not expire under the suite.
 

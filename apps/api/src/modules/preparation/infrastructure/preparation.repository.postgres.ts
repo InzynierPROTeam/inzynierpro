@@ -1,4 +1,5 @@
-import { DateTime, Effect, Layer, Option } from 'effect'
+import { UserQualificationPathVersion } from '@inzpro/domain/modules/preparation/user-qualification-path'
+import { DateTime, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { PreparationWriteError } from '~api/modules/preparation/application/errors.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
@@ -17,6 +18,39 @@ export const PreparationRepositoryLive = Layer.effect(
           }),
         )
       }),
+      lockAssignmentForUpdate: Effect.fn('PreparationRepository.lockAssignmentForUpdate')(
+        function* (userId, pathId) {
+          return yield* sql`SELECT 1 FROM user_qualification_paths WHERE user_id=${userId} AND qualification_path_id=${pathId} LIMIT 1 FOR UPDATE`.pipe(
+            Effect.asVoid,
+            Effect.catchTags({
+              SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),
+            }),
+          )
+        },
+      ),
+      lockAssignmentForShare: Effect.fn('PreparationRepository.lockAssignmentForShare')(
+        function* (userId, pathId) {
+          return yield* sql`SELECT 1 FROM user_qualification_paths WHERE user_id=${userId} AND qualification_path_id=${pathId} LIMIT 1 FOR SHARE`.pipe(
+            Effect.asVoid,
+            Effect.catchTags({
+              SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),
+            }),
+          )
+        },
+      ),
+      advanceVersion: Effect.fn('PreparationRepository.advanceVersion')(
+        function* (userId, pathId) {
+          const rows =
+            yield* sql`UPDATE user_qualification_paths SET version=version+1 WHERE user_id=${userId} AND qualification_path_id=${pathId} RETURNING version`
+
+          const [row] = yield* Schema.decodeUnknownEffect(
+            Schema.Tuple([Schema.Struct({ version: UserQualificationPathVersion })]),
+          )(rows)
+
+          return row.version
+        },
+        Effect.mapError(cause => new PreparationWriteError({ cause })),
+      ),
       insert: Effect.fn('PreparationRepository.insert')(function* (userId, pathId, scope) {
         return yield* sql`INSERT INTO user_qualification_paths (user_id,qualification_path_id,access_scope) VALUES (${userId},${pathId},${scope})`.pipe(
           Effect.asVoid,
@@ -42,14 +76,14 @@ export const PreparationRepositoryLive = Layer.effect(
       ),
       archive: Effect.fn('PreparationRepository.archive')(
         function* (userId, pathId) {
-          yield* sql`UPDATE user_qualification_paths SET archived_at=coalesce(archived_at,now()) WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`UPDATE user_qualification_paths SET archived_at=coalesce(archived_at,now()),version=version+1 WHERE user_id=${userId} AND qualification_path_id=${pathId}`
         },
         Effect.catchTags({
           SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),
         }),
       ),
       restore: Effect.fn('PreparationRepository.restore')(function* (userId, pathId) {
-        return yield* sql`UPDATE user_qualification_paths SET archived_at=NULL WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
+        return yield* sql`UPDATE user_qualification_paths SET archived_at=NULL,version=version+1 WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
           Effect.asVoid,
           Effect.catchTags({
             SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),
@@ -60,7 +94,7 @@ export const PreparationRepositoryLive = Layer.effect(
         function* (userId, pathId, districtChamberId) {
           const chamberId = Option.getOrNull(districtChamberId)
 
-          return yield* sql`UPDATE user_qualification_paths SET district_chamber_id=${chamberId} WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
+          return yield* sql`UPDATE user_qualification_paths SET district_chamber_id=${chamberId},version=version+1 WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
             Effect.asVoid,
             Effect.catchTags({
               SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),
@@ -69,7 +103,7 @@ export const PreparationRepositoryLive = Layer.effect(
         },
       ),
       extend: Effect.fn('PreparationRepository.extend')(function* (userId, pathId) {
-        return yield* sql`UPDATE user_qualification_paths SET access_scope='both' WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
+        return yield* sql`UPDATE user_qualification_paths SET access_scope='both',version=version+1 WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
           Effect.asVoid,
           Effect.catchTags({
             SqlError: cause => Effect.fail(new PreparationWriteError({ cause })),

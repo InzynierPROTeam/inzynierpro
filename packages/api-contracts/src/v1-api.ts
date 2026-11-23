@@ -5,6 +5,7 @@ import { IdentityApi } from '~api-contracts/modules/identity/api.js'
 import { LearningXpApi } from '~api-contracts/modules/learning-xp/api.js'
 import { MockExamsApi } from '~api-contracts/modules/mock-exams/api.js'
 import { OralStudyApi } from '~api-contracts/modules/oral-study/api.js'
+import { PathResetApi } from '~api-contracts/modules/path-reset/api.js'
 import { PreparationApi } from '~api-contracts/modules/preparation/api.js'
 import { ProfilesApi } from '~api-contracts/modules/profiles/api.js'
 import { QualificationPathsApi } from '~api-contracts/modules/qualification-paths/api.js'
@@ -25,4 +26,5 @@ export class V1Api extends HttpApi.make('v1')
   .add(LearningXpApi)
   .add(ProfilesApi)
   .add(RankingsApi)
+  .add(PathResetApi)
   .prefix('/v1') {}

@@ -218,6 +218,12 @@ export const MockExamRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new MockExamWriteError({ cause })),
       ),
+      resetPath: Effect.fn('MockExamRepository.resetPath')((userId, pathId) =>
+        sql`DELETE FROM mock_exam_attempts WHERE user_id=${userId} AND qualification_path_id=${pathId}`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new MockExamWriteError({ cause })),
+        ),
+      ),
       lockAttempt: Effect.fn('MockExamRepository.lockAttempt')(
         function* (userId, pathId, attemptId) {
           const rows =

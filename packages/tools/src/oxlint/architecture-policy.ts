@@ -90,6 +90,7 @@ export const apiModuleDependencies = {
     'written-study',
     'streak',
   ],
+  'path-reset': ['preparation', 'learning', 'written-study', 'oral-study', 'mock-exams'],
 } as const satisfies Record<string, ReadonlyArray<string>>
 
 export const universalPackages = [

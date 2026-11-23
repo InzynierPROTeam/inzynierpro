@@ -39,6 +39,7 @@ const assignment = (accessScope: ExamAccessScope, archived: boolean) =>
       name: 'Bez ograniczeń',
     },
     accessScope,
+    version: 1,
     archived,
     districtChamber: null,
     goal: {

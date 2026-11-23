@@ -14,6 +14,7 @@ import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.re
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import { MockExamAttemptNotInProgress } from '~api/modules/mock-exams/domain/errors.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
+import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 
 export const resumeAttempt = Effect.fn('MockExams.resumeAttempt')(function* (
   userId: UserId,
@@ -23,12 +24,14 @@ export const resumeAttempt = Effect.fn('MockExams.resumeAttempt')(function* (
   yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const mockExamReader = yield* MockExamReader
   const mockExamRepository = yield* MockExamRepository
+  const preparationRepository = yield* PreparationRepository
   const transaction = yield* Transaction
 
   yield* finishAttemptIfExpired(userId, pathId, attemptId)
 
   return yield* transaction.run(
     Effect.gen(function* () {
+      yield* preparationRepository.lockAssignmentForShare(userId, pathId)
       const clock = yield* mockExamRepository.lockAttempt(userId, pathId, attemptId)
 
       if (Option.isNone(clock)) {

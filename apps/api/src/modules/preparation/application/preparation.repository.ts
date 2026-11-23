@@ -4,6 +4,7 @@ import type { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-se
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
 import type { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
+import type { UserQualificationPathVersion } from '@inzpro/domain/modules/preparation/user-qualification-path'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect, type Option } from 'effect'
 
@@ -13,6 +14,18 @@ export class PreparationRepository extends Context.Service<
   PreparationRepository,
   {
     readonly lockUser: (userId: UserId) => Effect.Effect<void, PreparationWriteError>
+    readonly lockAssignmentForUpdate: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<void, PreparationWriteError>
+    readonly lockAssignmentForShare: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<void, PreparationWriteError>
+    readonly advanceVersion: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<UserQualificationPathVersion, PreparationWriteError>
     readonly insert: (
       userId: UserId,
       pathId: QualificationPathId,

@@ -1,4 +1,5 @@
 import { runApi } from '@inzpro/api-client/lib/run-api'
+import { resetPath, type ResetPathRequest } from '@inzpro/api-client/modules/path-reset'
 import {
   archivePath,
   restorePath,
@@ -17,3 +18,6 @@ export const restoreQualificationPath = (req: RestorePathRequest) =>
 
 export const extendQualificationPath = (req: ExtendPathRequest) =>
   runApi(extendPath(req), apiHttpClient)
+
+export const resetQualificationPath = (req: ResetPathRequest) =>
+  runApi(resetPath(req), apiHttpClient)

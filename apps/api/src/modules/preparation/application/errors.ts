@@ -6,5 +6,5 @@ export class PreparationReadError extends Data.TaggedError('PreparationReadError
 }> {}
 
 export class PreparationWriteError extends Data.TaggedError('PreparationWriteError')<{
-  readonly cause: SqlError.SqlError
+  readonly cause: SqlError.SqlError | Schema.SchemaError
 }> {}
