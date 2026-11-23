@@ -15,6 +15,7 @@ import {
 } from '~api/modules/learning-xp/http/handlers.js'
 import { MockExamsLive, MockExamsRequestServices } from '~api/modules/mock-exams/http/handlers.js'
 import { OralStudyLive, OralStudyRequestServices } from '~api/modules/oral-study/http/handlers.js'
+import { PathResetLive, PathResetRequestServices } from '~api/modules/path-reset/http/handlers.js'
 import {
   PreparationLive,
   PreparationRequestServices,
@@ -44,6 +45,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       LearningXpLive,
       ProfilesLive,
       RankingsLive,
+      PathResetLive,
     ).pipe(Layer.provide(AuthenticationLive)),
   ),
   HttpRouter.provideRequest(
@@ -59,6 +61,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       LearningXpRequestServices,
       ProfilesRequestServices,
       RankingsRequestServices,
+      PathResetRequestServices,
     ),
   ),
 )

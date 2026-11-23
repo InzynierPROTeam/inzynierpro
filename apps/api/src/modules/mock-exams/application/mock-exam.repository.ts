@@ -76,5 +76,9 @@ export class MockExamRepository extends Context.Service<
       isFlagged: boolean,
       version: AttemptQuestionVersion,
     ) => Effect.Effect<void, MockExamWriteError>
+    readonly resetPath: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<void, MockExamWriteError>
   }
 >()('api/modules/mock-exams/MockExamRepository') {}

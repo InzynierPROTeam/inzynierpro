@@ -22,6 +22,7 @@ import {
 import type { AttemptQuestion } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import { acceptsDraftWrites } from '~api/modules/mock-exams/domain/mock-exam-clock.rules.js'
 import { requirePathAccess } from '~api/modules/preparation/application/path-access.policy.js'
+import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
 
 export const flagAttemptQuestion = Effect.fn('MockExams.flagAttemptQuestion')(function* (
   userId: UserId,
@@ -33,12 +34,14 @@ export const flagAttemptQuestion = Effect.fn('MockExams.flagAttemptQuestion')(fu
   yield* requirePathAccess(userId, pathId, { part: writtenExamAccess })
   const mockExamReader = yield* MockExamReader
   const mockExamRepository = yield* MockExamRepository
+  const preparationRepository = yield* PreparationRepository
   const transaction = yield* Transaction
 
   yield* finishAttemptIfExpired(userId, pathId, attemptId)
 
   return yield* transaction.run(
     Effect.gen(function* () {
+      yield* preparationRepository.lockAssignmentForShare(userId, pathId)
       const clock = yield* mockExamRepository.lockAttempt(userId, pathId, attemptId)
 
       if (Option.isNone(clock)) {

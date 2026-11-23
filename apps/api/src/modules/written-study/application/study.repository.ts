@@ -119,5 +119,9 @@ export class StudyRepository extends Context.Service<
       pathId: QualificationPathId,
       studyDay: DateTime.Utc,
     ) => Effect.Effect<void, StudyWriteError>
+    readonly resetPath: (
+      userId: UserId,
+      pathId: QualificationPathId,
+    ) => Effect.Effect<void, StudyWriteError>
   }
 >()('api/modules/study/StudyRepository') {}

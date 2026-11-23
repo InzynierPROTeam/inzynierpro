@@ -323,6 +323,18 @@ export const StudyRepositoryLive = Layer.effect(
           )
         },
       ),
+      resetPath: Effect.fn('StudyRepository.resetPath')(
+        function* (userId, pathId) {
+          yield* sql`DELETE FROM written_review_states WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM written_learning_events WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM written_study_sessions WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM written_question_coverage WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM written_learning_rounds WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM written_daily_plans WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+          yield* sql`DELETE FROM written_daily_plan_settings WHERE user_id=${userId} AND qualification_path_id=${pathId}`
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
       storeLearningRound: Effect.fn('StudyRepository.storeLearningRound')(
         function* (userId, pathId, round) {
           return yield* sql`INSERT INTO written_learning_rounds (user_id,qualification_path_id,round_number) VALUES (${userId},${pathId},${round})
