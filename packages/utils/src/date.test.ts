@@ -8,12 +8,15 @@ import {
   dateTimeInputToUtc,
   formatDateTimeInput,
   formatDuration,
+  formatWarsawIsoDate,
   getCurrentFullYear,
   getDaysUntil,
   getRemainingDuration,
   isDateTimeInput,
   warsawEndOfDay,
+  warsawMonthStartOf,
   warsawStartOfDay,
+  warsawWeekStartOf,
 } from './date.js'
 
 const instant = DateTime.makeUnsafe
@@ -89,5 +92,18 @@ describe('Warsaw date boundaries', () => {
     expect(
       Duration.isZero(getRemainingDuration('2026-11-13T12:10:00.000Z', '2026-11-13T12:11:00.000Z')),
     ).toBe(true)
+  })
+})
+
+describe('Warsaw weeks and months', () => {
+  it.each([
+    { at: '2026-11-01T22:59:59Z', day: '2026-11-01', week: '2026-10-26', month: '2026-11-01' },
+    { at: '2026-11-01T23:00:00Z', day: '2026-11-02', week: '2026-11-02', month: '2026-11-01' },
+    { at: '2026-03-29T22:30:00Z', day: '2026-03-30', week: '2026-03-30', month: '2026-03-01' },
+    { at: '2026-12-31T23:00:00Z', day: '2027-01-01', week: '2026-12-28', month: '2027-01-01' },
+  ])('start on the Warsaw Monday and first of the month for $at', ({ at, day, week, month }) => {
+    expect(formatWarsawIsoDate(at)).toBe(day)
+    expect(formatWarsawIsoDate(warsawWeekStartOf(at))).toBe(week)
+    expect(formatWarsawIsoDate(warsawMonthStartOf(at))).toBe(month)
   })
 })

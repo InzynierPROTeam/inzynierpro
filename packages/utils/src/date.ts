@@ -241,3 +241,12 @@ export const pickedDayToUtcIsoDateTime = (date: Date): UtcIsoDateTime =>
 
 export const addWarsawDays = (date: DateInput, days: number): DateTime.Utc =>
   DateTime.toUtc(DateTime.startOf(DateTime.add(toWarsawZoned(date), { days }), 'day'))
+
+export const warsawWeekStartOf = (date: DateInput): DateTime.Zoned =>
+  DateTime.startOf(toWarsawZoned(date), 'week', { weekStartsOn: 1 })
+
+export const warsawMonthStartOf = (date: DateInput): DateTime.Zoned =>
+  DateTime.startOf(toWarsawZoned(date), 'month')
+
+export const formatWarsawIsoDate = (date: DateInput): string =>
+  DateTime.formatIsoDate(toWarsawZoned(date))

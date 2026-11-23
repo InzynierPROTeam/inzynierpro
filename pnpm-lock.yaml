@@ -524,6 +524,9 @@ importers:
       '@inzpro/rich-content':
         specifier: workspace:*
         version: link:../../packages/rich-content
+      '@inzpro/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       dotenv:
         specifier: 'catalog:'
         version: 18.0.10
