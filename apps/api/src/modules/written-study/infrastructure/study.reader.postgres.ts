@@ -6,6 +6,7 @@ import { writtenFavoritesReader } from './favorites.reader.postgres.js'
 import { writtenMaterialReader } from './material.reader.postgres.js'
 import { writtenReviewReader } from './review.reader.postgres.js'
 import { writtenSessionReader } from './session.reader.postgres.js'
+import { writtenStatisticsReader } from './statistics.reader.postgres.js'
 
 export const StudyReaderLive = Layer.effect(
   StudyReader,
@@ -15,6 +16,7 @@ export const StudyReaderLive = Layer.effect(
     const reviewReader = yield* writtenReviewReader
     const favoritesReader = yield* writtenFavoritesReader
     const dailyPlanReader = yield* writtenDailyPlanReader
+    const statisticsReader = yield* writtenStatisticsReader
 
     return StudyReader.of({
       ...materialReader,
@@ -22,6 +24,7 @@ export const StudyReaderLive = Layer.effect(
       ...reviewReader,
       ...favoritesReader,
       ...dailyPlanReader,
+      ...statisticsReader,
     })
   }),
 )

@@ -1,7 +1,7 @@
 import type { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import type { Percent } from '@inzpro/domain/common/percent'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
+import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   QuestionRevisionId,
@@ -158,6 +158,7 @@ export const FinalAttemptAnswer = Schema.Struct({
   position: AttemptQuestionPosition,
   questionId: WrittenQuestionId,
   questionRevisionId: QuestionRevisionId,
+  answerId: QuestionAnswerId,
   isCorrect: Schema.Boolean,
   goalVersion: UserExamGoalVersion,
 })

@@ -18,6 +18,7 @@ import {
   finishedExamXpReason,
 } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { examMode } from '~api/modules/learning/domain/review-state.model.js'
+import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import type { AttemptClock } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
@@ -98,6 +99,7 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
         goalVersion: answer.goalVersion,
         questionId: answer.questionId,
         questionRevisionId: answer.questionRevisionId,
+        answerId: answer.answerId,
         isCorrect: answer.isCorrect,
         source: WrittenEvidenceSource.MockExamAnswer({ attemptId, position: answer.position }),
       },
@@ -123,6 +125,14 @@ export const endLockedAttempt = Effect.fn('MockExams.endLockedAttempt')(function
   yield* mockExamRepository.finishAttempt(attemptId, ending, result, earnedXp)
 
   const passed = Option.getOrElse(result.passed, () => false)
+
+  yield* mockExamRepository.recordFinishedAttemptStatistic({
+    attemptId,
+    studyDay: studyDayOf(ending.finishedAt).start,
+    percent: result.percent,
+    isPassed: passed,
+    activeSeconds: result.activeSeconds,
+  })
 
   if (passed) {
     yield* grantStreakBridges(userId, passedMockExamBridgeOf(ending.finishedAt))

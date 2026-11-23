@@ -4,12 +4,17 @@ import {
   MockExamHistoryResponse,
   MockExamAttempt,
 } from '@inzpro/api-contracts/modules/mock-exams/responses'
+import { firstExamBlueprintVersion } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import { DateTime } from 'effect'
 import { afterAll, beforeAll, expect, it } from 'vitest'
+import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
+import { catalogueTestTime } from '~api/test/clock.js'
 import {
   createMockExamFixture,
   mockExamPathConfiguration,
+  mockExamScoreStatistics,
+  mockExamStatistics,
   resolveFixturePath,
 } from '~api/test/mock-exam-fixtures.js'
 import {
@@ -18,7 +23,10 @@ import {
   decodeFinishedAttempt,
 } from '~api/test/mock-exam-learner.js'
 import { learningRequest } from '~api/test/preparation.js'
-import { withdrawFixtureRevision } from '~api/test/written-learning-fixtures.js'
+import {
+  withdrawFixtureRevision,
+  writtenQuestionStatistics,
+} from '~api/test/written-learning-fixtures.js'
 
 let api: TestApi
 
@@ -418,5 +426,61 @@ it('shares the finished exam limit across paths under concurrency and renews it 
     expect(finished.earnedXp).toBe(10)
   } finally {
     await tomorrow.close()
+  }
+})
+
+it('finished attempts update anonymous mock exam and written question statistics', async () => {
+  const configuration = mockExamPathConfiguration('60000000-0000-4000-8000-000000000003')
+  const pathId = await resolveFixturePath(configuration)
+
+  const { blueprintId } = await createMockExamFixture(
+    pathId,
+    [{ questionCount: 2, eligibleQuestions: 2 }],
+    1,
+  )
+
+  const studyDay = studyDayOf(catalogueTestTime).start
+
+  const passing = await mockExamLearner(api, configuration)
+  const passingAttempt = await passing.started()
+  const questions = await passing.questions(passingAttempt)
+
+  for (const question of questions) {
+    await passing.saveAnswer(passingAttempt.id, question.position, {
+      answerId: question.answers.find(answer => answer.text === 'A')!.id,
+      expectedVersion: question.version,
+    })
+  }
+
+  const passed = await decodeFinishedAttempt(
+    await passing.request(`/attempts/${passingAttempt.id}/finish`, 'POST'),
+  )
+
+  await passing.request(`/attempts/${passingAttempt.id}/finish`, 'POST')
+
+  const failing = await mockExamLearner(api, configuration)
+  const failingAttempt = await failing.started()
+
+  const failed = await decodeFinishedAttempt(
+    await failing.request(`/attempts/${failingAttempt.id}/finish`, 'POST'),
+  )
+
+  expect(await mockExamStatistics(blueprintId, firstExamBlueprintVersion)).toEqual([
+    {
+      studyDay,
+      finishedCount: 2,
+      passedCount: 1,
+      activeSeconds: passed.result!.activeSeconds + failed.result!.activeSeconds,
+    },
+  ])
+  expect(await mockExamScoreStatistics(blueprintId, firstExamBlueprintVersion)).toEqual([
+    { studyDay, percent: 0, attemptCount: 1 },
+    { studyDay, percent: 100, attemptCount: 1 },
+  ])
+
+  for (const question of questions) {
+    expect(await writtenQuestionStatistics(question.questionRevisionId)).toEqual([
+      { mode: 'exam', assistance: 'none', studyDay, answerCount: 1, correctCount: 1 },
+    ])
   }
 })

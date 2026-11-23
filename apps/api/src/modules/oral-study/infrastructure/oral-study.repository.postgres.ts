@@ -101,6 +101,16 @@ export const OralStudyRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
+      recordSelfAssessmentStatistic: Effect.fn('OralStudyRepository.recordSelfAssessmentStatistic')(
+        function* (statistic) {
+          const studyDay = DateTime.formatIso(statistic.studyDay)
+
+          yield* sql`INSERT INTO oral_self_assessment_statistics (oral_revision_id,study_day,self_assessment,assessment_count)
+ VALUES (${statistic.oralRevisionId},${studyDay},${statistic.selfAssessment},1)
+ ON CONFLICT (oral_revision_id,study_day,self_assessment) DO UPDATE SET assessment_count=oral_self_assessment_statistics.assessment_count+1`
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
       storeReviewState: Effect.fn('OralStudyRepository.storeReviewState')(function* (state) {
         const { card, evidence } = state
 

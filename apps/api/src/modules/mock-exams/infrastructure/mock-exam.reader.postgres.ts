@@ -49,6 +49,10 @@ import type {
   MockExamAttemptSummary,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import { attemptDeadline } from '~api/modules/mock-exams/domain/mock-exam-clock.rules.js'
+import {
+  MockExamScoreStatistics,
+  MockExamStatistics,
+} from '~api/modules/mock-exams/domain/mock-exam-statistics.model.js'
 
 const BlueprintVersionRow = Schema.Struct({
   id: ExamBlueprintId,
@@ -370,7 +374,7 @@ export const MockExamReaderLive = Layer.effect(
       finalAnswers: Effect.fn('MockExamReader.finalAnswers')(
         function* (attemptId) {
           const rows =
-            yield* sql`SELECT q.position,q.question_id,q.question_revision_id,qa.is_correct,a.user_exam_goal_version AS goal_version
+            yield* sql`SELECT q.position,q.question_id,q.question_revision_id,q.selected_answer_id AS answer_id,qa.is_correct,a.user_exam_goal_version AS goal_version
  FROM mock_exam_attempts a JOIN mock_exam_attempt_questions q ON q.attempt_id=a.id
  JOIN question_revisions r ON r.id=q.question_revision_id AND r.withdrawn_at IS NULL
  JOIN question_answers qa ON qa.id=q.selected_answer_id
@@ -611,6 +615,26 @@ export const MockExamReaderLive = Layer.effect(
         Effect.mapError(cause => new MockExamReadError({ cause })),
       ),
       attemptQuestion: readQuestion,
+      attemptStatistics: Effect.fn('MockExamReader.attemptStatistics')(
+        function* (blueprintId, version) {
+          const rows =
+            yield* sql`SELECT study_day,finished_count,passed_count,active_seconds FROM mock_exam_statistics
+ WHERE blueprint_id=${blueprintId} AND blueprint_version=${version} ORDER BY study_day`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(MockExamStatistics))(rows)
+        },
+        Effect.mapError(cause => new MockExamReadError({ cause })),
+      ),
+      scoreStatistics: Effect.fn('MockExamReader.scoreStatistics')(
+        function* (blueprintId, version) {
+          const rows =
+            yield* sql`SELECT study_day,percent,attempt_count FROM mock_exam_score_statistics
+ WHERE blueprint_id=${blueprintId} AND blueprint_version=${version} ORDER BY study_day,percent`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(MockExamScoreStatistics))(rows)
+        },
+        Effect.mapError(cause => new MockExamReadError({ cause })),
+      ),
     })
   }),
 )

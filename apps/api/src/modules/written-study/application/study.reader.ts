@@ -40,6 +40,10 @@ import type {
   StudySession,
   StudySessionResultCounts,
 } from '~api/modules/written-study/domain/study-session.model.js'
+import type {
+  WrittenAnswerOptionStatistics,
+  WrittenQuestionStatistics,
+} from '~api/modules/written-study/domain/written-statistics.model.js'
 
 export class StudyReader extends Context.Service<
   StudyReader,
@@ -171,6 +175,12 @@ export class StudyReader extends Context.Service<
       questionRevisionId: QuestionRevisionId,
       day: StudyDay,
     ) => Effect.Effect<boolean, StudyReadError>
+    readonly questionStatistics: (
+      questionRevisionId: QuestionRevisionId,
+    ) => Effect.Effect<ReadonlyArray<WrittenQuestionStatistics>, StudyReadError>
+    readonly answerOptionStatistics: (
+      questionRevisionId: QuestionRevisionId,
+    ) => Effect.Effect<ReadonlyArray<WrittenAnswerOptionStatistics>, StudyReadError>
     readonly sessionResults: (
       userId: UserId,
       pathId: QualificationPathId,

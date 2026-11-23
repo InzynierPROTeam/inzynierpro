@@ -184,3 +184,9 @@ export const learningEventOnStudyDay = (
       )
     }),
   )
+
+export const writtenQuestionStatistics = (questionRevisionId: QuestionRevisionId) =>
+  runFixture(StudyReader.use(studyReader => studyReader.questionStatistics(questionRevisionId)))
+
+export const writtenAnswerOptionStatistics = (questionRevisionId: QuestionRevisionId) =>
+  runFixture(StudyReader.use(studyReader => studyReader.answerOptionStatistics(questionRevisionId)))

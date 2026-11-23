@@ -186,6 +186,7 @@ export const submitAnswer = Effect.fn('Study.submitAnswer')(function* (
           goalVersion: session.goalVersion,
           questionId: question.questionId,
           questionRevisionId,
+          answerId,
           isCorrect: option.isCorrect,
           source: WrittenEvidenceSource.StudySessionAnswer({ sessionId, position }),
         },

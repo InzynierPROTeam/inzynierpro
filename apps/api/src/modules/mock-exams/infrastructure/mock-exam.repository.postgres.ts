@@ -97,6 +97,24 @@ export const MockExamRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new MockExamWriteError({ cause })),
       ),
+      recordFinishedAttemptStatistic: Effect.fn(
+        'MockExamRepository.recordFinishedAttemptStatistic',
+      )(
+        function* (statistic) {
+          const studyDay = DateTime.formatIso(statistic.studyDay)
+          const passedCount = statistic.isPassed ? 1 : 0
+
+          yield* sql`INSERT INTO mock_exam_statistics (blueprint_id,blueprint_version,study_day,finished_count,passed_count,active_seconds)
+ SELECT blueprint_id,blueprint_version,${studyDay},1,${passedCount},${statistic.activeSeconds} FROM mock_exam_attempts WHERE id=${statistic.attemptId}
+ ON CONFLICT (blueprint_id,blueprint_version,study_day) DO UPDATE SET finished_count=mock_exam_statistics.finished_count+1,passed_count=mock_exam_statistics.passed_count+EXCLUDED.passed_count,active_seconds=mock_exam_statistics.active_seconds+EXCLUDED.active_seconds
+ RETURNING 1`.pipe(Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([Schema.Unknown]))))
+          yield* sql`INSERT INTO mock_exam_score_statistics (blueprint_id,blueprint_version,study_day,percent,attempt_count)
+ SELECT blueprint_id,blueprint_version,${studyDay},${statistic.percent},1 FROM mock_exam_attempts WHERE id=${statistic.attemptId}
+ ON CONFLICT (blueprint_id,blueprint_version,study_day,percent) DO UPDATE SET attempt_count=mock_exam_score_statistics.attempt_count+1
+ RETURNING 1`.pipe(Effect.flatMap(Schema.decodeUnknownEffect(Schema.Tuple([Schema.Unknown]))))
+        },
+        Effect.mapError(cause => new MockExamWriteError({ cause })),
+      ),
       createBlueprint: Effect.fn('MockExamRepository.createBlueprint')(blueprintId =>
         sql`INSERT INTO exam_blueprints (id) VALUES (${blueprintId}) ON CONFLICT DO NOTHING`.pipe(
           Effect.asVoid,

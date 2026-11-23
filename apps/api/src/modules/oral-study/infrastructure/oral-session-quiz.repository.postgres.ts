@@ -91,6 +91,17 @@ export const OralSessionQuizRepositoryLive = Layer.effect(
         },
         Effect.mapError(cause => new StudyWriteError({ cause })),
       ),
+      recordCheckStatistic: Effect.fn('OralSessionQuizRepository.recordCheckStatistic')(
+        function* (statistic) {
+          const studyDay = DateTime.formatIso(statistic.studyDay)
+          const correctCount = statistic.isCorrect ? 1 : 0
+
+          yield* sql`INSERT INTO oral_knowledge_check_statistics (knowledge_check_revision_id,study_day,answer_count,correct_count)
+ VALUES (${statistic.knowledgeCheckRevisionId},${studyDay},1,${correctCount})
+ ON CONFLICT (knowledge_check_revision_id,study_day) DO UPDATE SET answer_count=oral_knowledge_check_statistics.answer_count+1,correct_count=oral_knowledge_check_statistics.correct_count+EXCLUDED.correct_count`
+        },
+        Effect.mapError(cause => new StudyWriteError({ cause })),
+      ),
     })
   }),
 )

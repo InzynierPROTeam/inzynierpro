@@ -22,7 +22,10 @@ import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/s
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import { createStudyFixture, studySessionSpecialization } from '~api/test/preparation-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
-import { addFixtureQuestion } from '~api/test/written-learning-fixtures.js'
+import {
+  addFixtureQuestion,
+  writtenQuestionStatistics,
+} from '~api/test/written-learning-fixtures.js'
 
 let api: TestApi
 
@@ -106,6 +109,7 @@ test('a failure inside the answer transaction keeps no answer or progress, and a
   expect(Exit.isFailure(exit)).toBe(true)
   expect(JSON.stringify(exit)).toContain('StudyWriteError')
   expect((await readQuestion()).answer).toBeNull()
+  expect(await writtenQuestionStatistics(question.questionRevisionId)).toEqual([])
   expect(
     await (await visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json(),
   ).toEqual({ total: 0, badges: [] })
@@ -127,4 +131,7 @@ test('a failure inside the answer transaction keeps no answer or progress, and a
     Schema.decodeUnknownSync(StudySession)(await (await request(`/sessions/${session.id}`)).json())
       .progress.answered,
   ).toBe(1)
+  expect(await writtenQuestionStatistics(question.questionRevisionId)).toMatchObject([
+    { answerCount: 1 },
+  ])
 })

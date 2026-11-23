@@ -1,5 +1,8 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { KnowledgeCheckFormat } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
+import type {
+  KnowledgeCheckFormat,
+  OralKnowledgeCheckRevisionId,
+} from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import type {
   OralQuestionId,
   OralRevisionId,
@@ -22,6 +25,7 @@ import {
   type RevisionChangeKind,
   substantiveChange,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
+import { OralSessionQuizReader } from '~api/modules/oral-study/application/oral-session-quiz.reader.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
 import { runFixture } from '~api/test/run-fixture.js'
 
@@ -209,4 +213,20 @@ export const addFixtureKnowledgeCheck = (
 
       return check
     }),
+  )
+
+export const oralSelfAssessmentStatistics = (oralRevisionId: OralRevisionId) =>
+  runFixture(
+    OralStudyReader.use(oralStudyReader =>
+      oralStudyReader.selfAssessmentStatistics(oralRevisionId),
+    ),
+  )
+
+export const oralKnowledgeCheckStatistics = (
+  knowledgeCheckRevisionId: OralKnowledgeCheckRevisionId,
+) =>
+  runFixture(
+    OralSessionQuizReader.use(oralSessionQuizReader =>
+      oralSessionQuizReader.checkStatistics(knowledgeCheckRevisionId),
+    ),
   )

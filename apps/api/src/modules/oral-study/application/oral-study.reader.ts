@@ -25,6 +25,7 @@ import type { ReviewQueue } from '~api/modules/learning/domain/review-queue.mode
 import type { ReviewCard, StudyDay } from '~api/modules/learning/domain/review-state.model.js'
 import type { StudyReadError } from '~api/modules/oral-study/application/errors.js'
 import type { OralCategoryQuestionPool } from '~api/modules/oral-study/domain/oral-category.model.js'
+import type { OralSelfAssessmentStatistics } from '~api/modules/oral-study/domain/oral-statistics.model.js'
 import type {
   OralSessionCandidate,
   OralSessionQuestion,
@@ -175,5 +176,8 @@ export class OralStudyReader extends Context.Service<
       sessionId: OralStudySessionId,
       page: CursorPageRequest,
     ) => Effect.Effect<CursorPage<OralSessionQuestionResult>, StudyReadError | InvalidCursor>
+    readonly selfAssessmentStatistics: (
+      oralRevisionId: OralRevisionId,
+    ) => Effect.Effect<ReadonlyArray<OralSelfAssessmentStatistics>, StudyReadError>
   }
 >()('api/modules/study/OralStudyReader') {}

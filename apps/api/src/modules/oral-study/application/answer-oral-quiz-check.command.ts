@@ -15,6 +15,7 @@ import { noLearningRewards } from '~api/modules/learning-xp/domain/learning-rewa
 import { reachedStreakAchievements } from '~api/modules/learning-xp/domain/learning-reward.rules.js'
 import { quizCheckXpReason } from '~api/modules/learning-xp/domain/learning-xp.model.js'
 import { ReviewScheduler } from '~api/modules/learning/application/review-scheduler.service.js'
+import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { OralSessionQuizReader } from '~api/modules/oral-study/application/oral-session-quiz.reader.js'
 import { OralSessionQuizRepository } from '~api/modules/oral-study/application/oral-session-quiz.repository.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
@@ -131,6 +132,11 @@ export const answerOralQuizCheck = Effect.fn('Study.answerOralQuizCheck')(functi
           selectedOptionIds: optionIds,
           isCorrect,
           answeredAt,
+        })
+        yield* oralSessionQuizRepository.recordCheckStatistic({
+          knowledgeCheckRevisionId: check.knowledgeCheckRevisionId,
+          isCorrect,
+          studyDay: studyDayOf(answeredAt).start,
         })
         yield* applyQuizEvidence(userId, pathId, check, isCorrect, answeredAt)
         const streak = yield* recordStreakAnswers(userId, answeredAt, DailyAnswerCount.make(1))

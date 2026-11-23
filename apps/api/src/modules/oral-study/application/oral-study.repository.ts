@@ -25,6 +25,7 @@ import type {
   NewOralEvidence,
   NewOralReviewState,
 } from '~api/modules/oral-study/domain/oral-review-state.model.js'
+import type { OralStatisticSelfAssessment } from '~api/modules/oral-study/domain/oral-statistics.model.js'
 import type {
   NewOralStudySession,
   OralStudySession,
@@ -55,6 +56,9 @@ export class OralStudyRepository extends Context.Service<
       evidence: NewOralEvidence,
     ) => Effect.Effect<LearningEventId, StudyWriteError>
     readonly storeReviewState: (state: NewOralReviewState) => Effect.Effect<void, StudyWriteError>
+    readonly recordSelfAssessmentStatistic: (
+      statistic: OralStatisticSelfAssessment,
+    ) => Effect.Effect<void, StudyWriteError>
     readonly createSession: (
       session: NewOralStudySession,
     ) => Effect.Effect<OralStudySession, StudyWriteError>

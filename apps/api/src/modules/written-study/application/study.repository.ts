@@ -33,6 +33,7 @@ import type {
   SessionAnswer,
   StudySession,
 } from '~api/modules/written-study/domain/study-session.model.js'
+import type { WrittenStatisticAnswer } from '~api/modules/written-study/domain/written-statistics.model.js'
 
 export class StudyRepository extends Context.Service<
   StudyRepository,
@@ -56,6 +57,9 @@ export class StudyRepository extends Context.Service<
       context: LearningEventContext,
     ) => Effect.Effect<LearningEventId, StudyWriteError>
     readonly storeReviewState: (state: NewReviewState) => Effect.Effect<void, StudyWriteError>
+    readonly recordAnswerStatistic: (
+      statistic: WrittenStatisticAnswer,
+    ) => Effect.Effect<void, StudyWriteError>
     readonly markFavorite: (
       userId: UserId,
       questionId: WrittenQuestionId,
