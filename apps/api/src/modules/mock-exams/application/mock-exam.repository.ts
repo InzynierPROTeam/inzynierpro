@@ -17,6 +17,7 @@ import type {
   MockExamResult,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import type { NewMockExamAttempt } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
+import type { FinishedAttemptStatistic } from '~api/modules/mock-exams/domain/mock-exam-statistics.model.js'
 
 export class MockExamRepository extends Context.Service<
   MockExamRepository,
@@ -30,6 +31,9 @@ export class MockExamRepository extends Context.Service<
       ending: AttemptEnding,
       result: MockExamResult,
       earnedXp: LearningXp,
+    ) => Effect.Effect<void, MockExamWriteError>
+    readonly recordFinishedAttemptStatistic: (
+      statistic: FinishedAttemptStatistic,
     ) => Effect.Effect<void, MockExamWriteError>
     readonly createBlueprint: (
       blueprintId: ExamBlueprintId,

@@ -7,11 +7,13 @@ import {
   ExamBlueprintId,
   ExamDurationMinutes,
   ExamSectionName,
+  type ExamBlueprintVersion,
 } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option, Schema } from 'effect'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { assignBlueprint } from '~api/modules/mock-exams/application/assign-blueprint.command.js'
+import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { publishBlueprintVersion } from '~api/modules/mock-exams/application/publish-blueprint-version.command.js'
 import type { ExamBlueprintDraft } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
@@ -118,3 +120,16 @@ export const createMockExamFixture = async (
 
   return { blueprintId, documents }
 }
+
+export const mockExamStatistics = (blueprintId: ExamBlueprintId, version: ExamBlueprintVersion) =>
+  runFixture(
+    MockExamReader.use(mockExamReader => mockExamReader.attemptStatistics(blueprintId, version)),
+  )
+
+export const mockExamScoreStatistics = (
+  blueprintId: ExamBlueprintId,
+  version: ExamBlueprintVersion,
+) =>
+  runFixture(
+    MockExamReader.use(mockExamReader => mockExamReader.scoreStatistics(blueprintId, version)),
+  )

@@ -49,6 +49,10 @@ import type {
   MockExamAttemptSummary,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import { attemptDeadline } from '~api/modules/mock-exams/domain/mock-exam-clock.rules.js'
+import {
+  MockExamScoreStatistics,
+  MockExamStatistics,
+} from '~api/modules/mock-exams/domain/mock-exam-statistics.model.js'
 
 const BlueprintVersionRow = Schema.Struct({
   id: ExamBlueprintId,
@@ -611,6 +615,26 @@ export const MockExamReaderLive = Layer.effect(
         Effect.mapError(cause => new MockExamReadError({ cause })),
       ),
       attemptQuestion: readQuestion,
+      attemptStatistics: Effect.fn('MockExamReader.attemptStatistics')(
+        function* (blueprintId, version) {
+          const rows =
+            yield* sql`SELECT study_day,finished_count,passed_count,active_seconds FROM mock_exam_statistics
+ WHERE blueprint_id=${blueprintId} AND blueprint_version=${version} ORDER BY study_day`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(MockExamStatistics))(rows)
+        },
+        Effect.mapError(cause => new MockExamReadError({ cause })),
+      ),
+      scoreStatistics: Effect.fn('MockExamReader.scoreStatistics')(
+        function* (blueprintId, version) {
+          const rows =
+            yield* sql`SELECT study_day,percent,attempt_count FROM mock_exam_score_statistics
+ WHERE blueprint_id=${blueprintId} AND blueprint_version=${version} ORDER BY study_day,percent`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(MockExamScoreStatistics))(rows)
+        },
+        Effect.mapError(cause => new MockExamReadError({ cause })),
+      ),
     })
   }),
 )

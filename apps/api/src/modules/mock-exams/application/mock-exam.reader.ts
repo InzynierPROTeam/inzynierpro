@@ -30,6 +30,10 @@ import type {
   MockExamAttempt,
   MockExamAttemptSummary,
 } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
+import type {
+  MockExamScoreStatistics,
+  MockExamStatistics,
+} from '~api/modules/mock-exams/domain/mock-exam-statistics.model.js'
 
 export class MockExamReader extends Context.Service<
   MockExamReader,
@@ -98,5 +102,13 @@ export class MockExamReader extends Context.Service<
       attemptId: MockExamAttemptId,
       position: AttemptQuestionPosition,
     ) => Effect.Effect<Option.Option<AttemptQuestion>, MockExamReadError>
+    readonly attemptStatistics: (
+      blueprintId: ExamBlueprintId,
+      version: ExamBlueprintVersion,
+    ) => Effect.Effect<ReadonlyArray<MockExamStatistics>, MockExamReadError>
+    readonly scoreStatistics: (
+      blueprintId: ExamBlueprintId,
+      version: ExamBlueprintVersion,
+    ) => Effect.Effect<ReadonlyArray<MockExamScoreStatistics>, MockExamReadError>
   }
 >()('api/modules/mock-exams/MockExamReader') {}
