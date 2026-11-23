@@ -10,6 +10,8 @@ GitHub Issues for InzynierPROTeam/inzynierpro own delivery scope and acceptance 
 - [Oral study and the post-session mini-quiz](https://github.com/InzynierPROTeam/inzynierpro/issues/56)
 - [Written mock exams](https://github.com/InzynierPROTeam/inzynierpro/issues/74)
 - [Daily plan, learning XP, rankings and path reset](https://github.com/InzynierPROTeam/inzynierpro/issues/83)
+- [Stage 3: remaining user platform features](https://github.com/InzynierPROTeam/inzynierpro/issues/120)
+- [Sources, the fragment viewer and file storage](https://github.com/InzynierPROTeam/inzynierpro/issues/121)
 
 Before implementation read the applicable issue, glossary and ADRs. [platform.md](platform.md) describes how the web platform guards routes and loads data, [written-study.md](written-study.md) how written study sessions work, [mock-exams.md](mock-exams.md) how mock exams are configured and started, and [background-jobs.md](background-jobs.md) how the worker runs durable jobs. Treat V1 at `../inzynier-pro` as read-only reference, not an implicit V2 specification or permission to access production data. Leave changes uncommitted unless publication is explicitly requested.
 
