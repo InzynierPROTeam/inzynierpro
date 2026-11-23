@@ -1,4 +1,5 @@
-import { POLAND_TIME_ZONE } from '@inzpro/config/localization'
+import type { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
+import { formatWarsawIsoDate, warsawMonthStartOf, warsawWeekStartOf } from '@inzpro/utils/date'
 import { DateTime } from 'effect'
 
 import {
@@ -10,21 +11,34 @@ import {
   type XpPeriod,
 } from './learning-xp.model.js'
 
-export const xpStudyDate = (at: DateTime.Utc) =>
-  DateTime.formatIsoDate(DateTime.setZone(at, DateTime.zoneMakeNamedUnsafe(POLAND_TIME_ZONE)))
+export const xpStudyDate = (at: DateTime.Utc) => formatWarsawIsoDate(at)
+
+export const weeklyXpPeriodOf = (at: DateTime.DateTime): XpPeriod => ({
+  kind: weeklyXp,
+  key: formatWarsawIsoDate(warsawWeekStartOf(at)),
+})
+
+export const previousWeeklyXpPeriodOf = (at: DateTime.DateTime) =>
+  weeklyXpPeriodOf(DateTime.subtract(warsawWeekStartOf(at), { days: 1 }))
+
+export const monthlyXpPeriodOf = (at: DateTime.DateTime): XpPeriod => ({
+  kind: monthlyXp,
+  key: formatWarsawIsoDate(warsawMonthStartOf(at)),
+})
+
+export const previousMonthlyXpPeriodOf = (at: DateTime.DateTime) =>
+  monthlyXpPeriodOf(DateTime.subtract(warsawMonthStartOf(at), { days: 1 }))
+
+export const examSessionXpPeriodOf = (examSessionId: ExamSessionId): XpPeriod => ({
+  kind: examSessionXp,
+  key: examSessionId,
+})
 
 export const xpPeriodsOf = (
   award: Pick<XpAward, 'awardedAt' | 'examSessionId'>,
-): ReadonlyArray<XpPeriod> => {
-  const local = DateTime.setZone(award.awardedAt, DateTime.zoneMakeNamedUnsafe(POLAND_TIME_ZONE))
-
-  return [
-    {
-      kind: weeklyXp,
-      key: DateTime.formatIsoDate(DateTime.startOf(local, 'week', { weekStartsOn: 1 })),
-    },
-    { kind: monthlyXp, key: DateTime.formatIsoDate(DateTime.startOf(local, 'month')) },
-    { kind: examSessionXp, key: award.examSessionId },
-    allTimeXpPeriod,
-  ]
-}
+): ReadonlyArray<XpPeriod> => [
+  weeklyXpPeriodOf(award.awardedAt),
+  monthlyXpPeriodOf(award.awardedAt),
+  examSessionXpPeriodOf(award.examSessionId),
+  allTimeXpPeriod,
+]

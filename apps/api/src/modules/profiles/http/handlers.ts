@@ -3,7 +3,6 @@ import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/cur
 import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
-import { AuthenticationLive } from '~api/middleware/authentication.js'
 import { failXpRead } from '~api/modules/learning-xp/http/errors.js'
 import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { failPreparationRead } from '~api/modules/preparation/http/errors.js'
@@ -64,7 +63,7 @@ export const ProfilesLive = HttpApiBuilder.group(Api, 'Profiles', handlers =>
         }),
       ),
     ),
-).pipe(Layer.provide(AuthenticationLive))
+)
 
 export const ProfilesRequestServices = Layer.mergeAll(
   ProfileReaderLive,

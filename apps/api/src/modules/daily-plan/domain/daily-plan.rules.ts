@@ -1,4 +1,3 @@
-import { POLAND_TIME_ZONE } from '@inzpro/config/localization'
 import {
   dailyCountPlanPreference,
   type DailyPlanSettingsVersion,
@@ -13,7 +12,8 @@ import {
   targetDatePlanPreference,
 } from '@inzpro/domain/modules/daily-plan/daily-plan'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
-import { DateTime, Duration, Effect, Option } from 'effect'
+import { addWarsawDays, getDaysUntil } from '@inzpro/utils/date'
+import { DateTime, Effect, Option } from 'effect'
 import type {
   DailyPlan,
   DailyPlanRecord,
@@ -31,20 +31,10 @@ import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 
 const dailyPlanBufferDays = 7
 
-const planZone = DateTime.zoneMakeNamedUnsafe(POLAND_TIME_ZONE)
-
-const addPlanDays = (day: DateTime.Utc, days: number): DateTime.Utc =>
-  DateTime.toUtc(DateTime.startOf(DateTime.add(DateTime.setZone(day, planZone), { days }), 'day'))
-
-const calendarDayOf = (at: DateTime.Utc) => DateTime.removeTime(DateTime.setZone(at, planZone))
-
-const planDaysBetween = (from: DateTime.Utc, to: DateTime.Utc): number =>
-  Math.round(Duration.toDays(DateTime.distance(calendarDayOf(from), calendarDayOf(to))))
-
 const examDates = (examAt: DateTime.Utc, now: DateTime.Utc) => {
   const today = studyDayOf(now).start
   const examDay = studyDayOf(examAt).start
-  const daysUntilExam = planDaysBetween(today, examDay)
+  const daysUntilExam = getDaysUntil(examDay, today)
 
   return {
     today,
@@ -58,12 +48,12 @@ const examDates = (examAt: DateTime.Utc, now: DateTime.Utc) => {
 type ExamDates = ReturnType<typeof examDates>
 
 const isOwnTargetDateAhead = (dates: ExamDates, targetDate: DateTime.Utc) =>
-  planDaysBetween(dates.today, targetDate) >= 0 && planDaysBetween(targetDate, dates.examDay) > 0
+  getDaysUntil(targetDate, dates.today) >= 0 && getDaysUntil(dates.examDay, targetDate) > 0
 
 const isFinalDays = (dates: ExamDates, preference: PlanPreference) => {
   switch (preference.mode) {
     case defaultPlanPreference:
-      return planDaysBetween(dates.today, addPlanDays(dates.examDay, -dailyPlanBufferDays)) <= 0
+      return getDaysUntil(addWarsawDays(dates.examDay, -dailyPlanBufferDays), dates.today) <= 0
     case targetDatePlanPreference:
       return !isOwnTargetDateAhead(dates, preference.targetDate)
     case dailyCountPlanPreference:
@@ -73,12 +63,12 @@ const isFinalDays = (dates: ExamDates, preference: PlanPreference) => {
 
 const datedTargetDate = (dates: ExamDates, preference: PlanPreference): DateTime.Utc => {
   if (isFinalDays(dates, preference)) {
-    return addPlanDays(dates.examDay, -1)
+    return addWarsawDays(dates.examDay, -1)
   }
 
   return preference.mode === targetDatePlanPreference
     ? preference.targetDate
-    : addPlanDays(dates.examDay, -dailyPlanBufferDays)
+    : addWarsawDays(dates.examDay, -dailyPlanBufferDays)
 }
 
 const planTarget = (
@@ -94,13 +84,13 @@ const planTarget = (
     const daysToFinish = Math.max(1, Math.ceil(remaining / preference.dailyQuestionCount))
 
     return {
-      targetDate: addPlanDays(dates.today, daysToFinish - 1),
+      targetDate: addWarsawDays(dates.today, daysToFinish - 1),
       targetQuestionCount: QuestionCount.make(Math.min(preference.dailyQuestionCount, remaining)),
     }
   }
 
   const targetDate = datedTargetDate(dates, preference)
-  const daysUntilTarget = planDaysBetween(dates.today, targetDate) + 1
+  const daysUntilTarget = getDaysUntil(targetDate, dates.today) + 1
 
   return {
     targetDate,
@@ -232,7 +222,7 @@ const questionsBehindPace = (
   const remaining = record.remainingQuestionCount - record.completedQuestionCount
 
   if (preference.mode === dailyCountPlanPreference) {
-    const daysElapsed = planDaysBetween(paceStart.studyDay, today)
+    const daysElapsed = getDaysUntil(today, paceStart.studyDay)
 
     const expectedCovered = Math.min(
       paceStart.remainingQuestionCount,
@@ -244,8 +234,8 @@ const questionsBehindPace = (
     return QuestionCount.make(Math.max(0, expectedCovered - covered))
   }
 
-  const plannedDays = planDaysBetween(paceStart.studyDay, record.targetDate) + 1
-  const daysLeft = planDaysBetween(today, record.targetDate) + 1
+  const plannedDays = getDaysUntil(record.targetDate, paceStart.studyDay) + 1
+  const daysLeft = getDaysUntil(record.targetDate, today) + 1
   const expectedRemaining = Math.ceil((paceStart.remainingQuestionCount * daysLeft) / plannedDays)
 
   return QuestionCount.make(Math.max(0, remaining - expectedRemaining))

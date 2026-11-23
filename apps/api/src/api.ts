@@ -2,6 +2,7 @@ import { Api } from '@inzpro/api-contracts/api'
 import { Layer } from 'effect'
 import { HttpRouter } from 'effect/http'
 import { HttpApiBuilder } from 'effect/http-api'
+import { AuthenticationLive } from '~api/middleware/authentication.js'
 import {
   ExamCalendarLive,
   ExamCalendarRequestServices,
@@ -23,6 +24,7 @@ import {
   QualificationPathsLive,
   QualificationPathsRequestServices,
 } from '~api/modules/qualification-paths/http/handlers.js'
+import { RankingsLive, RankingsRequestServices } from '~api/modules/rankings/http/handlers.js'
 import { StreakLive, StreakRequestServices } from '~api/modules/streak/http/handlers.js'
 import { StudyLive, StudyRequestServices } from '~api/modules/written-study/http/handlers.js'
 
@@ -41,7 +43,8 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       StreakLive,
       LearningXpLive,
       ProfilesLive,
-    ),
+      RankingsLive,
+    ).pipe(Layer.provide(AuthenticationLive)),
   ),
   HttpRouter.provideRequest(
     Layer.mergeAll(
@@ -55,6 +58,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       StreakRequestServices,
       LearningXpRequestServices,
       ProfilesRequestServices,
+      RankingsRequestServices,
     ),
   ),
 )

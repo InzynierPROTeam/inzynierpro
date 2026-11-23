@@ -4,7 +4,6 @@ import { Auth, authBasePath } from '@inzpro/auth'
 import { Effect, Layer } from 'effect'
 import { HttpEffect, HttpRouter } from 'effect/http'
 import { HttpApiBuilder } from 'effect/http-api'
-import { AuthenticationLive } from '~api/middleware/authentication.js'
 
 export const AuthHttp = Layer.unwrap(
   Effect.gen(function* () {
@@ -24,4 +23,4 @@ export const IdentityLive = HttpApiBuilder.group(Api, 'Identity', handlers =>
       }),
     ),
   ),
-).pipe(Layer.provide(AuthenticationLive))
+)

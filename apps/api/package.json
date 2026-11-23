@@ -33,6 +33,7 @@
     "@inzpro/email": "workspace:*",
     "@inzpro/redis": "workspace:*",
     "@inzpro/rich-content": "workspace:*",
+    "@inzpro/utils": "workspace:*",
     "dotenv": "catalog:",
     "effect": "catalog:",
     "ts-fsrs": "catalog:"

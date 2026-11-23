@@ -19,6 +19,7 @@ import { Route as publicLayoutNotauthenticatedRouteImport } from './routes/(publ
 import { Route as publicLayoutZacznijRouteImport } from './routes/(public)/_layout/zacznij'
 import { Route as appAuthenticatedOnboardedOralValidRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid'
 import { Route as appAuthenticatedOnboardedWrittenValidRouteImport } from './routes/(app)/_authenticated/_onboarded/_writtenValid'
+import { Route as appAuthenticatedOnboardedRankingRouteImport } from './routes/(app)/_authenticated/_onboarded/ranking'
 import { Route as appAuthenticatedOnboardedRozszerzDostepRouteImport } from './routes/(app)/_authenticated/_onboarded/rozszerz-dostep'
 import { Route as appAuthenticatedOnboardedStartRouteImport } from './routes/(app)/_authenticated/_onboarded/start'
 import { Route as appAuthenticatedUzytkownikUserIdRouteImport } from './routes/(app)/_authenticated/uzytkownik.$userId'
@@ -90,6 +91,12 @@ const appAuthenticatedOnboardedOralValidRoute =
 const appAuthenticatedOnboardedWrittenValidRoute =
   appAuthenticatedOnboardedWrittenValidRouteImport.update({
     id: '/_writtenValid',
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
+  } as any)
+const appAuthenticatedOnboardedRankingRoute =
+  appAuthenticatedOnboardedRankingRouteImport.update({
+    id: '/ranking',
+    path: '/ranking',
     getParentRoute: () => appAuthenticatedOnboardedRoute,
   } as any)
 const appAuthenticatedOnboardedRozszerzDostepRoute =
@@ -249,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/pierwsze-kroki': typeof appAuthenticatedPierwszeKrokiRoute
   '/profil': typeof appAuthenticatedProfilRoute
   '/zacznij': typeof publicLayoutZacznijRoute
+  '/ranking': typeof appAuthenticatedOnboardedRankingRoute
   '/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
   '/start': typeof appAuthenticatedOnboardedStartRoute
   '/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
@@ -278,6 +286,7 @@ export interface FileRoutesByTo {
   '/pierwsze-kroki': typeof appAuthenticatedPierwszeKrokiRoute
   '/profil': typeof appAuthenticatedProfilRoute
   '/zacznij': typeof publicLayoutZacznijRoute
+  '/ranking': typeof appAuthenticatedOnboardedRankingRoute
   '/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
   '/start': typeof appAuthenticatedOnboardedStartRoute
   '/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
@@ -313,6 +322,7 @@ export interface FileRoutesById {
   '/(public)/_layout/zacznij': typeof publicLayoutZacznijRoute
   '/(app)/_authenticated/_onboarded/_oralValid': typeof appAuthenticatedOnboardedOralValidRouteWithChildren
   '/(app)/_authenticated/_onboarded/_writtenValid': typeof appAuthenticatedOnboardedWrittenValidRouteWithChildren
+  '/(app)/_authenticated/_onboarded/ranking': typeof appAuthenticatedOnboardedRankingRoute
   '/(app)/_authenticated/_onboarded/rozszerz-dostep': typeof appAuthenticatedOnboardedRozszerzDostepRoute
   '/(app)/_authenticated/_onboarded/start': typeof appAuthenticatedOnboardedStartRoute
   '/(app)/_authenticated/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/pierwsze-kroki'
     | '/profil'
     | '/zacznij'
+    | '/ranking'
     | '/rozszerz-dostep'
     | '/start'
     | '/uzytkownik/$userId'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/pierwsze-kroki'
     | '/profil'
     | '/zacznij'
+    | '/ranking'
     | '/rozszerz-dostep'
     | '/start'
     | '/uzytkownik/$userId'
@@ -408,6 +420,7 @@ export interface FileRouteTypes {
     | '/(public)/_layout/zacznij'
     | '/(app)/_authenticated/_onboarded/_oralValid'
     | '/(app)/_authenticated/_onboarded/_writtenValid'
+    | '/(app)/_authenticated/_onboarded/ranking'
     | '/(app)/_authenticated/_onboarded/rozszerz-dostep'
     | '/(app)/_authenticated/_onboarded/start'
     | '/(app)/_authenticated/uzytkownik/$userId'
@@ -509,6 +522,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof appAuthenticatedOnboardedWrittenValidRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(app)/_authenticated/_onboarded/ranking': {
+      id: '/(app)/_authenticated/_onboarded/ranking'
+      path: '/ranking'
+      fullPath: '/ranking'
+      preLoaderRoute: typeof appAuthenticatedOnboardedRankingRouteImport
       parentRoute: typeof appAuthenticatedOnboardedRoute
     }
     '/(app)/_authenticated/_onboarded/rozszerz-dostep': {
@@ -753,6 +773,7 @@ const appAuthenticatedOnboardedWrittenValidRouteWithChildren =
 interface appAuthenticatedOnboardedRouteChildren {
   appAuthenticatedOnboardedOralValidRoute: typeof appAuthenticatedOnboardedOralValidRouteWithChildren
   appAuthenticatedOnboardedWrittenValidRoute: typeof appAuthenticatedOnboardedWrittenValidRouteWithChildren
+  appAuthenticatedOnboardedRankingRoute: typeof appAuthenticatedOnboardedRankingRoute
   appAuthenticatedOnboardedRozszerzDostepRoute: typeof appAuthenticatedOnboardedRozszerzDostepRoute
   appAuthenticatedOnboardedStartRoute: typeof appAuthenticatedOnboardedStartRoute
 }
@@ -763,6 +784,8 @@ const appAuthenticatedOnboardedRouteChildren: appAuthenticatedOnboardedRouteChil
       appAuthenticatedOnboardedOralValidRouteWithChildren,
     appAuthenticatedOnboardedWrittenValidRoute:
       appAuthenticatedOnboardedWrittenValidRouteWithChildren,
+    appAuthenticatedOnboardedRankingRoute:
+      appAuthenticatedOnboardedRankingRoute,
     appAuthenticatedOnboardedRozszerzDostepRoute:
       appAuthenticatedOnboardedRozszerzDostepRoute,
     appAuthenticatedOnboardedStartRoute: appAuthenticatedOnboardedStartRoute,
