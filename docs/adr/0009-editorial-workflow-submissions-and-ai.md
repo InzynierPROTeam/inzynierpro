@@ -12,11 +12,13 @@ At first one authorized person may prepare, approve and publish a change. Edit, 
 
 An error report during study requires a short problem type and may include a comment. Context, including the exact revision, path and location, is recorded automatically; users never retype what the system knows. "Other problem" asks for a short explanation.
 
-A question recalled after the exam is accepted as recollected content with exam context, optional notes and uncertainty about the wording, without requiring a correct answer. The original submission is kept. Editors may develop it, link it to a duplicate or reject it; a recollection never becomes a published question automatically.
+A question recalled after the exam is accepted as recollected content with exam context, optional notes and uncertainty about the wording, without requiring a correct answer. The original submission is kept. Editors may develop it, link it to a duplicate or reject it; a recollection never becomes a published question automatically. Recollections are reported as a set, because candidates usually remember several questions from one exam; each item carries its own wording certainty and an optional note.
 
-Report context is the path, district chamber and exam session when known. The chamber defaults to the user's earlier choice and may be changed in the report without changing the user's settings. Several reports may point at the same question; their contexts are never replaced by independent lists of paths and chambers that suggest every possible combination.
+Report context is the path, district chamber, exam session, exam part and exam date when known, prefilled from the assignment and goal (the session's written date, or the personal oral date). The chamber defaults to the user's earlier choice and may be changed in the report without changing the user's settings. Several reports may point at the same question; their contexts are never replaced by independent lists of paths and chambers that suggest every possible combination.
 
-The first release includes a short optional survey after the real exam: declared result, platform usefulness, NPS and an option to submit recalled questions. It can be skipped, and the questions need not be asked at once. Feedback is split by written and oral. Results are user declarations, not verified outcomes.
+The first release includes a short optional survey after the real exam: declared result, platform usefulness, NPS and an option to submit recalled questions. It can be skipped, and the questions need not be asked at once. Feedback is split by written and oral, is offered for a limited time after each part, saves partial answers and lets the user update the declared result later. Results are user declarations, not verified outcomes.
+
+Submissions are stored by their own module from stage 3, before the editorial queue exists. Stage 4 introduces WorkItems and creates them for every report still open; reporting opens to real users only with the launch, so the queue exists by then. A repeated report of the same kind on the same revision is not created while an earlier one is open. Reports about the app itself are kept apart from reports about questions. Proposals of new questions belong to Community.
 
 ## AI through remote MCP
 
