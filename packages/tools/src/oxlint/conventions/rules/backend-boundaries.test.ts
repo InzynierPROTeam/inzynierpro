@@ -30,6 +30,10 @@ tester.run('conventions/backend-boundaries', backendBoundariesRule, {
     { filename: file('migrations/0001_identity.ts'), code: sql },
     { filename: file('seed/catalogue.ts'), code: sql },
     {
+      filename: file('test/sql/database-catalogue.ts'),
+      code: `import { SqlClient } from 'effect/sql'; ${sql}`,
+    },
+    {
       filename: file('modules/study/http/handlers.ts'),
       code: 'const value = "SELECT id FROM users"',
     },
@@ -100,6 +104,16 @@ tester.run('conventions/backend-boundaries', backendBoundariesRule, {
       errors: [{ messageId: 'sql' }],
     },
     { filename: file('test/fixtures.ts'), code: sql, errors: [{ messageId: 'sql' }] },
+    {
+      filename: file('test/sql/fixtures.ts'),
+      code: `import { SqlClient } from 'effect/sql'; ${sql}`,
+      errors: [{ messageId: 'testSql' }, { messageId: 'testSql' }],
+    },
+    {
+      filename: file('test/sql/nested/database-catalogue.ts'),
+      code: sql,
+      errors: [{ messageId: 'sql' }],
+    },
     {
       filename: file('modules/study/http/http.test.ts'),
       code: "import { SqlClient as Database } from 'effect/sql'",

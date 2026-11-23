@@ -2,6 +2,14 @@ import { defineRule } from '@oxlint/plugins'
 
 import { normalizedPath } from './path.ts'
 
+export const testSqlFiles = [
+  {
+    file: 'database-catalogue.ts',
+    reason:
+      'Reads the PostgreSQL catalogue for the path reset inventory test; repositories cannot describe the schema.',
+  },
+] as const satisfies ReadonlyArray<{ readonly file: string; readonly reason: string }>
+
 export const backendBoundariesRule = defineRule({
   meta: {
     type: 'problem',
@@ -9,6 +17,8 @@ export const backendBoundariesRule = defineRule({
     schema: [],
     messages: {
       sql: 'Keep SQL in a *.reader.postgres.ts or *.repository.postgres.ts adapter, migration or seed. Tests prepare data through repositories.',
+      testSql:
+        'SQL in apps/api/src/test/sql/ is allowed only in files listed in testSqlFiles with a reason. Tests prepare data through repositories.',
       filename:
         'Name backend operations <concept>.<role>.ts; transport belongs in the module http/handlers.ts.',
     },
@@ -20,9 +30,13 @@ export const backendBoundariesRule = defineRule({
       return {}
     }
 
+    const testSqlFile = /\/apps\/api\/src\/test\/sql\/([^/]+)$/.exec(filename)?.[1]
+    const sqlMessage = testSqlFile === undefined ? 'sql' : 'testSql'
+
     const sqlAllowed =
       /\/src\/(migrations|seed)\//.test(filename) ||
-      /\.(reader|repository)\.postgres\.ts$/.test(filename)
+      /\.(reader|repository)\.postgres\.ts$/.test(filename) ||
+      testSqlFiles.some(({ file }) => file === testSqlFile)
 
     const inModule = filename.includes('/src/modules/')
     const httpBuilders = new Set<string>()
@@ -67,7 +81,7 @@ export const backendBoundariesRule = defineRule({
                     specifier.imported.name === 'SqlClient'),
               )))
         ) {
-          context.report({ node, messageId: 'sql' })
+          context.report({ node, messageId: sqlMessage })
         }
       },
       CallExpression(node) {
@@ -92,7 +106,7 @@ export const backendBoundariesRule = defineRule({
             first,
           )
         ) {
-          context.report({ node, messageId: 'sql' })
+          context.report({ node, messageId: sqlMessage })
         }
       },
     }
