@@ -17,6 +17,7 @@ tester.run('conventions/module-layers', moduleLayersRule, {
     },
     { filename: file('infrastructure/cache/goal.reader.redis.ts'), code: '' },
     { filename: file('infrastructure/profile.repository.auth.ts'), code: '' },
+    { filename: file('infrastructure/file-storage.service.s3.ts'), code: '' },
     { filename: file('http/goal/goal.mappers.ts'), code: '' },
     { filename: file('http/goal/goal.errors.ts'), code: '' },
 
@@ -113,6 +114,11 @@ tester.run('conventions/module-layers', moduleLayersRule, {
     },
     {
       filename: file('infrastructure/profile.repository.better-auth.ts'),
+      code: '',
+      errors: [{ messageId: 'role' }],
+    },
+    {
+      filename: file('infrastructure/file-storage.service.r2.ts'),
       code: '',
       errors: [{ messageId: 'role' }],
     },

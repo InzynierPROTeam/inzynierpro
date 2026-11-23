@@ -3,7 +3,9 @@ import { Effect, Layer } from 'effect'
 import { Transaction, TransactionLive } from '~api/lib/transaction.js'
 import { ExamCalendarRepository } from '~api/modules/exam-calendar/application/exam-calendar.repository.js'
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
+import type { FileStorage } from '~api/modules/learning-content/application/file-storage.service.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
+import { fileStorageS3LayerFromConfig } from '~api/modules/learning-content/infrastructure/file-storage.service.s3.js'
 import { LearningContentRepositoryLive } from '~api/modules/learning-content/infrastructure/learning-content.repository.postgres.js'
 import { XpReader } from '~api/modules/learning-xp/application/learning-xp.reader.js'
 import { XpRepository } from '~api/modules/learning-xp/application/learning-xp.repository.js'
@@ -54,6 +56,7 @@ const fixturesLayer = Layer.mergeAll(
   StreakRepositoryLive,
   XpReaderLive,
   XpRepositoryLive,
+  fileStorageS3LayerFromConfig,
 ).pipe(Layer.provide(databaseLayerFromConfig))
 
 export const runFixture = <A, E>(
@@ -61,6 +64,7 @@ export const runFixture = <A, E>(
     A,
     E,
     | LearningContentRepository
+    | FileStorage
     | QualificationPathsReader
     | ExamCalendarRepository
     | StudyRepository

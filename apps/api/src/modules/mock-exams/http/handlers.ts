@@ -2,9 +2,12 @@ import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
 import { Effect, Layer, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
+import type { CursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction, TransactionLive } from '~api/lib/transaction.js'
+import { withContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
+import { ContentAssetReaderLive } from '~api/modules/learning-content/infrastructure/content-asset.reader.postgres.js'
 import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
@@ -26,6 +29,7 @@ import { pauseAttempt } from '~api/modules/mock-exams/application/pause-attempt.
 import { resumeAttempt } from '~api/modules/mock-exams/application/resume-attempt.command.js'
 import { saveAttemptAnswer } from '~api/modules/mock-exams/application/save-attempt-answer.command.js'
 import { startAttempt } from '~api/modules/mock-exams/application/start-attempt.command.js'
+import type { AttemptReviewQuestion } from '~api/modules/mock-exams/domain/mock-exam-attempt.model.js'
 import {
   attemptQuestionConflict,
   attemptQuestionNotFound,
@@ -64,6 +68,12 @@ import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.read
 import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study.reader.postgres.js'
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
+
+const signedAttemptReviewPage = withContentAssetAddresses(
+  (page: CursorPage<AttemptReviewQuestion>) => page.data.map(question => question.explanation),
+  (page, addresses) =>
+    toMockExamPageDto(page, question => toAttemptReviewQuestionDto(question, addresses)),
+)
 
 export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
   handlers
@@ -206,14 +216,13 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
             yield* expireAttemptBeforeRead(user.id, params.qualificationPathId, params.attemptId)
             const mockExamReader = yield* MockExamReader
 
-            return toMockExamPageDto(
+            return yield* signedAttemptReviewPage(
               yield* mockExamReader.review(
                 user.id,
                 params.qualificationPathId,
                 params.attemptId,
                 query,
               ),
-              toAttemptReviewQuestionDto,
             )
           }),
         ),
@@ -420,6 +429,7 @@ export const MockExamsLive = HttpApiBuilder.group(Api, 'MockExams', handlers =>
 )
 
 export const MockExamsRequestServices = Layer.mergeAll(
+  ContentAssetReaderLive,
   TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,

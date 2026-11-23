@@ -7,6 +7,7 @@ import { mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
+import { withContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
 import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import {
@@ -49,6 +50,11 @@ import {
   pathAccessDenied,
 } from '~api/modules/preparation/http/errors.js'
 import { failStreakRead, failStreakWrite } from '~api/modules/streak/http/errors.js'
+
+const signedOralSessionQuestionDto = withContentAssetAddresses(
+  question => [question.body, question.answer],
+  toOralSessionQuestionDto,
+)
 
 export const sessionHandlers = {
   StartOralSession: ({ params, payload }) =>
@@ -192,8 +198,12 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.map(Option.map(toOralSessionQuestionDto)),
-      Effect.map(Option.getOrNull),
+      Effect.flatMap(
+        Option.match({
+          onNone: () => Effect.succeed(null),
+          onSome: signedOralSessionQuestionDto,
+        }),
+      ),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PathPermissionDenied: () => pathAccessDenied,
@@ -214,11 +224,13 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.map(({ question, session, rewards }) => ({
-        rewards: toLearningRewardsDto(rewards),
-        question: toOralSessionQuestionDto(question),
-        session: toOralStudySessionDto(session),
-      })),
+      Effect.flatMap(({ question, session, rewards }) =>
+        Effect.map(signedOralSessionQuestionDto(question), questionDto => ({
+          rewards: toLearningRewardsDto(rewards),
+          question: questionDto,
+          session: toOralStudySessionDto(session),
+        })),
+      ),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PreparationWriteError: failPreparationWrite,

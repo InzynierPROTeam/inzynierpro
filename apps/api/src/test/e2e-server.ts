@@ -10,6 +10,7 @@ import { memoryAdapter } from '@opencoredev/email-sdk/testing'
 import { Config, Effect, Layer } from 'effect'
 import { httpServerLayer } from '~api/http.js'
 import { env } from '~api/lib/env.js'
+import { fileStorageS3Layer } from '~api/modules/learning-content/infrastructure/file-storage.service.s3.js'
 import { seedTechnicalCatalogue } from '~api/seed/technical-catalogue.js'
 
 import { catalogueTestTime, fixedWallClockLayer } from './clock.js'
@@ -36,7 +37,12 @@ const program = Effect.gen(function* () {
     await writeFile(outbox, '')
   })
 
-  yield* seedTechnicalCatalogue.pipe(Effect.provide(databaseLayerFromConfig), Effect.scoped)
+  yield* seedTechnicalCatalogue.pipe(
+    Effect.provide(
+      Layer.mergeAll(databaseLayerFromConfig, fileStorageS3Layer(config.FILE_STORAGE)),
+    ),
+    Effect.scoped,
+  )
 
   return yield* Layer.launch(
     httpServerLayer(config).pipe(

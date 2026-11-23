@@ -248,3 +248,21 @@ test.describe('on the small seeded path', () => {
     await expect(buildingLawCategory(page)).toContainText(`Ukończone: 0 / ${roundQuestions} pytań`)
   })
 })
+
+test('an explanation shows its diagram from file storage', async ({ onboarded: { page } }) => {
+  await startCategorySession(page, buildingLaw)
+  const conditionsSession = await startCategorySession(page, technicalConditions)
+
+  await page.goto(conditionsSession.replace(/\/1$/, '/4'))
+  await expect(questionHeading(page, 4)).toBeVisible()
+  await page.getByRole('button', { name: 'Podpowiedź' }).click()
+
+  const diagram = page
+    .getByRole('dialog', { name: 'Podpowiedź' })
+    .getByRole('img', { name: 'Przekrój biegu schodów z zaznaczoną wysokością jednego stopnia' })
+
+  await expect(diagram).toBeVisible()
+  await expect
+    .poll(() => diagram.evaluate((image: HTMLImageElement) => image.naturalWidth))
+    .toBe(640)
+})

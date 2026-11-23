@@ -45,3 +45,29 @@ services:
       interval: 1s
       timeout: 5s
       retries: 30
+  minio-test:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - minio server /data &
+        until mc alias set local http://127.0.0.1:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do sleep 1; done &&
+        mc mb --ignore-existing "local/$$FILE_STORAGE_BUCKET" &&
+        wait
+    environment:
+      MINIO_ROOT_USER: ${FILE_STORAGE_ACCESS_KEY_ID:-inzpro_test}
+      MINIO_ROOT_PASSWORD: ${FILE_STORAGE_SECRET_ACCESS_KEY:-inzpro_test}
+      FILE_STORAGE_BUCKET: ${FILE_STORAGE_BUCKET:-inzpro-files-test}
+    ports:
+      - '${TEST_MINIO_PORT:-59000}:9000'
+    tmpfs:
+      - /data
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    healthcheck:
+      test: ['CMD-SHELL', 'mc stat "local/$$FILE_STORAGE_BUCKET" >/dev/null']
+      interval: 1s
+      timeout: 5s
+      retries: 30

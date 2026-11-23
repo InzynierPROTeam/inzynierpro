@@ -5,6 +5,7 @@ import {
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
 import { catalogueId } from './catalogue-id.js'
+import { stairRiserHeightAssetId } from './content-assets.js'
 import { bold, italic, plain } from './rich-text.js'
 
 // EXTERNAL: Sources: Prawo budowlane https://eli.gov.pl/api/acts/DU/2024/725/text.html (art. 17, 18, 24, 37, 41, 45, 62, 82) and warunki techniczne https://eli.gov.pl/api/acts/DU/2022/1225/text.pdf (§ 12, 57, 62, 68, 72, 298).
@@ -128,6 +129,11 @@ export const questions = [
       bold('0,19 m'),
       plain('.'),
     ],
+    figure: {
+      assetId: stairRiserHeightAssetId,
+      alt: 'Przekrój biegu schodów z zaznaczoną wysokością jednego stopnia',
+      caption: 'Rys. 1. Wysokość stopnia w przekroju biegu schodów',
+    },
   },
   {
     documentId: technicalConditions,

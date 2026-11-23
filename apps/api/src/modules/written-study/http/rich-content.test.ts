@@ -7,7 +7,7 @@ import { richContentNodeFixtures } from '@inzpro/rich-content/fixtures'
 import { Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
-import { addFixtureAsset } from '~api/test/content-fixtures.js'
+import { addFixtureAsset, fixtureAssetBytes } from '~api/test/content-fixtures.js'
 import { createStudyFixture, studySessionSpecialization } from '~api/test/preparation-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 import { addFixtureQuestion } from '~api/test/written-learning-fixtures.js'
@@ -20,7 +20,7 @@ beforeAll(async () => {
 
 afterAll(() => api.close())
 
-test('a written explanation reads back as rich content, with no address for its image yet', async () => {
+test('a written explanation reads back with a signed image address that a learner outside the path never receives', async () => {
   const visitor = await loginForPreparation(api)
   const fixture = await createStudyFixture(studySessionSpecialization)
   const assetId = await addFixtureAsset()
@@ -66,5 +66,24 @@ test('a written explanation reads back as rich content, with no address for its 
     await (await request(`/sessions/${session.id}/questions/1`)).json(),
   )
 
-  expect(question.explanation).toEqual({ content, assets: [{ id: assetId, url: null }] })
+  expect(question.explanation.content).toEqual(content)
+  expect(question.explanation.assets).toEqual([{ id: assetId, url: expect.any(String) }])
+
+  const url = new URL(question.explanation.assets[0]?.url ?? '')
+  const image = await fetch(url)
+
+  expect(url.searchParams.get('X-Amz-Expires')).toBe('3600')
+  expect(image.status).toBe(200)
+  expect(new Uint8Array(await image.arrayBuffer())).toEqual(fixtureAssetBytes)
+
+  const outsider = await loginForPreparation(api)
+
+  const outsiderRead = await learningRequest(
+    api,
+    outsider,
+    `/paths/${fixture.pathId}/sessions/${session.id}/questions/1`,
+  )
+
+  expect(outsiderRead.status).toBe(403)
+  expect(await outsiderRead.text()).not.toContain(assetId)
 })

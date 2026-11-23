@@ -2,6 +2,7 @@ import { Api } from '@inzpro/api-contracts/api'
 import { Layer } from 'effect'
 import { HttpApiBuilder } from 'effect/http-api'
 import { TransactionLive } from '~api/lib/transaction.js'
+import { ContentAssetReaderLive } from '~api/modules/learning-content/infrastructure/content-asset.reader.postgres.js'
 import { XpReaderLive } from '~api/modules/learning-xp/infrastructure/learning-xp.reader.postgres.js'
 import { XpRepositoryLive } from '~api/modules/learning-xp/infrastructure/learning-xp.repository.postgres.js'
 import { ReviewSchedulerLive } from '~api/modules/learning/application/review-scheduler.service.js'
@@ -35,6 +36,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
 )
 
 export const OralStudyRequestServices = Layer.mergeAll(
+  ContentAssetReaderLive,
   TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,

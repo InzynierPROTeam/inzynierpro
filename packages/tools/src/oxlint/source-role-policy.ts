@@ -46,8 +46,9 @@ export const apiLayerRoles = {
   },
   infrastructure: {
     pattern:
-      /^[a-z0-9-]+\.(?:reader|repository|service|client)\.(?:postgres|http|redis|file|auth)\.ts$/,
-    description: '<concept>.<reader|repository|service|client>.<postgres|http|redis|file|auth>.ts',
+      /^[a-z0-9-]+\.(?:reader|repository|service|client)\.(?:postgres|http|redis|file|auth|s3)\.ts$/,
+    description:
+      '<concept>.<reader|repository|service|client>.<postgres|http|redis|file|auth|s3>.ts',
   },
   http: {
     pattern: /^(?:[a-z0-9-]+\.)?(?:handlers|mappers|errors)\.ts$/,
