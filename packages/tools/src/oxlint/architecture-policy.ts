@@ -65,6 +65,7 @@ export const apiModuleDependencies = {
   streak: ['learning'],
   'learning-xp': ['learning'],
   profiles: ['learning-xp', 'streak', 'preparation', 'qualification-paths'],
+  rankings: ['learning-xp', 'profiles'],
   'written-study': [
     'preparation',
     'learning-content',

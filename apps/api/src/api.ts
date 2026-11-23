@@ -24,6 +24,7 @@ import {
   QualificationPathsLive,
   QualificationPathsRequestServices,
 } from '~api/modules/qualification-paths/http/handlers.js'
+import { RankingsLive, RankingsRequestServices } from '~api/modules/rankings/http/handlers.js'
 import { StreakLive, StreakRequestServices } from '~api/modules/streak/http/handlers.js'
 import { StudyLive, StudyRequestServices } from '~api/modules/written-study/http/handlers.js'
 
@@ -42,6 +43,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       StreakLive,
       LearningXpLive,
       ProfilesLive,
+      RankingsLive,
     ).pipe(Layer.provide(AuthenticationLive)),
   ),
   HttpRouter.provideRequest(
@@ -56,6 +58,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       StreakRequestServices,
       LearningXpRequestServices,
       ProfilesRequestServices,
+      RankingsRequestServices,
     ),
   ),
 )
