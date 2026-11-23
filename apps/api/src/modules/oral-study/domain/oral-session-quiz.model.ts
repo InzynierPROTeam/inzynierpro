@@ -52,6 +52,7 @@ export type OralQuizCheck = {
   readonly position: OralQuizCheckPosition
   readonly questionId: OralQuestionId
   readonly oralRevisionId: OralRevisionId
+  readonly knowledgeCheckRevisionId: OralKnowledgeCheckRevisionId
   readonly format: KnowledgeCheckFormat
   readonly prompt: string
   readonly explanation: RichContent

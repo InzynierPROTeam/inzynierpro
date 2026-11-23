@@ -18,15 +18,23 @@ export const recordOralEvidence = Effect.fn('Study.recordOralEvidence')(function
   const reviewScheduler = yield* ReviewScheduler
   const { userId, qualificationPathId, questionId, oralRevisionId, answeredAt } = evidence
   const answersCurrentContent = yield* oralStudyReader.carriesCurrentContent(oralRevisionId)
+  const studyDay = studyDayOf(answeredAt)
 
   const answeredToday = yield* oralStudyReader.answeredContentOnStudyDay(
     userId,
     qualificationPathId,
     oralRevisionId,
-    studyDayOf(answeredAt),
+    studyDay,
   )
 
   const learningEventId = yield* oralStudyRepository.recordLearningEvent(evidence)
+
+  yield* oralStudyRepository.recordSelfAssessmentStatistic({
+    oralRevisionId,
+    selfAssessment: evidence.selfAssessment,
+    studyDay: studyDay.start,
+  })
+
   const card = yield* oralStudyReader.reviewState(userId, qualificationPathId, questionId)
 
   const rating = oralReviewRating({

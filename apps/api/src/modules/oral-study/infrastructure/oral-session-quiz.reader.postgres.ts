@@ -28,6 +28,7 @@ import type {
   KnowledgeCheckCandidate,
   OralQuizCheck,
 } from '~api/modules/oral-study/domain/oral-session-quiz.model.js'
+import { KnowledgeCheckStatistics } from '~api/modules/oral-study/domain/oral-statistics.model.js'
 
 const CandidateRow = Schema.Struct({
   questionId: OralQuestionId,
@@ -52,6 +53,7 @@ const CheckRow = Schema.Struct({
   position: OralQuizCheckPosition,
   questionId: OralQuestionId,
   oralRevisionId: OralRevisionId,
+  knowledgeCheckRevisionId: OralKnowledgeCheckRevisionId,
   format: KnowledgeCheckFormat,
   prompt: Schema.NonEmptyString,
   explanation: RichContent,
@@ -126,7 +128,7 @@ export const OralSessionQuizReaderLive = Layer.effect(
       ordering: Statement.Fragment,
       limit: number,
     ) =>
-      sql`SELECT z.id AS quiz_id,c.position,sq.question_id,c.oral_revision_id,kr.format,kr.prompt,kr.explanation,a.is_correct AS answer_is_correct,a.answered_at,a.earned_xp
+      sql`SELECT z.id AS quiz_id,c.position,sq.question_id,c.oral_revision_id,c.knowledge_check_revision_id,kr.format,kr.prompt,kr.explanation,a.is_correct AS answer_is_correct,a.answered_at,a.earned_xp
  FROM oral_session_quizzes z
  JOIN oral_study_sessions s ON s.id=z.study_session_id
  JOIN oral_session_quiz_checks c ON c.quiz_id=z.id
@@ -256,6 +258,16 @@ export const OralSessionQuizReaderLive = Layer.effect(
           )
 
           return Arr.head(yield* withOptions(rows))
+        },
+        Effect.mapError(cause => new StudyReadError({ cause })),
+      ),
+      checkStatistics: Effect.fn('OralSessionQuizReader.checkStatistics')(
+        function* (knowledgeCheckRevisionId) {
+          const rows =
+            yield* sql`SELECT study_day,answer_count,correct_count FROM oral_knowledge_check_statistics
+ WHERE knowledge_check_revision_id=${knowledgeCheckRevisionId} ORDER BY study_day`
+
+          return yield* Schema.decodeUnknownEffect(Schema.Array(KnowledgeCheckStatistics))(rows)
         },
         Effect.mapError(cause => new StudyReadError({ cause })),
       ),

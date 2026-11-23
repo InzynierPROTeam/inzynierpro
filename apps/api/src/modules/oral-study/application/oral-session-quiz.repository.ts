@@ -6,6 +6,7 @@ import type {
   NewOralSessionQuiz,
   OralQuizAnswer,
 } from '~api/modules/oral-study/domain/oral-session-quiz.model.js'
+import type { KnowledgeCheckStatisticAnswer } from '~api/modules/oral-study/domain/oral-statistics.model.js'
 
 export class OralSessionQuizRepository extends Context.Service<
   OralSessionQuizRepository,
@@ -15,6 +16,9 @@ export class OralSessionQuizRepository extends Context.Service<
       quizId: OralSessionQuizId,
       position: OralQuizCheckPosition,
       answer: OralQuizAnswer,
+    ) => Effect.Effect<void, StudyWriteError>
+    readonly recordCheckStatistic: (
+      statistic: KnowledgeCheckStatisticAnswer,
     ) => Effect.Effect<void, StudyWriteError>
   }
 >()('api/modules/study/OralSessionQuizRepository') {}

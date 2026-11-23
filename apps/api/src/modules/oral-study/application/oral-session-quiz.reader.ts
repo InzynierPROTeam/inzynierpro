@@ -1,5 +1,8 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { KnowledgeCheckFormat } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
+import type {
+  KnowledgeCheckFormat,
+  OralKnowledgeCheckRevisionId,
+} from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import type { OralQuizCheckPosition } from '@inzpro/domain/modules/oral-study/oral-session-quiz'
 import type { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -11,6 +14,7 @@ import type {
   OralQuizCheck,
   OralSessionQuiz,
 } from '~api/modules/oral-study/domain/oral-session-quiz.model.js'
+import type { KnowledgeCheckStatistics } from '~api/modules/oral-study/domain/oral-statistics.model.js'
 
 export class OralSessionQuizReader extends Context.Service<
   OralSessionQuizReader,
@@ -39,5 +43,8 @@ export class OralSessionQuizReader extends Context.Service<
       sessionId: OralStudySessionId,
       position: OralQuizCheckPosition,
     ) => Effect.Effect<Option.Option<OralQuizCheck>, StudyReadError>
+    readonly checkStatistics: (
+      knowledgeCheckRevisionId: OralKnowledgeCheckRevisionId,
+    ) => Effect.Effect<ReadonlyArray<KnowledgeCheckStatistics>, StudyReadError>
   }
 >()('api/modules/study/OralSessionQuizReader') {}

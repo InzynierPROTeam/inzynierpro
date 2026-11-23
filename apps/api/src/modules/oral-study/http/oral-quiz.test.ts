@@ -12,13 +12,17 @@ import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/prepara
 import type { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { DateTime, Option, Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { studyDayOf } from '~api/modules/learning/domain/study-day.rules.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
+import { catalogueTestTime } from '~api/test/clock.js'
 import {
   addFixtureKnowledgeCheck,
   addFixtureOralCategory,
   addFixtureOralQuestion,
   assignFixtureOralQuestion,
   currentOralReviewState,
+  oralKnowledgeCheckStatistics,
+  oralSelfAssessmentStatistics,
   publishFixtureOralRevision,
 } from '~api/test/oral-learning-fixtures.js'
 import { createStudyFixture, studySessionSpecialization } from '~api/test/preparation-fixtures.js'
@@ -657,4 +661,32 @@ test('concurrent oral answers on different paths share the question daily limit'
   expect(
     await (await learner.visitor.jar.fetch(new URL('/api/v1/learning-xp', api.baseUrl))).json(),
   ).toEqual({ total: 2, badges: [] })
+})
+
+test('self-assessments and quiz checks update anonymous statistics once per answer', async () => {
+  const learner = await learnerWithQuestions(1)
+  const question = learner.question(0)
+
+  const check = await addFixtureKnowledgeCheck(
+    question.id,
+    question.revisionId,
+    'true_false',
+    trueFalse,
+  )
+
+  const studyDay = studyDayOf(catalogueTestTime).start
+
+  const session = await learner.finishedSession()
+  await learner.startQuiz(session.id)
+  const wrong = optionIdsByText(await learner.readCheck(session.id, 1), ['Fałsz'])
+
+  expect((await learner.answer(session.id, 1, wrong)).status).toBe(200)
+  expect((await learner.answer(session.id, 1, wrong)).status).toBe(200)
+
+  expect(await oralSelfAssessmentStatistics(question.revisionId)).toEqual([
+    { studyDay, selfAssessment: 'easy', assessmentCount: 1 },
+  ])
+  expect(await oralKnowledgeCheckStatistics(check.revisionId)).toEqual([
+    { studyDay, answerCount: 1, correctCount: 0 },
+  ])
 })

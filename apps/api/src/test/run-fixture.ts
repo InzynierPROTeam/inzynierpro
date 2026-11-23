@@ -17,7 +17,9 @@ import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.re
 import { MockExamRepository } from '~api/modules/mock-exams/application/mock-exam.repository.js'
 import { MockExamReaderLive } from '~api/modules/mock-exams/infrastructure/mock-exam.reader.postgres.js'
 import { MockExamRepositoryLive } from '~api/modules/mock-exams/infrastructure/mock-exam.repository.postgres.js'
+import { OralSessionQuizReader } from '~api/modules/oral-study/application/oral-session-quiz.reader.js'
 import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.reader.js'
+import { OralSessionQuizReaderLive } from '~api/modules/oral-study/infrastructure/oral-session-quiz.reader.postgres.js'
 import { OralStudyReaderLive } from '~api/modules/oral-study/infrastructure/oral-study.reader.postgres.js'
 import { PreparationReader } from '~api/modules/preparation/application/preparation.reader.js'
 import { PreparationRepository } from '~api/modules/preparation/application/preparation.repository.js'
@@ -42,6 +44,7 @@ const fixturesLayer = Layer.mergeAll(
   StudyRepositoryLive,
   StudyReaderLive,
   OralStudyReaderLive,
+  OralSessionQuizReaderLive,
   MockExamReaderLive,
   MockExamRepositoryLive,
   PreparationRepositoryLive,
@@ -63,6 +66,7 @@ export const runFixture = <A, E>(
     | StudyRepository
     | StudyReader
     | OralStudyReader
+    | OralSessionQuizReader
     | MockExamReader
     | MockExamRepository
     | XpReader
