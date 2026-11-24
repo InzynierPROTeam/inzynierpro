@@ -1,4 +1,5 @@
 import { ReferenceDocumentNotFound } from '@inzpro/api-contracts/modules/learning-content/errors'
+import { fullContentAvailability } from '@inzpro/domain/modules/learning-content/document-edition'
 import { referenceDocumentQueryOptions } from '@inzpro/queries/modules/learning-content/queries'
 import {
   Empty,
@@ -20,6 +21,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { referenceDocumentRouteApi } from '../utils'
+import { DocumentReader } from './DocumentReader'
 import {
   ReferenceDocumentDetails,
   ReferenceDocumentDetailsSkeleton,
@@ -52,7 +54,12 @@ export const ReferenceDocumentSection = () => {
           })}
           isDataEmpty={() => false}
         >
-          {({ document }) => <ReferenceDocumentDetails document={document} />}
+          {({ document }) => (
+            <>
+              <ReferenceDocumentDetails document={document} />
+              {document.edition.availability === fullContentAvailability && <DocumentReader />}
+            </>
+          )}
         </SuspenseQuery>
       </SuspenseQueryWrapper>
     </section>

@@ -57,10 +57,10 @@ test('a metadata-only standard shows its description and external link', async (
   expect(container.textContent).not.toContain('Treść dokumentu nie jest jeszcze dostępna')
 })
 
-test('a document with full content says honestly that its content is not available yet', async () => {
+test('a PDF-only document says honestly that its content is not available yet', async () => {
   await renderDocument({
     ...standard,
-    edition: { ...standard.edition, availability: 'full_content' },
+    edition: { ...standard.edition, availability: 'pdf_only' },
   })
 
   expect(container.textContent).toContain('Treść dokumentu nie jest jeszcze dostępna')
