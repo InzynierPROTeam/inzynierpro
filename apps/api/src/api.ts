@@ -9,6 +9,7 @@ import {
 } from '~api/modules/exam-calendar/http/handlers.js'
 import { HealthLive, HealthRequestServices } from '~api/modules/health/http/handlers.js'
 import { IdentityLive } from '~api/modules/identity/http/handlers.js'
+import { SourcesLive, SourcesRequestServices } from '~api/modules/learning-content/http/handlers.js'
 import {
   LearningXpLive,
   LearningXpRequestServices,
@@ -46,6 +47,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       ProfilesLive,
       RankingsLive,
       PathResetLive,
+      SourcesLive,
     ).pipe(Layer.provide(AuthenticationLive)),
   ),
   HttpRouter.provideRequest(
@@ -62,6 +64,7 @@ export const ApiLive = HttpApiBuilder.layer(Api).pipe(
       ProfilesRequestServices,
       RankingsRequestServices,
       PathResetRequestServices,
+      SourcesRequestServices,
     ),
   ),
 )
