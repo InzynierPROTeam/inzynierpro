@@ -166,7 +166,7 @@ export const questions = [
     body: 'Który dokument stanowi urzędowy dokument przebiegu robót budowlanych?',
     answers: ['Dziennik budowy', 'Książka obiektu budowlanego', 'Projekt techniczny'],
     explanation: [
-      italic('Art. 45 ust. 1 Prawa budowlanego'),
+      italic('Art. 45 Prawa budowlanego'),
       plain(': '),
       bold('dziennik budowy'),
       plain(' stanowi urzędowy dokument przebiegu robót budowlanych.'),

@@ -6,6 +6,7 @@ import {
   DocumentEditionId,
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
+import { DocumentSectionAddress } from '@inzpro/domain/modules/learning-content/document-section-address'
 import {
   ReferenceDocumentCode,
   ReferenceDocumentId,
@@ -67,3 +68,14 @@ export const ReferenceDocument = Schema.Struct({
 export type ReferenceDocument = typeof ReferenceDocument.Type
 
 export const ReferenceDocumentResponse = Schema.Struct({ document: ReferenceDocument })
+
+export const DocumentSection = Schema.Struct({
+  address: DocumentSectionAddress,
+  parentAddress: Schema.NullOr(DocumentSectionAddress),
+  title: Schema.NullOr(Schema.NonEmptyString),
+  content: Schema.NullOr(ResolvedRichContent),
+})
+
+export type DocumentSection = typeof DocumentSection.Type
+
+export const DocumentSectionsResponse = Schema.Struct({ sections: Schema.Array(DocumentSection) })

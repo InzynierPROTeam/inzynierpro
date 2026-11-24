@@ -1,4 +1,5 @@
 import type {
+  GetDocumentSectionsRequest,
   GetReferenceDocumentRequest,
   GetReferenceDocumentsRequest,
 } from '@inzpro/api-client/modules/learning-content'
@@ -20,6 +21,12 @@ export const learningContentKeys = {
     [
       ...learningContentKeys.path(userId, req.params.qualificationPathId),
       'getReferenceDocument',
+      req,
+    ] as const,
+  getDocumentSections: (userId: UserId, req: GetDocumentSectionsRequest) =>
+    [
+      ...learningContentKeys.path(userId, req.params.qualificationPathId),
+      'getDocumentSections',
       req,
     ] as const,
 }

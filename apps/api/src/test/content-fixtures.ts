@@ -15,9 +15,12 @@ import { DateTime, Effect, Option, Schema } from 'effect'
 import { expect } from 'vitest'
 import { FileStorage } from '~api/modules/learning-content/application/file-storage.service.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
+import { withSiblingPositions } from '~api/modules/learning-content/domain/document-section.rules.js'
 import {
   ContentAsset,
+  DocumentSectionContent,
   type ReferenceDocument,
+  SectionRelocation,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { runFixture } from '~api/test/run-fixture.js'
 
@@ -82,15 +85,64 @@ export const fixtureReferenceDocument = (
   description: Option.none(),
 })
 
+type FixtureSection = {
+  readonly address: string
+  readonly parentAddress?: string
+  readonly position?: number
+  readonly title?: string
+  readonly content?: unknown
+}
+
 type FixtureEdition = {
   readonly availability?: ContentAvailability
   readonly published?: boolean
   readonly description?: string
+  readonly sections?: ReadonlyArray<FixtureSection>
 }
+
+const saveSectionContent = (editionId: DocumentEditionId, section: FixtureSection) =>
+  Effect.gen(function* () {
+    const learningContentRepository = yield* LearningContentRepository
+
+    const sectionContent = yield* Schema.decodeUnknownEffect(DocumentSectionContent)({
+      editionId,
+      address: section.address,
+      parentAddress: section.parentAddress ?? null,
+      position: section.position ?? 1,
+      title: section.title ?? null,
+      content: section.content ?? null,
+    })
+
+    yield* learningContentRepository.saveSectionContent(sectionContent)
+  })
+
+export const saveFixtureSectionContent = (editionId: DocumentEditionId, section: FixtureSection) =>
+  runFixture(saveSectionContent(editionId, section))
+
+export const recordFixtureSectionRelocation = (relocation: {
+  readonly editionId: DocumentEditionId
+  readonly fromAddress: string
+  readonly toAddress: string
+  readonly reason: string
+}) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      yield* learningContentRepository.recordSectionRelocation(
+        yield* Schema.decodeEffect(SectionRelocation)(relocation),
+      )
+    }),
+  )
 
 export const addFixtureReferenceDocument = (
   pathId: QualificationPathId | undefined,
-  { availability = fullContentAvailability, published = true, description }: FixtureEdition = {},
+  {
+    availability = fullContentAvailability,
+    published = true,
+    description,
+    sections = [],
+  }: FixtureEdition = {},
 ) =>
   runFixture(
     Effect.gen(function* () {
@@ -114,8 +166,17 @@ export const addFixtureReferenceDocument = (
         pdfAssetId: Option.none(),
         availability,
         downloadable: false,
-        published,
+        published: false,
       })
+
+      for (const section of withSiblingPositions(sections)) {
+        yield* saveSectionContent(editionId, section)
+      }
+
+      if (published) {
+        yield* learningContentRepository.publishEdition(editionId)
+      }
+
       yield* learningContentRepository.makeCurrentEdition(documentId, editionId)
 
       if (pathId !== undefined) {

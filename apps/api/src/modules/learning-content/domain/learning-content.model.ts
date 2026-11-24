@@ -14,6 +14,10 @@ import {
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
 import {
+  DocumentSectionAddress,
+  enclosingUnitAddress,
+} from '@inzpro/domain/modules/learning-content/document-section-address'
+import {
   KnowledgeCheckFormat,
   OralKnowledgeCheckId,
   OralKnowledgeCheckOptionId,
@@ -42,7 +46,7 @@ import {
 } from '@inzpro/domain/modules/learning-content/written-question'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { RichContent } from '@inzpro/rich-content/rich-content'
-import { Schema } from 'effect'
+import { Option, Schema } from 'effect'
 
 export const ReferenceDocument = Schema.Struct({
   id: ReferenceDocumentId,
@@ -69,6 +73,41 @@ export const DocumentEdition = Schema.Struct({
 })
 
 export type DocumentEdition = typeof DocumentEdition.Type
+
+export const SectionPosition = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
+  Schema.brand('SectionPosition'),
+)
+
+export type SectionPosition = typeof SectionPosition.Type
+
+export const DocumentSectionContent = Schema.Struct({
+  editionId: DocumentEditionId,
+  address: DocumentSectionAddress,
+  parentAddress: Schema.OptionFromNullOr(DocumentSectionAddress),
+  position: SectionPosition,
+  title: Schema.OptionFromNullOr(Schema.NonEmptyString),
+  content: Schema.OptionFromNullOr(RichContent),
+}).check(
+  Schema.makeFilter(
+    section =>
+      Option.match(enclosingUnitAddress(section.address), {
+        onNone: () => true,
+        onSome: enclosing => Option.contains(section.parentAddress, enclosing),
+      }),
+    { message: 'A nested unit belongs to the unit its address extends.' },
+  ),
+)
+
+export type DocumentSectionContent = typeof DocumentSectionContent.Type
+
+export const SectionRelocation = Schema.Struct({
+  editionId: DocumentEditionId,
+  fromAddress: DocumentSectionAddress,
+  toAddress: DocumentSectionAddress,
+  reason: Schema.NonEmptyString,
+})
+
+export type SectionRelocation = typeof SectionRelocation.Type
 
 export const ImageAsset = Schema.Struct({
   id: ContentAssetId,

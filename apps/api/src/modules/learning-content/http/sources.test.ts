@@ -1,13 +1,21 @@
 import {
+  DocumentSectionsResponse,
   ReferenceDocumentResponse,
   ReferenceDocumentSummary,
 } from '@inzpro/api-contracts/modules/learning-content/responses'
 import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { richContentNodeFixtures } from '@inzpro/rich-content/fixtures'
+import { paragraphs } from '@inzpro/rich-content/rich-content'
 import { Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { startTestApi, type TestApi, type TestVisitor } from '~api/test/api-server.js'
-import { addFixtureReferenceDocument } from '~api/test/content-fixtures.js'
+import {
+  addFixtureAsset,
+  addFixtureReferenceDocument,
+  contentWithImage,
+  expectStoredImageAddress,
+} from '~api/test/content-fixtures.js'
 import { createStudyFixture } from '~api/test/preparation-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 
@@ -140,4 +148,80 @@ test('a learner without the path cannot list or read its documents', async () =>
 
   expect(list.status).toBe(403)
   expect(read.status).toBe(403)
+})
+
+const sectionsOf = async (visitor: TestVisitor, pathId: QualificationPathId, code: string) => {
+  const response = await sourcesRequest(visitor, `/paths/${pathId}/documents/${code}/sections`)
+
+  expect(response.status).toBe(200)
+
+  return Schema.decodeUnknownSync(DocumentSectionsResponse)(await response.json()).sections
+}
+
+test('a full-content document reads its units in document order with parents, titles, tables and signed images', async () => {
+  const { learner, pathId } = await onboardedLearner()
+  const assetId = await addFixtureAsset()
+
+  const statute = await addFixtureReferenceDocument(pathId, {
+    sections: [
+      { address: 'rozdz:1', title: 'Przepisy ogólne' },
+      { address: 'rozdz:2', title: 'Warunki techniczne' },
+      { address: 'art:2', parentAddress: 'rozdz:2', content: richContentNodeFixtures.table },
+      { address: 'art:1', parentAddress: 'rozdz:1', content: paragraphs('Ustawa normuje.') },
+      { address: 'art:1/ust:1', parentAddress: 'art:1', content: paragraphs('Ust. 1.') },
+      { address: 'art:1/ust:2', parentAddress: 'art:1', content: contentWithImage(assetId) },
+    ],
+  })
+
+  const sections = await sectionsOf(learner, pathId, statute.code)
+
+  expect(sections.map(section => [section.address, section.parentAddress])).toEqual([
+    ['rozdz:1', null],
+    ['art:1', 'rozdz:1'],
+    ['art:1/ust:1', 'art:1'],
+    ['art:1/ust:2', 'art:1'],
+    ['rozdz:2', null],
+    ['art:2', 'rozdz:2'],
+  ])
+  expect(sections[0]).toEqual({
+    address: 'rozdz:1',
+    parentAddress: null,
+    title: 'Przepisy ogólne',
+    content: null,
+  })
+  expect(sections[5]?.content?.content).toEqual(richContentNodeFixtures.table)
+  await expectStoredImageAddress(
+    sections[3]?.content ?? { content: paragraphs('-'), assets: [] },
+    assetId,
+  )
+})
+
+test('units of a metadata-only, unpublished or unassigned document are not readable', async () => {
+  const { learner, pathId } = await onboardedLearner()
+  const section = { address: 'art:1', content: paragraphs('Treść.') }
+
+  const documents = [
+    await addFixtureReferenceDocument(pathId, {
+      availability: 'metadata_only',
+      sections: [section],
+    }),
+    await addFixtureReferenceDocument(pathId, { published: false, sections: [section] }),
+    await addFixtureReferenceDocument(undefined, { sections: [section] }),
+  ]
+
+  for (const { code } of documents) {
+    const response = await sourcesRequest(learner, `/paths/${pathId}/documents/${code}/sections`)
+
+    expect(response.status).toBe(404)
+    expect(await response.json()).toMatchObject({ type: 'reference_document_not_found' })
+  }
+
+  const outsider = await loginForPreparation(api)
+
+  const outsiderRead = await sourcesRequest(
+    outsider,
+    `/paths/${pathId}/documents/${documents[0]?.code}/sections`,
+  )
+
+  expect(outsiderRead.status).toBe(403)
 })

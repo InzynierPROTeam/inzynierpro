@@ -1,5 +1,5 @@
 import type { GetReferenceDocumentRes } from '@inzpro/api-client/modules/learning-content'
-import { metadataOnlyAvailability } from '@inzpro/domain/modules/learning-content/document-edition'
+import { pdfOnlyAvailability } from '@inzpro/domain/modules/learning-content/document-edition'
 import { Badge } from '@inzpro/ui/components/badge'
 import { buttonVariants } from '@inzpro/ui/components/button'
 import {
@@ -59,7 +59,7 @@ export const ReferenceDocumentDetails: React.FC<ReferenceDocumentDetailsProps> =
         </ExternalLink>
       </CardFooter>
     </Card>
-    {document.edition.availability !== metadataOnlyAvailability && <ContentNotAvailableYet />}
+    {document.edition.availability === pdfOnlyAvailability && <ContentNotAvailableYet />}
   </>
 )
 
