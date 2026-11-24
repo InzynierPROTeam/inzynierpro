@@ -10,6 +10,11 @@ import { catalogueId } from './catalogue-id.js'
 import { questions, substantiveRevision } from './oral-content.js'
 import { seedOralKnowledgeChecks } from './oral-knowledge-checks.js'
 import { seedOralRegionalLinks } from './oral-regional-links.js'
+import {
+  oralQuestionReferences,
+  oralSubstantiveRevisionReferences,
+  seedQuestionReferences,
+} from './question-references.js'
 import { plain } from './rich-text.js'
 import { paragraph } from './rich-text.js'
 
@@ -53,7 +58,18 @@ export const seedOralCatalogue = Effect.fn('seedOralCatalogue')(function* (
     yield* sql`INSERT INTO oral_questions (id,category_id,category_position) VALUES (${questionId},${categoryId},${position}) ON CONFLICT DO NOTHING`
     yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id)
     VALUES (${revisionId},${questionId},${body}::jsonb,${answer}::jsonb,${initialRevision},${revisionId}) ON CONFLICT DO NOTHING`
-    yield* sql`UPDATE oral_revisions SET published_at=clock_timestamp() WHERE id=${revisionId} AND published_at IS NULL`
+
+    const revisions =
+      yield* sql`SELECT published_at FROM oral_revisions WHERE id=${revisionId} LIMIT 1`
+
+    if (revisions[0]?.publishedAt === null) {
+      yield* seedQuestionReferences(
+        { oralRevisionId: revisionId },
+        oralQuestionReferences[questionIndex] ?? [],
+      )
+      yield* sql`UPDATE oral_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
+    }
+
     yield* sql`UPDATE oral_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id IS NULL`
 
     for (const pathId of oralPathIds) {
@@ -68,8 +84,17 @@ export const seedOralCatalogue = Effect.fn('seedOralCatalogue')(function* (
   const body = yield* contentJson([paragraph(plain(substantiveRevision.question))])
   const answer = yield* contentJson(substantiveRevision.answer)
 
-  yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id,published_at)
-  VALUES (${revisionId},${questionId},${body}::jsonb,${answer}::jsonb,${substantiveChange},${revisionId},clock_timestamp()) ON CONFLICT DO NOTHING`
+  yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id)
+  VALUES (${revisionId},${questionId},${body}::jsonb,${answer}::jsonb,${substantiveChange},${revisionId}) ON CONFLICT DO NOTHING`
+
+  const substantiveRevisions =
+    yield* sql`SELECT published_at FROM oral_revisions WHERE id=${revisionId} LIMIT 1`
+
+  if (substantiveRevisions[0]?.publishedAt === null) {
+    yield* seedQuestionReferences({ oralRevisionId: revisionId }, oralSubstantiveRevisionReferences)
+    yield* sql`UPDATE oral_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
+  }
+
   yield* sql`UPDATE oral_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id=${previousId}`
 
   yield* seedOralKnowledgeChecks()

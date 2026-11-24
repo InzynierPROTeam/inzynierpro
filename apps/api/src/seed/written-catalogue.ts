@@ -13,6 +13,11 @@ import {
 
 import { catalogueId } from './catalogue-id.js'
 import { seedContentAssets } from './content-assets.js'
+import {
+  seedQuestionReferences,
+  writtenLaterRevisionReferences,
+  writtenQuestionReferences,
+} from './question-references.js'
 import { seededReferenceDocumentIds, seedReferenceDocuments } from './reference-documents.js'
 import { buildingLaw, questions, laterRevisions } from './written-content.js'
 
@@ -71,6 +76,10 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
         yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answerId},${revisionId},${text},${isCorrect}) ON CONFLICT DO NOTHING`
       }
 
+      yield* seedQuestionReferences(
+        { writtenRevisionId: revisionId },
+        writtenQuestionReferences[questionIndex] ?? [],
+      )
       yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
     }
 
@@ -102,6 +111,10 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
         yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answerId},${revisionId},${text},${isCorrect}) ON CONFLICT DO NOTHING`
       }
 
+      yield* seedQuestionReferences(
+        { writtenRevisionId: revisionId },
+        writtenLaterRevisionReferences.get(n) ?? [],
+      )
       yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revisionId}`
     }
 
