@@ -1,3 +1,4 @@
+import type { DocumentEditionId } from '@inzpro/domain/modules/learning-content/document-edition'
 import type { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
@@ -6,6 +7,7 @@ import { Context, type Effect } from 'effect'
 import type { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
 import type {
   ContentAsset,
+  DocumentEdition,
   NewOralKnowledgeCheck,
   NewOralQuestion,
   NewOralRevision,
@@ -26,6 +28,13 @@ export class LearningContentRepository extends Context.Service<
   {
     readonly createDocument: (
       document: ReferenceDocument,
+    ) => Effect.Effect<void, LearningContentWriteError>
+    readonly createEdition: (
+      edition: DocumentEdition,
+    ) => Effect.Effect<void, LearningContentWriteError>
+    readonly makeCurrentEdition: (
+      documentId: ReferenceDocumentId,
+      editionId: DocumentEditionId,
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly attachDocument: (
       pathId: QualificationPathId,

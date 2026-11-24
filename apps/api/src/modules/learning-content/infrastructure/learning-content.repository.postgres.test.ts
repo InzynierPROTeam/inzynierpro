@@ -1,9 +1,13 @@
+import { DocumentEditionId } from '@inzpro/domain/modules/learning-content/document-edition'
 import { richContentNodeFixtures, unsupportedNodeFixture } from '@inzpro/rich-content/fixtures'
 import { paragraphs } from '@inzpro/rich-content/rich-content'
+import { DateTime, Effect, Option, Schema } from 'effect'
 import { expect, test } from 'vitest'
 import { LearningContentWriteError } from '~api/modules/learning-content/application/errors.js'
+import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
-import { addFixtureAsset } from '~api/test/content-fixtures.js'
+import { ContentAsset } from '~api/modules/learning-content/domain/learning-content.model.js'
+import { addFixtureAsset, addFixtureReferenceDocument } from '~api/test/content-fixtures.js'
 import {
   addFixtureOralCategory,
   addFixtureOralQuestion,
@@ -11,6 +15,7 @@ import {
   withdrawFixtureOralRevision,
 } from '~api/test/oral-learning-fixtures.js'
 import { createStudyFixture } from '~api/test/preparation-fixtures.js'
+import { runFixture } from '~api/test/run-fixture.js'
 import { addFixtureQuestion, publishFixtureRevision } from '~api/test/written-learning-fixtures.js'
 
 test('a question with an explanation of every node, including an image of a stored asset, is saved', async () => {
@@ -99,4 +104,64 @@ test('an oral answer with an image of an asset that was never stored is rejected
   await expect(
     addFixtureOralQuestion(pathId, category, 1, true, richContentNodeFixtures.image),
   ).rejects.toBeInstanceOf(UnknownContentAsset)
+})
+
+test('a PDF asset is stored without dimensions and can back a PDF-only edition', async () => {
+  const pdf = Schema.decodeSync(ContentAsset)({
+    id: crypto.randomUUID(),
+    storageKey: `test/${crypto.randomUUID()}.pdf`,
+    mediaType: 'application/pdf',
+    size: 2048,
+  })
+
+  const document = await addFixtureReferenceDocument(undefined)
+
+  await expect(
+    runFixture(
+      Effect.gen(function* () {
+        const learningContentRepository = yield* LearningContentRepository
+        const editionId = DocumentEditionId.make(crypto.randomUUID())
+
+        yield* learningContentRepository.createAsset(pdf)
+        yield* learningContentRepository.createEdition({
+          id: editionId,
+          documentId: document.id,
+          label: 'Test-only PDF edition',
+          textKind: 'original',
+          effectiveFrom: DateTime.makeUnsafe('2024-01-01T00:00:00.000Z'),
+          externalUrl: 'https://isap.sejm.gov.pl/',
+          pdfAssetId: Option.some(pdf.id),
+          availability: 'pdf_only',
+          downloadable: true,
+          published: true,
+        })
+        yield* learningContentRepository.makeCurrentEdition(document.id, editionId)
+      }),
+    ),
+  ).resolves.toBeUndefined()
+})
+
+test('a PDF-only edition without a PDF asset is rejected on write', async () => {
+  const document = await addFixtureReferenceDocument(undefined)
+
+  await expect(
+    runFixture(
+      Effect.gen(function* () {
+        const learningContentRepository = yield* LearningContentRepository
+
+        yield* learningContentRepository.createEdition({
+          id: DocumentEditionId.make(crypto.randomUUID()),
+          documentId: document.id,
+          label: 'Test-only PDF edition without a file',
+          textKind: 'original',
+          effectiveFrom: DateTime.makeUnsafe('2024-01-01T00:00:00.000Z'),
+          externalUrl: 'https://isap.sejm.gov.pl/',
+          pdfAssetId: Option.none(),
+          availability: 'pdf_only',
+          downloadable: false,
+          published: true,
+        })
+      }),
+    ),
+  ).rejects.toBeInstanceOf(LearningContentWriteError)
 })

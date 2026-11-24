@@ -3,7 +3,7 @@ import type {
   OralKnowledgeCheckRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
-import { Array as Arr, DateTime, Effect, Layer } from 'effect'
+import { Array as Arr, DateTime, Effect, Layer, Option } from 'effect'
 import { SqlClient } from 'effect/sql'
 import { LearningContentWriteError } from '~api/modules/learning-content/application/errors.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
@@ -46,17 +46,41 @@ export const LearningContentRepositoryLive = Layer.effect(
 
     return LearningContentRepository.of({
       createAsset: Effect.fn('LearningContentRepository.createAsset')(function* (asset) {
-        return yield* sql`INSERT INTO content_assets (id,storage_key,media_type,width,height,size_bytes) VALUES (${asset.id},${asset.storageKey},${asset.mediaType},${asset.width},${asset.height},${asset.size})`.pipe(
+        const width = 'width' in asset ? asset.width : null
+        const height = 'height' in asset ? asset.height : null
+
+        return yield* sql`INSERT INTO content_assets (id,storage_key,media_type,width,height,size_bytes) VALUES (${asset.id},${asset.storageKey},${asset.mediaType},${width},${height},${asset.size})`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new LearningContentWriteError({ cause })),
         )
       }),
       createDocument: Effect.fn('LearningContentRepository.createDocument')(function* (document) {
-        return yield* sql`INSERT INTO reference_documents (id,title) VALUES (${document.id},${document.title})`.pipe(
+        const description = Option.getOrNull(document.description)
+
+        return yield* sql`INSERT INTO reference_documents (id,kind,code,abbreviation,title,description) VALUES (${document.id},${document.kind},${document.code},${document.abbreviation},${document.title},${description})`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new LearningContentWriteError({ cause })),
         )
       }),
+      createEdition: Effect.fn('LearningContentRepository.createEdition')(function* (edition) {
+        const effectiveFrom = DateTime.formatIso(edition.effectiveFrom)
+        const pdfAssetId = Option.getOrNull(edition.pdfAssetId)
+        const publishedAt = edition.published ? sql`clock_timestamp()` : sql`NULL`
+
+        return yield* sql`INSERT INTO document_editions (id,document_id,label,text_kind,effective_from,external_url,pdf_asset_id,availability,downloadable,published_at)
+ VALUES (${edition.id},${edition.documentId},${edition.label},${edition.textKind},${effectiveFrom},${edition.externalUrl},${pdfAssetId},${edition.availability},${edition.downloadable},${publishedAt})`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new LearningContentWriteError({ cause })),
+        )
+      }),
+      makeCurrentEdition: Effect.fn('LearningContentRepository.makeCurrentEdition')(
+        function* (documentId, editionId) {
+          return yield* sql`UPDATE reference_documents SET current_edition_id=${editionId} WHERE id=${documentId}`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
       attachDocument: Effect.fn('LearningContentRepository.attachDocument')(
         function* (pathId, documentId) {
           return yield* sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId})`.pipe(
