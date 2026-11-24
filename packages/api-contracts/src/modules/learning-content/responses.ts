@@ -4,9 +4,11 @@ import { ContentAssetId } from '@inzpro/domain/modules/learning-content/content-
 import {
   ContentAvailability,
   DocumentEditionId,
+  DocumentPageNumber,
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
 import { DocumentSectionAddress } from '@inzpro/domain/modules/learning-content/document-section-address'
+import { QuestionReferenceKind } from '@inzpro/domain/modules/learning-content/question-reference'
 import {
   ReferenceDocumentCode,
   ReferenceDocumentId,
@@ -83,3 +85,22 @@ export const DocumentSectionsResponse = Schema.Struct({ sections: Schema.Array(D
 export const DocumentPdfResponse = Schema.Struct({ url: Schema.String })
 
 export type DocumentPdfResponse = typeof DocumentPdfResponse.Type
+
+export const QuestionReference = Schema.Struct({
+  document: Schema.Struct({
+    code: ReferenceDocumentCode,
+    abbreviation: Schema.NonEmptyString,
+    title: Schema.NonEmptyString,
+  }),
+  // CONTRACT: Null address and page refer to the whole document.
+  address: Schema.NullOr(DocumentSectionAddress),
+  page: Schema.NullOr(DocumentPageNumber),
+  kind: QuestionReferenceKind,
+  isCritical: Schema.Boolean,
+  // CONTRACT: False when the document is not on the path, has no published current edition, an address is absent from that edition's full content, or a page cites an edition that is not PDF-only.
+  isLinked: Schema.Boolean,
+  // CONTRACT: The referenced unit with its nested units in document order for a linked direct-basis reference to a unit; null for every other reference.
+  fragment: Schema.NullOr(Schema.Array(DocumentSection)),
+})
+
+export type QuestionReference = typeof QuestionReference.Type

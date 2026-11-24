@@ -29,7 +29,10 @@ import {
 } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
-import { ResolvedRichContent } from '~api-contracts/modules/learning-content/responses.js'
+import {
+  QuestionReference,
+  ResolvedRichContent,
+} from '~api-contracts/modules/learning-content/responses.js'
 import { LearningRewards } from '~api-contracts/modules/learning-xp/responses.js'
 import {
   SessionCountSettings,
@@ -104,6 +107,7 @@ export const OralSessionQuestion = Schema.Struct({
   oralRevisionId: OralRevisionId,
   body: ResolvedRichContent,
   answer: ResolvedRichContent,
+  references: Schema.Array(QuestionReference),
   note: Schema.NullOr(QuestionNote),
   isFavorite: Schema.Boolean,
   isWithdrawn: Schema.Boolean,
