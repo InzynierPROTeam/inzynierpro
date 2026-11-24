@@ -2,6 +2,7 @@ import { HttpApi } from 'effect/http-api'
 import { ExamCalendarApi } from '~api-contracts/modules/exam-calendar/api.js'
 import { HealthCheckApi } from '~api-contracts/modules/health/api.js'
 import { IdentityApi } from '~api-contracts/modules/identity/api.js'
+import { SourcesApi } from '~api-contracts/modules/learning-content/api.js'
 import { LearningXpApi } from '~api-contracts/modules/learning-xp/api.js'
 import { MockExamsApi } from '~api-contracts/modules/mock-exams/api.js'
 import { OralStudyApi } from '~api-contracts/modules/oral-study/api.js'
@@ -27,4 +28,5 @@ export class V1Api extends HttpApi.make('v1')
   .add(ProfilesApi)
   .add(RankingsApi)
   .add(PathResetApi)
+  .add(SourcesApi)
   .prefix('/v1') {}
