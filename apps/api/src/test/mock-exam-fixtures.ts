@@ -18,6 +18,7 @@ import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.re
 import { publishBlueprintVersion } from '~api/modules/mock-exams/application/publish-blueprint-version.command.js'
 import type { ExamBlueprintDraft } from '~api/modules/mock-exams/domain/exam-blueprint.model.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
+import { fixtureReferenceDocument } from '~api/test/content-fixtures.js'
 import { technicalConfiguration } from '~api/test/preparation.js'
 import { runFixture } from '~api/test/run-fixture.js'
 import { addFixtureQuestion } from '~api/test/written-learning-fixtures.js'
@@ -53,10 +54,9 @@ export const addFixtureDocument = (pathId: QualificationPathId) =>
       const learningContentRepository = yield* LearningContentRepository
       const documentId = yield* Schema.decodeEffect(ReferenceDocumentId)(crypto.randomUUID())
 
-      yield* learningContentRepository.createDocument({
-        id: documentId,
-        title: `Test-only exam document ${documentId}`,
-      })
+      yield* learningContentRepository.createDocument(
+        fixtureReferenceDocument(documentId, `Test-only exam document ${documentId}`),
+      )
       yield* learningContentRepository.attachDocument(pathId, documentId)
 
       return documentId

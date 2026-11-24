@@ -3,6 +3,7 @@ import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/ref
 import { Effect, Schema, Option } from 'effect'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
+import { fixtureReferenceDocument } from '~api/test/content-fixtures.js'
 import { runFixture } from '~api/test/run-fixture.js'
 
 import { technicalConfiguration } from './preparation.js'
@@ -37,10 +38,9 @@ export const createStudyFixture = (specializationId = '60000000-0000-4000-8000-0
         specializationId,
       })
 
-      yield* learningContentRepository.createDocument({
-        id: documentId,
-        title: 'Test-only threshold document',
-      })
+      yield* learningContentRepository.createDocument(
+        fixtureReferenceDocument(documentId, 'Test-only threshold document'),
+      )
       yield* learningContentRepository.attachDocument(pathId, documentId)
 
       return { pathId, documentId, config }

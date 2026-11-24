@@ -1,5 +1,6 @@
 import type { CompleteOnboardingRequest } from '@inzpro/api-client/modules/preparation'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import { learningContentKeys } from '@inzpro/queries/modules/learning-content/keys'
 import { oralStudyKeys } from '@inzpro/queries/modules/oral-study/keys'
 import { preparationKeys } from '@inzpro/queries/modules/preparation/keys'
 import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
@@ -32,6 +33,9 @@ export const useCompleteOnboarding = () => {
         }),
         queryClient.invalidateQueries({
           queryKey: oralStudyKeys.path(userId, receipt.qualificationPathId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: learningContentKeys.path(userId, receipt.qualificationPathId),
         }),
       ])
       await router.navigate({ to: receipt.archived ? '/profil' : '/start' })

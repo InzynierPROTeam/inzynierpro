@@ -1,11 +1,18 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import { ExternalUrl } from '@inzpro/domain/common/external-url'
 import { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import {
   ByteSize,
   ContentAssetId,
-  ContentAssetMediaType,
   ImageDimension,
+  ImageMediaType,
+  pdfMediaType,
 } from '@inzpro/domain/modules/learning-content/content-asset'
+import {
+  ContentAvailability,
+  DocumentEditionId,
+  EditionTextKind,
+} from '@inzpro/domain/modules/learning-content/document-edition'
 import {
   KnowledgeCheckFormat,
   OralKnowledgeCheckId,
@@ -24,7 +31,11 @@ import {
   OralQuestionCategorySortOrder,
 } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
-import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import {
+  ReferenceDocumentCode,
+  ReferenceDocumentId,
+  ReferenceDocumentKind,
+} from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   WrittenQuestionId,
   QuestionRevisionId,
@@ -35,19 +46,47 @@ import { Schema } from 'effect'
 
 export const ReferenceDocument = Schema.Struct({
   id: ReferenceDocumentId,
+  kind: ReferenceDocumentKind,
+  code: ReferenceDocumentCode,
+  abbreviation: Schema.NonEmptyString,
   title: Schema.NonEmptyString,
+  description: Schema.OptionFromNullOr(Schema.NonEmptyString),
 })
 
 export type ReferenceDocument = typeof ReferenceDocument.Type
 
-export const ContentAsset = Schema.Struct({
+export const DocumentEdition = Schema.Struct({
+  id: DocumentEditionId,
+  documentId: ReferenceDocumentId,
+  label: Schema.NonEmptyString,
+  textKind: EditionTextKind,
+  effectiveFrom: DateTimeUtc,
+  externalUrl: ExternalUrl,
+  pdfAssetId: Schema.OptionFromNullOr(ContentAssetId),
+  availability: ContentAvailability,
+  downloadable: Schema.Boolean,
+  published: Schema.Boolean,
+})
+
+export type DocumentEdition = typeof DocumentEdition.Type
+
+export const ImageAsset = Schema.Struct({
   id: ContentAssetId,
   storageKey: Schema.NonEmptyString,
-  mediaType: ContentAssetMediaType,
+  mediaType: ImageMediaType,
   width: ImageDimension,
   height: ImageDimension,
   size: ByteSize,
 })
+
+export const PdfAsset = Schema.Struct({
+  id: ContentAssetId,
+  storageKey: Schema.NonEmptyString,
+  mediaType: Schema.Literal(pdfMediaType),
+  size: ByteSize,
+})
+
+export const ContentAsset = Schema.Union([ImageAsset, PdfAsset])
 
 export type ContentAsset = typeof ContentAsset.Type
 

@@ -351,3 +351,51 @@ test('covering the whole path starts a new round that continues from the categor
     ],
   })
 })
+
+test('a path document without written questions is a source, not a written category', async () => {
+  const learner = await loginForPreparation(api)
+  const fixture = await createStudyFixture()
+
+  await learningRequest(
+    api,
+    learner,
+    '/onboarding',
+    Schema.encodeSync(CompleteOnboardingPayload)(fixture.config),
+  )
+
+  const categories = async () => {
+    const ids: Array<string> = []
+    const query = new URLSearchParams({ limit: '100' })
+    let hasMore = true
+
+    while (hasMore) {
+      const response = await learningRequest(
+        api,
+        learner,
+        `/paths/${fixture.pathId}/documents?${query.toString()}`,
+      )
+
+      const page = Schema.decodeUnknownSync(
+        Schema.Struct({
+          data: Schema.Array(Schema.Struct({ id: Schema.String })),
+          meta: Schema.Struct({
+            hasMore: Schema.Boolean,
+            nextCursor: Schema.NullOr(Schema.String),
+          }),
+        }),
+      )(await response.json())
+
+      ids.push(...page.data.map(document => document.id))
+      hasMore = page.meta.hasMore
+      query.set('cursor', page.meta.nextCursor ?? '')
+    }
+
+    return ids
+  }
+
+  expect(await categories()).not.toContain(fixture.documentId)
+
+  await addFixtureQuestion(fixture.pathId, fixture.documentId)
+
+  expect(await categories()).toContain(fixture.documentId)
+})

@@ -14,6 +14,7 @@ import { Effect, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
+import { fixtureReferenceDocument } from '~api/test/content-fixtures.js'
 import { createStudyFixture, studySessionSpecialization } from '~api/test/preparation-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
 import { runFixture } from '~api/test/run-fixture.js'
@@ -301,7 +302,9 @@ test('continuing points to the most recently used session of the path and each d
       const learningContentRepository = yield* LearningContentRepository
       const id = yield* Schema.decodeEffect(ReferenceDocumentId)(crypto.randomUUID())
 
-      yield* learningContentRepository.createDocument({ id, title: 'Test-only second document' })
+      yield* learningContentRepository.createDocument(
+        fixtureReferenceDocument(id, 'Test-only second document'),
+      )
       yield* learningContentRepository.attachDocument(fixture.pathId, id)
 
       return id

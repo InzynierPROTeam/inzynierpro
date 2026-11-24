@@ -8,7 +8,13 @@ export type ContentAssetId = typeof ContentAssetId.Type
 export const pngMediaType = 'image/png'
 export const jpegMediaType = 'image/jpeg'
 export const webpMediaType = 'image/webp'
-export const contentAssetMediaTypes = [pngMediaType, jpegMediaType, webpMediaType] as const
+export const imageMediaTypes = [pngMediaType, jpegMediaType, webpMediaType] as const
+export const pdfMediaType = 'application/pdf'
+export const contentAssetMediaTypes = [...imageMediaTypes, pdfMediaType] as const
+
+export const ImageMediaType = Schema.Literals(imageMediaTypes)
+
+export type ImageMediaType = typeof ImageMediaType.Type
 
 export const ContentAssetMediaType = Schema.Literals(contentAssetMediaTypes)
 

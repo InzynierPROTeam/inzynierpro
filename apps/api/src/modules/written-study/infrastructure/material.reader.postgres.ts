@@ -91,7 +91,7 @@ export const writtenMaterialReader = Effect.gen(function* () {
         return yield* documentsPage(
           req,
           page =>
-            sql`SELECT ${columns} ${documentPools(userId, pathId, round)} AND ${page.after} GROUP BY d.id,d.title ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
+            sql`SELECT ${columns} ${documentPools(userId, pathId, round)} AND ${page.after} GROUP BY d.id,d.title HAVING count(pq.question_id)>0 ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
               Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))),
             ),
           row => ({ id: row.id }),
