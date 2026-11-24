@@ -1,5 +1,8 @@
 import { ReferenceDocumentNotFound } from '@inzpro/api-contracts/modules/learning-content/errors'
-import { fullContentAvailability } from '@inzpro/domain/modules/learning-content/document-edition'
+import {
+  fullContentAvailability,
+  pdfOnlyAvailability,
+} from '@inzpro/domain/modules/learning-content/document-edition'
 import { referenceDocumentQueryOptions } from '@inzpro/queries/modules/learning-content/queries'
 import {
   Empty,
@@ -21,6 +24,7 @@ import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { referenceDocumentRouteApi } from '../utils'
+import { DocumentPdf } from './DocumentPdf'
 import { DocumentReader } from './DocumentReader'
 import {
   ReferenceDocumentDetails,
@@ -58,6 +62,9 @@ export const ReferenceDocumentSection = () => {
             <>
               <ReferenceDocumentDetails document={document} />
               {document.edition.availability === fullContentAvailability && <DocumentReader />}
+              {document.edition.availability === pdfOnlyAvailability && (
+                <DocumentPdf downloadable={document.edition.downloadable} />
+              )}
             </>
           )}
         </SuspenseQuery>

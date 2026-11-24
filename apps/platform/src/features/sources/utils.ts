@@ -1,5 +1,9 @@
 import type { DocumentSection } from '@inzpro/api-contracts/modules/learning-content/responses'
-import type { EditionTextKind } from '@inzpro/domain/modules/learning-content/document-edition'
+import {
+  type DocumentPageCount,
+  DocumentPageNumber,
+  type EditionTextKind,
+} from '@inzpro/domain/modules/learning-content/document-edition'
 import {
   type DocumentSectionAddress,
   enclosingUnitAddress,
@@ -53,3 +57,11 @@ export const sectionTree = (sections: ReadonlyArray<DocumentSection>): SectionTr
 
   return tree
 }
+
+export const viewerPageNumber = (
+  requested: DocumentPageNumber | undefined,
+  pageCount: DocumentPageCount | null,
+): DocumentPageNumber =>
+  DocumentPageNumber.make(
+    pageCount === null ? (requested ?? 1) : Math.min(requested ?? 1, pageCount),
+  )

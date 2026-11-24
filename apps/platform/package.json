@@ -30,8 +30,10 @@
     "effect": "catalog:",
     "input-otp": "catalog:",
     "lucide-react": "catalog:",
+    "pdfjs-dist": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-pdf": "catalog:",
     "tailwind-variants": "catalog:",
     "ua-parser-js": "catalog:"
   }
