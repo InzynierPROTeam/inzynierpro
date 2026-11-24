@@ -7,6 +7,7 @@ import {
   ReferenceDocumentsQuery,
 } from '~api-contracts/modules/learning-content/requests.js'
 import {
+  DocumentSectionsResponse,
   ReferenceDocumentResponse,
   ReferenceDocumentsResponse,
 } from '~api-contracts/modules/learning-content/responses.js'
@@ -38,8 +39,19 @@ export const GetReferenceDocumentEndpoint = HttpApiEndpoint.get(
   },
 )
 
+export const GetDocumentSectionsEndpoint = HttpApiEndpoint.get(
+  'GetDocumentSections',
+  '/paths/:qualificationPathId/documents/:code/sections',
+  {
+    params: GetReferenceDocumentParams,
+    success: DocumentSectionsResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, ReferenceDocumentNotFound],
+  },
+)
+
 export const SourcesApi = HttpApiGroup.make('Sources')
   .add(GetReferenceDocumentsEndpoint)
   .add(GetReferenceDocumentEndpoint)
+  .add(GetDocumentSectionsEndpoint)
   .middleware(Authentication)
   .prefix('/sources')
