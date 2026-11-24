@@ -1,5 +1,6 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { ExternalUrl } from '@inzpro/domain/common/external-url'
+import { ContentAssetId } from '@inzpro/domain/modules/learning-content/content-asset'
 import {
   ContentAvailability,
   DocumentEditionId,
@@ -33,6 +34,7 @@ export const PublishedEdition = Schema.Struct({
   externalUrl: ExternalUrl,
   availability: ContentAvailability,
   downloadable: Schema.Boolean,
+  pdfAssetId: Schema.OptionFromNullOr(ContentAssetId),
 })
 
 export type PublishedEdition = typeof PublishedEdition.Type

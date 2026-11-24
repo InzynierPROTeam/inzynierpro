@@ -74,6 +74,8 @@ catalog:
   alchemy: 2.0.0-beta.87
   ts-fsrs: 6.0.0
   aws4fetch: 1.0.20
+  react-pdf: 11.0.0
+  pdfjs-dist: 6.3.289
 catalogMode: prefer
 dedupePeers: true
 saveExact: true

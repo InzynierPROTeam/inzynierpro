@@ -79,3 +79,7 @@ export const DocumentSection = Schema.Struct({
 export type DocumentSection = typeof DocumentSection.Type
 
 export const DocumentSectionsResponse = Schema.Struct({ sections: Schema.Array(DocumentSection) })
+
+export const DocumentPdfResponse = Schema.Struct({ url: Schema.String })
+
+export type DocumentPdfResponse = typeof DocumentPdfResponse.Type

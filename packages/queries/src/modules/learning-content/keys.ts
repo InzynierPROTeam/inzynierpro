@@ -1,4 +1,5 @@
 import type {
+  GetDocumentPdfRequest,
   GetDocumentSectionsRequest,
   GetReferenceDocumentRequest,
   GetReferenceDocumentsRequest,
@@ -27,6 +28,12 @@ export const learningContentKeys = {
     [
       ...learningContentKeys.path(userId, req.params.qualificationPathId),
       'getDocumentSections',
+      req,
+    ] as const,
+  getDocumentPdf: (userId: UserId, req: GetDocumentPdfRequest) =>
+    [
+      ...learningContentKeys.path(userId, req.params.qualificationPathId),
+      'getDocumentPdf',
       req,
     ] as const,
 }

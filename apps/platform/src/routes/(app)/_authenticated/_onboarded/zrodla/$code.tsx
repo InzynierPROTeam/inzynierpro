@@ -1,6 +1,10 @@
-import { fullContentAvailability } from '@inzpro/domain/modules/learning-content/document-edition'
+import {
+  fullContentAvailability,
+  pdfOnlyAvailability,
+} from '@inzpro/domain/modules/learning-content/document-edition'
 import { ReferenceDocumentCode } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
+  documentPdfQueryOptions,
   documentSectionsQueryOptions,
   referenceDocumentQueryOptions,
 } from '@inzpro/queries/modules/learning-content/queries'
@@ -22,11 +26,21 @@ export const Route = createFileRoute('/(app)/_authenticated/_onboarded/zrodla/$c
 
     void queryClient
       .query(referenceDocumentQueryOptions(apiHttpClient, session.user.id, req))
-      .then(({ document }) =>
-        document.edition.availability === fullContentAvailability
-          ? queryClient.query(documentSectionsQueryOptions(apiHttpClient, session.user.id, req))
-          : undefined,
-      )
+      .then(({ document }) => {
+        if (document.edition.availability === fullContentAvailability) {
+          return queryClient
+            .query(documentSectionsQueryOptions(apiHttpClient, session.user.id, req))
+            .then(constVoid)
+        }
+
+        if (document.edition.availability === pdfOnlyAvailability) {
+          return queryClient
+            .query(documentPdfQueryOptions(apiHttpClient, session.user.id, req))
+            .then(constVoid)
+        }
+
+        return undefined
+      })
       .catch(constVoid)
   },
   staticData: { backLabel: 'Dokument' },

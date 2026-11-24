@@ -57,6 +57,7 @@ services:
       MINIO_ROOT_USER: ${FILE_STORAGE_ACCESS_KEY_ID:-inzpro_test}
       MINIO_ROOT_PASSWORD: ${FILE_STORAGE_SECRET_ACCESS_KEY:-inzpro_test}
       FILE_STORAGE_BUCKET: ${FILE_STORAGE_BUCKET:-inzpro-files-test}
+      MINIO_API_CORS_ALLOW_ORIGIN: ${E2E_PLATFORM_ORIGIN:-http://localhost:8101}
     ports:
       - '${TEST_MINIO_PORT:-59000}:9000'
     tmpfs:

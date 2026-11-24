@@ -13,7 +13,7 @@ import {
 
 import { catalogueId } from './catalogue-id.js'
 import { seedContentAssets } from './content-assets.js'
-import { seedReferenceDocuments } from './reference-documents.js'
+import { seededReferenceDocumentIds, seedReferenceDocuments } from './reference-documents.js'
 import { buildingLaw, questions, laterRevisions } from './written-content.js'
 
 const explanationJson = (paragraph: ReadonlyArray<Text>, figure?: Image['attrs']) =>
@@ -38,6 +38,7 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
       ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001'),
       ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002'),
       ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000003'),
+      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000004'),
       ('10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001') ON CONFLICT DO NOTHING`
 
   for (const pathId of cataloguePathIds) {
@@ -45,7 +46,7 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
       continue
     }
 
-    for (const documentId of [catalogueId('20', 1), catalogueId('20', 2), catalogueId('20', 3)]) {
+    for (const documentId of seededReferenceDocumentIds) {
       yield* sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId}) ON CONFLICT DO NOTHING`
     }
   }

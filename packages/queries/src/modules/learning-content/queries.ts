@@ -1,4 +1,6 @@
 import {
+  getDocumentPdf,
+  type GetDocumentPdfRequest,
   getDocumentSections,
   type GetDocumentSectionsRequest,
   getReferenceDocument,
@@ -46,5 +48,16 @@ export const documentSectionsQueryOptions = (
   effectQueryOptions(
     learningContentKeys.getDocumentSections(userId, req),
     getDocumentSections(req),
+    httpClient,
+  )
+
+export const documentPdfQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetDocumentPdfRequest,
+) =>
+  effectQueryOptions(
+    learningContentKeys.getDocumentPdf(userId, req),
+    getDocumentPdf(req),
     httpClient,
   )

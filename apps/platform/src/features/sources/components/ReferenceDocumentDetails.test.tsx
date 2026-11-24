@@ -54,14 +54,4 @@ test('a metadata-only standard shows its description and external link', async (
   expect(container.textContent).toContain('Tekst pierwotny')
   expect(container.textContent).toContain('1 listopada 2004')
   expect(container.querySelector('a')?.getAttribute('href')).toBe('https://www.pkn.pl/')
-  expect(container.textContent).not.toContain('Treść dokumentu nie jest jeszcze dostępna')
-})
-
-test('a PDF-only document says honestly that its content is not available yet', async () => {
-  await renderDocument({
-    ...standard,
-    edition: { ...standard.edition, availability: 'pdf_only' },
-  })
-
-  expect(container.textContent).toContain('Treść dokumentu nie jest jeszcze dostępna')
 })

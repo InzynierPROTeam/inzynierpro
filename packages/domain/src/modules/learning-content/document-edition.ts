@@ -32,3 +32,15 @@ export const contentAvailabilityValues = [
 export const ContentAvailability = Schema.Literals(contentAvailabilityValues)
 
 export type ContentAvailability = typeof ContentAvailability.Type
+
+export const DocumentPageNumber = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
+  Schema.brand('DocumentPageNumber'),
+)
+
+export type DocumentPageNumber = typeof DocumentPageNumber.Type
+
+export const DocumentPageCount = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
+  Schema.brand('DocumentPageCount'),
+)
+
+export type DocumentPageCount = typeof DocumentPageCount.Type

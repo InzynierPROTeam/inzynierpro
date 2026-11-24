@@ -7,6 +7,7 @@ import { HttpRouter, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { learningContentKeys } from '~queries/modules/learning-content/keys.js'
 import {
+  documentPdfQueryOptions,
   documentSectionsQueryOptions,
   referenceDocumentQueryOptions,
   referenceDocumentsInfiniteQueryOptions,
@@ -86,6 +87,13 @@ test('reference documents are cached per account and path and refreshed through 
         `/api/v1/sources/paths/${pathId}/documents/${code}/sections`,
         HttpServerResponse.jsonUnsafe({ sections }),
       ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/sources/paths/${pathId}/documents/${code}/pdf`,
+        HttpServerResponse.jsonUnsafe({
+          url: 'https://files.example/document.pdf?X-Amz-Signature=1',
+        }),
+      ),
     ],
     ({ httpClient }) =>
       withQueryClient(async queryClient => {
@@ -94,6 +102,7 @@ test('reference documents are cached per account and path and refreshed through 
         const list = referenceDocumentsInfiniteQueryOptions(httpClient, userId, listRequest)
         const read = referenceDocumentQueryOptions(httpClient, userId, documentRequest)
         const content = documentSectionsQueryOptions(httpClient, userId, documentRequest)
+        const pdf = documentPdfQueryOptions(httpClient, userId, documentRequest)
 
         expect(list.queryKey).toEqual([
           'learning-content',
@@ -107,11 +116,15 @@ test('reference documents are cached per account and path and refreshed through 
         expect((await queryClient.infiniteQuery(list)).pages[0]?.data).toEqual([summary])
         expect(await queryClient.query(read)).toEqual({ document })
         expect(await queryClient.query(content)).toEqual({ sections })
+        expect(await queryClient.query(pdf)).toEqual({
+          url: 'https://files.example/document.pdf?X-Amz-Signature=1',
+        })
 
         await queryClient.invalidateQueries({ queryKey: learningContentKeys.path(userId, pathId) })
 
         expect(queryClient.getQueryState(list.queryKey)?.isInvalidated).toBe(true)
         expect(queryClient.getQueryState(read.queryKey)?.isInvalidated).toBe(true)
         expect(queryClient.getQueryState(content.queryKey)?.isInvalidated).toBe(true)
+        expect(queryClient.getQueryState(pdf.queryKey)?.isInvalidated).toBe(true)
       }),
   ))

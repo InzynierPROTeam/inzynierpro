@@ -1,4 +1,6 @@
 import type {
+  GetDocumentPdfDownloadEndpoint,
+  GetDocumentPdfEndpoint,
   GetDocumentSectionsEndpoint,
   GetReferenceDocumentEndpoint,
   GetReferenceDocumentsEndpoint,
@@ -35,3 +37,23 @@ export type GetDocumentSectionsRequest = InferEndpointRequest<typeof GetDocument
 export type GetDocumentSectionsRes = Effect.Success<ReturnType<typeof getDocumentSections>>
 
 export type GetDocumentSectionsError = Effect.Error<ReturnType<typeof getDocumentSections>>
+
+export const getDocumentPdf = (req: GetDocumentPdfRequest) =>
+  apiAction(api => api.Sources.GetDocumentPdf(req))
+
+export type GetDocumentPdfRequest = InferEndpointRequest<typeof GetDocumentPdfEndpoint>
+
+export type GetDocumentPdfRes = Effect.Success<ReturnType<typeof getDocumentPdf>>
+
+export type GetDocumentPdfError = Effect.Error<ReturnType<typeof getDocumentPdf>>
+
+export const getDocumentPdfDownload = (req: GetDocumentPdfDownloadRequest) =>
+  apiAction(api => api.Sources.GetDocumentPdfDownload(req))
+
+export type GetDocumentPdfDownloadRequest = InferEndpointRequest<
+  typeof GetDocumentPdfDownloadEndpoint
+>
+
+export type GetDocumentPdfDownloadRes = Effect.Success<ReturnType<typeof getDocumentPdfDownload>>
+
+export type GetDocumentPdfDownloadError = Effect.Error<ReturnType<typeof getDocumentPdfDownload>>
