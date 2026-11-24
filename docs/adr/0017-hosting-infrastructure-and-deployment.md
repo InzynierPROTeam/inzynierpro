@@ -14,7 +14,7 @@ IaC state lives in Alchemy's shared remote Cloudflare state backend, a Worker wi
 
 ## Object storage
 
-Source documents, PDFs and images are stored in Cloudflare R2. Metadata and access rules live in PostgreSQL, and the backend uses a file-storage adapter. Staging and production have separate resources. Required operations must be checked against the S3 API subset R2 supports. The bucket is private: the API hands out short-lived signed URLs only after checking path access, publication and, for downloads, the edition's download flag. Local development and CI run an S3-compatible MinIO container behind the same adapter, so no Cloudflare account is needed to work on files.
+Source documents, PDFs and images are stored in Cloudflare R2. Metadata and access rules live in PostgreSQL, and the backend uses a file-storage adapter. Staging and production have separate resources. Required operations must be checked against the S3 API subset R2 supports. The bucket is private: the API hands out short-lived signed URLs only after checking path access, publication and, for downloads, the edition's download flag. The in-app PDF viewer reads those addresses from the browser, so each bucket allows cross-origin reads from its platform origin only. Local development and CI run an S3-compatible MinIO container behind the same adapter, so no Cloudflare account is needed to work on files.
 
 ## Environments and releases
 
