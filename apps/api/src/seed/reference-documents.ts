@@ -10,10 +10,17 @@ import {
   standardDocument,
   statuteDocument,
 } from '@inzpro/domain/modules/learning-content/reference-document'
-import { Effect } from 'effect'
+import { RichContent, richContentVersion } from '@inzpro/rich-content/rich-content'
+import { Effect, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
+import { withSiblingPositions } from '~api/modules/learning-content/domain/document-section.rules.js'
 
 import { catalogueId } from './catalogue-id.js'
+import {
+  buildingLawSections,
+  type SeedSection,
+  technicalConditionsSections,
+} from './document-sections.js'
 import { buildingLaw, technicalConditions } from './written-content.js'
 
 const structuralDesignBasisStandard = ReferenceDocumentId.make(catalogueId('20', 3))
@@ -34,6 +41,7 @@ const referenceDocuments = [
       externalUrl: 'https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20240000725',
       availability: fullContentAvailability,
     },
+    sections: buildingLawSections,
   },
   {
     id: technicalConditions,
@@ -50,6 +58,7 @@ const referenceDocuments = [
       externalUrl: 'https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20220001225',
       availability: fullContentAvailability,
     },
+    sections: technicalConditionsSections,
   },
   {
     id: structuralDesignBasisStandard,
@@ -67,8 +76,17 @@ const referenceDocuments = [
       externalUrl: 'https://www.pkn.pl/',
       availability: metadataOnlyAvailability,
     },
+    sections: [],
   },
 ] as const
+
+const sectionContentJson = (section: SeedSection) =>
+  section.content === null
+    ? Effect.succeed(null)
+    : Schema.decodeEffect(RichContent)({
+        version: richContentVersion,
+        doc: { type: 'doc', content: section.content },
+      }).pipe(Effect.map(content => JSON.stringify(content)))
 
 export const seedReferenceDocuments = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
@@ -80,8 +98,18 @@ export const seedReferenceDocuments = Effect.gen(function* () {
         VALUES (${document.id},${document.kind},${document.code},${document.abbreviation},${document.title},${document.description})
         ON CONFLICT (id) DO UPDATE SET kind=EXCLUDED.kind,code=EXCLUDED.code,abbreviation=EXCLUDED.abbreviation,title=EXCLUDED.title,description=EXCLUDED.description`
     yield* sql`INSERT INTO document_editions (id,document_id,label,text_kind,effective_from,external_url,availability,downloadable,published_at)
-        VALUES (${edition.id},${document.id},${edition.label},${edition.textKind},${edition.effectiveFrom},${edition.externalUrl},${edition.availability},false,clock_timestamp())
+        VALUES (${edition.id},${document.id},${edition.label},${edition.textKind},${edition.effectiveFrom},${edition.externalUrl},${edition.availability},false,NULL)
         ON CONFLICT (id) DO UPDATE SET label=EXCLUDED.label,text_kind=EXCLUDED.text_kind,effective_from=EXCLUDED.effective_from,external_url=EXCLUDED.external_url,availability=EXCLUDED.availability`
+
+    for (const section of withSiblingPositions(document.sections)) {
+      const content = yield* sectionContentJson(section)
+
+      yield* sql`INSERT INTO document_section_contents (edition_id,address,parent_address,position,title,content)
+        SELECT id,${section.address},${section.parentAddress},${section.position},${section.title},${content}::jsonb FROM document_editions WHERE id=${edition.id} AND published_at IS NULL
+        ON CONFLICT (edition_id,address) DO UPDATE SET parent_address=EXCLUDED.parent_address,position=EXCLUDED.position,title=EXCLUDED.title,content=EXCLUDED.content`
+    }
+
+    yield* sql`UPDATE document_editions SET published_at=clock_timestamp() WHERE id=${edition.id} AND published_at IS NULL`
     yield* sql`UPDATE reference_documents SET current_edition_id=${edition.id} WHERE id=${document.id}`
   }
 })
