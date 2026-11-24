@@ -1,4 +1,5 @@
 import type { ResolvedRichContent } from '@inzpro/api-contracts/modules/learning-content/responses'
+import type { ContentAssetId } from '@inzpro/domain/modules/learning-content/content-asset'
 import {
   type ContentAvailability,
   DocumentEditionId,
@@ -52,6 +53,32 @@ export const addFixtureAsset = () =>
     }),
   )
 
+export const fixturePdfBytes = new TextEncoder().encode('%PDF-1.4\n%test-only document\n')
+
+export const addFixturePdfAsset = () =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+      const fileStorage = yield* FileStorage
+
+      const asset = yield* Schema.decodeEffect(ContentAsset)({
+        id: crypto.randomUUID(),
+        storageKey: `test/${crypto.randomUUID()}.pdf`,
+        mediaType: 'application/pdf',
+        size: fixturePdfBytes.byteLength,
+      })
+
+      yield* fileStorage.put({
+        key: asset.storageKey,
+        mediaType: asset.mediaType,
+        body: fixturePdfBytes,
+      })
+      yield* learningContentRepository.createAsset(asset)
+
+      return asset.id
+    }),
+  )
+
 export const contentWithImage = (assetId: string) =>
   ({
     version: 1,
@@ -98,6 +125,8 @@ type FixtureEdition = {
   readonly published?: boolean
   readonly description?: string
   readonly sections?: ReadonlyArray<FixtureSection>
+  readonly pdfAssetId?: ContentAssetId
+  readonly downloadable?: boolean
 }
 
 const saveSectionContent = (editionId: DocumentEditionId, section: FixtureSection) =>
@@ -142,6 +171,8 @@ export const addFixtureReferenceDocument = (
     published = true,
     description,
     sections = [],
+    pdfAssetId,
+    downloadable = false,
   }: FixtureEdition = {},
 ) =>
   runFixture(
@@ -163,9 +194,9 @@ export const addFixtureReferenceDocument = (
         textKind: officialConsolidatedText,
         effectiveFrom: DateTime.makeUnsafe('2024-05-01T00:00:00.000Z'),
         externalUrl: 'https://isap.sejm.gov.pl/',
-        pdfAssetId: Option.none(),
+        pdfAssetId: Option.fromUndefinedOr(pdfAssetId),
         availability,
-        downloadable: false,
+        downloadable,
         published: false,
       })
 

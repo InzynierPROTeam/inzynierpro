@@ -1,5 +1,6 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { ExternalUrl } from '@inzpro/domain/common/external-url'
+import { ContentAssetId } from '@inzpro/domain/modules/learning-content/content-asset'
 import {
   ContentAvailability,
   DocumentEditionId,
@@ -37,6 +38,7 @@ const PublishedDocumentRow = Schema.Struct({
   externalUrl: ExternalUrl,
   availability: ContentAvailability,
   downloadable: Schema.Boolean,
+  pdfAssetId: Schema.OptionFromNullOr(ContentAssetId),
 })
 
 const toPublishedDocument = (
@@ -56,6 +58,7 @@ const toPublishedDocument = (
     externalUrl: row.externalUrl,
     availability: row.availability,
     downloadable: row.downloadable,
+    pdfAssetId: row.pdfAssetId,
   },
 })
 
@@ -95,7 +98,7 @@ export const ReferenceDocumentReaderLive = Layer.effect(
         function* (pathId, code) {
           const rows =
             yield* sql`SELECT d.id,d.code,d.kind,d.abbreviation,d.title,d.description,e.id AS edition_id,e.label AS edition_label,
- e.text_kind,e.effective_from,e.external_url,e.availability,e.downloadable ${publishedPathDocuments(pathId)} AND d.code=${code} LIMIT 1`
+ e.text_kind,e.effective_from,e.external_url,e.availability,e.downloadable,e.pdf_asset_id ${publishedPathDocuments(pathId)} AND d.code=${code} LIMIT 1`
 
           const documents = yield* Schema.decodeUnknownEffect(Schema.Array(PublishedDocumentRow))(
             rows,

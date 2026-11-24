@@ -29,6 +29,20 @@ export const fileStorageS3Layer = (config: FileStorageS3Config) =>
       return url
     }
 
+    const signGet = Effect.fn('FileStorage.signGet')(function* (
+      url: URL,
+      lifetime: Duration.Duration,
+    ) {
+      url.searchParams.set('X-Amz-Expires', String(Math.floor(Duration.toSeconds(lifetime))))
+
+      const signed = yield* Effect.tryPromise({
+        try: () => client.sign(url, { method: 'GET', aws: { signQuery: true } }),
+        catch: cause => new FileStorageError({ cause }),
+      })
+
+      return signed.url
+    })
+
     return FileStorage.of({
       put: Effect.fn('FileStorage.put')(function* (file) {
         const response = yield* Effect.tryPromise({
@@ -45,17 +59,13 @@ export const fileStorageS3Layer = (config: FileStorageS3Config) =>
           return yield* new FileStorageError({ cause: `PutObject responded ${response.status}` })
         }
       }),
-      signedGetUrl: Effect.fn('FileStorage.signedGetUrl')(function* (key, lifetime) {
+      signedGetUrl: (key, lifetime) => signGet(objectUrl(key), lifetime),
+      signedDownloadUrl: (key, lifetime, fileName) => {
         const url = objectUrl(key)
-        url.searchParams.set('X-Amz-Expires', String(Math.floor(Duration.toSeconds(lifetime))))
+        url.searchParams.set('response-content-disposition', `attachment; filename="${fileName}"`)
 
-        const signed = yield* Effect.tryPromise({
-          try: () => client.sign(url, { method: 'GET', aws: { signQuery: true } }),
-          catch: cause => new FileStorageError({ cause }),
-        })
-
-        return signed.url
-      }),
+        return signGet(url, lifetime)
+      },
     })
   })
 

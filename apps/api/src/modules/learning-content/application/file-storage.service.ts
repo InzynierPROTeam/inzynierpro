@@ -17,5 +17,10 @@ export class FileStorage extends Context.Service<
       key: string,
       lifetime: Duration.Duration,
     ) => Effect.Effect<string, FileStorageError>
+    readonly signedDownloadUrl: (
+      key: string,
+      lifetime: Duration.Duration,
+      fileName: string,
+    ) => Effect.Effect<string, FileStorageError>
   }
 >()('api/modules/learning-content/FileStorage') {}

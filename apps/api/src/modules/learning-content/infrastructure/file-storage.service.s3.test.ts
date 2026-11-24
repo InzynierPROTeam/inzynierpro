@@ -59,3 +59,20 @@ test('a signed address of a file that was never stored reads as missing', async 
 
   expect(response.status).toBe(404)
 })
+
+test('a signed download address serves the stored file as a named attachment', async () => {
+  const key = `test/${crypto.randomUUID()}.png`
+  await storeFile(key)
+
+  const url = await runWithFileStorage(
+    Effect.flatMap(FileStorage, fileStorage =>
+      fileStorage.signedDownloadUrl(key, Duration.hours(1), 'schody.png'),
+    ),
+  )
+
+  const response = await fetch(url)
+
+  expect(response.status).toBe(200)
+  expect(response.headers.get('content-disposition')).toBe('attachment; filename="schody.png"')
+  expect(new Uint8Array(await response.arrayBuffer())).toEqual(fixtureAssetBytes)
+})

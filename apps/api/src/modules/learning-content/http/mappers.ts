@@ -23,11 +23,20 @@ export const toResolvedRichContentDto = (
 export const toReferenceDocumentDto = (
   document: PublishedReferenceDocument,
 ): ReferenceDocumentDto => ({
-  ...document,
+  id: document.id,
+  code: document.code,
+  kind: document.kind,
+  abbreviation: document.abbreviation,
+  title: document.title,
   description: Option.getOrNull(document.description),
   edition: {
-    ...document.edition,
+    id: document.edition.id,
+    label: document.edition.label,
+    textKind: document.edition.textKind,
     effectiveFrom: dateTimeUtcToUtcIsoDateTime(document.edition.effectiveFrom),
+    externalUrl: document.edition.externalUrl,
+    availability: document.edition.availability,
+    downloadable: document.edition.downloadable,
   },
 })
 

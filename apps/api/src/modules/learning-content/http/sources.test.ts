@@ -1,4 +1,5 @@
 import {
+  DocumentPdfResponse,
   DocumentSectionsResponse,
   ReferenceDocumentResponse,
   ReferenceDocumentSummary,
@@ -12,9 +13,11 @@ import { afterAll, beforeAll, expect, test } from 'vitest'
 import { startTestApi, type TestApi, type TestVisitor } from '~api/test/api-server.js'
 import {
   addFixtureAsset,
+  addFixturePdfAsset,
   addFixtureReferenceDocument,
   contentWithImage,
   expectStoredImageAddress,
+  fixturePdfBytes,
 } from '~api/test/content-fixtures.js'
 import { createStudyFixture } from '~api/test/preparation-fixtures.js'
 import { learningRequest, loginForPreparation } from '~api/test/preparation.js'
@@ -221,6 +224,126 @@ test('units of a metadata-only, unpublished or unassigned document are not reada
   const outsiderRead = await sourcesRequest(
     outsider,
     `/paths/${pathId}/documents/${documents[0]?.code}/sections`,
+  )
+
+  expect(outsiderRead.status).toBe(403)
+})
+
+const pdfAddressOf = async (response: Response) => {
+  expect(response.status).toBe(200)
+
+  return Schema.decodeUnknownSync(DocumentPdfResponse)(await response.json()).url
+}
+
+test('a PDF-only document opens its stored PDF through a signed address', async () => {
+  const { learner, pathId } = await onboardedLearner()
+
+  const statute = await addFixtureReferenceDocument(pathId, {
+    availability: 'pdf_only',
+    pdfAssetId: await addFixturePdfAsset(),
+  })
+
+  const url = await pdfAddressOf(
+    await sourcesRequest(learner, `/paths/${pathId}/documents/${statute.code}/pdf`),
+  )
+
+  const pdf = await fetch(url)
+
+  expect(pdf.status).toBe(200)
+  expect(new Uint8Array(await pdf.arrayBuffer())).toEqual(fixturePdfBytes)
+})
+
+test('a PDF download is refused unless the edition allows downloading', async () => {
+  const { learner, pathId } = await onboardedLearner()
+
+  const statute = await addFixtureReferenceDocument(pathId, {
+    availability: 'pdf_only',
+    pdfAssetId: await addFixturePdfAsset(),
+  })
+
+  const response = await sourcesRequest(
+    learner,
+    `/paths/${pathId}/documents/${statute.code}/pdf/download`,
+  )
+
+  expect(response.status).toBe(403)
+  expect(await response.json()).toMatchObject({ type: 'document_download_not_allowed' })
+})
+
+test('a downloadable PDF is issued as an attachment named after the document', async () => {
+  const { learner, pathId } = await onboardedLearner()
+
+  const statute = await addFixtureReferenceDocument(pathId, {
+    availability: 'pdf_only',
+    pdfAssetId: await addFixturePdfAsset(),
+    downloadable: true,
+  })
+
+  const url = await pdfAddressOf(
+    await sourcesRequest(learner, `/paths/${pathId}/documents/${statute.code}/pdf/download`),
+  )
+
+  const pdf = await fetch(url)
+
+  expect(pdf.status).toBe(200)
+  expect(pdf.headers.get('content-disposition')).toBe(`attachment; filename="${statute.code}.pdf"`)
+  expect(new Uint8Array(await pdf.arrayBuffer())).toEqual(fixturePdfBytes)
+})
+
+test('a full-content edition with a PDF also opens and downloads it', async () => {
+  const { learner, pathId } = await onboardedLearner()
+
+  const statute = await addFixtureReferenceDocument(pathId, {
+    pdfAssetId: await addFixturePdfAsset(),
+    downloadable: true,
+  })
+
+  for (const file of ['pdf', 'pdf/download']) {
+    const url = await pdfAddressOf(
+      await sourcesRequest(learner, `/paths/${pathId}/documents/${statute.code}/${file}`),
+    )
+
+    const pdf = await fetch(url)
+
+    expect(new Uint8Array(await pdf.arrayBuffer())).toEqual(fixturePdfBytes)
+  }
+})
+
+test('the PDF of a metadata-only, unpublished or unassigned document is not issued', async () => {
+  const { learner, pathId } = await onboardedLearner()
+
+  const documents = [
+    await addFixtureReferenceDocument(pathId, {
+      availability: 'metadata_only',
+      pdfAssetId: await addFixturePdfAsset(),
+    }),
+    await addFixtureReferenceDocument(pathId, {
+      availability: 'pdf_only',
+      pdfAssetId: await addFixturePdfAsset(),
+      downloadable: true,
+      published: false,
+    }),
+    await addFixtureReferenceDocument(undefined, {
+      availability: 'pdf_only',
+      pdfAssetId: await addFixturePdfAsset(),
+      downloadable: true,
+    }),
+  ]
+
+  for (const { code } of documents) {
+    for (const file of ['pdf', 'pdf/download']) {
+      const response = await sourcesRequest(learner, `/paths/${pathId}/documents/${code}/${file}`)
+
+      expect(response.status).toBe(404)
+      expect(await response.json()).toMatchObject({ type: 'reference_document_not_found' })
+    }
+  }
+
+  const outsider = await loginForPreparation(api)
+
+  const outsiderRead = await sourcesRequest(
+    outsider,
+    `/paths/${pathId}/documents/${documents[0]?.code}/pdf`,
   )
 
   expect(outsiderRead.status).toBe(403)
