@@ -21,7 +21,11 @@ import {
 } from '~api/test/oral-learning-fixtures.js'
 import { createStudyFixture } from '~api/test/preparation-fixtures.js'
 import { runFixture } from '~api/test/run-fixture.js'
-import { addFixtureQuestion, publishFixtureRevision } from '~api/test/written-learning-fixtures.js'
+import {
+  addFixtureQuestion,
+  addFixtureWrittenReference,
+  publishFixtureRevision,
+} from '~api/test/written-learning-fixtures.js'
 
 test('a question with an explanation of every node, including an image of a stored asset, is saved', async () => {
   const { pathId, documentId } = await createStudyFixture()
@@ -64,6 +68,35 @@ test('an image of an asset that was never stored is rejected on write', async ()
   await expect(
     publishFixtureRevision(question.id, 'substantive', richContentNodeFixtures.image),
   ).rejects.toBeInstanceOf(UnknownContentAsset)
+})
+
+test('references stay editable on a draft revision and become immutable once it is published', async () => {
+  const { pathId, documentId } = await createStudyFixture()
+  const draft = await addFixtureQuestion(pathId, documentId, false)
+  const published = await addFixtureQuestion(pathId, documentId)
+
+  const reference = {
+    documentId,
+    address: 'art:5',
+    page: null,
+    kind: 'direct_basis',
+    isCritical: true,
+  } as const
+
+  await expect(addFixtureWrittenReference(draft.revisionId, reference)).resolves.toBeUndefined()
+  await expect(addFixtureWrittenReference(published.revisionId, reference)).rejects.toBeInstanceOf(
+    LearningContentWriteError,
+  )
+})
+
+test('a reference points at a unit address or a page, never both', async () => {
+  const { pathId, documentId } = await createStudyFixture()
+
+  await expect(
+    addFixtureQuestion(pathId, documentId, true, paragraphs('Wyjaśnienie'), [
+      { documentId, address: 'art:5', page: 3, kind: 'aid', isCritical: false },
+    ]),
+  ).rejects.toThrow()
 })
 
 test('an oral draft stays editable until it is published', async () => {

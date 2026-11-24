@@ -11,6 +11,7 @@ import {
 import {
   ContentAvailability,
   DocumentEditionId,
+  DocumentPageNumber,
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
 import {
@@ -35,6 +36,7 @@ import {
   OralQuestionCategorySortOrder,
 } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
+import { QuestionReferenceKind } from '@inzpro/domain/modules/learning-content/question-reference'
 import {
   ReferenceDocumentCode,
   ReferenceDocumentId,
@@ -136,6 +138,23 @@ export const ContentAssetLocation = Schema.Struct({
 
 export type ContentAssetLocation = typeof ContentAssetLocation.Type
 
+export const NewQuestionReference = Schema.Struct({
+  documentId: ReferenceDocumentId,
+  address: Schema.OptionFromNullOr(DocumentSectionAddress),
+  page: Schema.OptionFromNullOr(DocumentPageNumber),
+  kind: QuestionReferenceKind,
+  isCritical: Schema.Boolean,
+}).check(
+  Schema.makeFilter(
+    reference => Option.isNone(reference.address) || Option.isNone(reference.page),
+    {
+      message: 'A reference points at a unit address or at a PDF page, not both.',
+    },
+  ),
+)
+
+export type NewQuestionReference = typeof NewQuestionReference.Type
+
 const NewQuestionAnswer = Schema.Struct({
   id: QuestionAnswerId,
   questionRevisionId: QuestionRevisionId,
@@ -162,6 +181,7 @@ export const NewQuestion = Schema.Struct({
   body: Schema.NonEmptyString,
   answers: Schema.Array(NewQuestionAnswer).check(Schema.isMinLength(3), Schema.isMaxLength(3)),
   explanation: RichContent,
+  references: Schema.Array(NewQuestionReference),
   published: Schema.Boolean,
 }).check(Schema.makeFilter(hasValidAnswers, { message: validAnswersMessage }))
 
@@ -183,6 +203,7 @@ export const NewQuestionRevision = Schema.Struct({
   body: Schema.NonEmptyString,
   answers: Schema.Array(NewQuestionAnswer).check(Schema.isMinLength(3), Schema.isMaxLength(3)),
   explanation: RichContent,
+  references: Schema.Array(NewQuestionReference),
 }).check(Schema.makeFilter(hasValidAnswers, { message: validAnswersMessage }))
 
 export type NewQuestionRevision = typeof NewQuestionRevision.Type
@@ -210,6 +231,7 @@ export const NewOralQuestion = Schema.Struct({
   qualificationPathId: QualificationPathId,
   body: RichContent,
   answer: RichContent,
+  references: Schema.Array(NewQuestionReference),
   published: Schema.Boolean,
 })
 
@@ -250,6 +272,7 @@ export const NewOralRevision = Schema.Struct({
   changeKind: RevisionChangeKind,
   body: RichContent,
   answer: RichContent,
+  references: Schema.Array(NewQuestionReference),
 })
 
 export type NewOralRevision = typeof NewOralRevision.Type

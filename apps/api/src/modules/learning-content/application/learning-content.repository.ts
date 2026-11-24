@@ -1,7 +1,10 @@
 import type { DocumentEditionId } from '@inzpro/domain/modules/learning-content/document-edition'
 import type { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
-import type { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
+import type {
+  QuestionRevisionId,
+  WrittenQuestionId,
+} from '@inzpro/domain/modules/learning-content/written-question'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect } from 'effect'
 import type { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
@@ -13,6 +16,7 @@ import type {
   NewOralQuestion,
   NewOralRevision,
   NewQuestion,
+  NewQuestionReference,
   NewQuestionRevision,
   OralDraftEdit,
   OralQuestionCategory,
@@ -63,6 +67,10 @@ export class LearningContentRepository extends Context.Service<
     readonly publishRevision: (
       revision: NewQuestionRevision,
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
+    readonly addWrittenReference: (
+      revisionId: QuestionRevisionId,
+      reference: NewQuestionReference,
+    ) => Effect.Effect<void, LearningContentWriteError>
     readonly withdrawRevision: (
       withdrawal: QuestionRevisionWithdrawal,
     ) => Effect.Effect<void, LearningContentWriteError>

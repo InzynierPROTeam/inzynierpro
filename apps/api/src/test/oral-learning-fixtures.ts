@@ -16,6 +16,7 @@ import {
   NewOralKnowledgeCheck,
   NewOralQuestion,
   NewOralRevision,
+  type NewQuestionReference,
   OralDraftEdit,
   OralQuestionCategory,
   OralRevisionWithdrawal,
@@ -75,6 +76,7 @@ export const addFixtureOralQuestion = (
   position: number,
   published = true,
   answer: typeof RichContent.Encoded = paragraphs('Test-only oral answer'),
+  references: ReadonlyArray<typeof NewQuestionReference.Encoded> = [],
 ) =>
   runFixture(
     Effect.gen(function* () {
@@ -88,6 +90,7 @@ export const addFixtureOralQuestion = (
         qualificationPathId: pathId,
         body: paragraphs('Test-only oral question'),
         answer,
+        references,
         published,
       })
 
@@ -141,6 +144,7 @@ export const publishFixtureOralRevision = (
         changeKind,
         body: paragraphs('Test-only revised oral question'),
         answer: paragraphs('Test-only revised oral answer'),
+        references: [],
       })
 
       yield* learningContentRepository.publishOralRevision(revision)

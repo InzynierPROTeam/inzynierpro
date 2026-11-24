@@ -17,7 +17,11 @@ import {
 } from '@inzpro/domain/modules/learning/study-session'
 import { Match, Option } from 'effect'
 import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
-import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
+import type { WithQuestionReferences } from '~api/modules/learning-content/application/question-references.service.js'
+import {
+  toQuestionReferenceDto,
+  toResolvedRichContentDto,
+} from '~api/modules/learning-content/http/mappers.js'
 import type { QuestionNote } from '~api/modules/learning/domain/question-note.model.js'
 import {
   answeredPercent,
@@ -61,11 +65,15 @@ export const toLatestStudySessionDto = (session: StudySession): Option.Option<La
   Option.map(sessionDocument(session), document => ({ ...toStudySessionDto(session), document }))
 
 export const toSessionQuestionDto = (
-  { explanation, explanationOpenedAt, noteOpenedAt, note, answer, ...question }: SessionQuestion,
+  {
+    question: { explanation, explanationOpenedAt, noteOpenedAt, note, answer, ...question },
+    references,
+  }: WithQuestionReferences<SessionQuestion>,
   addresses: ContentAssetAddresses,
 ): SessionQuestionDto => ({
   ...question,
   explanation: toResolvedRichContentDto(explanation, addresses),
+  references: references.map(reference => toQuestionReferenceDto(reference, addresses)),
   explanationOpenedAt: Option.match(explanationOpenedAt, {
     onNone: () => null,
     onSome: dateTimeUtcToUtcIsoDateTime,

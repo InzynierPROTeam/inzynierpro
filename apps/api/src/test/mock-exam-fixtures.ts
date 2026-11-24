@@ -13,6 +13,7 @@ import type { QualificationPathId } from '@inzpro/domain/modules/qualification-p
 import type { RichContent } from '@inzpro/rich-content/rich-content'
 import { Effect, Option, Schema } from 'effect'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
+import type { NewQuestionReference } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { assignBlueprint } from '~api/modules/mock-exams/application/assign-blueprint.command.js'
 import { MockExamReader } from '~api/modules/mock-exams/application/mock-exam.reader.js'
 import { publishBlueprintVersion } from '~api/modules/mock-exams/application/publish-blueprint-version.command.js'
@@ -91,6 +92,7 @@ export const createMockExamFixture = async (
   sections: ReadonlyArray<{ readonly questionCount: number; readonly eligibleQuestions: number }>,
   passThreshold: number,
   explanation?: typeof RichContent.Encoded,
+  references?: ReadonlyArray<typeof NewQuestionReference.Encoded>,
 ) => {
   const documents = await Promise.all(
     sections.map(async section => {
@@ -98,7 +100,7 @@ export const createMockExamFixture = async (
 
       const questions = await Promise.all(
         Array.from({ length: section.eligibleQuestions }, () =>
-          addFixtureQuestion(pathId, documentId, true, explanation),
+          addFixtureQuestion(pathId, documentId, true, explanation, references),
         ),
       )
 

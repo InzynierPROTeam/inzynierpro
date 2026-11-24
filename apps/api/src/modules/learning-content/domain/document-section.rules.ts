@@ -3,9 +3,7 @@ import { Option } from 'effect'
 
 import type { DocumentSection } from './reference-document.model.js'
 
-export const inDocumentOrder = (
-  siblingOrderedSections: ReadonlyArray<DocumentSection>,
-): ReadonlyArray<DocumentSection> => {
+const documentTree = (siblingOrderedSections: ReadonlyArray<DocumentSection>) => {
   const children = new Map<DocumentSectionAddress | null, Array<DocumentSection>>()
 
   for (const section of siblingOrderedSections) {
@@ -24,7 +22,25 @@ export const inDocumentOrder = (
     ...(children.get(section.address) ?? []).flatMap(unitWithDescendants),
   ]
 
+  return { children, unitWithDescendants }
+}
+
+export const inDocumentOrder = (
+  siblingOrderedSections: ReadonlyArray<DocumentSection>,
+): ReadonlyArray<DocumentSection> => {
+  const { children, unitWithDescendants } = documentTree(siblingOrderedSections)
+
   return (children.get(null) ?? []).flatMap(unitWithDescendants)
+}
+
+export const unitInDocumentOrder = (
+  address: DocumentSectionAddress,
+  siblingOrderedSections: ReadonlyArray<DocumentSection>,
+): ReadonlyArray<DocumentSection> => {
+  const { unitWithDescendants } = documentTree(siblingOrderedSections)
+  const unit = siblingOrderedSections.find(section => section.address === address)
+
+  return unit === undefined ? [] : unitWithDescendants(unit)
 }
 
 export const withSiblingPositions = <Section extends { readonly parentAddress?: string | null }>(

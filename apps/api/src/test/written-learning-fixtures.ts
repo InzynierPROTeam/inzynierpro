@@ -11,6 +11,7 @@ import { type DateTime, Effect, Schema, Option } from 'effect'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import {
   NewQuestion,
+  NewQuestionReference,
   NewQuestionRevision,
   QuestionRevisionWithdrawal,
   type RevisionChangeKind,
@@ -25,6 +26,7 @@ export const addFixtureQuestion = (
   documentId: ReferenceDocumentId,
   published = true,
   explanation: typeof RichContent.Encoded = paragraphs('Fixture'),
+  references: ReadonlyArray<typeof NewQuestionReference.Encoded> = [],
 ) =>
   runFixture(
     Effect.gen(function* () {
@@ -59,6 +61,7 @@ export const addFixtureQuestion = (
           },
         ],
         explanation,
+        references,
         published,
       })
 
@@ -104,11 +107,27 @@ export const publishFixtureRevision = (
           isCorrect: index === 0,
         })),
         explanation,
+        references: [],
       })
 
       yield* learningContentRepository.publishRevision(revision)
 
       return revision
+    }),
+  )
+
+export const addFixtureWrittenReference = (
+  revisionId: QuestionRevisionId,
+  reference: typeof NewQuestionReference.Encoded,
+) =>
+  runFixture(
+    Effect.gen(function* () {
+      const learningContentRepository = yield* LearningContentRepository
+
+      yield* learningContentRepository.addWrittenReference(
+        revisionId,
+        yield* Schema.decodeEffect(NewQuestionReference)(reference),
+      )
     }),
   )
 
