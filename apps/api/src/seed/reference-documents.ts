@@ -2,6 +2,7 @@ import {
   fullContentAvailability,
   metadataOnlyAvailability,
   officialConsolidatedText,
+  pdfOnlyAvailability,
   originalText,
 } from '@inzpro/domain/modules/learning-content/document-edition'
 import {
@@ -16,6 +17,7 @@ import { SqlClient } from 'effect/sql'
 import { withSiblingPositions } from '~api/modules/learning-content/domain/document-section.rules.js'
 
 import { catalogueId } from './catalogue-id.js'
+import { professionalSelfGovernmentPdfAssetId } from './content-assets.js'
 import {
   buildingLawSections,
   type SeedSection,
@@ -24,6 +26,8 @@ import {
 import { buildingLaw, technicalConditions } from './written-content.js'
 
 const structuralDesignBasisStandard = ReferenceDocumentId.make(catalogueId('20', 3))
+
+const professionalSelfGovernmentAct = ReferenceDocumentId.make(catalogueId('20', 4))
 
 const referenceDocuments = [
   {
@@ -40,6 +44,8 @@ const referenceDocuments = [
       effectiveFrom: '2024-05-15T22:00:00.000Z',
       externalUrl: 'https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20240000725',
       availability: fullContentAvailability,
+      pdfAssetId: null,
+      downloadable: false,
     },
     sections: buildingLawSections,
   },
@@ -57,6 +63,8 @@ const referenceDocuments = [
       effectiveFrom: '2022-06-09T22:00:00.000Z',
       externalUrl: 'https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20220001225',
       availability: fullContentAvailability,
+      pdfAssetId: null,
+      downloadable: false,
     },
     sections: technicalConditionsSections,
   },
@@ -75,10 +83,34 @@ const referenceDocuments = [
       effectiveFrom: '2004-10-31T23:00:00.000Z',
       externalUrl: 'https://www.pkn.pl/',
       availability: metadataOnlyAvailability,
+      pdfAssetId: null,
+      downloadable: false,
+    },
+    sections: [],
+  },
+  {
+    id: professionalSelfGovernmentAct,
+    kind: statuteDocument,
+    code: 'samorzady-zawodowe',
+    abbreviation: 'USZ',
+    title:
+      'Ustawa z dnia 15 grudnia 2000 r. o samorządach zawodowych architektów oraz inżynierów budownictwa',
+    description: null,
+    edition: {
+      id: catalogueId('21', 4),
+      label: 'Dz.U. 2025 poz. 1783 (t.j.)',
+      textKind: officialConsolidatedText,
+      effectiveFrom: '2025-12-14T23:00:00.000Z',
+      externalUrl: 'https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20250001783',
+      availability: pdfOnlyAvailability,
+      pdfAssetId: professionalSelfGovernmentPdfAssetId,
+      downloadable: true,
     },
     sections: [],
   },
 ] as const
+
+export const seededReferenceDocumentIds = referenceDocuments.map(document => document.id)
 
 const sectionContentJson = (section: SeedSection) =>
   section.content === null
@@ -97,9 +129,9 @@ export const seedReferenceDocuments = Effect.gen(function* () {
     yield* sql`INSERT INTO reference_documents (id,kind,code,abbreviation,title,description)
         VALUES (${document.id},${document.kind},${document.code},${document.abbreviation},${document.title},${document.description})
         ON CONFLICT (id) DO UPDATE SET kind=EXCLUDED.kind,code=EXCLUDED.code,abbreviation=EXCLUDED.abbreviation,title=EXCLUDED.title,description=EXCLUDED.description`
-    yield* sql`INSERT INTO document_editions (id,document_id,label,text_kind,effective_from,external_url,availability,downloadable,published_at)
-        VALUES (${edition.id},${document.id},${edition.label},${edition.textKind},${edition.effectiveFrom},${edition.externalUrl},${edition.availability},false,NULL)
-        ON CONFLICT (id) DO UPDATE SET label=EXCLUDED.label,text_kind=EXCLUDED.text_kind,effective_from=EXCLUDED.effective_from,external_url=EXCLUDED.external_url,availability=EXCLUDED.availability`
+    yield* sql`INSERT INTO document_editions (id,document_id,label,text_kind,effective_from,external_url,pdf_asset_id,availability,downloadable,published_at)
+        VALUES (${edition.id},${document.id},${edition.label},${edition.textKind},${edition.effectiveFrom},${edition.externalUrl},${edition.pdfAssetId},${edition.availability},${edition.downloadable},NULL)
+        ON CONFLICT (id) DO UPDATE SET label=EXCLUDED.label,text_kind=EXCLUDED.text_kind,effective_from=EXCLUDED.effective_from,external_url=EXCLUDED.external_url,pdf_asset_id=EXCLUDED.pdf_asset_id,availability=EXCLUDED.availability,downloadable=EXCLUDED.downloadable`
 
     for (const section of withSiblingPositions(document.sections)) {
       const content = yield* sectionContentJson(section)
