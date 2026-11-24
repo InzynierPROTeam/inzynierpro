@@ -57,3 +57,20 @@ test('a regulation shows its table and the stored diagram', async ({ onboarded: 
     unit.getByRole('img', { name: 'Przekrój biegu schodów z zaznaczoną wysokością stopnia' }),
   ).toBeVisible()
 })
+
+test('a PDF-only statute opens in the viewer at the requested page and downloads where allowed', async ({
+  onboarded: { page },
+}) => {
+  await page.goto('/zrodla/samorzady-zawodowe?strona=3')
+
+  await expect(page.getByText('Strona 3 z 6')).toBeVisible()
+  await expect(page.getByText(/Rozdział 1 · strona 3 z 6/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Następna strona' }).click()
+  await expect(page).toHaveURL(/strona=4$/)
+  await expect(page.getByText(/Rozdział 1 · strona 4 z 6/)).toBeVisible()
+
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Pobierz PDF' }).click()
+  expect((await download).suggestedFilename()).toBe('samorzady-zawodowe.pdf')
+})
