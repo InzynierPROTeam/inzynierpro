@@ -73,6 +73,46 @@ export const LearningContentRepositoryLive = Layer.effect(
           Effect.mapError(cause => new LearningContentWriteError({ cause })),
         )
       }),
+      saveSectionContent: Effect.fn('LearningContentRepository.saveSectionContent')(
+        function* (section) {
+          const parentAddress = Option.getOrNull(section.parentAddress)
+          const title = Option.getOrNull(section.title)
+
+          const content = Option.match(section.content, {
+            onNone: () => null,
+            onSome: richContent => JSON.stringify(richContent),
+          })
+
+          return yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                yield* requireStoredAssets(...Option.toArray(section.content))
+                yield* sql`INSERT INTO document_section_contents (edition_id,address,parent_address,position,title,content)
+ VALUES (${section.editionId},${section.address},${parentAddress},${section.position},${title},${content}::jsonb)
+ ON CONFLICT (edition_id,address) DO UPDATE SET parent_address=EXCLUDED.parent_address,position=EXCLUDED.position,title=EXCLUDED.title,content=EXCLUDED.content`
+              }),
+            )
+            .pipe(
+              Effect.catchTag('SqlError', cause =>
+                Effect.fail(new LearningContentWriteError({ cause })),
+              ),
+            )
+        },
+      ),
+      publishEdition: Effect.fn('LearningContentRepository.publishEdition')(function* (editionId) {
+        return yield* sql`UPDATE document_editions SET published_at=clock_timestamp() WHERE id=${editionId} AND published_at IS NULL`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new LearningContentWriteError({ cause })),
+        )
+      }),
+      recordSectionRelocation: Effect.fn('LearningContentRepository.recordSectionRelocation')(
+        function* (relocation) {
+          return yield* sql`INSERT INTO section_relocations (edition_id,from_address,to_address,reason) VALUES (${relocation.editionId},${relocation.fromAddress},${relocation.toAddress},${relocation.reason})`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
       makeCurrentEdition: Effect.fn('LearningContentRepository.makeCurrentEdition')(
         function* (documentId, editionId) {
           return yield* sql`UPDATE reference_documents SET current_edition_id=${editionId} WHERE id=${documentId}`.pipe(

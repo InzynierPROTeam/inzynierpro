@@ -5,11 +5,13 @@ import {
   DocumentEditionId,
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
+import { DocumentSectionAddress } from '@inzpro/domain/modules/learning-content/document-section-address'
 import {
   ReferenceDocumentCode,
   ReferenceDocumentId,
   ReferenceDocumentKind,
 } from '@inzpro/domain/modules/learning-content/reference-document'
+import { RichContent } from '@inzpro/rich-content/rich-content'
 import { Schema } from 'effect'
 
 export const ReferenceDocumentSummary = Schema.Struct({
@@ -46,3 +48,12 @@ export const PublishedReferenceDocument = Schema.Struct({
 })
 
 export type PublishedReferenceDocument = typeof PublishedReferenceDocument.Type
+
+export const DocumentSection = Schema.Struct({
+  address: DocumentSectionAddress,
+  parentAddress: Schema.OptionFromNullOr(DocumentSectionAddress),
+  title: Schema.OptionFromNullOr(Schema.NonEmptyString),
+  content: Schema.OptionFromNullOr(RichContent),
+})
+
+export type DocumentSection = typeof DocumentSection.Type

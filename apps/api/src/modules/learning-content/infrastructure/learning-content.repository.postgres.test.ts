@@ -7,7 +7,12 @@ import { LearningContentWriteError } from '~api/modules/learning-content/applica
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
 import { ContentAsset } from '~api/modules/learning-content/domain/learning-content.model.js'
-import { addFixtureAsset, addFixtureReferenceDocument } from '~api/test/content-fixtures.js'
+import {
+  addFixtureAsset,
+  addFixtureReferenceDocument,
+  recordFixtureSectionRelocation,
+  saveFixtureSectionContent,
+} from '~api/test/content-fixtures.js'
 import {
   addFixtureOralCategory,
   addFixtureOralQuestion,
@@ -164,4 +169,91 @@ test('a PDF-only edition without a PDF asset is rejected on write', async () => 
       }),
     ),
   ).rejects.toBeInstanceOf(LearningContentWriteError)
+})
+
+test('section contents stay editable while their edition is a draft', async () => {
+  const document = await addFixtureReferenceDocument(undefined, {
+    published: false,
+    sections: [{ address: 'art:1', content: paragraphs('Ustawa normuje działalność.') }],
+  })
+
+  await expect(
+    saveFixtureSectionContent(document.editionId, {
+      address: 'art:1',
+      content: paragraphs('Ustawa normuje działalność obejmującą sprawy projektowania.'),
+    }),
+  ).resolves.toBeUndefined()
+  await expect(
+    saveFixtureSectionContent(document.editionId, {
+      address: 'art:2',
+      position: 2,
+      content: paragraphs('Przepisów ustawy nie stosuje się do wyrobisk.'),
+    }),
+  ).resolves.toBeUndefined()
+})
+
+test('published section contents cannot be changed, removed or extended', async () => {
+  const document = await addFixtureReferenceDocument(undefined, {
+    sections: [{ address: 'art:1', content: paragraphs('Ustawa normuje działalność.') }],
+  })
+
+  await expect(
+    saveFixtureSectionContent(document.editionId, {
+      address: 'art:1',
+      content: paragraphs('Zmieniona treść.'),
+    }),
+  ).rejects.toBeInstanceOf(LearningContentWriteError)
+  await expect(
+    saveFixtureSectionContent(document.editionId, {
+      address: 'art:2',
+      position: 2,
+      content: paragraphs('Nowy artykuł.'),
+    }),
+  ).rejects.toBeInstanceOf(LearningContentWriteError)
+})
+
+test('a section whose parent unit is not in the edition is rejected on write', async () => {
+  const document = await addFixtureReferenceDocument(undefined, { published: false })
+
+  await expect(
+    saveFixtureSectionContent(document.editionId, {
+      address: 'art:5/ust:1',
+      parentAddress: 'art:5',
+      content: paragraphs('Ustęp bez artykułu.'),
+    }),
+  ).rejects.toBeInstanceOf(LearningContentWriteError)
+})
+
+test('a nested unit whose parent is not the unit its address extends is rejected', async () => {
+  const document = await addFixtureReferenceDocument(undefined, {
+    published: false,
+    sections: [
+      { address: 'art:5', content: paragraphs('Art. 5.') },
+      { address: 'art:7', content: paragraphs('Art. 7.') },
+    ],
+  })
+
+  await expect(
+    saveFixtureSectionContent(document.editionId, {
+      address: 'art:5/ust:1',
+      parentAddress: 'art:7',
+      content: paragraphs('Ustęp w niewłaściwym artykule.'),
+    }),
+  ).rejects.toThrow('A nested unit belongs to the unit its address extends.')
+})
+
+test('a relocation records a unit moved in an edition, once per source address', async () => {
+  const document = await addFixtureReferenceDocument(undefined)
+
+  const relocation = {
+    editionId: document.editionId,
+    fromAddress: 'art:5a',
+    toAddress: 'art:6',
+    reason: 'Przenumerowanie przepisów nowelizacją.',
+  }
+
+  await expect(recordFixtureSectionRelocation(relocation)).resolves.toBeUndefined()
+  await expect(recordFixtureSectionRelocation(relocation)).rejects.toBeInstanceOf(
+    LearningContentWriteError,
+  )
 })

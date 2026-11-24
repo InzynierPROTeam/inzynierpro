@@ -16,7 +16,9 @@ import { SqlClient } from 'effect/sql'
 import { makeCursorPaginator } from '~api/lib/cursor-pagination.js'
 import { LearningContentReadError } from '~api/modules/learning-content/application/errors.js'
 import { ReferenceDocumentReader } from '~api/modules/learning-content/application/reference-document.reader.js'
+import { inDocumentOrder } from '~api/modules/learning-content/domain/document-section.rules.js'
 import {
+  DocumentSection,
   type PublishedReferenceDocument,
   ReferenceDocumentSummary,
 } from '~api/modules/learning-content/domain/reference-document.model.js'
@@ -100,6 +102,17 @@ export const ReferenceDocumentReaderLive = Layer.effect(
           )
 
           return Arr.head(documents).pipe(Option.map(toPublishedDocument))
+        },
+        Effect.mapError(cause => new LearningContentReadError({ cause })),
+      ),
+      editionSections: Effect.fn('ReferenceDocumentReader.editionSections')(
+        function* (editionId) {
+          const rows =
+            yield* sql`SELECT address,parent_address,title,content FROM document_section_contents WHERE edition_id=${editionId} ORDER BY position`
+
+          return inDocumentOrder(
+            yield* Schema.decodeUnknownEffect(Schema.Array(DocumentSection))(rows),
+          )
         },
         Effect.mapError(cause => new LearningContentReadError({ cause })),
       ),

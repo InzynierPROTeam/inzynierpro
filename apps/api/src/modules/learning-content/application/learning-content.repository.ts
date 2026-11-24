@@ -8,6 +8,7 @@ import type { UnknownContentAsset } from '~api/modules/learning-content/domain/e
 import type {
   ContentAsset,
   DocumentEdition,
+  DocumentSectionContent,
   NewOralKnowledgeCheck,
   NewOralQuestion,
   NewOralRevision,
@@ -19,6 +20,7 @@ import type {
   QuestionRevisionWithdrawal,
   ReferenceDocument,
   RegionalQuestionLink,
+  SectionRelocation,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
 
 import type { LearningContentWriteError } from './errors.js'
@@ -31,6 +33,15 @@ export class LearningContentRepository extends Context.Service<
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly createEdition: (
       edition: DocumentEdition,
+    ) => Effect.Effect<void, LearningContentWriteError>
+    readonly saveSectionContent: (
+      section: DocumentSectionContent,
+    ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
+    readonly publishEdition: (
+      editionId: DocumentEditionId,
+    ) => Effect.Effect<void, LearningContentWriteError>
+    readonly recordSectionRelocation: (
+      relocation: SectionRelocation,
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly makeCurrentEdition: (
       documentId: ReferenceDocumentId,

@@ -6,3 +6,7 @@ export class UnknownContentAsset extends Data.TaggedError('UnknownContentAsset')
 }> {}
 
 export class UnknownReferenceDocument extends Data.TaggedError('UnknownReferenceDocument') {}
+
+export class ReferenceDocumentTextUnavailable extends Data.TaggedError(
+  'ReferenceDocumentTextUnavailable',
+) {}
