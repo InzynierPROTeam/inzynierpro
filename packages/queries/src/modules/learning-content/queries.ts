@@ -1,4 +1,6 @@
 import {
+  getDocumentSections,
+  type GetDocumentSectionsRequest,
   getReferenceDocument,
   getReferenceDocuments,
   type GetReferenceDocumentRequest,
@@ -33,5 +35,16 @@ export const referenceDocumentQueryOptions = (
   effectQueryOptions(
     learningContentKeys.getReferenceDocument(userId, req),
     getReferenceDocument(req),
+    httpClient,
+  )
+
+export const documentSectionsQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetDocumentSectionsRequest,
+) =>
+  effectQueryOptions(
+    learningContentKeys.getDocumentSections(userId, req),
+    getDocumentSections(req),
     httpClient,
   )

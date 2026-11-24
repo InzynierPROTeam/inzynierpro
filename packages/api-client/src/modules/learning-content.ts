@@ -1,4 +1,5 @@
 import type {
+  GetDocumentSectionsEndpoint,
   GetReferenceDocumentEndpoint,
   GetReferenceDocumentsEndpoint,
 } from '@inzpro/api-contracts/modules/learning-content/api'
@@ -25,3 +26,12 @@ export type GetReferenceDocumentRequest = InferEndpointRequest<typeof GetReferen
 export type GetReferenceDocumentRes = Effect.Success<ReturnType<typeof getReferenceDocument>>
 
 export type GetReferenceDocumentError = Effect.Error<ReturnType<typeof getReferenceDocument>>
+
+export const getDocumentSections = (req: GetDocumentSectionsRequest) =>
+  apiAction(api => api.Sources.GetDocumentSections(req))
+
+export type GetDocumentSectionsRequest = InferEndpointRequest<typeof GetDocumentSectionsEndpoint>
+
+export type GetDocumentSectionsRes = Effect.Success<ReturnType<typeof getDocumentSections>>
+
+export type GetDocumentSectionsError = Effect.Error<ReturnType<typeof getDocumentSections>>

@@ -7,6 +7,7 @@ import { HttpRouter, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { learningContentKeys } from '~queries/modules/learning-content/keys.js'
 import {
+  documentSectionsQueryOptions,
   referenceDocumentQueryOptions,
   referenceDocumentsInfiniteQueryOptions,
 } from '~queries/modules/learning-content/queries.js'
@@ -43,6 +44,30 @@ const document = {
   },
 }
 
+const sections = [
+  {
+    address: 'rozdz:2',
+    parentAddress: null,
+    title: 'Uczestnicy procesu budowlanego',
+    content: null,
+  },
+  {
+    address: 'art:17',
+    parentAddress: 'rozdz:2',
+    title: null,
+    content: {
+      content: {
+        version: 1,
+        doc: {
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Treść' }] }],
+        },
+      },
+      assets: [],
+    },
+  },
+]
+
 test('reference documents are cached per account and path and refreshed through the path group', () =>
   withHttpServer(
     [
@@ -56,6 +81,11 @@ test('reference documents are cached per account and path and refreshed through 
         `/api/v1/sources/paths/${pathId}/documents/${code}`,
         HttpServerResponse.jsonUnsafe({ document }),
       ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/sources/paths/${pathId}/documents/${code}/sections`,
+        HttpServerResponse.jsonUnsafe({ sections }),
+      ),
     ],
     ({ httpClient }) =>
       withQueryClient(async queryClient => {
@@ -63,6 +93,7 @@ test('reference documents are cached per account and path and refreshed through 
         const documentRequest = { params: { qualificationPathId: pathId, code } }
         const list = referenceDocumentsInfiniteQueryOptions(httpClient, userId, listRequest)
         const read = referenceDocumentQueryOptions(httpClient, userId, documentRequest)
+        const content = documentSectionsQueryOptions(httpClient, userId, documentRequest)
 
         expect(list.queryKey).toEqual([
           'learning-content',
@@ -75,10 +106,12 @@ test('reference documents are cached per account and path and refreshed through 
         ])
         expect((await queryClient.infiniteQuery(list)).pages[0]?.data).toEqual([summary])
         expect(await queryClient.query(read)).toEqual({ document })
+        expect(await queryClient.query(content)).toEqual({ sections })
 
         await queryClient.invalidateQueries({ queryKey: learningContentKeys.path(userId, pathId) })
 
         expect(queryClient.getQueryState(list.queryKey)?.isInvalidated).toBe(true)
         expect(queryClient.getQueryState(read.queryKey)?.isInvalidated).toBe(true)
+        expect(queryClient.getQueryState(content.queryKey)?.isInvalidated).toBe(true)
       }),
   ))
