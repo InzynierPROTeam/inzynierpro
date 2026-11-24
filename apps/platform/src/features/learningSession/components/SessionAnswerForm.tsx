@@ -21,6 +21,7 @@ import { CheckIcon, XIcon } from 'lucide-react'
 import type React from 'react'
 import { sessionWithdrawalNotice } from '~platform/features/learningSession/utils/session'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { QuestionReferences } from '~platform/features/sources/components/QuestionReferences'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useSubmitSessionAnswer } from '../hooks/useSubmitSessionAnswer'
@@ -152,7 +153,12 @@ export const SessionAnswerForm: React.FC<SessionAnswerFormProps> = ({ question }
           +{submission.data.awardedXp} XP
         </p>
       )}
-      {submitted !== null && <SessionAnswerExplanation explanation={question.explanation} />}
+      {submitted !== null && (
+        <>
+          <SessionAnswerExplanation explanation={question.explanation} />
+          <QuestionReferences references={question.references} />
+        </>
+      )}
 
       {Match.value(sessionWithdrawalNotice(question, session)).pipe(
         Match.when('question', () => <SessionQuestionWithdrawn />),

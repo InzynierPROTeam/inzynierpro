@@ -1,6 +1,7 @@
 import { Api } from '@inzpro/api-contracts/api'
 import { CurrentUser } from '@inzpro/api-contracts/middleware/authentication/current-user'
 import { pathOralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-study-session'
+import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
 import type { HttpApiEndpoint } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
@@ -8,6 +9,12 @@ import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
 import { withContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
+import {
+  type WithQuestionReferences,
+  withOralQuestionReferences,
+} from '~api/modules/learning-content/application/question-references.service.js'
+import { failLearningContentRead } from '~api/modules/learning-content/http/errors.js'
+import { questionReferenceContents } from '~api/modules/learning-content/http/mappers.js'
 import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import {
@@ -30,6 +37,7 @@ import {
 } from '~api/modules/oral-study/application/oral-session.query.js'
 import { startOralSession } from '~api/modules/oral-study/application/start-oral-session.command.js'
 import { submitOralSelfAssessment } from '~api/modules/oral-study/application/submit-oral-self-assessment.command.js'
+import type { OralSessionQuestion } from '~api/modules/oral-study/domain/oral-study-session.model.js'
 import {
   districtChamberNotChosen,
   invalidOralSelfAssessment,
@@ -52,9 +60,16 @@ import {
 import { failStreakRead, failStreakWrite } from '~api/modules/streak/http/errors.js'
 
 const signedOralSessionQuestionDto = withContentAssetAddresses(
-  question => [question.body, question.answer],
+  ({ question, references }: WithQuestionReferences<OralSessionQuestion>) => [
+    question.body,
+    question.answer,
+    ...questionReferenceContents(references),
+  ],
   toOralSessionQuestionDto,
 )
+
+const oralSessionQuestionDto = (pathId: QualificationPathId) => (question: OralSessionQuestion) =>
+  withOralQuestionReferences(pathId)(question).pipe(Effect.flatMap(signedOralSessionQuestionDto))
 
 export const sessionHandlers = {
   StartOralSession: ({ params, payload }) =>
@@ -201,10 +216,11 @@ export const sessionHandlers = {
       Effect.flatMap(
         Option.match({
           onNone: () => Effect.succeed(null),
-          onSome: signedOralSessionQuestionDto,
+          onSome: oralSessionQuestionDto(params.qualificationPathId),
         }),
       ),
       Effect.catchTags({
+        LearningContentReadError: failLearningContentRead,
         PreparationReadError: failPreparationRead,
         PathPermissionDenied: () => pathAccessDenied,
         StudyReadError: failStudyRead,
@@ -225,7 +241,7 @@ export const sessionHandlers = {
         ),
       ),
       Effect.flatMap(({ question, session, rewards }) =>
-        Effect.map(signedOralSessionQuestionDto(question), questionDto => ({
+        Effect.map(oralSessionQuestionDto(params.qualificationPathId)(question), questionDto => ({
           rewards: toLearningRewardsDto(rewards),
           question: questionDto,
           session: toOralStudySessionDto(session),
@@ -241,6 +257,7 @@ export const sessionHandlers = {
         SessionAlreadyEnded: () => studySessionEnded,
         QuestionRevisionWithdrawn: () => sessionQuestionWithdrawn,
         OralRevisionNotInSession: () => invalidOralSelfAssessment,
+        LearningContentReadError: failLearningContentRead,
         OralQuestionAlreadyAssessed: () => oralSelfAssessmentAlreadySubmitted,
         StreakReadError: failStreakRead,
         StreakWriteError: failStreakWrite,

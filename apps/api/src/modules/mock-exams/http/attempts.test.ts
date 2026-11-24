@@ -3,11 +3,13 @@ import { MockExamAttempt } from '@inzpro/api-contracts/modules/mock-exams/respon
 import type { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/preparation/requests'
 import { ExamBlueprintId } from '@inzpro/domain/modules/mock-exams/exam-blueprint'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { paragraphs } from '@inzpro/rich-content/rich-content'
 import { Effect, Schema } from 'effect'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { publishBlueprintVersion } from '~api/modules/mock-exams/application/publish-blueprint-version.command.js'
 import { InvalidExamBlueprint } from '~api/modules/mock-exams/domain/errors.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
+import { addFixtureReferenceDocument } from '~api/test/content-fixtures.js'
 import {
   addFixtureDocument,
   assignFixtureBlueprint,
@@ -187,6 +189,43 @@ describe('starting a mock exam attempt', () => {
 
       expect(await (await learner.request(path)).json()).toStrictEqual(shown)
       expect(JSON.stringify(shown)).not.toMatch(/isCorrect|explanation|note/)
+    }
+  })
+
+  it('reads attempt questions without their source references', async () => {
+    const pathId = await resolveFixturePath(examPath)
+
+    const source = await addFixtureReferenceDocument(pathId, {
+      sections: [{ address: 'art:5', content: paragraphs('Podstawa odpowiedzi') }],
+    })
+
+    await createMockExamFixture(
+      pathId,
+      [{ questionCount: 2, eligibleQuestions: 2 }],
+      1,
+      undefined,
+      [
+        {
+          documentId: source.id,
+          address: 'art:5',
+          page: null,
+          kind: 'direct_basis',
+          isCritical: true,
+        },
+      ],
+    )
+
+    const learner = await learnerOn(examPath)
+    const { id } = await learner.started()
+
+    for (const path of [
+      `/attempts/${id}`,
+      `/attempts/${id}/questions/1`,
+      `/attempts/${id}/questions/2`,
+    ]) {
+      expect(await (await learner.request(path)).text()).not.toMatch(
+        new RegExp(`references|${source.code}`),
+      )
     }
   })
 

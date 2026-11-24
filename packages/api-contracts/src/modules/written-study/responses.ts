@@ -22,7 +22,10 @@ import {
 } from '@inzpro/domain/modules/learning/study-session'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
-import { ResolvedRichContent } from '~api-contracts/modules/learning-content/responses.js'
+import {
+  QuestionReference,
+  ResolvedRichContent,
+} from '~api-contracts/modules/learning-content/responses.js'
 import { LearningRewards } from '~api-contracts/modules/learning-xp/responses.js'
 import {
   SessionCountSettings,
@@ -212,6 +215,7 @@ export const SessionQuestion = Schema.Struct({
   questionRevisionId: QuestionRevisionId,
   body: Schema.NonEmptyString,
   explanation: ResolvedRichContent,
+  references: Schema.Array(QuestionReference),
   answers: Schema.Array(SessionAnswerOption),
   isWithdrawn: Schema.Boolean,
   explanationOpenedAt: Schema.NullOr(UtcIsoDateTime),

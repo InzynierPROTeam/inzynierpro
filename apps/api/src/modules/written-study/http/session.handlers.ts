@@ -5,6 +5,7 @@ import {
   noteAssistanceKind,
   type SessionAssistanceKind,
 } from '@inzpro/domain/modules/learning/study-session'
+import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
 import type { HttpApiEndpoint } from 'effect/http-api'
 import { mapCursorPage } from '~api/lib/cursor-pagination.js'
@@ -12,6 +13,12 @@ import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, accountWriteLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { failTransaction } from '~api/lib/transaction.js'
 import { withContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
+import {
+  type WithQuestionReferences,
+  withWrittenQuestionReferences,
+} from '~api/modules/learning-content/application/question-references.service.js'
+import { failLearningContentRead } from '~api/modules/learning-content/http/errors.js'
+import { questionReferenceContents } from '~api/modules/learning-content/http/mappers.js'
 import { failXpRead, failXpWrite } from '~api/modules/learning-xp/http/errors.js'
 import { toLearningRewardsDto } from '~api/modules/learning-xp/http/mappers.js'
 import {
@@ -42,6 +49,7 @@ import { getSessionSummary } from '~api/modules/written-study/application/sessio
 import { getSession } from '~api/modules/written-study/application/session.query.js'
 import { startSession } from '~api/modules/written-study/application/start-session.command.js'
 import { submitAnswer } from '~api/modules/written-study/application/submit-answer.command.js'
+import type { SessionQuestion } from '~api/modules/written-study/domain/study-session.model.js'
 import {
   documentNotFound,
   invalidSessionAnswer,
@@ -58,9 +66,15 @@ import {
 } from '~api/modules/written-study/http/mappers.js'
 
 const signedSessionQuestionDto = withContentAssetAddresses(
-  question => [question.explanation],
+  ({ question, references }: WithQuestionReferences<SessionQuestion>) => [
+    question.explanation,
+    ...questionReferenceContents(references),
+  ],
   toSessionQuestionDto,
 )
+
+const sessionQuestionDto = (pathId: QualificationPathId) => (question: SessionQuestion) =>
+  withWrittenQuestionReferences(pathId)(question).pipe(Effect.flatMap(signedSessionQuestionDto))
 
 const assistanceRecords = {
   [explanationAssistanceKind]: recordExplanationOpening,
@@ -209,12 +223,16 @@ export const sessionHandlers = {
         ),
       ),
       Effect.flatMap(
-        Option.match({ onNone: () => Effect.succeed(null), onSome: signedSessionQuestionDto }),
+        Option.match({
+          onNone: () => Effect.succeed(null),
+          onSome: sessionQuestionDto(params.qualificationPathId),
+        }),
       ),
       Effect.catchTags({
         PreparationReadError: failPreparationRead,
         PathPermissionDenied: () => pathAccessDenied,
         StudyReadError: failStudyRead,
+        LearningContentReadError: failLearningContentRead,
       }),
     ),
   RecordSessionAssistance: ({ params, payload }) =>
@@ -229,8 +247,9 @@ export const sessionHandlers = {
           ),
         ),
       ),
-      Effect.flatMap(signedSessionQuestionDto),
+      Effect.flatMap(sessionQuestionDto(params.qualificationPathId)),
       Effect.catchTags({
+        LearningContentReadError: failLearningContentRead,
         PreparationReadError: failPreparationRead,
         PreparationWriteError: failPreparationWrite,
         PathPermissionDenied: () => pathAccessDenied,
@@ -255,7 +274,7 @@ export const sessionHandlers = {
         ),
       ),
       Effect.flatMap(({ question, session, awardedXp, rewards }) =>
-        Effect.map(signedSessionQuestionDto(question), questionDto => ({
+        Effect.map(sessionQuestionDto(params.qualificationPathId)(question), questionDto => ({
           awardedXp,
           rewards: toLearningRewardsDto(rewards),
           question: questionDto,
@@ -273,6 +292,7 @@ export const sessionHandlers = {
         QuestionRevisionWithdrawn: () => sessionQuestionWithdrawn,
         AnswerNotInQuestion: () => invalidSessionAnswer,
         QuestionAlreadyAnswered: () => sessionAnswerAlreadySubmitted,
+        LearningContentReadError: failLearningContentRead,
         StreakReadError: failStreakRead,
         StreakWriteError: failStreakWrite,
         XpReadError: failXpRead,

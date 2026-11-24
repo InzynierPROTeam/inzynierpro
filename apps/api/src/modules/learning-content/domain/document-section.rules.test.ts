@@ -2,7 +2,11 @@ import { DocumentSectionAddress } from '@inzpro/domain/modules/learning-content/
 import { Option } from 'effect'
 import { expect, test } from 'vitest'
 
-import { inDocumentOrder, withSiblingPositions } from './document-section.rules.js'
+import {
+  inDocumentOrder,
+  unitInDocumentOrder,
+  withSiblingPositions,
+} from './document-section.rules.js'
 import type { DocumentSection } from './reference-document.model.js'
 
 const unit = (address: string, parentAddress?: string): DocumentSection => ({
@@ -57,5 +61,20 @@ test('each unit is numbered among the units that share its parent, in the order 
     ['art:2', 2],
     ['rozdz:2', 2],
     ['art:3', 1],
+  ])
+})
+
+test('a unit reads with its descendants in document order, without its parent or siblings', () => {
+  const ordered = unitInDocumentOrder(DocumentSectionAddress.make('art:1/ust:1'), [
+    unit('art:1/ust:1', 'art:1'),
+    unit('art:1/ust:1/pkt:2', 'art:1/ust:1'),
+    unit('art:1/ust:2', 'art:1'),
+    unit('art:1/ust:1/pkt:1', 'art:1/ust:1'),
+  ])
+
+  expect(ordered.map(section => section.address)).toEqual([
+    'art:1/ust:1',
+    'art:1/ust:1/pkt:2',
+    'art:1/ust:1/pkt:1',
   ])
 })

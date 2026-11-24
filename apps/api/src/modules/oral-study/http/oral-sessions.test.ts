@@ -11,9 +11,11 @@ import { CompleteOnboardingPayload } from '@inzpro/api-contracts/modules/prepara
 import { maximumPageLimit } from '@inzpro/domain/common/pagination'
 import type { OralSelfAssessment } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { paragraphs } from '@inzpro/rich-content/rich-content'
 import { Schema } from 'effect'
 import { afterAll, beforeAll, expect, onTestFinished, test } from 'vitest'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
+import { addFixtureReferenceDocument } from '~api/test/content-fixtures.js'
 import {
   addFixtureOralCategory,
   addFixtureOralQuestion,
@@ -466,4 +468,63 @@ test('learners with only written access cannot study oral questions', async () =
 
   expect((await learner.request('/preview')).status).toBe(403)
   expect((await learner.start(seededCategories[0]!, 4)).status).toBe(403)
+})
+
+test('an oral session question carries its references, with a unit missing from the current edition left unlinked', async () => {
+  const learner = await learnerOnPath()
+
+  const statute = await addFixtureReferenceDocument(learner.pathId, {
+    sections: [{ address: 'art:20', content: paragraphs('Obowiązki projektanta') }],
+  })
+
+  const categoryId = await addFixtureOralCategory('Test-only oral references category', 5_000_100)
+
+  await addFixtureOralQuestion(
+    learner.pathId,
+    categoryId,
+    1,
+    true,
+    paragraphs('Test-only oral answer'),
+    [
+      {
+        documentId: statute.id,
+        address: 'art:20',
+        page: null,
+        kind: 'direct_basis',
+        isCritical: true,
+      },
+      { documentId: statute.id, address: 'art:21', page: null, kind: 'aid', isCritical: false },
+    ],
+  )
+
+  const session = await learner.startDefault(categoryId)
+  const shown = await learner.question(session.id, 1)
+
+  expect(shown.references).toEqual([
+    {
+      document: { code: statute.code, abbreviation: 'TEST', title: statute.title },
+      address: 'art:20',
+      page: null,
+      kind: 'direct_basis',
+      isCritical: true,
+      isLinked: true,
+      fragment: [
+        {
+          address: 'art:20',
+          parentAddress: null,
+          title: null,
+          content: { content: paragraphs('Obowiązki projektanta'), assets: [] },
+        },
+      ],
+    },
+    {
+      document: { code: statute.code, abbreviation: 'TEST', title: statute.title },
+      address: 'art:21',
+      page: null,
+      kind: 'aid',
+      isCritical: false,
+      isLinked: false,
+      fragment: null,
+    },
+  ])
 })

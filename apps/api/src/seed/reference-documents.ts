@@ -27,7 +27,7 @@ import { buildingLaw, technicalConditions } from './written-content.js'
 
 const structuralDesignBasisStandard = ReferenceDocumentId.make(catalogueId('20', 3))
 
-const professionalSelfGovernmentAct = ReferenceDocumentId.make(catalogueId('20', 4))
+export const professionalSelfGovernmentAct = ReferenceDocumentId.make(catalogueId('20', 4))
 
 const referenceDocuments = [
   {

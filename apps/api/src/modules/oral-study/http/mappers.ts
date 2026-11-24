@@ -16,7 +16,11 @@ import {
 } from '@inzpro/domain/modules/learning/study-session'
 import { Match, Option } from 'effect'
 import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
-import { toResolvedRichContentDto } from '~api/modules/learning-content/http/mappers.js'
+import type { WithQuestionReferences } from '~api/modules/learning-content/application/question-references.service.js'
+import {
+  toQuestionReferenceDto,
+  toResolvedRichContentDto,
+} from '~api/modules/learning-content/http/mappers.js'
 import {
   answeredPercent,
   studySessionStatus,
@@ -55,12 +59,16 @@ export const toOralStudySessionDto = (session: OralStudySession): OralStudySessi
 })
 
 export const toOralSessionQuestionDto = (
-  { body, answer, note, selfAssessment, ...question }: OralSessionQuestion,
+  {
+    question: { body, answer, note, selfAssessment, ...question },
+    references,
+  }: WithQuestionReferences<OralSessionQuestion>,
   addresses: ContentAssetAddresses,
 ): OralSessionQuestionDto => ({
   ...question,
   body: toResolvedRichContentDto(body, addresses),
   answer: toResolvedRichContentDto(answer, addresses),
+  references: references.map(reference => toQuestionReferenceDto(reference, addresses)),
   note: Option.match(note, { onNone: () => null, onSome: toQuestionNoteDto }),
   selfAssessment: Option.match(selfAssessment, {
     onNone: () => null,

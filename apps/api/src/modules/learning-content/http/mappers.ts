@@ -1,5 +1,6 @@
 import type {
   DocumentSection as DocumentSectionDto,
+  QuestionReference as QuestionReferenceDto,
   ReferenceDocument as ReferenceDocumentDto,
   ResolvedRichContent,
 } from '@inzpro/api-contracts/modules/learning-content/responses'
@@ -7,6 +8,7 @@ import { dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Option } from 'effect'
 import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
+import type { QuestionReference } from '~api/modules/learning-content/domain/question-reference.model.js'
 import type {
   DocumentSection,
   PublishedReferenceDocument,
@@ -53,3 +55,30 @@ export const toDocumentSectionDtos = (
       onSome: content => toResolvedRichContentDto(content, addresses),
     }),
   }))
+
+export const questionReferenceContents = (references: ReadonlyArray<QuestionReference>) =>
+  references.flatMap(reference =>
+    Option.getOrElse(reference.fragment, () => []).flatMap(section =>
+      Option.toArray(section.content),
+    ),
+  )
+
+export const toQuestionReferenceDto = (
+  reference: QuestionReference,
+  addresses: ContentAssetAddresses,
+): QuestionReferenceDto => ({
+  document: {
+    code: reference.documentCode,
+    abbreviation: reference.documentAbbreviation,
+    title: reference.documentTitle,
+  },
+  address: Option.getOrNull(reference.address),
+  page: Option.getOrNull(reference.page),
+  kind: reference.kind,
+  isCritical: reference.isCritical,
+  isLinked: reference.isLinked,
+  fragment: Option.match(reference.fragment, {
+    onNone: () => null,
+    onSome: sections => toDocumentSectionDtos(sections, addresses),
+  }),
+})

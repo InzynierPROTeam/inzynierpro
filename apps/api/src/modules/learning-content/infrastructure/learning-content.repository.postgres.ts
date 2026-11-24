@@ -2,6 +2,8 @@ import type {
   OralKnowledgeCheckOptionId,
   OralKnowledgeCheckRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
+import type { OralRevisionId } from '@inzpro/domain/modules/learning-content/oral-question'
+import type { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/written-question'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Array as Arr, DateTime, Effect, Layer, Option } from 'effect'
 import { SqlClient } from 'effect/sql'
@@ -10,8 +12,13 @@ import { LearningContentRepository } from '~api/modules/learning-content/applica
 import { UnknownContentAsset } from '~api/modules/learning-content/domain/errors.js'
 import {
   initialRevision,
+  type NewQuestionReference,
   substantiveChange,
 } from '~api/modules/learning-content/domain/learning-content.model.js'
+
+type ReferenceRevision =
+  | { readonly writtenRevisionId: QuestionRevisionId }
+  | { readonly oralRevisionId: OralRevisionId }
 
 type KnowledgeCheckOptionInsert = {
   readonly id: OralKnowledgeCheckOptionId
@@ -43,6 +50,23 @@ export const LearningContentRepositoryLive = Layer.effect(
         }
       },
     )
+
+    const insertReferences = Effect.fn('LearningContentRepository.insertReferences')(function* (
+      revision: ReferenceRevision,
+      references: ReadonlyArray<NewQuestionReference>,
+    ) {
+      const writtenRevisionId = 'writtenRevisionId' in revision ? revision.writtenRevisionId : null
+
+      const oralRevisionId = 'oralRevisionId' in revision ? revision.oralRevisionId : null
+
+      for (const [index, reference] of references.entries()) {
+        const address = Option.getOrNull(reference.address)
+        const page = Option.getOrNull(reference.page)
+
+        yield* sql`INSERT INTO question_references (written_revision_id,oral_revision_id,position,document_id,address,pdf_page,kind,is_critical)
+ VALUES (${writtenRevisionId},${oralRevisionId},${index + 1},${reference.documentId},${address},${page},${reference.kind},${reference.isCritical})`
+      }
+    })
 
     return LearningContentRepository.of({
       createAsset: Effect.fn('LearningContentRepository.createAsset')(function* (asset) {
@@ -149,6 +173,11 @@ export const LearningContentRepositoryLive = Layer.effect(
                 yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answer.id},${answer.questionRevisionId},${answer.text},${answer.isCorrect})`
               }
 
+              yield* insertReferences(
+                { writtenRevisionId: question.revisionId },
+                question.references,
+              )
+
               if (question.published) {
                 yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${question.revisionId}`
               }
@@ -180,6 +209,10 @@ export const LearningContentRepositoryLive = Layer.effect(
                 yield* sql`INSERT INTO question_answers (id,question_revision_id,text,is_correct) VALUES (${answer.id},${answer.questionRevisionId},${answer.text},${answer.isCorrect})`
               }
 
+              yield* insertReferences(
+                { writtenRevisionId: revision.revisionId },
+                revision.references,
+              )
               yield* sql`UPDATE question_revisions SET published_at=clock_timestamp() WHERE id=${revision.revisionId}`
               yield* sql`UPDATE written_questions SET current_revision_id=${revision.revisionId} WHERE id=${revision.questionId}`
             }),
@@ -190,6 +223,18 @@ export const LearningContentRepositoryLive = Layer.effect(
             ),
           )
       }),
+      addWrittenReference: Effect.fn('LearningContentRepository.addWrittenReference')(
+        function* (revisionId, reference) {
+          const address = Option.getOrNull(reference.address)
+          const page = Option.getOrNull(reference.page)
+
+          return yield* sql`INSERT INTO question_references (written_revision_id,position,document_id,address,pdf_page,kind,is_critical)
+ SELECT ${revisionId},coalesce(max(position),0)+1,${reference.documentId},${address},${page},${reference.kind},${reference.isCritical} FROM question_references WHERE written_revision_id=${revisionId}`.pipe(
+            Effect.asVoid,
+            Effect.mapError(cause => new LearningContentWriteError({ cause })),
+          )
+        },
+      ),
       withdrawRevision: Effect.fn('LearningContentRepository.withdrawRevision')(
         function* (withdrawal) {
           return yield* sql`UPDATE question_revisions SET withdrawn_at=clock_timestamp(),withdrawal_reason=${withdrawal.reason}
@@ -215,6 +260,10 @@ export const LearningContentRepositoryLive = Layer.effect(
                 yield* requireStoredAssets(question.body, question.answer)
                 yield* sql`INSERT INTO oral_questions (id,category_id,category_position) VALUES (${question.id},${question.categoryId},${question.position})`
                 yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id) VALUES (${question.revisionId},${question.id},${JSON.stringify(question.body)}::jsonb,${JSON.stringify(question.answer)}::jsonb,${initialRevision},${question.revisionId})`
+                yield* insertReferences(
+                  { oralRevisionId: question.revisionId },
+                  question.references,
+                )
 
                 if (question.published) {
                   yield* sql`UPDATE oral_revisions SET published_at=clock_timestamp() WHERE id=${question.revisionId}`
@@ -275,7 +324,12 @@ export const LearningContentRepositoryLive = Layer.effect(
                     ? sql`${revision.revisionId}::uuid`
                     : sql`(SELECT r.substantive_revision_id FROM oral_questions q JOIN oral_revisions r ON r.id=q.current_revision_id WHERE q.id=${revision.questionId})`
 
-                yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id,published_at) VALUES (${revision.revisionId},${revision.questionId},${JSON.stringify(revision.body)}::jsonb,${JSON.stringify(revision.answer)}::jsonb,${revision.changeKind},${substantiveRevisionId},clock_timestamp())`
+                yield* sql`INSERT INTO oral_revisions (id,question_id,body,answer,change_kind,substantive_revision_id) VALUES (${revision.revisionId},${revision.questionId},${JSON.stringify(revision.body)}::jsonb,${JSON.stringify(revision.answer)}::jsonb,${revision.changeKind},${substantiveRevisionId})`
+                yield* insertReferences(
+                  { oralRevisionId: revision.revisionId },
+                  revision.references,
+                )
+                yield* sql`UPDATE oral_revisions SET published_at=clock_timestamp() WHERE id=${revision.revisionId}`
                 yield* sql`UPDATE oral_questions SET current_revision_id=${revision.revisionId} WHERE id=${revision.questionId}`
               }),
             )

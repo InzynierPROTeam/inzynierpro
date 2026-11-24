@@ -60,6 +60,7 @@ const question = Schema.decodeSync(SessionQuestion)({
   questionRevisionId: '10000000-0000-4000-8000-000000000005',
   body: 'Kto prowadzi dziennik budowy?',
   explanation: { content: paragraphs('Explanation'), assets: [] },
+  references: [],
   answers: [
     { id: '10000000-0000-4000-8000-000000000006', text: 'Kierownik budowy', isCorrect: true },
   ],

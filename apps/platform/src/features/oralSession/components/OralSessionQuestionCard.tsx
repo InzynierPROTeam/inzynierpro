@@ -65,7 +65,10 @@ export const OralSessionQuestionCard = () => {
                 {question.isWithdrawn && question.selfAssessment === null && (
                   <SessionQuestionWithdrawn />
                 )}
-                <OralAnswerReveal answer={question.answer} />
+                <OralAnswerReveal
+                  answer={question.answer}
+                  references={question.references}
+                />
               </CardContent>
               <CardFooter>
                 <OralSelfAssessmentActions
