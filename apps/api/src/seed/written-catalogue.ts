@@ -13,6 +13,7 @@ import {
 
 import { catalogueId } from './catalogue-id.js'
 import { seedContentAssets } from './content-assets.js'
+import { seedReferenceDocuments } from './reference-documents.js'
 import { buildingLaw, questions, laterRevisions } from './written-content.js'
 
 const explanationJson = (paragraph: ReadonlyArray<Text>, figure?: Image['attrs']) =>
@@ -32,12 +33,11 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
 ) {
   const sql = yield* SqlClient.SqlClient
   yield* seedContentAssets
-  yield* sql`INSERT INTO reference_documents (id, title) VALUES
-      ('20000000-0000-4000-8000-000000000001', 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane'),
-      ('20000000-0000-4000-8000-000000000002', 'Warunki techniczne, jakim powinny odpowiadać budynki i ich usytuowanie') ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title`
+  yield* seedReferenceDocuments
   yield* sql`INSERT INTO path_documents (qualification_path_id, document_id) VALUES
       ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001'),
       ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002'),
+      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000003'),
       ('10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001') ON CONFLICT DO NOTHING`
 
   for (const pathId of cataloguePathIds) {
@@ -45,7 +45,7 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
       continue
     }
 
-    for (const documentId of [catalogueId('20', 1), catalogueId('20', 2)]) {
+    for (const documentId of [catalogueId('20', 1), catalogueId('20', 2), catalogueId('20', 3)]) {
       yield* sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId}) ON CONFLICT DO NOTHING`
     }
   }
