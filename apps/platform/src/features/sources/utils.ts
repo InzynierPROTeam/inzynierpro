@@ -1,4 +1,7 @@
-import type { DocumentSection } from '@inzpro/api-contracts/modules/learning-content/responses'
+import type {
+  DocumentSection,
+  QuestionReference,
+} from '@inzpro/api-contracts/modules/learning-content/responses'
 import {
   type DocumentPageCount,
   DocumentPageNumber,
@@ -6,6 +9,7 @@ import {
 } from '@inzpro/domain/modules/learning-content/document-edition'
 import {
   type DocumentSectionAddress,
+  documentSectionLabel,
   enclosingUnitAddress,
 } from '@inzpro/domain/modules/learning-content/document-section-address'
 import type { ReferenceDocumentKind } from '@inzpro/domain/modules/learning-content/reference-document'
@@ -65,3 +69,19 @@ export const viewerPageNumber = (
   DocumentPageNumber.make(
     pageCount === null ? (requested ?? 1) : Math.min(requested ?? 1, pageCount),
   )
+
+export const questionReferenceLabel = ({ document, address, page }: QuestionReference) => {
+  if (address !== null) {
+    return `${document.abbreviation} ${documentSectionLabel(address)}`
+  }
+
+  return page === null ? document.abbreviation : `${document.abbreviation} s. ${page}`
+}
+
+export const questionReferenceSearch = ({ address, page }: QuestionReference) => {
+  if (address !== null) {
+    return { jednostka: address }
+  }
+
+  return page === null ? {} : { strona: page }
+}

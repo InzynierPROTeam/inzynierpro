@@ -1,4 +1,7 @@
-import type { ResolvedRichContent } from '@inzpro/api-contracts/modules/learning-content/responses'
+import type {
+  QuestionReference,
+  ResolvedRichContent,
+} from '@inzpro/api-contracts/modules/learning-content/responses'
 import {
   Accordion,
   AccordionContent,
@@ -8,14 +11,18 @@ import {
 import { RichText } from '@inzpro/ui/components/rich-text'
 import type React from 'react'
 import { oralAnswerVisibilityStore } from '~platform/features/oralSession/stores'
+import { QuestionReferences } from '~platform/features/sources/components/QuestionReferences'
 
 import { useOralAnswerVisibility } from '../hooks/useOralAnswerVisibility'
 
 const answerItem = 'answer'
 
-type OralAnswerRevealProps = { answer: ResolvedRichContent }
+type OralAnswerRevealProps = {
+  answer: ResolvedRichContent
+  references: ReadonlyArray<QuestionReference>
+}
 
-export const OralAnswerReveal: React.FC<OralAnswerRevealProps> = ({ answer }) => {
+export const OralAnswerReveal: React.FC<OralAnswerRevealProps> = ({ answer, references }) => {
   const isVisible = useOralAnswerVisibility()
 
   return (
@@ -35,11 +42,12 @@ export const OralAnswerReveal: React.FC<OralAnswerRevealProps> = ({ answer }) =>
             )}
           </span>
         </AccordionTrigger>
-        <AccordionContent className="pb-5">
+        <AccordionContent className="flex flex-col gap-4 pb-5">
           <RichText
             content={answer.content}
             assets={answer.assets}
           />
+          <QuestionReferences references={references} />
         </AccordionContent>
       </AccordionItem>
     </Accordion>

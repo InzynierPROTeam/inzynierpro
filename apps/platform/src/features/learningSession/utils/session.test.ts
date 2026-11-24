@@ -100,6 +100,7 @@ const question = Schema.decodeSync(SessionQuestion)({
   questionRevisionId: '40000000-0000-4000-8000-000000000001',
   body: 'Question',
   explanation: { content: paragraphs('Explanation'), assets: [] },
+  references: [],
   answers: [{ id: '41000000-0000-4000-8000-000000000001', text: 'A', isCorrect: true }],
   isWithdrawn: false,
   explanationOpenedAt: null,

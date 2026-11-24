@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Lightbulb } from 'lucide-react'
 import type React from 'react'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { QuestionReferences } from '~platform/features/sources/components/QuestionReferences'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useRecordSessionAssistance } from '../hooks/useRecordSessionAssistance'
@@ -78,6 +79,7 @@ export const SessionHintDialog: React.FC<SessionHintDialogProps> = ({ question }
             />
           </DialogDescription>
         </DialogHeader>
+        <QuestionReferences references={question.references} />
         <DialogFooter showCloseButton />
       </DialogContent>
     </Dialog>
