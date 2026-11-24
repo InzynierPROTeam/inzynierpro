@@ -1,4 +1,5 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
+import { learningContentKeys } from '@inzpro/queries/modules/learning-content/keys'
 import { oralStudyKeys } from '@inzpro/queries/modules/oral-study/keys'
 import { preparationKeys } from '@inzpro/queries/modules/preparation/keys'
 import { writtenStudyKeys } from '@inzpro/queries/modules/written-study/keys'
@@ -24,6 +25,9 @@ export const useExtendPath = (userId: UserId) => {
         }),
         client.invalidateQueries({
           queryKey: oralStudyKeys.path(userId, receipt.qualificationPathId),
+        }),
+        client.invalidateQueries({
+          queryKey: learningContentKeys.path(userId, receipt.qualificationPathId),
         }),
       ])
 

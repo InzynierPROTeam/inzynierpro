@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { BookOpen, Brain, Home, Mic2, Smartphone, Trophy, User2 } from 'lucide-react'
+import { BookOpen, Brain, Home, Library, Mic2, Smartphone, Trophy, User2 } from 'lucide-react'
 import { cx } from 'tailwind-variants'
 import { ExternalLink } from '~platform/components/ExternalLink'
 import { ExternalLinks } from '~platform/config/app'
@@ -11,6 +11,7 @@ const links = [
   { to: '/start', label: 'Start', icon: Home },
   { to: '/nauka', label: 'Nauka', icon: Brain },
   { to: '/ustny', label: 'Egzamin ustny', icon: Mic2 },
+  { to: '/zrodla', label: 'Źródła', icon: Library },
   { to: '/ranking', label: 'Ranking', icon: Trophy },
   { to: '/profil', label: 'Konto', icon: User2 },
 ] as const

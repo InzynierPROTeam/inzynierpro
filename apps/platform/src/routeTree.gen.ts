@@ -26,6 +26,8 @@ import { Route as appAuthenticatedUzytkownikUserIdRouteImport } from './routes/(
 import { Route as publicLayoutNotauthenticatedIndexRouteImport } from './routes/(public)/_layout/_notauthenticated/index'
 import { Route as publicLayoutNotauthenticatedLogowanieRouteImport } from './routes/(public)/_layout/_notauthenticated/logowanie'
 import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
+import { Route as appAuthenticatedOnboardedZrodlaIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/zrodla/index'
+import { Route as appAuthenticatedOnboardedZrodlaCodeRouteImport } from './routes/(app)/_authenticated/_onboarded/zrodla/$code'
 import { Route as appAuthenticatedOnboardedOralValidUstnyIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/index'
 import { Route as appAuthenticatedOnboardedOralValidUstnyPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
 import { Route as appAuthenticatedOnboardedOralValidUstnyStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
@@ -134,6 +136,18 @@ const publicLayoutNotauthenticatedZweryfikujOtpRoute =
     id: '/zweryfikuj-otp',
     path: '/zweryfikuj-otp',
     getParentRoute: () => publicLayoutNotauthenticatedRoute,
+  } as any)
+const appAuthenticatedOnboardedZrodlaIndexRoute =
+  appAuthenticatedOnboardedZrodlaIndexRouteImport.update({
+    id: '/zrodla/',
+    path: '/zrodla/',
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
+  } as any)
+const appAuthenticatedOnboardedZrodlaCodeRoute =
+  appAuthenticatedOnboardedZrodlaCodeRouteImport.update({
+    id: '/zrodla/$code',
+    path: '/zrodla/$code',
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
   } as any)
 const appAuthenticatedOnboardedOralValidUstnyIndexRoute =
   appAuthenticatedOnboardedOralValidUstnyIndexRouteImport.update({
@@ -262,6 +276,8 @@ export interface FileRoutesByFullPath {
   '/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/zrodla/$code': typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  '/zrodla/': typeof appAuthenticatedOnboardedZrodlaIndexRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
@@ -292,6 +308,8 @@ export interface FileRoutesByTo {
   '/uzytkownik/$userId': typeof appAuthenticatedUzytkownikUserIdRoute
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
+  '/zrodla/$code': typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  '/zrodla': typeof appAuthenticatedOnboardedZrodlaIndexRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
@@ -329,6 +347,8 @@ export interface FileRoutesById {
   '/(public)/_layout/_notauthenticated/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
+  '/(app)/_authenticated/_onboarded/zrodla/$code': typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  '/(app)/_authenticated/_onboarded/zrodla/': typeof appAuthenticatedOnboardedZrodlaIndexRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione': typeof appAuthenticatedOnboardedOralValidUstnyUlubioneRoute
@@ -361,6 +381,8 @@ export interface FileRouteTypes {
     | '/uzytkownik/$userId'
     | '/logowanie'
     | '/zweryfikuj-otp'
+    | '/zrodla/$code'
+    | '/zrodla/'
     | '/ustny/powtorka'
     | '/ustny/start'
     | '/ustny/ulubione'
@@ -391,6 +413,8 @@ export interface FileRouteTypes {
     | '/uzytkownik/$userId'
     | '/logowanie'
     | '/zweryfikuj-otp'
+    | '/zrodla/$code'
+    | '/zrodla'
     | '/ustny/powtorka'
     | '/ustny/start'
     | '/ustny/ulubione'
@@ -427,6 +451,8 @@ export interface FileRouteTypes {
     | '/(public)/_layout/_notauthenticated/logowanie'
     | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
     | '/(public)/_layout/_notauthenticated/'
+    | '/(app)/_authenticated/_onboarded/zrodla/$code'
+    | '/(app)/_authenticated/_onboarded/zrodla/'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/ulubione'
@@ -572,6 +598,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/zweryfikuj-otp'
       preLoaderRoute: typeof publicLayoutNotauthenticatedZweryfikujOtpRouteImport
       parentRoute: typeof publicLayoutNotauthenticatedRoute
+    }
+    '/(app)/_authenticated/_onboarded/zrodla/': {
+      id: '/(app)/_authenticated/_onboarded/zrodla/'
+      path: '/zrodla'
+      fullPath: '/zrodla/'
+      preLoaderRoute: typeof appAuthenticatedOnboardedZrodlaIndexRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(app)/_authenticated/_onboarded/zrodla/$code': {
+      id: '/(app)/_authenticated/_onboarded/zrodla/$code'
+      path: '/zrodla/$code'
+      fullPath: '/zrodla/$code'
+      preLoaderRoute: typeof appAuthenticatedOnboardedZrodlaCodeRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
     }
     '/(app)/_authenticated/_onboarded/_oralValid/ustny/': {
       id: '/(app)/_authenticated/_onboarded/_oralValid/ustny/'
@@ -776,6 +816,8 @@ interface appAuthenticatedOnboardedRouteChildren {
   appAuthenticatedOnboardedRankingRoute: typeof appAuthenticatedOnboardedRankingRoute
   appAuthenticatedOnboardedRozszerzDostepRoute: typeof appAuthenticatedOnboardedRozszerzDostepRoute
   appAuthenticatedOnboardedStartRoute: typeof appAuthenticatedOnboardedStartRoute
+  appAuthenticatedOnboardedZrodlaCodeRoute: typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  appAuthenticatedOnboardedZrodlaIndexRoute: typeof appAuthenticatedOnboardedZrodlaIndexRoute
 }
 
 const appAuthenticatedOnboardedRouteChildren: appAuthenticatedOnboardedRouteChildren =
@@ -789,6 +831,10 @@ const appAuthenticatedOnboardedRouteChildren: appAuthenticatedOnboardedRouteChil
     appAuthenticatedOnboardedRozszerzDostepRoute:
       appAuthenticatedOnboardedRozszerzDostepRoute,
     appAuthenticatedOnboardedStartRoute: appAuthenticatedOnboardedStartRoute,
+    appAuthenticatedOnboardedZrodlaCodeRoute:
+      appAuthenticatedOnboardedZrodlaCodeRoute,
+    appAuthenticatedOnboardedZrodlaIndexRoute:
+      appAuthenticatedOnboardedZrodlaIndexRoute,
   }
 
 const appAuthenticatedOnboardedRouteWithChildren =
