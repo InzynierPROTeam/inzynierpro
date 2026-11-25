@@ -15,12 +15,32 @@ test('an image asset needs its dimensions', () => {
   ).toThrow()
 })
 
-test('a PDF asset is valid without dimensions', () => {
+test('a PDF asset is valid without dimensions but needs its page count', () => {
   expect(
     Schema.decodeSync(ContentAsset)({
       ...storedFile,
       storageKey: 'test/statute.pdf',
       mediaType: 'application/pdf',
+      pageCount: 3,
     }),
-  ).toMatchObject({ mediaType: 'application/pdf' })
+  ).toMatchObject({ mediaType: 'application/pdf', pageCount: 3 })
+  expect(() =>
+    Schema.decodeUnknownSync(ContentAsset)({
+      ...storedFile,
+      storageKey: 'test/statute.pdf',
+      mediaType: 'application/pdf',
+    }),
+  ).toThrow()
+})
+
+test('an image asset carries no page count', () => {
+  expect(
+    Schema.decodeSync(ContentAsset)({
+      ...storedFile,
+      storageKey: 'test/figure.png',
+      mediaType: 'image/png',
+      width: 640,
+      height: 480,
+    }),
+  ).not.toHaveProperty('pageCount')
 })

@@ -1,4 +1,7 @@
+import { readFile } from 'node:fs/promises'
+
 import {
+  DocumentPackageCandidatesResponse,
   DocumentPdfResponse,
   DocumentSectionsResponse,
   ReferenceDocumentResponse,
@@ -148,9 +151,11 @@ test('a learner without the path cannot list or read its documents', async () =>
 
   const list = await sourcesRequest(outsider, `/paths/${pathId}/documents`)
   const read = await sourcesRequest(outsider, `/paths/${pathId}/documents/${document.code}`)
+  const documentPackage = await sourcesRequest(outsider, `/paths/${pathId}/document-package`)
 
   expect(list.status).toBe(403)
   expect(read.status).toBe(403)
+  expect(documentPackage.status).toBe(403)
 })
 
 const sectionsOf = async (visitor: TestVisitor, pathId: QualificationPathId, code: string) => {
@@ -347,4 +352,162 @@ test('the PDF of a metadata-only, unpublished or unassigned document is not issu
   )
 
   expect(outsiderRead.status).toBe(403)
+})
+
+const packageCandidates = async (visitor: TestVisitor, pathId: QualificationPathId) => {
+  const response = await sourcesRequest(visitor, `/paths/${pathId}/document-package`)
+
+  expect(response.status).toBe(200)
+
+  return Schema.decodeUnknownSync(DocumentPackageCandidatesResponse)(await response.json())
+    .documents
+}
+
+const seedAssetSize = async (file: string) =>
+  (await readFile(new URL(`../../../seed/assets/${file}`, import.meta.url))).byteLength
+
+test('the seeded editions are package candidates in path order with their availability, page count and size, and the sources list follows the same order', async () => {
+  const { learner, pathId } = await onboardedLearner()
+  const seededCodes = ['prawo-budowlane', 'warunki-techniczne', 'samorzady-zawodowe', 'pn-en-1990']
+
+  const candidates = (await packageCandidates(learner, pathId)).filter(candidate =>
+    seededCodes.includes(candidate.code),
+  )
+
+  expect(
+    candidates.map(({ code, abbreviation, kind, textKind, availability, pdf }) => ({
+      code,
+      abbreviation,
+      kind,
+      textKind,
+      availability,
+      pdf,
+    })),
+  ).toEqual([
+    {
+      code: 'prawo-budowlane',
+      abbreviation: 'PB',
+      kind: 'statute',
+      textKind: 'official_consolidated',
+      availability: 'included',
+      pdf: { pageCount: 8, size: await seedAssetSize('building-law-excerpt.pdf') },
+    },
+    {
+      code: 'warunki-techniczne',
+      abbreviation: 'WT',
+      kind: 'regulation',
+      textKind: 'official_consolidated',
+      availability: 'download_not_allowed',
+      pdf: { pageCount: 3, size: await seedAssetSize('technical-conditions-excerpt.pdf') },
+    },
+    {
+      code: 'samorzady-zawodowe',
+      abbreviation: 'USZ',
+      kind: 'statute',
+      textKind: 'official_consolidated',
+      availability: 'included',
+      pdf: {
+        pageCount: 6,
+        size: await seedAssetSize('professional-self-government-chapter-1.pdf'),
+      },
+    },
+    {
+      code: 'pn-en-1990',
+      abbreviation: 'PN-EN 1990',
+      kind: 'standard',
+      textKind: 'original',
+      availability: 'metadata_only',
+      pdf: null,
+    },
+  ])
+  expect(
+    (await listedDocuments(learner, pathId)).flatMap(({ code }) =>
+      seededCodes.includes(code) ? [code] : [],
+    ),
+  ).toEqual(seededCodes)
+})
+
+test('documents attached later follow the path order, and candidates give the reason a document cannot be included', async () => {
+  const { learner, pathId } = await onboardedLearner()
+
+  const fixtures = [
+    await addFixtureReferenceDocument(pathId, {
+      pdfAssetId: await addFixturePdfAsset({ pageCount: 12 }),
+      downloadable: true,
+    }),
+    await addFixtureReferenceDocument(pathId, {
+      availability: 'pdf_only',
+      pdfAssetId: await addFixturePdfAsset({ pageCount: 4 }),
+    }),
+    await addFixtureReferenceDocument(pathId),
+    await addFixtureReferenceDocument(pathId, {
+      availability: 'metadata_only',
+      pdfAssetId: await addFixturePdfAsset({ pageCount: 2 }),
+      downloadable: true,
+    }),
+  ]
+
+  const unpublished = await addFixtureReferenceDocument(pathId, {
+    pdfAssetId: await addFixturePdfAsset(),
+    downloadable: true,
+    published: false,
+  })
+
+  const elsewhere = await addFixtureReferenceDocument(undefined, {
+    pdfAssetId: await addFixturePdfAsset(),
+    downloadable: true,
+  })
+
+  const candidates = await packageCandidates(learner, pathId)
+  const codes = candidates.map(candidate => candidate.code)
+
+  const fixtureCandidates = candidates.filter(candidate =>
+    fixtures.some(fixture => fixture.code === candidate.code),
+  )
+
+  expect(fixtureCandidates.map(candidate => candidate.code)).toEqual(
+    fixtures.map(fixture => fixture.code),
+  )
+  expect(codes).not.toContain(unpublished.code)
+  expect(codes).not.toContain(elsewhere.code)
+  expect(
+    fixtures.map(fixture => fixtureCandidates.find(candidate => candidate.code === fixture.code)),
+  ).toEqual([
+    {
+      id: fixtures[0]?.id,
+      code: fixtures[0]?.code,
+      kind: 'statute',
+      abbreviation: 'TEST',
+      title: fixtures[0]?.title,
+      editionLabel: `Test-only edition ${fixtures[0]?.editionId}`,
+      textKind: 'official_consolidated',
+      availability: 'included',
+      pdf: { pageCount: 12, size: fixturePdfBytes.byteLength },
+    },
+    expect.objectContaining({
+      availability: 'download_not_allowed',
+      pdf: { pageCount: 4, size: fixturePdfBytes.byteLength },
+    }),
+    expect.objectContaining({ availability: 'no_pdf', pdf: null }),
+    expect.objectContaining({
+      availability: 'metadata_only',
+      pdf: { pageCount: 2, size: fixturePdfBytes.byteLength },
+    }),
+  ])
+})
+
+test('a download address is issued for every included package candidate and refused for the rest', async () => {
+  const { learner, pathId } = await onboardedLearner()
+
+  for (const candidate of await packageCandidates(learner, pathId)) {
+    const response = await sourcesRequest(
+      learner,
+      `/paths/${pathId}/documents/${candidate.code}/pdf/download`,
+    )
+
+    expect({ code: candidate.code, status: response.status }).toEqual({
+      code: candidate.code,
+      status: candidate.availability === 'included' ? 200 : expect.toBeOneOf([403, 404]),
+    })
+  }
 })

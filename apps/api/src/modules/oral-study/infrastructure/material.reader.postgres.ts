@@ -1,4 +1,3 @@
-import { Uuid } from '@inzpro/domain/common/id'
 import type { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import {
@@ -7,7 +6,7 @@ import {
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import {
   OralQuestionCategoryId,
-  OralQuestionCategorySortOrder,
+  PathOralCategoryPosition,
 } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
@@ -24,13 +23,13 @@ import type { OralCategoryQuestionPool } from '~api/modules/oral-study/domain/or
 const OralCategoryRow = Schema.Struct({
   id: OralQuestionCategoryId,
   name: Schema.NonEmptyString,
-  sortOrder: OralQuestionCategorySortOrder,
+  position: PathOralCategoryPosition,
   availableQuestionCount: QuestionCount,
   completedQuestionCount: QuestionCount,
 })
 
 const toCategoryPool = ({
-  sortOrder: _sortOrder,
+  position: _position,
   ...pool
 }: typeof OralCategoryRow.Type): OralCategoryQuestionPool => pool
 
@@ -57,21 +56,19 @@ export const oralMaterialReader = Effect.gen(function* () {
     reportedIn: Option.Option<DistrictChamberId>,
   ) =>
     sql`FROM path_oral_questions pq
+ JOIN path_oral_categories pc ON pc.qualification_path_id=pq.qualification_path_id AND pc.category_id=pq.category_id
  JOIN oral_questions q ON q.id=pq.question_id
- JOIN oral_question_categories c ON c.id=q.category_id
+ JOIN oral_question_categories c ON c.id=pq.category_id
  JOIN oral_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
  ${roundCoverage(userId, round)}
  WHERE pq.qualification_path_id=${pathId} AND ${reportedInChamber(reportedIn)}`
 
-  const categoryColumns = sql`c.id,c.name,c.sort_order,count(r.id)::integer AS available_question_count,count(cr.id)::integer AS completed_question_count`
+  const categoryColumns = sql`c.id,c.name,pc.position,count(r.id)::integer AS available_question_count,count(cr.id)::integer AS completed_question_count`
 
   const categoriesPage = makeCursorPaginator(
     sql,
-    Schema.Struct({ sortOrder: OralQuestionCategorySortOrder, id: Uuid }),
-    [
-      ['sortOrder', sql`c.sort_order`, 'asc'],
-      ['id', sql`c.id`, 'asc'],
-    ],
+    Schema.Struct({ position: PathOralCategoryPosition }),
+    [['position', sql`pc.position`, 'asc']],
   )
 
   return {
@@ -113,10 +110,10 @@ export const oralMaterialReader = Effect.gen(function* () {
           req,
           window =>
             sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, Option.none())} AND ${window.after}
- GROUP BY c.id ORDER BY ${window.orderBy} LIMIT ${window.limit}`.pipe(
+ GROUP BY c.id,pc.position ORDER BY ${window.orderBy} LIMIT ${window.limit}`.pipe(
               Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(OralCategoryRow))),
             ),
-          row => ({ sortOrder: row.sortOrder, id: row.id }),
+          row => ({ position: row.position }),
         )
 
         return mapCursorPage(page, toCategoryPool)
@@ -129,7 +126,7 @@ export const oralMaterialReader = Effect.gen(function* () {
     category: Effect.fn('OralStudyReader.category')(
       function* (userId, pathId, round, categoryId, reportedIn) {
         const rows =
-          yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, reportedIn)} AND c.id=${categoryId} GROUP BY c.id LIMIT 1`
+          yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, reportedIn)} AND c.id=${categoryId} GROUP BY c.id,pc.position LIMIT 1`
 
         const data = yield* Schema.decodeUnknownEffect(Schema.Array(OralCategoryRow))(rows)
 
@@ -146,22 +143,21 @@ export const oralMaterialReader = Effect.gen(function* () {
           ...Option.match(fromCategoryId, {
             onNone: () => [],
             onSome: id => {
-              const start = sql`((SELECT sort_order FROM oral_question_categories WHERE id=${id}),${id}::uuid)`
-              const atOrBefore = sql`(c.sort_order,c.id)<=${start}`
+              const start = sql`(SELECT position FROM path_oral_categories WHERE qualification_path_id=${pathId} AND category_id=${id})`
+              const atOrBefore = sql`pc.position<=${start}`
 
               return [
                 skipsStartCategory
                   ? atOrBefore
-                  : sql`CASE WHEN ${isCovered} THEN ${atOrBefore} ELSE (c.sort_order,c.id)<${start} END`,
+                  : sql`CASE WHEN ${isCovered} THEN ${atOrBefore} ELSE pc.position<${start} END`,
               ]
             },
           }),
-          sql`c.sort_order`,
-          sql`c.id`,
+          sql`pc.position`,
         ])
 
         const rows =
-          yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, reportedIn)} GROUP BY c.id ORDER BY ${order} LIMIT 1`
+          yield* sql`SELECT ${categoryColumns} ${pathQuestions(userId, pathId, round, reportedIn)} GROUP BY c.id,pc.position ORDER BY ${order} LIMIT 1`
 
         const data = yield* Schema.decodeUnknownEffect(Schema.Array(OralCategoryRow))(rows)
 

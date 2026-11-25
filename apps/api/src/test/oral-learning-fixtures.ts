@@ -53,7 +53,7 @@ export const currentOralReviewState = (
     }),
   )
 
-export const addFixtureOralCategory = (name = 'Test-only oral category', sortOrder = 0) =>
+export const addFixtureOralCategory = (name = 'Test-only oral category') =>
   runFixture(
     Effect.gen(function* () {
       const learningContentRepository = yield* LearningContentRepository
@@ -61,7 +61,6 @@ export const addFixtureOralCategory = (name = 'Test-only oral category', sortOrd
       const category = yield* Schema.decodeEffect(OralQuestionCategory)({
         id: crypto.randomUUID(),
         name,
-        sortOrder,
       })
 
       yield* learningContentRepository.createOralCategory(category)

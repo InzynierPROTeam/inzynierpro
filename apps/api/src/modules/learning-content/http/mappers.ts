@@ -1,4 +1,5 @@
 import type {
+  DocumentPackageCandidate as DocumentPackageCandidateDto,
   DocumentSection as DocumentSectionDto,
   LinkedOralQuestion as LinkedOralQuestionDto,
   QuestionReference as QuestionReferenceDto,
@@ -9,6 +10,7 @@ import { dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Option } from 'effect'
 import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
+import type { DocumentPackageCandidate } from '~api/modules/learning-content/domain/document-package.model.js'
 import type { LinkedOralQuestion } from '~api/modules/learning-content/domain/linked-question.model.js'
 import type { QuestionReference } from '~api/modules/learning-content/domain/question-reference.model.js'
 import type {
@@ -91,4 +93,11 @@ export const toLinkedOralQuestionDto = (
 ): LinkedOralQuestionDto => ({
   ...question,
   body: toResolvedRichContentDto(question.body, addresses),
+})
+
+export const toDocumentPackageCandidateDto = (
+  candidate: DocumentPackageCandidate,
+): DocumentPackageCandidateDto => ({
+  ...candidate,
+  pdf: Option.getOrNull(candidate.pdf),
 })

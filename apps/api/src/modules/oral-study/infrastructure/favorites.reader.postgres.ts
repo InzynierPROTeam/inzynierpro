@@ -19,8 +19,8 @@ export const oralFavoritesReader = Effect.gen(function* () {
     pathId: QualificationPathId,
   ) => sql`FROM oral_favorite_questions f
  JOIN path_oral_questions pq ON pq.question_id=f.question_id AND pq.qualification_path_id=${pathId}
+ JOIN path_oral_categories pc ON pc.qualification_path_id=pq.qualification_path_id AND pc.category_id=pq.category_id
  JOIN oral_questions q ON q.id=f.question_id
- JOIN oral_question_categories c ON c.id=q.category_id
  JOIN oral_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
  WHERE f.user_id=${userId}`
 
@@ -41,7 +41,7 @@ export const oralFavoritesReader = Effect.gen(function* () {
     favoriteCandidates: Effect.fn('OralStudyReader.favoriteCandidates')(
       function* (userId, pathId, limit) {
         const rows =
-          yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${favoriteQuestions(userId, pathId)} ORDER BY c.sort_order,c.id,q.category_position,q.id LIMIT ${limit}`
+          yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id ${favoriteQuestions(userId, pathId)} ORDER BY pc.position,q.category_position,q.id LIMIT ${limit}`
 
         return yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows)
       },

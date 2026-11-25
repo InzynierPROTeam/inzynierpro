@@ -55,7 +55,7 @@ export const addFixtureAsset = () =>
 
 export const fixturePdfBytes = new TextEncoder().encode('%PDF-1.4\n%test-only document\n')
 
-export const addFixturePdfAsset = () =>
+export const addFixturePdfAsset = ({ pageCount = 1 }: { readonly pageCount?: number } = {}) =>
   runFixture(
     Effect.gen(function* () {
       const learningContentRepository = yield* LearningContentRepository
@@ -66,6 +66,7 @@ export const addFixturePdfAsset = () =>
         storageKey: `test/${crypto.randomUUID()}.pdf`,
         mediaType: 'application/pdf',
         size: fixturePdfBytes.byteLength,
+        pageCount,
       })
 
       yield* fileStorage.put({

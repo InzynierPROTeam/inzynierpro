@@ -11,6 +11,7 @@ import {
 import {
   ContentAvailability,
   DocumentEditionId,
+  DocumentPageCount,
   DocumentPageNumber,
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
@@ -31,10 +32,7 @@ import {
   OralQuestionId,
   OralRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-question'
-import {
-  OralQuestionCategoryId,
-  OralQuestionCategorySortOrder,
-} from '@inzpro/domain/modules/learning-content/oral-question-category'
+import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
 import { QuestionReferenceKind } from '@inzpro/domain/modules/learning-content/question-reference'
 import {
@@ -125,6 +123,7 @@ export const PdfAsset = Schema.Struct({
   storageKey: Schema.NonEmptyString,
   mediaType: Schema.Literal(pdfMediaType),
   size: ByteSize,
+  pageCount: DocumentPageCount,
 })
 
 export const ContentAsset = Schema.Union([ImageAsset, PdfAsset])
@@ -218,7 +217,6 @@ export type QuestionRevisionWithdrawal = typeof QuestionRevisionWithdrawal.Type
 export const OralQuestionCategory = Schema.Struct({
   id: OralQuestionCategoryId,
   name: Schema.NonEmptyString,
-  sortOrder: OralQuestionCategorySortOrder,
 })
 
 export type OralQuestionCategory = typeof OralQuestionCategory.Type

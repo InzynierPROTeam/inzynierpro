@@ -39,20 +39,13 @@ export const seedWrittenCatalogue = Effect.fn('seedWrittenCatalogue')(function* 
   const sql = yield* SqlClient.SqlClient
   yield* seedContentAssets
   yield* seedReferenceDocuments
-  yield* sql`INSERT INTO path_documents (qualification_path_id, document_id) VALUES
-      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001'),
-      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002'),
-      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000003'),
-      ('10000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000004'),
-      ('10000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000001') ON CONFLICT DO NOTHING`
 
   for (const pathId of cataloguePathIds) {
-    if (pathId === catalogueId('10', 2)) {
-      continue
-    }
+    const documentIds = pathId === catalogueId('10', 2) ? [buildingLaw] : seededReferenceDocumentIds
 
-    for (const documentId of seededReferenceDocumentIds) {
-      yield* sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId}) ON CONFLICT DO NOTHING`
+    for (const [index, documentId] of documentIds.entries()) {
+      yield* sql`INSERT INTO path_documents (qualification_path_id,document_id,position) VALUES (${pathId},${documentId},${index + 1})
+        ON CONFLICT (qualification_path_id,document_id) DO UPDATE SET position=EXCLUDED.position`
     }
   }
 

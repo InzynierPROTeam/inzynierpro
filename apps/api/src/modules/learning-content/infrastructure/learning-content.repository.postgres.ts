@@ -2,8 +2,12 @@ import type {
   OralKnowledgeCheckOptionId,
   OralKnowledgeCheckRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-knowledge-check'
-import type { OralRevisionId } from '@inzpro/domain/modules/learning-content/oral-question'
+import type {
+  OralQuestionId,
+  OralRevisionId,
+} from '@inzpro/domain/modules/learning-content/oral-question'
 import type { QuestionRevisionId } from '@inzpro/domain/modules/learning-content/written-question'
+import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Array as Arr, DateTime, Effect, Layer, Option } from 'effect'
 import { SqlClient } from 'effect/sql'
@@ -68,12 +72,25 @@ export const LearningContentRepositoryLive = Layer.effect(
       }
     })
 
+    const lockPathOrder = (pathId: QualificationPathId) =>
+      sql`SELECT id FROM qualification_paths WHERE id=${pathId} FOR NO KEY UPDATE`
+
+    const attachQuestionCategory = (pathId: QualificationPathId, questionId: OralQuestionId) =>
+      Effect.gen(function* () {
+        yield* lockPathOrder(pathId)
+        yield* sql`INSERT INTO path_oral_categories (qualification_path_id,category_id,position)
+ SELECT ${pathId},q.category_id,coalesce((SELECT max(position) FROM path_oral_categories WHERE qualification_path_id=${pathId}),0)+1
+ FROM oral_questions q WHERE q.id=${questionId}
+ ON CONFLICT (qualification_path_id,category_id) DO NOTHING`
+      })
+
     return LearningContentRepository.of({
       createAsset: Effect.fn('LearningContentRepository.createAsset')(function* (asset) {
         const width = 'width' in asset ? asset.width : null
         const height = 'height' in asset ? asset.height : null
+        const pageCount = 'pageCount' in asset ? asset.pageCount : null
 
-        return yield* sql`INSERT INTO content_assets (id,storage_key,media_type,width,height,size_bytes) VALUES (${asset.id},${asset.storageKey},${asset.mediaType},${width},${height},${asset.size})`.pipe(
+        return yield* sql`INSERT INTO content_assets (id,storage_key,media_type,width,height,size_bytes,page_count) VALUES (${asset.id},${asset.storageKey},${asset.mediaType},${width},${height},${asset.size},${pageCount})`.pipe(
           Effect.asVoid,
           Effect.mapError(cause => new LearningContentWriteError({ cause })),
         )
@@ -147,10 +164,15 @@ export const LearningContentRepositoryLive = Layer.effect(
       ),
       attachDocument: Effect.fn('LearningContentRepository.attachDocument')(
         function* (pathId, documentId) {
-          return yield* sql`INSERT INTO path_documents (qualification_path_id,document_id) VALUES (${pathId},${documentId})`.pipe(
-            Effect.asVoid,
-            Effect.mapError(cause => new LearningContentWriteError({ cause })),
-          )
+          return yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                yield* lockPathOrder(pathId)
+                yield* sql`INSERT INTO path_documents (qualification_path_id,document_id,position)
+ SELECT ${pathId},${documentId},coalesce(max(position),0)+1 FROM path_documents WHERE qualification_path_id=${pathId}`
+              }),
+            )
+            .pipe(Effect.mapError(cause => new LearningContentWriteError({ cause })))
         },
       ),
       attachQuestion: Effect.fn('LearningContentRepository.attachQuestion')(
@@ -246,7 +268,7 @@ export const LearningContentRepositoryLive = Layer.effect(
       ),
       createOralCategory: Effect.fn('LearningContentRepository.createOralCategory')(
         function* (category) {
-          return yield* sql`INSERT INTO oral_question_categories (id,name,sort_order) VALUES (${category.id},${category.name},${category.sortOrder})`.pipe(
+          return yield* sql`INSERT INTO oral_question_categories (id,name) VALUES (${category.id},${category.name})`.pipe(
             Effect.asVoid,
             Effect.mapError(cause => new LearningContentWriteError({ cause })),
           )
@@ -270,7 +292,8 @@ export const LearningContentRepositoryLive = Layer.effect(
                 }
 
                 yield* sql`UPDATE oral_questions SET current_revision_id=${question.revisionId} WHERE id=${question.id}`
-                yield* sql`INSERT INTO path_oral_questions (qualification_path_id,question_id) VALUES (${question.qualificationPathId},${question.id})`
+                yield* attachQuestionCategory(question.qualificationPathId, question.id)
+                yield* sql`INSERT INTO path_oral_questions (qualification_path_id,category_id,question_id) VALUES (${question.qualificationPathId},${question.categoryId},${question.id})`
               }),
             )
             .pipe(
@@ -282,10 +305,15 @@ export const LearningContentRepositoryLive = Layer.effect(
       ),
       assignOralQuestion: Effect.fn('LearningContentRepository.assignOralQuestion')(
         function* (pathId, questionId) {
-          return yield* sql`INSERT INTO path_oral_questions (qualification_path_id,question_id) VALUES (${pathId},${questionId})`.pipe(
-            Effect.asVoid,
-            Effect.mapError(cause => new LearningContentWriteError({ cause })),
-          )
+          return yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                yield* attachQuestionCategory(pathId, questionId)
+                yield* sql`INSERT INTO path_oral_questions (qualification_path_id,category_id,question_id)
+ SELECT ${pathId},category_id,id FROM oral_questions WHERE id=${questionId}`
+              }),
+            )
+            .pipe(Effect.mapError(cause => new LearningContentWriteError({ cause })))
         },
       ),
       linkOralQuestionToChamber: Effect.fn('LearningContentRepository.linkOralQuestionToChamber')(

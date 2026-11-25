@@ -144,12 +144,13 @@ test('an oral answer with an image of an asset that was never stored is rejected
   ).rejects.toBeInstanceOf(UnknownContentAsset)
 })
 
-test('a PDF asset is stored without dimensions and can back a PDF-only edition', async () => {
+test('a PDF asset is stored with its page count and without dimensions and can back a PDF-only edition', async () => {
   const pdf = Schema.decodeSync(ContentAsset)({
     id: crypto.randomUUID(),
     storageKey: `test/${crypto.randomUUID()}.pdf`,
     mediaType: 'application/pdf',
     size: 2048,
+    pageCount: 3,
   })
 
   const document = await addFixtureReferenceDocument(undefined)

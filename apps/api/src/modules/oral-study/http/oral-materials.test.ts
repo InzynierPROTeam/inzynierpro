@@ -114,12 +114,12 @@ test('a newer revision replaces the withdrawn one in the category count', async 
   expect(categoryOf(await learner.categories(), category)?.availableQuestionCount).toBe(1)
 })
 
-test('oral categories follow the catalogue order across cursor pages', async () => {
+test('oral categories follow their position on the path across cursor pages', async () => {
   const learner = await learnerOnPath()
-  const later = await addFixtureOralCategory('Później', 2_000_000)
-  const earlier = await addFixtureOralCategory('Wcześniej', 1_000_000)
-  await addFixtureOralQuestion(learner.pathId, later, 1)
+  const later = await addFixtureOralCategory('Później')
+  const earlier = await addFixtureOralCategory('Wcześniej')
   await addFixtureOralQuestion(learner.pathId, earlier, 1)
+  await addFixtureOralQuestion(learner.pathId, later, 1)
 
   const ids = (await learner.categories()).map(category => category.id)
 
@@ -134,6 +134,23 @@ test('oral categories follow the catalogue order across cursor pages', async () 
 
   expect(firstPage.hasMore).toBe(true)
   expect(secondPage.data[0]?.id).toBe(ids[1])
+})
+
+test('each path keeps its own order of the same oral categories', async () => {
+  const learner = await learnerOnPath()
+  const other = await learnerOnPath(studySessionSpecialization)
+  const first = await addFixtureOralCategory('Najpierw na pierwszej ścieżce')
+  const second = await addFixtureOralCategory('Najpierw na drugiej ścieżce')
+  await addFixtureOralQuestion(learner.pathId, first, 1)
+  await addFixtureOralQuestion(learner.pathId, second, 1)
+  await addFixtureOralQuestion(other.pathId, second, 2)
+  await addFixtureOralQuestion(other.pathId, first, 2)
+
+  const order = (categories: ReadonlyArray<OralQuestionCategory>) =>
+    categories.flatMap(({ id }) => (id === first || id === second ? [id] : []))
+
+  expect(order(await learner.categories())).toEqual([first, second])
+  expect(order(await other.categories())).toEqual([second, first])
 })
 
 test('learners with only written access cannot read oral categories', async () => {

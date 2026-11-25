@@ -498,7 +498,7 @@ export const MockExamReaderLive = Layer.effect(
       pathDocumentIds: Effect.fn('MockExamReader.pathDocumentIds')(
         function* (pathId) {
           const rows =
-            yield* sql`SELECT document_id FROM path_documents WHERE qualification_path_id=${pathId} ORDER BY document_id`
+            yield* sql`SELECT document_id FROM path_documents WHERE qualification_path_id=${pathId} ORDER BY position`
 
           const documents = yield* Schema.decodeUnknownEffect(
             Schema.Array(Schema.Struct({ documentId: ReferenceDocumentId })),

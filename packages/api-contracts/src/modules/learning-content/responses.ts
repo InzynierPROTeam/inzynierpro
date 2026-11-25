@@ -1,12 +1,14 @@
 import { UtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { ExternalUrl } from '@inzpro/domain/common/external-url'
-import { ContentAssetId } from '@inzpro/domain/modules/learning-content/content-asset'
+import { ByteSize, ContentAssetId } from '@inzpro/domain/modules/learning-content/content-asset'
 import {
   ContentAvailability,
   DocumentEditionId,
+  DocumentPageCount,
   DocumentPageNumber,
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
+import { PackageAvailability } from '@inzpro/domain/modules/learning-content/document-package'
 import { DocumentSectionAddress } from '@inzpro/domain/modules/learning-content/document-section-address'
 import { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { QuestionReferenceKind } from '@inzpro/domain/modules/learning-content/question-reference'
@@ -88,6 +90,26 @@ export const DocumentSectionsResponse = Schema.Struct({ sections: Schema.Array(D
 export const DocumentPdfResponse = Schema.Struct({ url: Schema.String })
 
 export type DocumentPdfResponse = typeof DocumentPdfResponse.Type
+
+export const DocumentPackageCandidate = Schema.Struct({
+  id: ReferenceDocumentId,
+  code: ReferenceDocumentCode,
+  kind: ReferenceDocumentKind,
+  abbreviation: Schema.NonEmptyString,
+  title: Schema.NonEmptyString,
+  editionLabel: Schema.NonEmptyString,
+  textKind: EditionTextKind,
+  availability: PackageAvailability,
+  // CONTRACT: Null when the current edition has no PDF.
+  pdf: Schema.NullOr(Schema.Struct({ pageCount: DocumentPageCount, size: ByteSize })),
+})
+
+export type DocumentPackageCandidate = typeof DocumentPackageCandidate.Type
+
+// CONTRACT: All path documents with a published current edition, unpaginated, in path order.
+export const DocumentPackageCandidatesResponse = Schema.Struct({
+  documents: Schema.Array(DocumentPackageCandidate),
+})
 
 export const QuestionReference = Schema.Struct({
   document: Schema.Struct({
