@@ -11,6 +11,23 @@ import { requirePathAccess } from '~api/modules/preparation/application/path-acc
 
 import { ReferenceDocumentReader } from './reference-document.reader.js'
 
+export const requireFullContentDocument = Effect.fn('LearningContent.requireFullContentDocument')(
+  function* (pathId: QualificationPathId, code: ReferenceDocumentCode) {
+    const referenceDocumentReader = yield* ReferenceDocumentReader
+    const document = yield* referenceDocumentReader.pathDocument(pathId, code)
+
+    if (Option.isNone(document)) {
+      return yield* new UnknownReferenceDocument()
+    }
+
+    if (document.value.edition.availability !== fullContentAvailability) {
+      return yield* new ReferenceDocumentTextUnavailable()
+    }
+
+    return document.value
+  },
+)
+
 export const getDocumentSections = Effect.fn('LearningContent.getDocumentSections')(function* (
   userId: UserId,
   pathId: QualificationPathId,
@@ -18,16 +35,8 @@ export const getDocumentSections = Effect.fn('LearningContent.getDocumentSection
 ) {
   yield* requirePathAccess(userId, pathId)
 
+  const document = yield* requireFullContentDocument(pathId, code)
   const referenceDocumentReader = yield* ReferenceDocumentReader
-  const document = yield* referenceDocumentReader.pathDocument(pathId, code)
 
-  if (Option.isNone(document)) {
-    return yield* new UnknownReferenceDocument()
-  }
-
-  if (document.value.edition.availability !== fullContentAvailability) {
-    return yield* new ReferenceDocumentTextUnavailable()
-  }
-
-  return yield* referenceDocumentReader.editionSections(document.value.edition.id)
+  return yield* referenceDocumentReader.editionSections(document.edition.id)
 })

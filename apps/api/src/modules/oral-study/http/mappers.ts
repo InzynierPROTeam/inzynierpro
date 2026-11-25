@@ -1,5 +1,6 @@
 import type { OralReviewPreview as OralReviewPreviewDto } from '@inzpro/api-contracts/modules/oral-study/responses'
 import type {
+  OralQuestionDetails as OralQuestionDetailsDto,
   OralQuizCheck as OralQuizCheckDto,
   OralSessionQuiz as OralSessionQuizDto,
   OralSessionNextStep as OralSessionNextStepDto,
@@ -26,6 +27,7 @@ import {
   studySessionStatus,
 } from '~api/modules/learning/domain/session-progress.rules.js'
 import { toQuestionNoteDto } from '~api/modules/learning/http/mappers.js'
+import type { OralQuestionDetails } from '~api/modules/oral-study/domain/oral-question-details.model.js'
 import type { OralReviewPreview } from '~api/modules/oral-study/domain/oral-review-session.model.js'
 import type { OralSessionNextStep } from '~api/modules/oral-study/domain/oral-session-next-step.model.js'
 import type {
@@ -77,6 +79,20 @@ export const toOralSessionQuestionDto = (
       assessedAt: dateTimeUtcToUtcIsoDateTime(assessedAt),
     }),
   }),
+})
+
+export const toOralQuestionDetailsDto = (
+  {
+    question: { body, answer, note, ...question },
+    references,
+  }: WithQuestionReferences<OralQuestionDetails>,
+  addresses: ContentAssetAddresses,
+): OralQuestionDetailsDto => ({
+  ...question,
+  body: toResolvedRichContentDto(body, addresses),
+  answer: toResolvedRichContentDto(answer, addresses),
+  references: references.map(reference => toQuestionReferenceDto(reference, addresses)),
+  note: Option.match(note, { onNone: () => null, onSome: toQuestionNoteDto }),
 })
 
 export const toOralStudySessionSummaryDto = ({

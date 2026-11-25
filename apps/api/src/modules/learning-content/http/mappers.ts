@@ -1,5 +1,6 @@
 import type {
   DocumentSection as DocumentSectionDto,
+  LinkedOralQuestion as LinkedOralQuestionDto,
   QuestionReference as QuestionReferenceDto,
   ReferenceDocument as ReferenceDocumentDto,
   ResolvedRichContent,
@@ -8,6 +9,7 @@ import { dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import { imageAssetIds, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Option } from 'effect'
 import type { ContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
+import type { LinkedOralQuestion } from '~api/modules/learning-content/domain/linked-question.model.js'
 import type { QuestionReference } from '~api/modules/learning-content/domain/question-reference.model.js'
 import type {
   DocumentSection,
@@ -81,4 +83,12 @@ export const toQuestionReferenceDto = (
     onNone: () => null,
     onSome: sections => toDocumentSectionDtos(sections, addresses),
   }),
+})
+
+export const toLinkedOralQuestionDto = (
+  question: LinkedOralQuestion,
+  addresses: ContentAssetAddresses,
+): LinkedOralQuestionDto => ({
+  ...question,
+  body: toResolvedRichContentDto(question.body, addresses),
 })

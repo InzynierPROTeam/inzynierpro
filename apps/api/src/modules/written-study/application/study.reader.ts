@@ -29,6 +29,7 @@ import type {
 import type { ReviewQueue } from '~api/modules/learning/domain/review-queue.model.js'
 import type { ReviewCard, StudyDay } from '~api/modules/learning/domain/review-state.model.js'
 import type { StudyReadError } from '~api/modules/written-study/application/errors.js'
+import type { QuestionDetails } from '~api/modules/written-study/domain/question-details.model.js'
 import type {
   DocumentQuestionPool,
   SessionDocument,
@@ -124,6 +125,11 @@ export class StudyReader extends Context.Service<
       pathId: QualificationPathId,
       questionId: WrittenQuestionId,
     ) => Effect.Effect<boolean, StudyReadError>
+    readonly questionDetails: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      questionId: WrittenQuestionId,
+    ) => Effect.Effect<Option.Option<QuestionDetails>, StudyReadError>
     readonly favoriteQuestionCount: (
       userId: UserId,
       pathId: QualificationPathId,

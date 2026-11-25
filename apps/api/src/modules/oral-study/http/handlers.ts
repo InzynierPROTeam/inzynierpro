@@ -17,6 +17,7 @@ import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.read
 import { StreakRepositoryLive } from '~api/modules/streak/infrastructure/streak.repository.postgres.js'
 
 import { dailyPlanHandlers } from './daily-plan.handlers.js'
+import { detailsHandlers } from './details.handlers.js'
 import { favoritesHandlers } from './favorites.handlers.js'
 import { materialHandlers } from './material.handlers.js'
 import { notesHandlers } from './notes.handlers.js'
@@ -33,6 +34,7 @@ export const OralStudyLive = HttpApiBuilder.group(Api, 'OralStudy', handlers =>
     ...materialHandlers,
     ...sessionHandlers,
     ...quizHandlers,
+    ...detailsHandlers,
   }),
 )
 

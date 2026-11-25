@@ -1,5 +1,5 @@
 import type { UserId } from '@inzpro/domain/modules/identity/user'
-import type { ExamPart } from '@inzpro/domain/modules/preparation/exam-access'
+import { type ExamPart, includesExamPart } from '@inzpro/domain/modules/preparation/exam-access'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Effect, Option } from 'effect'
 import { PathPermissionDenied } from '~api/modules/preparation/domain/errors.js'
@@ -24,7 +24,7 @@ export const requirePathAccess = (
     if (
       assignment === undefined ||
       (assignment.archived && !includeArchived) ||
-      (part !== undefined && assignment.accessScope !== 'both' && assignment.accessScope !== part)
+      (part !== undefined && !includesExamPart(assignment.accessScope, part))
     ) {
       return yield* new PathPermissionDenied()
     }
