@@ -12,6 +12,7 @@ import type {
   UnmarkFavoriteQuestionEndpoint,
   SaveQuestionNoteEndpoint,
   ClearQuestionNoteEndpoint,
+  GetQuestionDetailsEndpoint,
   GetFavoritesPreviewEndpoint,
   GetFavoritesSessionEndpoint,
   StartFavoritesSessionEndpoint,
@@ -258,3 +259,12 @@ export type SubmitSessionAnswerRequest = InferEndpointRequest<typeof SubmitSessi
 export type SubmitSessionAnswerRes = Effect.Success<ReturnType<typeof submitSessionAnswer>>
 
 export type SubmitSessionAnswerError = Effect.Error<ReturnType<typeof submitSessionAnswer>>
+
+export const getQuestionDetails = (req: GetQuestionDetailsRequest) =>
+  apiAction(api => api.Study.GetQuestionDetails(req))
+
+export type GetQuestionDetailsRequest = InferEndpointRequest<typeof GetQuestionDetailsEndpoint>
+
+export type GetQuestionDetailsRes = Effect.Success<ReturnType<typeof getQuestionDetails>>
+
+export type GetQuestionDetailsError = Effect.Error<ReturnType<typeof getQuestionDetails>>

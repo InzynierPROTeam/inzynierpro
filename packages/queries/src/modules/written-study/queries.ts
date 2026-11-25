@@ -20,6 +20,8 @@ import {
   getSession,
   type GetSessionRequest,
   getSessionQuestion,
+  getQuestionDetails,
+  type GetQuestionDetailsRequest,
   type GetSessionQuestionRequest,
   getSessionSummary,
   type GetSessionSummaryRequest,
@@ -176,4 +178,15 @@ export const sessionResultsInfiniteQueryOptions = (
     cursor => getSessionResults({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
+  )
+
+export const questionDetailsQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetQuestionDetailsRequest,
+) =>
+  effectQueryOptions(
+    writtenStudyKeys.getQuestionDetails(userId, req),
+    getQuestionDetails(req),
+    httpClient,
   )

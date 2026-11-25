@@ -40,6 +40,7 @@ import {
   StartReviewSessionPayload,
   StartSessionPayload,
   SubmitSessionAnswerPayload,
+  QuestionDetailsParams,
 } from '~api-contracts/modules/written-study/requests.js'
 import {
   DocumentResponse,
@@ -61,6 +62,7 @@ import {
   StudySessionResponse,
   RecordSessionAssistanceResponse,
   SubmitSessionAnswerResponse,
+  QuestionDetailsResponse,
 } from '~api-contracts/modules/written-study/responses.js'
 import {
   InternalServerError,
@@ -232,6 +234,16 @@ export const ClearQuestionNoteEndpoint = HttpApiEndpoint.delete(
   },
 )
 
+export const GetQuestionDetailsEndpoint = HttpApiEndpoint.get(
+  'GetQuestionDetails',
+  '/paths/:qualificationPathId/questions/:questionId',
+  {
+    params: QuestionDetailsParams,
+    success: QuestionDetailsResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
 export const GetFavoritesPreviewEndpoint = HttpApiEndpoint.get(
   'GetFavoritesPreview',
   '/paths/:qualificationPathId/favorites-preview',
@@ -393,6 +405,7 @@ export const StudyApi = HttpApiGroup.make('Study')
   .add(UnmarkFavoriteQuestionEndpoint)
   .add(SaveQuestionNoteEndpoint)
   .add(ClearQuestionNoteEndpoint)
+  .add(GetQuestionDetailsEndpoint)
   .add(GetFavoritesPreviewEndpoint)
   .add(GetFavoritesSessionEndpoint)
   .add(StartFavoritesSessionEndpoint)

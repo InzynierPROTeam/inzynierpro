@@ -118,6 +118,20 @@ export type OralSessionQuestion = typeof OralSessionQuestion.Type
 
 export const OralSessionQuestionResponse = Schema.NullOr(OralSessionQuestion)
 
+export const OralQuestionDetails = Schema.Struct({
+  questionId: OralQuestionId,
+  oralRevisionId: OralRevisionId,
+  body: ResolvedRichContent,
+  answer: ResolvedRichContent,
+  references: Schema.Array(QuestionReference),
+  isFavorite: Schema.Boolean,
+  note: Schema.NullOr(QuestionNote),
+})
+
+export type OralQuestionDetails = typeof OralQuestionDetails.Type
+
+export const OralQuestionDetailsResponse = OralQuestionDetails
+
 export const SubmitOralSelfAssessmentResponse = Schema.Struct({
   rewards: LearningRewards,
   question: OralSessionQuestion,

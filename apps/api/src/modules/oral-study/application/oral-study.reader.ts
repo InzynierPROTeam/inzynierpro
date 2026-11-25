@@ -25,6 +25,7 @@ import type { ReviewQueue } from '~api/modules/learning/domain/review-queue.mode
 import type { ReviewCard, StudyDay } from '~api/modules/learning/domain/review-state.model.js'
 import type { StudyReadError } from '~api/modules/oral-study/application/errors.js'
 import type { OralCategoryQuestionPool } from '~api/modules/oral-study/domain/oral-category.model.js'
+import type { OralQuestionDetails } from '~api/modules/oral-study/domain/oral-question-details.model.js'
 import type { OralSelfAssessmentStatistics } from '~api/modules/oral-study/domain/oral-statistics.model.js'
 import type {
   OralSessionCandidate,
@@ -37,6 +38,11 @@ import type {
 export class OralStudyReader extends Context.Service<
   OralStudyReader,
   {
+    readonly questionDetails: (
+      userId: UserId,
+      pathId: QualificationPathId,
+      questionId: OralQuestionId,
+    ) => Effect.Effect<Option.Option<OralQuestionDetails>, StudyReadError>
     readonly isPathQuestion: (
       pathId: QualificationPathId,
       questionId: OralQuestionId,

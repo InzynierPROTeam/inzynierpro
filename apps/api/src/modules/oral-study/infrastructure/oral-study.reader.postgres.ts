@@ -4,6 +4,7 @@ import { OralStudyReader } from '~api/modules/oral-study/application/oral-study.
 import { oralDailyPlanReader } from './daily-plan.reader.postgres.js'
 import { oralFavoritesReader } from './favorites.reader.postgres.js'
 import { oralMaterialReader } from './material.reader.postgres.js'
+import { oralQuestionDetailsReader } from './oral-question-details.reader.postgres.js'
 import { oralReviewReader } from './review.reader.postgres.js'
 import { oralSessionReader } from './session.reader.postgres.js'
 import { oralStatisticsReader } from './statistics.reader.postgres.js'
@@ -17,6 +18,7 @@ export const OralStudyReaderLive = Layer.effect(
     const reviewReader = yield* oralReviewReader
     const dailyPlanReader = yield* oralDailyPlanReader
     const statisticsReader = yield* oralStatisticsReader
+    const questionDetailsReader = yield* oralQuestionDetailsReader
 
     return OralStudyReader.of({
       ...materialReader,
@@ -25,6 +27,7 @@ export const OralStudyReaderLive = Layer.effect(
       ...reviewReader,
       ...dailyPlanReader,
       ...statisticsReader,
+      ...questionDetailsReader,
     })
   }),
 )

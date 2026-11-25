@@ -4,6 +4,7 @@ import { StudyReader } from '~api/modules/written-study/application/study.reader
 import { writtenDailyPlanReader } from './daily-plan.reader.postgres.js'
 import { writtenFavoritesReader } from './favorites.reader.postgres.js'
 import { writtenMaterialReader } from './material.reader.postgres.js'
+import { writtenQuestionDetailsReader } from './question-details.reader.postgres.js'
 import { writtenReviewReader } from './review.reader.postgres.js'
 import { writtenSessionReader } from './session.reader.postgres.js'
 import { writtenStatisticsReader } from './statistics.reader.postgres.js'
@@ -17,6 +18,7 @@ export const StudyReaderLive = Layer.effect(
     const favoritesReader = yield* writtenFavoritesReader
     const dailyPlanReader = yield* writtenDailyPlanReader
     const statisticsReader = yield* writtenStatisticsReader
+    const questionDetailsReader = yield* writtenQuestionDetailsReader
 
     return StudyReader.of({
       ...materialReader,
@@ -25,6 +27,7 @@ export const StudyReaderLive = Layer.effect(
       ...favoritesReader,
       ...dailyPlanReader,
       ...statisticsReader,
+      ...questionDetailsReader,
     })
   }),
 )

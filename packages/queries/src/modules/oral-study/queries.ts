@@ -24,6 +24,8 @@ import {
   getOralSessionResults,
   type GetOralSessionResultsRequest,
   getOralSessionQuestion,
+  getOralQuestionDetails,
+  type GetOralQuestionDetailsRequest,
   type GetOralSessionQuestionRequest,
   getOralSessionQuiz,
   type GetOralSessionQuizRequest,
@@ -196,4 +198,15 @@ export const oralQuizChecksInfiniteQueryOptions = (
     cursor => getOralQuizChecks({ ...req, query: { ...req.query, cursor } }),
     httpClient,
     req.query.cursor,
+  )
+
+export const oralQuestionDetailsQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetOralQuestionDetailsRequest,
+) =>
+  effectQueryOptions(
+    oralStudyKeys.getOralQuestionDetails(userId, req),
+    getOralQuestionDetails(req),
+    httpClient,
   )

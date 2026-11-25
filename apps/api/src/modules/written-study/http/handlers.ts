@@ -15,6 +15,7 @@ import { StudyReaderLive } from '~api/modules/written-study/infrastructure/study
 import { StudyRepositoryLive } from '~api/modules/written-study/infrastructure/study.repository.postgres.js'
 
 import { dailyPlanHandlers } from './daily-plan.handlers.js'
+import { detailsHandlers } from './details.handlers.js'
 import { favoritesHandlers } from './favorites.handlers.js'
 import { materialHandlers } from './material.handlers.js'
 import { notesHandlers } from './notes.handlers.js'
@@ -29,6 +30,7 @@ export const StudyLive = HttpApiBuilder.group(Api, 'Study', handlers =>
     ...dailyPlanHandlers,
     ...favoritesHandlers,
     ...notesHandlers,
+    ...detailsHandlers,
   }),
 )
 

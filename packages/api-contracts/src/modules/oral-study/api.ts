@@ -46,6 +46,7 @@ import {
   OralSessionResultsQuery,
   StartOralSessionPayload,
   SubmitOralSelfAssessmentPayload,
+  OralQuestionDetailsParams,
 } from '~api-contracts/modules/oral-study/requests.js'
 import {
   AnswerOralQuizCheckResponse,
@@ -66,6 +67,7 @@ import {
   OralStudySessionSummaryResponse,
   StartOralSessionResponse,
   SubmitOralSelfAssessmentResponse,
+  OralQuestionDetailsResponse,
 } from '~api-contracts/modules/oral-study/responses.js'
 import { PathAccessDenied } from '~api-contracts/modules/preparation/errors.js'
 import {
@@ -357,6 +359,16 @@ export const ClearOralQuestionNoteEndpoint = HttpApiEndpoint.delete(
   },
 )
 
+export const GetOralQuestionDetailsEndpoint = HttpApiEndpoint.get(
+  'GetOralQuestionDetails',
+  '/paths/:qualificationPathId/oral/questions/:questionId',
+  {
+    params: OralQuestionDetailsParams,
+    success: OralQuestionDetailsResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, QuestionNotFound],
+  },
+)
+
 export const GetOralSessionQuizEndpoint = HttpApiEndpoint.get(
   'GetOralSessionQuiz',
   '/paths/:qualificationPathId/oral/sessions/:sessionId/quiz',
@@ -422,6 +434,7 @@ export const OralStudyApi = HttpApiGroup.make('OralStudy')
   .add(SaveOralQuestionNoteEndpoint)
   .add(UnmarkOralFavoriteQuestionEndpoint)
   .add(MarkOralFavoriteQuestionEndpoint)
+  .add(GetOralQuestionDetailsEndpoint)
   .add(GetOralFavoritesPreviewEndpoint)
   .add(GetOralFavoritesSessionEndpoint)
   .add(StartOralFavoritesSessionEndpoint)

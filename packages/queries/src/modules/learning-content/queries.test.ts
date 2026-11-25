@@ -1,13 +1,17 @@
 import { UserId } from '@inzpro/domain/modules/identity/user'
+import { DocumentSectionAddress } from '@inzpro/domain/modules/learning-content/document-section-address'
 import { ReferenceDocumentCode } from '@inzpro/domain/modules/learning-content/reference-document'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { withHttpServer } from '@inzpro/testing/http'
-import { Schema } from 'effect'
-import { HttpRouter, HttpServerResponse } from 'effect/http'
+import { Effect, Schema } from 'effect'
+import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { learningContentKeys } from '~queries/modules/learning-content/keys.js'
 import {
   documentPdfQueryOptions,
+  documentQuestionCountsQueryOptions,
+  linkedOralQuestionsInfiniteQueryOptions,
+  linkedWrittenQuestionsInfiniteQueryOptions,
   documentSectionsQueryOptions,
   referenceDocumentQueryOptions,
   referenceDocumentsInfiniteQueryOptions,
@@ -17,6 +21,20 @@ import { withQueryClient } from '~queries/test/query-client.js'
 const userId = Schema.decodeSync(UserId)('0190f6a2-9c1d-7c3e-8a4b-1f2e3d4c5b6a')
 const pathId = Schema.decodeSync(QualificationPathId)('10000000-0000-4000-8000-000000000001')
 const code = Schema.decodeSync(ReferenceDocumentCode)('pn-en-1990')
+const address = Schema.decodeSync(DocumentSectionAddress)('art:17')
+const writtenQuestionId = '30000000-0000-4000-8000-000000000001'
+const oralQuestionId = '30000000-0000-4000-8000-000000000002'
+
+const oralBody = {
+  content: {
+    version: 1,
+    doc: {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Pytanie ustne' }] }],
+    },
+  },
+  assets: [],
+}
 
 const summary = {
   id: '20000000-0000-4000-8000-000000000003',
@@ -126,5 +144,75 @@ test('reference documents are cached per account and path and refreshed through 
         expect(queryClient.getQueryState(read.queryKey)?.isInvalidated).toBe(true)
         expect(queryClient.getQueryState(content.queryKey)?.isInvalidated).toBe(true)
         expect(queryClient.getQueryState(pdf.queryKey)?.isInvalidated).toBe(true)
+      }),
+  ))
+
+test('linked written and oral questions page by cursor apart and stay in the path group with the unit counts', () =>
+  withHttpServer(
+    [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/sources/paths/${pathId}/documents/${code}/question-counts`,
+        HttpServerResponse.jsonUnsafe({
+          units: [{ address: 'art:17', writtenQuestionCount: 2, oralQuestionCount: 1 }],
+        }),
+      ),
+      ...(
+        [
+          ['written-questions', { questionId: writtenQuestionId, body: 'Pytanie' }],
+          ['oral-questions', { questionId: oralQuestionId, body: oralBody }],
+        ] as const
+      ).map(([list, question]) =>
+        HttpRouter.route(
+          'GET',
+          `/api/v1/sources/paths/${pathId}/documents/${code}/${list}`,
+          Effect.map(HttpServerRequest.HttpServerRequest, request =>
+            HttpServerResponse.jsonUnsafe(
+              new URL(request.url, 'http://localhost').searchParams.get('cursor') === null
+                ? { data: [question], meta: { hasMore: true, nextCursor: 'next' } }
+                : { data: [], meta: { hasMore: false } },
+            ),
+          ),
+        ),
+      ),
+    ],
+    ({ httpClient }) =>
+      withQueryClient(async queryClient => {
+        const countsRequest = { params: { qualificationPathId: pathId, code } }
+        const listRequest = { ...countsRequest, query: { address } }
+        const counts = documentQuestionCountsQueryOptions(httpClient, userId, countsRequest)
+        const written = linkedWrittenQuestionsInfiniteQueryOptions(httpClient, userId, listRequest)
+        const oral = linkedOralQuestionsInfiniteQueryOptions(httpClient, userId, listRequest)
+
+        expect(written.queryKey).toEqual([
+          'learning-content',
+          'account',
+          userId,
+          'path',
+          pathId,
+          'getLinkedWrittenQuestionsInfinite',
+          listRequest,
+        ])
+        expect(oral.queryKey).not.toStrictEqual(written.queryKey)
+        expect(await queryClient.query(counts)).toEqual({
+          units: [{ address: 'art:17', writtenQuestionCount: 2, oralQuestionCount: 1 }],
+        })
+
+        const writtenPages = await queryClient.infiniteQuery({ ...written, pages: 2 })
+        const oralPages = await queryClient.infiniteQuery({ ...oral, pages: 2 })
+
+        expect(writtenPages.pageParams).toStrictEqual([undefined, 'next'])
+        expect(writtenPages.pages.flatMap(page => page.data)).toEqual([
+          { questionId: writtenQuestionId, body: 'Pytanie' },
+        ])
+        expect(oralPages.pages.flatMap(page => page.data)).toEqual([
+          { questionId: oralQuestionId, body: oralBody },
+        ])
+
+        await queryClient.invalidateQueries({ queryKey: learningContentKeys.path(userId, pathId) })
+
+        expect(queryClient.getQueryState(counts.queryKey)?.isInvalidated).toBe(true)
+        expect(queryClient.getQueryState(written.queryKey)?.isInvalidated).toBe(true)
+        expect(queryClient.getQueryState(oral.queryKey)?.isInvalidated).toBe(true)
       }),
   ))

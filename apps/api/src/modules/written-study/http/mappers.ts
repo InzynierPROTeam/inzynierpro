@@ -8,6 +8,7 @@ import type {
   SessionQuestionResult as SessionQuestionResultDto,
   StudySession as StudySessionDto,
   StudySessionSummary,
+  QuestionDetails as QuestionDetailsDto,
 } from '@inzpro/api-contracts/modules/written-study/responses'
 import { dateTimeUtcToUtcIsoDateTime } from '@inzpro/domain/common/date-time'
 import {
@@ -30,6 +31,7 @@ import {
 } from '~api/modules/learning/domain/session-progress.rules.js'
 import { toQuestionNoteDto } from '~api/modules/learning/http/mappers.js'
 import type { FavoritesPreview as FavoritesPreviewModel } from '~api/modules/written-study/domain/favorites-session.model.js'
+import type { QuestionDetails } from '~api/modules/written-study/domain/question-details.model.js'
 import type { ReviewPreview as ReviewPreviewModel } from '~api/modules/written-study/domain/review-session.model.js'
 import type { SessionNextStep } from '~api/modules/written-study/domain/session-next-step.model.js'
 import type { SessionDocument } from '~api/modules/written-study/domain/study-document.model.js'
@@ -90,6 +92,19 @@ export const toSessionQuestionDto = (
       answeredAt: dateTimeUtcToUtcIsoDateTime(answeredAt),
     }),
   }),
+})
+
+export const toQuestionDetailsDto = (
+  {
+    question: { explanation, note, ...question },
+    references,
+  }: WithQuestionReferences<QuestionDetails>,
+  addresses: ContentAssetAddresses,
+): QuestionDetailsDto => ({
+  ...question,
+  explanation: toResolvedRichContentDto(explanation, addresses),
+  references: references.map(reference => toQuestionReferenceDto(reference, addresses)),
+  note: Option.match(note, { onNone: () => null, onSome: toQuestionNoteDto }),
 })
 
 export const toStudySessionSummaryDto = ({

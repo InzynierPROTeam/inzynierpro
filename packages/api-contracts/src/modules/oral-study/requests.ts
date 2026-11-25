@@ -87,6 +87,11 @@ export const OralFavoriteQuestionParams = Schema.Struct({
   questionId: OralQuestionId,
 })
 
+export const OralQuestionDetailsParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  questionId: OralQuestionId,
+})
+
 export const StartOralSessionQuizPayload = Schema.Struct({
   formats: Schema.NonEmptyArray(KnowledgeCheckFormat),
 })

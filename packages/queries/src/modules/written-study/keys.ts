@@ -10,6 +10,7 @@ import type {
   GetFavoritesSessionRequest,
   GetSessionRequest,
   GetSessionQuestionRequest,
+  GetQuestionDetailsRequest,
   GetSessionSummaryRequest,
   GetSessionNextStepRequest,
   GetSessionResultsRequest,
@@ -105,4 +106,6 @@ export const writtenStudyKeys = {
     ] as const,
   getSessionQuestion: (userId: UserId, req: GetSessionQuestionRequest) =>
     [...writtenStudyKeys.questions(userId), 'getSessionQuestion', req] as const,
+  getQuestionDetails: (userId: UserId, req: GetQuestionDetailsRequest) =>
+    [...writtenStudyKeys.questions(userId), 'getQuestionDetails', req] as const,
 }

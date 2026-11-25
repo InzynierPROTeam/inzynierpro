@@ -12,3 +12,6 @@ export const examPartValues = [writtenExamAccess, oralExamAccess] as const
 export const ExamPart = Schema.Literals(examPartValues)
 
 export type ExamPart = typeof ExamPart.Type
+
+export const includesExamPart = (scope: ExamAccessScope, part: ExamPart) =>
+  scope === bothExamAccess || scope === part

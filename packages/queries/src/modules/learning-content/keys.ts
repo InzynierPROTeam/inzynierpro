@@ -1,5 +1,8 @@
 import type {
   GetDocumentPdfRequest,
+  GetDocumentQuestionCountsRequest,
+  GetLinkedOralQuestionsRequest,
+  GetLinkedWrittenQuestionsRequest,
   GetDocumentSectionsRequest,
   GetReferenceDocumentRequest,
   GetReferenceDocumentsRequest,
@@ -34,6 +37,24 @@ export const learningContentKeys = {
     [
       ...learningContentKeys.path(userId, req.params.qualificationPathId),
       'getDocumentPdf',
+      req,
+    ] as const,
+  getDocumentQuestionCounts: (userId: UserId, req: GetDocumentQuestionCountsRequest) =>
+    [
+      ...learningContentKeys.path(userId, req.params.qualificationPathId),
+      'getDocumentQuestionCounts',
+      req,
+    ] as const,
+  getLinkedWrittenQuestionsInfinite: (userId: UserId, req: GetLinkedWrittenQuestionsRequest) =>
+    [
+      ...learningContentKeys.path(userId, req.params.qualificationPathId),
+      'getLinkedWrittenQuestionsInfinite',
+      req,
+    ] as const,
+  getLinkedOralQuestionsInfinite: (userId: UserId, req: GetLinkedOralQuestionsRequest) =>
+    [
+      ...learningContentKeys.path(userId, req.params.qualificationPathId),
+      'getLinkedOralQuestionsInfinite',
       req,
     ] as const,
 }
