@@ -49,6 +49,7 @@ export const writtenFavoritesReader = Effect.gen(function* () {
   ) =>
     sql`FROM written_favorite_questions f
  JOIN path_questions pq ON pq.qualification_path_id=${pathId} AND pq.question_id=f.question_id
+ JOIN path_documents pd ON pd.qualification_path_id=pq.qualification_path_id AND pd.document_id=pq.document_id
  JOIN written_questions q ON q.id=f.question_id
  JOIN question_revisions r ON r.id=q.current_revision_id AND r.published_at IS NOT NULL AND r.withdrawn_at IS NULL
  WHERE ${sql.and([
@@ -73,10 +74,10 @@ export const writtenFavoritesReader = Effect.gen(function* () {
     favoriteCandidates: Effect.fn('StudyReader.favoriteCandidates')(
       function* (userId, pathId, documentId, limit) {
         const rows = yield* sql`SELECT c.question_id,c.question_revision_id,a.id AS answer_id FROM (
- SELECT q.id AS question_id,r.id AS question_revision_id,pq.document_id,q.created_at ${favoriteQuestions(userId, pathId, documentId)}
- ORDER BY pq.document_id,q.created_at,q.id LIMIT ${limit}
+ SELECT q.id AS question_id,r.id AS question_revision_id,pd.position,q.created_at ${favoriteQuestions(userId, pathId, documentId)}
+ ORDER BY pd.position,q.created_at,q.id LIMIT ${limit}
  ) c JOIN question_answers a ON a.question_revision_id=c.question_revision_id
- ORDER BY c.document_id,c.created_at,c.question_id,a.created_at,a.id`
+ ORDER BY c.position,c.created_at,c.question_id,a.created_at,a.id`
 
         return toCandidates(yield* Schema.decodeUnknownEffect(Schema.Array(CandidateRow))(rows))
       },

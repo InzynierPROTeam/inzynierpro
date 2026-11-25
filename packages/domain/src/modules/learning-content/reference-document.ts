@@ -32,6 +32,12 @@ export const ReferenceDocumentKind = Schema.Literals(referenceDocumentKindValues
 
 export type ReferenceDocumentKind = typeof ReferenceDocumentKind.Type
 
+export const PathDocumentPosition = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
+  Schema.brand('PathDocumentPosition'),
+)
+
+export type PathDocumentPosition = typeof PathDocumentPosition.Type
+
 export const QuestionCount = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)).pipe(
   Schema.brand('QuestionCount'),
 )

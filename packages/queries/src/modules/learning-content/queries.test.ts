@@ -8,6 +8,7 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import { learningContentKeys } from '~queries/modules/learning-content/keys.js'
 import {
+  documentPackageCandidatesQueryOptions,
   documentPdfQueryOptions,
   documentQuestionCountsQueryOptions,
   linkedOralQuestionsInfiniteQueryOptions,
@@ -63,6 +64,21 @@ const document = {
   },
 }
 
+const packageCandidates = [
+  {
+    id: '20000000-0000-4000-8000-000000000001',
+    code: 'prawo-budowlane',
+    kind: 'statute',
+    abbreviation: 'PB',
+    title: 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane',
+    editionLabel: 'Dz.U. 2024 poz. 725 (t.j.)',
+    textKind: 'official_consolidated',
+    availability: 'included',
+    pdf: { pageCount: 8, size: 102051 },
+  },
+  { ...summary, textKind: 'original', availability: 'metadata_only', pdf: null },
+]
+
 const sections = [
   {
     address: 'rozdz:2',
@@ -87,7 +103,7 @@ const sections = [
   },
 ]
 
-test('reference documents are cached per account and path and refreshed through the path group', () =>
+test('reference documents and package candidates are cached per account and path and refreshed through the path group', () =>
   withHttpServer(
     [
       HttpRouter.route(
@@ -112,6 +128,11 @@ test('reference documents are cached per account and path and refreshed through 
           url: 'https://files.example/document.pdf?X-Amz-Signature=1',
         }),
       ),
+      HttpRouter.route(
+        'GET',
+        `/api/v1/sources/paths/${pathId}/document-package`,
+        HttpServerResponse.jsonUnsafe({ documents: packageCandidates }),
+      ),
     ],
     ({ httpClient }) =>
       withQueryClient(async queryClient => {
@@ -121,6 +142,10 @@ test('reference documents are cached per account and path and refreshed through 
         const read = referenceDocumentQueryOptions(httpClient, userId, documentRequest)
         const content = documentSectionsQueryOptions(httpClient, userId, documentRequest)
         const pdf = documentPdfQueryOptions(httpClient, userId, documentRequest)
+
+        const documentPackage = documentPackageCandidatesQueryOptions(httpClient, userId, {
+          params: { qualificationPathId: pathId },
+        })
 
         expect(list.queryKey).toEqual([
           'learning-content',
@@ -137,6 +162,7 @@ test('reference documents are cached per account and path and refreshed through 
         expect(await queryClient.query(pdf)).toEqual({
           url: 'https://files.example/document.pdf?X-Amz-Signature=1',
         })
+        expect(await queryClient.query(documentPackage)).toEqual({ documents: packageCandidates })
 
         await queryClient.invalidateQueries({ queryKey: learningContentKeys.path(userId, pathId) })
 
@@ -144,6 +170,7 @@ test('reference documents are cached per account and path and refreshed through 
         expect(queryClient.getQueryState(read.queryKey)?.isInvalidated).toBe(true)
         expect(queryClient.getQueryState(content.queryKey)?.isInvalidated).toBe(true)
         expect(queryClient.getQueryState(pdf.queryKey)?.isInvalidated).toBe(true)
+        expect(queryClient.getQueryState(documentPackage.queryKey)?.isInvalidated).toBe(true)
       }),
   ))
 

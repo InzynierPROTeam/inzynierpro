@@ -28,6 +28,7 @@ import { Route as publicLayoutNotauthenticatedLogowanieRouteImport } from './rou
 import { Route as publicLayoutNotauthenticatedZweryfikujOtpRouteImport } from './routes/(public)/_layout/_notauthenticated/zweryfikuj-otp'
 import { Route as appAuthenticatedOnboardedZrodlaIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/zrodla/index'
 import { Route as appAuthenticatedOnboardedZrodlaCodeRouteImport } from './routes/(app)/_authenticated/_onboarded/zrodla/$code'
+import { Route as appAuthenticatedOnboardedZrodlaPakietRouteImport } from './routes/(app)/_authenticated/_onboarded/zrodla/pakiet'
 import { Route as appAuthenticatedOnboardedOralValidUstnyIndexRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/index'
 import { Route as appAuthenticatedOnboardedOralValidUstnyPowtorkaRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
 import { Route as appAuthenticatedOnboardedOralValidUstnyStartRouteImport } from './routes/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
@@ -149,6 +150,12 @@ const appAuthenticatedOnboardedZrodlaCodeRoute =
   appAuthenticatedOnboardedZrodlaCodeRouteImport.update({
     id: '/zrodla/$code',
     path: '/zrodla/$code',
+    getParentRoute: () => appAuthenticatedOnboardedRoute,
+  } as any)
+const appAuthenticatedOnboardedZrodlaPakietRoute =
+  appAuthenticatedOnboardedZrodlaPakietRouteImport.update({
+    id: '/zrodla/pakiet',
+    path: '/zrodla/pakiet',
     getParentRoute: () => appAuthenticatedOnboardedRoute,
   } as any)
 const appAuthenticatedOnboardedOralValidUstnyIndexRoute =
@@ -293,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/zrodla/$code': typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  '/zrodla/pakiet': typeof appAuthenticatedOnboardedZrodlaPakietRoute
   '/zrodla/': typeof appAuthenticatedOnboardedZrodlaIndexRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
@@ -327,6 +335,7 @@ export interface FileRoutesByTo {
   '/logowanie': typeof publicLayoutNotauthenticatedLogowanieRoute
   '/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/zrodla/$code': typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  '/zrodla/pakiet': typeof appAuthenticatedOnboardedZrodlaPakietRoute
   '/zrodla': typeof appAuthenticatedOnboardedZrodlaIndexRoute
   '/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
@@ -368,6 +377,7 @@ export interface FileRoutesById {
   '/(public)/_layout/_notauthenticated/zweryfikuj-otp': typeof publicLayoutNotauthenticatedZweryfikujOtpRoute
   '/(public)/_layout/_notauthenticated/': typeof publicLayoutNotauthenticatedIndexRoute
   '/(app)/_authenticated/_onboarded/zrodla/$code': typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  '/(app)/_authenticated/_onboarded/zrodla/pakiet': typeof appAuthenticatedOnboardedZrodlaPakietRoute
   '/(app)/_authenticated/_onboarded/zrodla/': typeof appAuthenticatedOnboardedZrodlaIndexRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka': typeof appAuthenticatedOnboardedOralValidUstnyPowtorkaRoute
   '/(app)/_authenticated/_onboarded/_oralValid/ustny/start': typeof appAuthenticatedOnboardedOralValidUstnyStartRoute
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/logowanie'
     | '/zweryfikuj-otp'
     | '/zrodla/$code'
+    | '/zrodla/pakiet'
     | '/zrodla/'
     | '/ustny/powtorka'
     | '/ustny/start'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/logowanie'
     | '/zweryfikuj-otp'
     | '/zrodla/$code'
+    | '/zrodla/pakiet'
     | '/zrodla'
     | '/ustny/powtorka'
     | '/ustny/start'
@@ -478,6 +490,7 @@ export interface FileRouteTypes {
     | '/(public)/_layout/_notauthenticated/zweryfikuj-otp'
     | '/(public)/_layout/_notauthenticated/'
     | '/(app)/_authenticated/_onboarded/zrodla/$code'
+    | '/(app)/_authenticated/_onboarded/zrodla/pakiet'
     | '/(app)/_authenticated/_onboarded/zrodla/'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/powtorka'
     | '/(app)/_authenticated/_onboarded/_oralValid/ustny/start'
@@ -639,6 +652,13 @@ declare module '@tanstack/react-router' {
       path: '/zrodla/$code'
       fullPath: '/zrodla/$code'
       preLoaderRoute: typeof appAuthenticatedOnboardedZrodlaCodeRouteImport
+      parentRoute: typeof appAuthenticatedOnboardedRoute
+    }
+    '/(app)/_authenticated/_onboarded/zrodla/pakiet': {
+      id: '/(app)/_authenticated/_onboarded/zrodla/pakiet'
+      path: '/zrodla/pakiet'
+      fullPath: '/zrodla/pakiet'
+      preLoaderRoute: typeof appAuthenticatedOnboardedZrodlaPakietRouteImport
       parentRoute: typeof appAuthenticatedOnboardedRoute
     }
     '/(app)/_authenticated/_onboarded/_oralValid/ustny/': {
@@ -865,6 +885,7 @@ interface appAuthenticatedOnboardedRouteChildren {
   appAuthenticatedOnboardedRozszerzDostepRoute: typeof appAuthenticatedOnboardedRozszerzDostepRoute
   appAuthenticatedOnboardedStartRoute: typeof appAuthenticatedOnboardedStartRoute
   appAuthenticatedOnboardedZrodlaCodeRoute: typeof appAuthenticatedOnboardedZrodlaCodeRoute
+  appAuthenticatedOnboardedZrodlaPakietRoute: typeof appAuthenticatedOnboardedZrodlaPakietRoute
   appAuthenticatedOnboardedZrodlaIndexRoute: typeof appAuthenticatedOnboardedZrodlaIndexRoute
 }
 
@@ -881,6 +902,8 @@ const appAuthenticatedOnboardedRouteChildren: appAuthenticatedOnboardedRouteChil
     appAuthenticatedOnboardedStartRoute: appAuthenticatedOnboardedStartRoute,
     appAuthenticatedOnboardedZrodlaCodeRoute:
       appAuthenticatedOnboardedZrodlaCodeRoute,
+    appAuthenticatedOnboardedZrodlaPakietRoute:
+      appAuthenticatedOnboardedZrodlaPakietRoute,
     appAuthenticatedOnboardedZrodlaIndexRoute:
       appAuthenticatedOnboardedZrodlaIndexRoute,
   }

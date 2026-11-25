@@ -30,6 +30,7 @@
     "effect": "catalog:",
     "input-otp": "catalog:",
     "lucide-react": "catalog:",
+    "pdf-lib": "catalog:",
     "pdfjs-dist": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

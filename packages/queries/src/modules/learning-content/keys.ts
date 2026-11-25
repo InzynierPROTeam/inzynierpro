@@ -1,4 +1,5 @@
 import type {
+  GetDocumentPackageCandidatesRequest,
   GetDocumentPdfRequest,
   GetDocumentQuestionCountsRequest,
   GetLinkedOralQuestionsRequest,
@@ -37,6 +38,12 @@ export const learningContentKeys = {
     [
       ...learningContentKeys.path(userId, req.params.qualificationPathId),
       'getDocumentPdf',
+      req,
+    ] as const,
+  getDocumentPackageCandidates: (userId: UserId, req: GetDocumentPackageCandidatesRequest) =>
+    [
+      ...learningContentKeys.path(userId, req.params.qualificationPathId),
+      'getDocumentPackageCandidates',
       req,
     ] as const,
   getDocumentQuestionCounts: (userId: UserId, req: GetDocumentQuestionCountsRequest) =>

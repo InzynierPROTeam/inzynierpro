@@ -10,7 +10,8 @@ export default Effect.gen(function* () {
     width integer CHECK (width > 0),
     height integer CHECK (height > 0),
     size_bytes integer NOT NULL CHECK (size_bytes > 0),
-    CHECK (CASE WHEN media_type = 'application/pdf' THEN width IS NULL AND height IS NULL ELSE width IS NOT NULL AND height IS NOT NULL END),
+    page_count integer CHECK (page_count > 0),
+    CHECK (CASE WHEN media_type = 'application/pdf' THEN width IS NULL AND height IS NULL AND page_count IS NOT NULL ELSE width IS NOT NULL AND height IS NOT NULL AND page_count IS NULL END),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now()
   )`
@@ -91,7 +92,9 @@ export default Effect.gen(function* () {
   yield* sql`CREATE TABLE path_documents (
     qualification_path_id uuid NOT NULL REFERENCES qualification_paths(id),
     document_id uuid NOT NULL REFERENCES reference_documents(id),
+    position integer NOT NULL CHECK (position > 0),
     PRIMARY KEY (qualification_path_id, document_id),
+    CONSTRAINT path_documents_position_key UNIQUE (qualification_path_id, position) DEFERRABLE INITIALLY DEFERRED,
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now()
   )`

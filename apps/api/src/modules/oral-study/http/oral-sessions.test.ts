@@ -147,7 +147,7 @@ const learnerOnPath = async (
 }
 
 const categoryWithQuestions = async (pathId: QualificationPathId, count: number) => {
-  const categoryId = await addFixtureOralCategory('Test-only oral session category', 5_000_000)
+  const categoryId = await addFixtureOralCategory('Test-only oral session category')
   const questions = []
 
   for (let position = 1; position <= count; position++) {
@@ -477,7 +477,7 @@ test('an oral session question carries its references, with a unit missing from 
     sections: [{ address: 'art:20', content: paragraphs('Obowiązki projektanta') }],
   })
 
-  const categoryId = await addFixtureOralCategory('Test-only oral references category', 5_000_100)
+  const categoryId = await addFixtureOralCategory('Test-only oral references category')
 
   await addFixtureOralQuestion(
     learner.pathId,

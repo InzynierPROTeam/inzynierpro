@@ -38,8 +38,15 @@ export const seedOralCatalogue = Effect.fn('seedOralCatalogue')(function* (
   const sql = yield* SqlClient.SqlClient
   const oralPathIds = pathIds.filter(pathId => pathId !== pathWithoutOralMaterial)
 
-  for (const [index, category] of categories.entries()) {
-    yield* sql`INSERT INTO oral_question_categories (id,name,sort_order) VALUES (${category.id},${category.name},${index + 1}) ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name,sort_order=EXCLUDED.sort_order`
+  for (const category of categories) {
+    yield* sql`INSERT INTO oral_question_categories (id,name) VALUES (${category.id},${category.name}) ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name`
+  }
+
+  for (const pathId of oralPathIds) {
+    for (const [index, category] of categories.entries()) {
+      yield* sql`INSERT INTO path_oral_categories (qualification_path_id,category_id,position) VALUES (${pathId},${category.id},${index + 1})
+        ON CONFLICT (qualification_path_id,category_id) DO UPDATE SET position=EXCLUDED.position`
+    }
   }
 
   const positions = new Map<number, number>()
@@ -73,7 +80,7 @@ export const seedOralCatalogue = Effect.fn('seedOralCatalogue')(function* (
     yield* sql`UPDATE oral_questions SET current_revision_id=${revisionId} WHERE id=${questionId} AND current_revision_id IS NULL`
 
     for (const pathId of oralPathIds) {
-      yield* sql`INSERT INTO path_oral_questions (qualification_path_id,question_id) VALUES (${pathId},${questionId}) ON CONFLICT DO NOTHING`
+      yield* sql`INSERT INTO path_oral_questions (qualification_path_id,category_id,question_id) VALUES (${pathId},${categoryId},${questionId}) ON CONFLICT DO NOTHING`
     }
   }
 

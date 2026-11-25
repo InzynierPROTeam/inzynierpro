@@ -6,7 +6,6 @@ export default Effect.gen(function* () {
   yield* sql`CREATE TABLE oral_question_categories (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
     name text NOT NULL CHECK (length(name) > 0),
-    sort_order integer NOT NULL CHECK (sort_order >= 0),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now()
   )`
@@ -17,6 +16,7 @@ export default Effect.gen(function* () {
     category_position integer NOT NULL CHECK (category_position > 0),
     current_revision_id uuid,
     UNIQUE (category_id, category_position),
+    UNIQUE (id, category_id),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now()
   )`
@@ -42,10 +42,23 @@ export default Effect.gen(function* () {
   yield* sql`ALTER TABLE oral_questions ADD CONSTRAINT oral_questions_current_revision_fk
     FOREIGN KEY (id, current_revision_id) REFERENCES oral_revisions(question_id, id)`
   yield* sql`CREATE TRIGGER oral_revisions_updated_at BEFORE UPDATE ON oral_revisions FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
-  yield* sql`CREATE TABLE path_oral_questions (
+  yield* sql`CREATE TABLE path_oral_categories (
     qualification_path_id uuid NOT NULL REFERENCES qualification_paths(id),
-    question_id uuid NOT NULL REFERENCES oral_questions(id),
+    category_id uuid NOT NULL REFERENCES oral_question_categories(id),
+    position integer NOT NULL CHECK (position > 0),
+    PRIMARY KEY (qualification_path_id, category_id),
+    CONSTRAINT path_oral_categories_position_key UNIQUE (qualification_path_id, position) DEFERRABLE INITIALLY DEFERRED,
+    created_at timestamptz(3) NOT NULL DEFAULT now(),
+    updated_at timestamptz(3) NOT NULL DEFAULT now()
+  )`
+  yield* sql`CREATE TRIGGER path_oral_categories_updated_at BEFORE UPDATE ON path_oral_categories FOR EACH ROW EXECUTE FUNCTION set_updated_at()`
+  yield* sql`CREATE TABLE path_oral_questions (
+    qualification_path_id uuid NOT NULL,
+    category_id uuid NOT NULL,
+    question_id uuid NOT NULL,
     PRIMARY KEY (qualification_path_id, question_id),
+    FOREIGN KEY (qualification_path_id, category_id) REFERENCES path_oral_categories(qualification_path_id, category_id),
+    FOREIGN KEY (question_id, category_id) REFERENCES oral_questions(id, category_id),
     created_at timestamptz(3) NOT NULL DEFAULT now(),
     updated_at timestamptz(3) NOT NULL DEFAULT now()
   )`

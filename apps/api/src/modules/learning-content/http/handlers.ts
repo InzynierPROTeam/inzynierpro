@@ -6,6 +6,7 @@ import { type CursorPage, mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { invalidCursor } from '~api/lib/invalid-cursor.js'
 import { accountReadLimit, limitByUser } from '~api/lib/rate-limit.js'
 import { withContentAssetAddresses } from '~api/modules/learning-content/application/content-asset-addresses.service.js'
+import { getDocumentPackageCandidates } from '~api/modules/learning-content/application/document-package.query.js'
 import {
   getDocumentPdfDownloadUrl,
   getDocumentPdfUrl,
@@ -33,6 +34,7 @@ import {
   referenceDocumentNotFound,
 } from './errors.js'
 import {
+  toDocumentPackageCandidateDto,
   toDocumentSectionDtos,
   toLinkedOralQuestionDto,
   toReferenceDocumentDto,
@@ -135,6 +137,21 @@ export const SourcesLive = HttpApiBuilder.group(Api, 'Sources', handlers =>
           UnknownReferenceDocument: () => referenceDocumentNotFound,
           ReferenceDocumentPdfUnavailable: () => referenceDocumentNotFound,
           DocumentDownloadNotAllowed: () => documentDownloadNotAllowed,
+        }),
+      ),
+    )
+    .handle('GetDocumentPackageCandidates', ({ params }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user =>
+            getDocumentPackageCandidates(user.id, params.qualificationPathId),
+          ),
+        ),
+        Effect.map(documents => ({ documents: documents.map(toDocumentPackageCandidateDto) })),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          PathPermissionDenied: () => pathAccessDenied,
+          LearningContentReadError: failLearningContentRead,
         }),
       ),
     )

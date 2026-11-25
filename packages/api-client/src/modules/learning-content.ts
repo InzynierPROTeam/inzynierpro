@@ -1,4 +1,5 @@
 import type {
+  GetDocumentPackageCandidatesEndpoint,
   GetDocumentPdfDownloadEndpoint,
   GetDocumentPdfEndpoint,
   GetDocumentQuestionCountsEndpoint,
@@ -60,6 +61,21 @@ export type GetDocumentPdfDownloadRequest = InferEndpointRequest<
 export type GetDocumentPdfDownloadRes = Effect.Success<ReturnType<typeof getDocumentPdfDownload>>
 
 export type GetDocumentPdfDownloadError = Effect.Error<ReturnType<typeof getDocumentPdfDownload>>
+
+export const getDocumentPackageCandidates = (req: GetDocumentPackageCandidatesRequest) =>
+  apiAction(api => api.Sources.GetDocumentPackageCandidates(req))
+
+export type GetDocumentPackageCandidatesRequest = InferEndpointRequest<
+  typeof GetDocumentPackageCandidatesEndpoint
+>
+
+export type GetDocumentPackageCandidatesRes = Effect.Success<
+  ReturnType<typeof getDocumentPackageCandidates>
+>
+
+export type GetDocumentPackageCandidatesError = Effect.Error<
+  ReturnType<typeof getDocumentPackageCandidates>
+>
 
 export const getDocumentQuestionCounts = (req: GetDocumentQuestionCountsRequest) =>
   apiAction(api => api.Sources.GetDocumentQuestionCounts(req))

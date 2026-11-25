@@ -3,6 +3,7 @@ import type { ReferenceDocumentCode } from '@inzpro/domain/modules/learning-cont
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Context, type Effect, type Option } from 'effect'
 import type { CursorPage, CursorPageRequest, InvalidCursor } from '~api/lib/cursor-pagination.js'
+import type { PackageDocument } from '~api/modules/learning-content/domain/document-package.model.js'
 import type {
   DocumentSection,
   PublishedReferenceDocument,
@@ -25,6 +26,9 @@ export class ReferenceDocumentReader extends Context.Service<
       pathId: QualificationPathId,
       code: ReferenceDocumentCode,
     ) => Effect.Effect<Option.Option<PublishedReferenceDocument>, LearningContentReadError>
+    readonly packageDocuments: (
+      pathId: QualificationPathId,
+    ) => Effect.Effect<ReadonlyArray<PackageDocument>, LearningContentReadError>
     readonly editionSections: (
       editionId: DocumentEditionId,
     ) => Effect.Effect<ReadonlyArray<DocumentSection>, LearningContentReadError>

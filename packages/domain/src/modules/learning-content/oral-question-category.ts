@@ -5,8 +5,8 @@ export const OralQuestionCategoryId = Uuid.pipe(Schema.brand('OralQuestionCatego
 
 export type OralQuestionCategoryId = typeof OralQuestionCategoryId.Type
 
-export const OralQuestionCategorySortOrder = Schema.Int.check(
-  Schema.isGreaterThanOrEqualTo(0),
-).pipe(Schema.brand('OralQuestionCategorySortOrder'))
+export const PathOralCategoryPosition = Schema.Int.check(Schema.isGreaterThan(0)).pipe(
+  Schema.brand('PathOralCategoryPosition'),
+)
 
-export type OralQuestionCategorySortOrder = typeof OralQuestionCategorySortOrder.Type
+export type PathOralCategoryPosition = typeof PathOralCategoryPosition.Type

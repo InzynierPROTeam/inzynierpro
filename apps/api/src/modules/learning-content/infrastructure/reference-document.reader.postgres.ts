@@ -1,12 +1,14 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
 import { ExternalUrl } from '@inzpro/domain/common/external-url'
-import { ContentAssetId } from '@inzpro/domain/modules/learning-content/content-asset'
+import { ByteSize, ContentAssetId } from '@inzpro/domain/modules/learning-content/content-asset'
 import {
   ContentAvailability,
   DocumentEditionId,
+  DocumentPageCount,
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
 import {
+  PathDocumentPosition,
   ReferenceDocumentCode,
   ReferenceDocumentId,
   ReferenceDocumentKind,
@@ -14,14 +16,15 @@ import {
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Array as Arr, Effect, Layer, Option, Schema } from 'effect'
 import { SqlClient } from 'effect/sql'
-import { makeCursorPaginator } from '~api/lib/cursor-pagination.js'
+import { makeCursorPaginator, mapCursorPage } from '~api/lib/cursor-pagination.js'
 import { LearningContentReadError } from '~api/modules/learning-content/application/errors.js'
 import { ReferenceDocumentReader } from '~api/modules/learning-content/application/reference-document.reader.js'
+import type { PackageDocument } from '~api/modules/learning-content/domain/document-package.model.js'
 import { inDocumentOrder } from '~api/modules/learning-content/domain/document-section.rules.js'
 import {
   DocumentSection,
   type PublishedReferenceDocument,
-  ReferenceDocumentSummary,
+  type ReferenceDocumentSummary,
 } from '~api/modules/learning-content/domain/reference-document.model.js'
 
 const PublishedDocumentRow = Schema.Struct({
@@ -62,19 +65,62 @@ const toPublishedDocument = (
   },
 })
 
+const PathDocumentSummaryRow = Schema.Struct({
+  id: ReferenceDocumentId,
+  code: ReferenceDocumentCode,
+  kind: ReferenceDocumentKind,
+  abbreviation: Schema.NonEmptyString,
+  title: Schema.NonEmptyString,
+  editionLabel: Schema.NonEmptyString,
+  position: PathDocumentPosition,
+})
+
+const toDocumentSummary = ({
+  position: _position,
+  ...summary
+}: typeof PathDocumentSummaryRow.Type): ReferenceDocumentSummary => summary
+
+const PackageDocumentRow = Schema.Struct({
+  id: ReferenceDocumentId,
+  code: ReferenceDocumentCode,
+  kind: ReferenceDocumentKind,
+  abbreviation: Schema.NonEmptyString,
+  title: Schema.NonEmptyString,
+  editionLabel: Schema.NonEmptyString,
+  textKind: EditionTextKind,
+  availability: ContentAvailability,
+  downloadable: Schema.Boolean,
+  pageCount: Schema.OptionFromNullOr(DocumentPageCount),
+  sizeBytes: Schema.OptionFromNullOr(ByteSize),
+})
+
+const toPackageDocument = ({
+  availability,
+  pageCount,
+  sizeBytes,
+  ...row
+}: typeof PackageDocumentRow.Type): PackageDocument => ({
+  ...row,
+  contentAvailability: availability,
+  pdf: Option.zipWith(pageCount, sizeBytes, (pages, size) => ({ pageCount: pages, size })),
+})
+
 export const ReferenceDocumentReaderLive = Layer.effect(
   ReferenceDocumentReader,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
 
-    const publishedPathDocuments = (pathId: QualificationPathId) =>
-      sql`FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
- JOIN document_editions e ON e.id=d.current_edition_id AND e.published_at IS NOT NULL
- WHERE pd.qualification_path_id=${pathId}`
+    const publishedDocumentEditions = sql`FROM path_documents pd JOIN reference_documents d ON d.id=pd.document_id
+ JOIN document_editions e ON e.id=d.current_edition_id AND e.published_at IS NOT NULL`
 
-    const documentsPage = makeCursorPaginator(sql, Schema.Struct({ code: ReferenceDocumentCode }), [
-      ['code', sql`d.code`, 'asc'],
-    ])
+    const publishedPathDocuments = (pathId: QualificationPathId) =>
+      sql`${publishedDocumentEditions} WHERE pd.qualification_path_id=${pathId}`
+
+    const documentsPage = makeCursorPaginator(
+      sql,
+      Schema.Struct({ position: PathDocumentPosition }),
+      [['position', sql`pd.position`, 'asc']],
+    )
 
     return ReferenceDocumentReader.of({
       pathDocuments: Effect.fn('ReferenceDocumentReader.pathDocuments')(
@@ -82,12 +128,12 @@ export const ReferenceDocumentReaderLive = Layer.effect(
           return yield* documentsPage(
             req,
             page =>
-              sql`SELECT d.id,d.code,d.kind,d.abbreviation,d.title,e.label AS edition_label ${publishedPathDocuments(pathId)}
+              sql`SELECT d.id,d.code,d.kind,d.abbreviation,d.title,e.label AS edition_label,pd.position ${publishedPathDocuments(pathId)}
  AND ${page.after} ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
-                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(ReferenceDocumentSummary))),
+                Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(PathDocumentSummaryRow))),
               ),
-            row => ({ code: row.code }),
-          )
+            row => ({ position: row.position }),
+          ).pipe(Effect.map(page => mapCursorPage(page, toDocumentSummary)))
         },
         Effect.catchTags({
           SqlError: cause => Effect.fail(new LearningContentReadError({ cause })),
@@ -105,6 +151,20 @@ export const ReferenceDocumentReaderLive = Layer.effect(
           )
 
           return Arr.head(documents).pipe(Option.map(toPublishedDocument))
+        },
+        Effect.mapError(cause => new LearningContentReadError({ cause })),
+      ),
+      packageDocuments: Effect.fn('ReferenceDocumentReader.packageDocuments')(
+        function* (pathId) {
+          const rows =
+            yield* sql`SELECT d.id,d.code,d.kind,d.abbreviation,d.title,e.label AS edition_label,e.text_kind,e.availability,e.downloadable,
+ a.page_count,a.size_bytes ${publishedDocumentEditions}
+ LEFT JOIN content_assets a ON a.id=e.pdf_asset_id
+ WHERE pd.qualification_path_id=${pathId} ORDER BY pd.position`
+
+          return (yield* Schema.decodeUnknownEffect(Schema.Array(PackageDocumentRow))(rows)).map(
+            toPackageDocument,
+          )
         },
         Effect.mapError(cause => new LearningContentReadError({ cause })),
       ),

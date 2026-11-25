@@ -1,6 +1,10 @@
-import { Uuid } from '@inzpro/domain/common/id'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import { QuestionAnswerId } from '@inzpro/domain/modules/learning-content/question-answer'
+import {
+  PathDocumentPosition,
+  QuestionCount,
+  ReferenceDocumentId,
+} from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   QuestionRevisionId,
   WrittenQuestionId,
@@ -9,7 +13,7 @@ import { uncoveredQuestions } from '@inzpro/domain/modules/learning/study-sessio
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Array as Arr, Effect, Option, Schema } from 'effect'
 import { SqlClient, type Statement } from 'effect/sql'
-import { makeCursorPaginator } from '~api/lib/cursor-pagination.js'
+import { makeCursorPaginator, mapCursorPage } from '~api/lib/cursor-pagination.js'
 import {
   type LearningRoundNumber,
   LearningRoundProgress,
@@ -46,6 +50,19 @@ const toCandidates = (
   return [...candidates.values()]
 }
 
+const DocumentPoolRow = Schema.Struct({
+  id: ReferenceDocumentId,
+  title: Schema.NonEmptyString,
+  availableQuestionCount: QuestionCount,
+  completedQuestionCount: QuestionCount,
+  position: PathDocumentPosition,
+})
+
+const toDocumentPool = ({
+  position: _position,
+  ...pool
+}: typeof DocumentPoolRow.Type): DocumentQuestionPool => pool
+
 export const writtenMaterialReader = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
   const columns = sql`d.id,d.title,count(r.id)::integer AS available_question_count,count(cr.id)::integer AS completed_question_count`
@@ -62,9 +79,11 @@ export const writtenMaterialReader = Effect.gen(function* () {
  ${roundCoverage(userId, round)}
  WHERE pd.qualification_path_id=${pathId}`
 
-  const documentsPage = makeCursorPaginator(sql, Schema.Struct({ id: Uuid }), [
-    ['id', sql`d.id`, 'asc'],
-  ])
+  const documentsPage = makeCursorPaginator(
+    sql,
+    Schema.Struct({ position: PathDocumentPosition }),
+    [['position', sql`pd.position`, 'asc']],
+  )
 
   return {
     learningRound: Effect.fn('StudyReader.learningRound')(
@@ -91,11 +110,11 @@ export const writtenMaterialReader = Effect.gen(function* () {
         return yield* documentsPage(
           req,
           page =>
-            sql`SELECT ${columns} ${documentPools(userId, pathId, round)} AND ${page.after} GROUP BY d.id,d.title HAVING count(pq.question_id)>0 ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
-              Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))),
+            sql`SELECT ${columns},pd.position ${documentPools(userId, pathId, round)} AND ${page.after} GROUP BY d.id,d.title,pd.position HAVING count(pq.question_id)>0 ORDER BY ${page.orderBy} LIMIT ${page.limit}`.pipe(
+              Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(DocumentPoolRow))),
             ),
-          row => ({ id: row.id }),
-        )
+          row => ({ position: row.position }),
+        ).pipe(Effect.map(page => mapCursorPage(page, toDocumentPool)))
       },
       Effect.catchTags({
         SqlError: cause => Effect.fail(new StudyReadError({ cause })),
@@ -110,17 +129,21 @@ export const writtenMaterialReader = Effect.gen(function* () {
           isCovered,
           ...Option.match(fromDocumentId, {
             onNone: () => [],
-            onSome: id => [
-              skipsStartDocument
-                ? sql`d.id<=${id}`
-                : sql`CASE WHEN ${isCovered} THEN d.id<=${id} ELSE d.id<${id} END`,
-            ],
+            onSome: id => {
+              const start = sql`(SELECT position FROM path_documents WHERE qualification_path_id=${pathId} AND document_id=${id})`
+
+              return [
+                skipsStartDocument
+                  ? sql`pd.position<=${start}`
+                  : sql`CASE WHEN ${isCovered} THEN pd.position<=${start} ELSE pd.position<${start} END`,
+              ]
+            },
           }),
-          sql`d.id`,
+          sql`pd.position`,
         ])
 
         const rows =
-          yield* sql`SELECT ${columns} ${documentPools(userId, pathId, round)} GROUP BY d.id,d.title HAVING count(r.id)>0 ORDER BY ${order} LIMIT 1`
+          yield* sql`SELECT ${columns} ${documentPools(userId, pathId, round)} GROUP BY d.id,d.title,pd.position HAVING count(r.id)>0 ORDER BY ${order} LIMIT 1`
 
         const data = yield* Schema.decodeUnknownEffect(Schema.Array(DocumentQuestionPool))(rows)
 

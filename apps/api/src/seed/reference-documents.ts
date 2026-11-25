@@ -17,7 +17,11 @@ import { SqlClient } from 'effect/sql'
 import { withSiblingPositions } from '~api/modules/learning-content/domain/document-section.rules.js'
 
 import { catalogueId } from './catalogue-id.js'
-import { professionalSelfGovernmentPdfAssetId } from './content-assets.js'
+import {
+  buildingLawPdfAssetId,
+  professionalSelfGovernmentPdfAssetId,
+  technicalConditionsPdfAssetId,
+} from './content-assets.js'
 import {
   buildingLawSections,
   type SeedSection,
@@ -44,8 +48,8 @@ const referenceDocuments = [
       effectiveFrom: '2024-05-15T22:00:00.000Z',
       externalUrl: 'https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20240000725',
       availability: fullContentAvailability,
-      pdfAssetId: null,
-      downloadable: false,
+      pdfAssetId: buildingLawPdfAssetId,
+      downloadable: true,
     },
     sections: buildingLawSections,
   },
@@ -63,30 +67,10 @@ const referenceDocuments = [
       effectiveFrom: '2022-06-09T22:00:00.000Z',
       externalUrl: 'https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20220001225',
       availability: fullContentAvailability,
-      pdfAssetId: null,
+      pdfAssetId: technicalConditionsPdfAssetId,
       downloadable: false,
     },
     sections: technicalConditionsSections,
-  },
-  {
-    id: structuralDesignBasisStandard,
-    kind: standardDocument,
-    code: 'pn-en-1990',
-    abbreviation: 'PN-EN 1990',
-    title: 'Eurokod. Podstawy projektowania konstrukcji',
-    description:
-      'Norma określa zasady i wymagania dotyczące bezpieczeństwa, użytkowalności i trwałości konstrukcji. Treść normy jest chroniona prawem autorskim, dlatego w aplikacji pokazujemy tylko jej opis. Pełny tekst można nabyć w Polskim Komitecie Normalizacyjnym.',
-    edition: {
-      id: catalogueId('21', 3),
-      label: 'PN-EN 1990:2004',
-      textKind: originalText,
-      effectiveFrom: '2004-10-31T23:00:00.000Z',
-      externalUrl: 'https://www.pkn.pl/',
-      availability: metadataOnlyAvailability,
-      pdfAssetId: null,
-      downloadable: false,
-    },
-    sections: [],
   },
   {
     id: professionalSelfGovernmentAct,
@@ -105,6 +89,26 @@ const referenceDocuments = [
       availability: pdfOnlyAvailability,
       pdfAssetId: professionalSelfGovernmentPdfAssetId,
       downloadable: true,
+    },
+    sections: [],
+  },
+  {
+    id: structuralDesignBasisStandard,
+    kind: standardDocument,
+    code: 'pn-en-1990',
+    abbreviation: 'PN-EN 1990',
+    title: 'Eurokod. Podstawy projektowania konstrukcji',
+    description:
+      'Norma określa zasady i wymagania dotyczące bezpieczeństwa, użytkowalności i trwałości konstrukcji. Treść normy jest chroniona prawem autorskim, dlatego w aplikacji pokazujemy tylko jej opis. Pełny tekst można nabyć w Polskim Komitecie Normalizacyjnym.',
+    edition: {
+      id: catalogueId('21', 3),
+      label: 'PN-EN 1990:2004',
+      textKind: originalText,
+      effectiveFrom: '2004-10-31T23:00:00.000Z',
+      externalUrl: 'https://www.pkn.pl/',
+      availability: metadataOnlyAvailability,
+      pdfAssetId: null,
+      downloadable: false,
     },
     sections: [],
   },

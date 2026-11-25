@@ -11,6 +11,7 @@ import {
   ReferenceDocumentsQuery,
 } from '~api-contracts/modules/learning-content/requests.js'
 import {
+  DocumentPackageCandidatesResponse,
   DocumentPdfResponse,
   DocumentQuestionCountsResponse,
   DocumentSectionsResponse,
@@ -83,6 +84,16 @@ export const GetDocumentPdfDownloadEndpoint = HttpApiEndpoint.get(
   },
 )
 
+export const GetDocumentPackageCandidatesEndpoint = HttpApiEndpoint.get(
+  'GetDocumentPackageCandidates',
+  '/paths/:qualificationPathId/document-package',
+  {
+    params: GetReferenceDocumentsParams,
+    success: DocumentPackageCandidatesResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
 export const GetDocumentQuestionCountsEndpoint = HttpApiEndpoint.get(
   'GetDocumentQuestionCounts',
   '/paths/:qualificationPathId/documents/:code/question-counts',
@@ -133,6 +144,7 @@ export const SourcesApi = HttpApiGroup.make('Sources')
   .add(GetDocumentSectionsEndpoint)
   .add(GetDocumentPdfEndpoint)
   .add(GetDocumentPdfDownloadEndpoint)
+  .add(GetDocumentPackageCandidatesEndpoint)
   .add(GetDocumentQuestionCountsEndpoint)
   .add(GetLinkedWrittenQuestionsEndpoint)
   .add(GetLinkedOralQuestionsEndpoint)

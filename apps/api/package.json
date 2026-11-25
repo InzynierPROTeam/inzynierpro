@@ -37,6 +37,7 @@
     "aws4fetch": "catalog:",
     "dotenv": "catalog:",
     "effect": "catalog:",
+    "pdf-lib": "catalog:",
     "ts-fsrs": "catalog:"
   },
   "devDependencies": {
