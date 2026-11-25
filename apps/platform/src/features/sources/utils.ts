@@ -21,15 +21,18 @@ export const referenceDocumentRouteApi = getRouteApi(
 )
 
 const documentKindLabels = {
-  statute: 'Ustawa',
-  regulation: 'Rozporządzenie',
-  standard: 'Norma',
-  code: 'Kodeks',
-  manual: 'Podręcznik',
-  guideline: 'Wytyczne',
-} satisfies Record<ReferenceDocumentKind, string>
+  statute: { singular: 'Ustawa', plural: 'Ustawy' },
+  regulation: { singular: 'Rozporządzenie', plural: 'Rozporządzenia' },
+  standard: { singular: 'Norma', plural: 'Normy' },
+  code: { singular: 'Kodeks', plural: 'Kodeksy' },
+  manual: { singular: 'Podręcznik', plural: 'Podręczniki' },
+  guideline: { singular: 'Wytyczne', plural: 'Wytyczne' },
+} satisfies Record<ReferenceDocumentKind, { singular: string; plural: string }>
 
-export const documentKindLabel = (kind: ReferenceDocumentKind) => documentKindLabels[kind]
+export const documentKindLabel = (kind: ReferenceDocumentKind) => documentKindLabels[kind].singular
+
+export const documentKindGroupLabel = (kind: ReferenceDocumentKind) =>
+  documentKindLabels[kind].plural
 
 const textKindLabels = {
   official_consolidated: 'Tekst jednolity (urzędowy)',
