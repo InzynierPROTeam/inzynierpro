@@ -12,6 +12,7 @@
     "@inzpro/auth-client": "workspace:*",
     "@inzpro/testing": "workspace:*",
     "@playwright/test": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "pdf-lib": "catalog:"
   }
 }
