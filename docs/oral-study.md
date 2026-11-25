@@ -6,16 +6,17 @@ How oral material is stored, how the oral catalogue is read and how an oral stud
 
 The `learning-content` module owns the oral tables:
 
-- `oral_question_categories`: name and `sort_order`, the catalogue order.
+- `oral_question_categories`: the category name, shared by every path.
 - `oral_questions`: the stable identity, its one primary category and its `category_position` in it, and the current revision.
 - `oral_revisions`: the question `body` and the prepared `answer`, both [rich content](rich-content.md), with `change_kind` and `substantive_revision_id` as for written revisions.
-- `path_oral_questions`: the per-question assignment to paths. A category is never assigned to a path; it appears on a path through its questions.
+- `path_oral_categories`: the categories on a path with their `position`, unique within the path, which orders the path's oral catalogue. Assigning a question to a path appends its category at the end when the category is not on the path yet.
+- `path_oral_questions`: the per-question assignment to paths, naming the question's category, which must be on the path.
 
 The `protect_published_oral_revision` trigger enforces ADR-0003: a draft may be edited, a published revision rejects every change and deletion except the one-time withdrawal (`withdrawn_at` and `withdrawal_reason`), which is final. Writes go through `LearningContentRepository` and reject an image whose asset is not stored.
 
 ## Catalogue
 
-`GET /oral` returns a cursor page of the path's oral categories in catalogue order. A category is listed when it has at least one question assigned to the path whose current revision is published and not withdrawn; `availableQuestionCount` counts those questions and `completedQuestionCount` those covered in the learner's current oral round.
+`GET /oral` returns a cursor page of the path's oral categories in the path's category order. A category is listed when it has at least one question assigned to the path whose current revision is published and not withdrawn; `availableQuestionCount` counts those questions and `completedQuestionCount` those covered in the learner's current oral round.
 
 `/ustny` lists the categories with their counts and progress, each linking to its session preview, and keeps the empty state when the path has none.
 
@@ -33,7 +34,7 @@ Oral study moves through its own LearningRounds, stored per learner and path in 
 `GET /preview` picks a category:
 
 - `categoryId` asks for that category.
-- `fromCategoryId` continues oral study: the first category in catalogue order from that one, wrapping around, with questions uncovered in the current round. In a new round, before anything is covered in it, the category after it comes first.
+- `fromCategoryId` continues oral study: the first category in the path's category order from that one, wrapping around, with questions uncovered in the current round. In a new round, before anything is covered in it, the category after it comes first.
 - Neither: the first category with uncovered questions.
 
 It returns the category with its counts and `settings`: 10 questions by default, or all of them when there are fewer; with more than 10 any count from 1 to all (ADR-0002). A session draws the category's questions uncovered in the current round first, then the covered ones, each group in catalogue order (`category_position`).
@@ -109,7 +110,7 @@ The Start screen has a separate oral Reviews tile with due count or the next due
 
 Oral favourites and notes are separate from their written equivalents, keyed by account and stable oral question identity, and shared across paths. The question controls remain available before and after self-assessment, including questions opened from summary results.
 
-The oral Favourites tile on Start resumes the single unfinished favourites session for the path. With no favourites it explains how to mark a question and creates no session. `/ustny/ulubione` previews the currently published, non-withdrawn favourites in catalogue order. Sessions default to ten questions (all when fewer), allow a count within the available scope, and pin their questions and revisions at creation. Unmarking a question leaves that set intact. Self-assessments produce `favourites` learning events and update oral SRS without changing coverage. The summary returns to regular study.
+The oral Favourites tile on Start resumes the single unfinished favourites session for the path. With no favourites it explains how to mark a question and creates no session. `/ustny/ulubione` previews the currently published, non-withdrawn favourites in the path's category order, then by position within the category. Sessions default to ten questions (all when fewer), allow a count within the available scope, and pin their questions and revisions at creation. Unmarking a question leaves that set intact. Self-assessments produce `favourites` learning events and update oral SRS without changing coverage. The summary returns to regular study.
 
 Each oral question can have one private plain-text note of at most 2000 characters. Saving records the currently published revision; subsequent reads compare substantive revision identities with the current question, including when reading an older pinned session. Cosmetic revisions retain the note without a warning. A substantive revision displays the earlier-wording notice until the next edit. Clearing removes the note across paths. Reading or editing an oral note never records assistance or learning evidence. Note write failures retain only the technical error kind, so SQL parameters and note contents cannot reach telemetry.
 
