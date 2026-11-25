@@ -1,4 +1,7 @@
+import { readFile } from 'node:fs/promises'
+
 import { expect } from '@playwright/test'
+import { PDFDocument } from 'pdf-lib'
 import { test } from '~e2e/test/fixtures'
 
 const structuralDesignBasis = 'Eurokod. Podstawy projektowania konstrukcji'
@@ -159,4 +162,41 @@ test('a checked answer leads from its basis to the fragment, a related question 
   await expect(page).toHaveURL(/jednostka=art%3A54$/)
   await expect(page.locator('[data-highlighted="true"]')).toHaveAttribute('id', 'jednostka-art:54')
   await expect(page.locator('[data-highlighted="true"]')).toBeInViewport()
+})
+
+test('the PDF package selects the downloadable documents, keeps a reordering after a reload and downloads them merged in order', async ({
+  onboarded: { page },
+}) => {
+  await page.goto('/zrodla')
+  await page.getByRole('button', { name: 'Pobierz pakiet PDF' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pakiet PDF' })).toBeVisible()
+
+  await expect(page.getByRole('checkbox', { name: /Prawo budowlane/ })).toBeChecked()
+  await expect(page.getByRole('checkbox', { name: /samorządach zawodowych/ })).toBeChecked()
+  await expect(page.getByRole('checkbox', { name: /Warunki techniczne/ })).toBeDisabled()
+  await expect(
+    page.getByRole('checkbox', { name: /Warunki techniczne/ }),
+  ).toHaveAccessibleDescription('Tego dokumentu nie można pobrać.')
+  await expect(page.getByRole('checkbox', { name: /Eurokod/ })).toHaveAccessibleDescription(
+    'Dostępny jest tylko opis tego dokumentu.',
+  )
+  await expect(page.getByText('Dokumenty: 2 · Liczba stron: 14')).toBeVisible()
+
+  const order = page.getByRole('list', { name: 'Kolejność dokumentów w pakiecie' })
+  await page.getByRole('button', { name: 'Przesuń wyżej: USZ' }).click()
+  await expect(order.getByRole('listitem').first()).toContainText('USZ')
+
+  await page.reload()
+  await expect(order.getByRole('listitem').first()).toContainText('USZ')
+
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Pobierz pakiet PDF' }).click()
+  const file = await download
+
+  expect(file.suggestedFilename()).toMatch(/^InzynierPRO-KB-[A-Z]+-[A-Z]+-\d{4}-\d{2}-\d{2}\.pdf$/)
+
+  const merged = await PDFDocument.load(await readFile(await file.path()))
+  const widths = merged.getPages().map(pdfPage => Math.round(pdfPage.getWidth()))
+
+  expect(widths).toEqual([...Array(6).fill(595), ...Array(8).fill(420)])
 })
