@@ -74,3 +74,89 @@ test('a PDF-only statute opens in the viewer at the requested page and downloads
   await page.getByRole('button', { name: 'Pobierz PDF' }).click()
   expect((await download).suggestedFilename()).toBe('samorzady-zawodowe.pdf')
 })
+
+test('a checked answer leads from its basis to the fragment, a related question and back to another article', async ({
+  onboarded: { page },
+}) => {
+  await page.goto('/nauka')
+  await page.getByRole('link', { name: /Prawo budowlane/ }).click()
+  await page.getByRole('button', { name: 'Zacznij naukę' }).click()
+  await page.getByRole('button', { name: 'Zacznij sesję' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Pytanie 1 z 8' })).toBeVisible()
+
+  await page
+    .getByRole('radiogroup', { name: 'Wybierz odpowiedź' })
+    .getByRole('radio')
+    .first()
+    .click()
+  await page.getByRole('button', { name: 'Sprawdź' }).click()
+
+  await page
+    .getByRole('region', { name: /^Podstawa: PB / })
+    .getByRole('link')
+    .first()
+    .click()
+  await expect(page).toHaveURL(/\/zrodla\/prawo-budowlane\?jednostka=art/)
+
+  const fragment = page.locator('[data-highlighted="true"]')
+  await expect(fragment).toBeInViewport()
+
+  await fragment
+    .getByRole('button', { name: /^Pytania na Twojej ścieżce \([1-9]\d*\)/ })
+    .first()
+    .click()
+
+  const linkedQuestions = page.getByRole('dialog', { name: /^Pytania na Twojej ścieżce/ })
+  await expect(linkedQuestions).toBeVisible()
+
+  await linkedQuestions
+    .getByRole('region', { name: /^Pytania pisemne \([1-9]\d*\)$/ })
+    .getByRole('link')
+    .first()
+    .click()
+  await expect(page).toHaveURL(/\/nauka\/pytanie\//)
+  await expect(page.getByRole('heading', { level: 1 })).toBeInViewport()
+
+  const answers = page.getByRole('radiogroup', { name: 'Odpowiedzi' }).getByRole('radio')
+  await expect(answers).toHaveCount(3)
+  await expect(answers.and(page.locator('[data-tone="correct"]'))).toHaveCount(1)
+  await expect(answers.and(page.locator('[data-tone="correct"]'))).toContainText(
+    'Poprawna odpowiedź',
+  )
+  await expect(page.getByRole('region', { name: 'Wyjaśnienie' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Dodaj do ulubionych' }).click()
+  await expect(page.getByRole('button', { name: 'Usuń z ulubionych' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+
+  await page.getByRole('button', { name: 'Dodaj notatkę' }).click()
+  const noteDialog = page.getByRole('dialog', { name: 'Twoja notatka' })
+  await noteDialog.getByRole('textbox', { name: 'Treść notatki' }).fill('Sprawdzić w ustawie.')
+  await noteDialog.getByRole('button', { name: 'Zapisz notatkę' }).click()
+  await expect(noteDialog).toBeHidden()
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Usuń z ulubionych' })).toBeVisible()
+  await page.getByRole('button', { name: 'Edytuj notatkę' }).click()
+  await expect(
+    page.getByRole('dialog', { name: 'Twoja notatka' }).getByRole('textbox'),
+  ).toHaveValue('Sprawdzić w ustawie.')
+  await page.keyboard.press('Escape')
+
+  await page
+    .getByRole('region', { name: /^Podstawa: PB / })
+    .getByRole('link')
+    .first()
+    .click()
+  await expect(page).toHaveURL(/\/zrodla\/prawo-budowlane\?jednostka=art/)
+
+  await page
+    .getByRole('navigation', { name: 'Spis treści' })
+    .getByRole('link', { name: 'art. 54', exact: true })
+    .click()
+  await expect(page).toHaveURL(/jednostka=art%3A54$/)
+  await expect(page.locator('[data-highlighted="true"]')).toHaveAttribute('id', 'jednostka-art:54')
+  await expect(page.locator('[data-highlighted="true"]')).toBeInViewport()
+})
