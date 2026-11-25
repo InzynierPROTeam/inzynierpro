@@ -85,3 +85,6 @@ export const questionReferenceSearch = ({ address, page }: QuestionReference) =>
 
   return page === null ? {} : { strona: page }
 }
+
+export const linkedQuestionsTitle = (questionCount: number) =>
+  `Pytania na Twojej ścieżce (${questionCount})`

@@ -1,16 +1,8 @@
 // @vitest-environment jsdom
-import {
-  DocumentSectionsResponse,
-  QuestionReference,
-  ReferenceDocumentResponse,
-} from '@inzpro/api-contracts/modules/learning-content/responses'
+import { QuestionReference } from '@inzpro/api-contracts/modules/learning-content/responses'
 import { UserId } from '@inzpro/domain/modules/identity/user'
 import { ReferenceDocumentCode } from '@inzpro/domain/modules/learning-content/reference-document'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
-import {
-  documentSectionsQueryOptions,
-  referenceDocumentQueryOptions,
-} from '@inzpro/queries/modules/learning-content/queries'
 import { paragraphs } from '@inzpro/rich-content/rich-content'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
@@ -25,7 +17,6 @@ import { Schema } from 'effect'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { apiHttpClient } from '~platform/lib/api-client'
 
 import { ReferenceDocumentSearch } from '../validation'
 import { QuestionReferences } from './QuestionReferences'
@@ -112,60 +103,7 @@ const references = Schema.decodeSync(Schema.Array(QuestionReference))([
   reference({ document: buildingLaw, address: 'art:99', kind: 'topic', isLinked: false }),
 ])
 
-const text = (value: string) => ({ content: paragraphs(value), assets: [] })
-
-const request = { params: { qualificationPathId: pathId, code } }
-
 const renderReferences = async () => {
-  queryClient.setQueryData(
-    referenceDocumentQueryOptions(apiHttpClient, userId, request).queryKey,
-    Schema.decodeSync(ReferenceDocumentResponse)({
-      document: {
-        id: '20000000-0000-4000-8000-000000000001',
-        code,
-        kind: 'statute',
-        abbreviation: 'PB',
-        title: 'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane',
-        description: null,
-        edition: {
-          id: '21000000-0000-4000-8000-000000000001',
-          label: 'Dz.U. 2024 poz. 725 (t.j.)',
-          textKind: 'official_consolidated',
-          effectiveFrom: '2024-05-15T22:00:00.000Z',
-          externalUrl: 'https://isap.sejm.gov.pl/',
-          availability: 'full_content',
-          downloadable: false,
-        },
-      },
-    }),
-  )
-  queryClient.setQueryData(
-    documentSectionsQueryOptions(apiHttpClient, userId, request).queryKey,
-    Schema.decodeSync(DocumentSectionsResponse)({
-      sections: [
-        { address: 'art:18', parentAddress: null, title: null, content: null },
-        {
-          address: 'art:18/ust:1',
-          parentAddress: 'art:18',
-          title: null,
-          content: text('Inwestor jest obowiązany zapewnić:'),
-        },
-        {
-          address: 'art:18/ust:1/pkt:4',
-          parentAddress: 'art:18/ust:1',
-          title: null,
-          content: text('wykonanie i odbiór robót budowlanych;'),
-        },
-        {
-          address: 'art:18/ust:1/pkt:5',
-          parentAddress: 'art:18/ust:1',
-          title: null,
-          content: text('ustanowienie inspektora nadzoru inwestorskiego.'),
-        },
-      ],
-    }),
-  )
-
   const rootRoute = createRootRoute({ component: Outlet })
   const app = createRoute({ getParentRoute: () => rootRoute, id: '(app)' })
   const authenticated = createRoute({ getParentRoute: () => app, id: '_authenticated' })
@@ -234,12 +172,14 @@ test('each basis shows its linked label, the document title and the fragment tex
   )
 })
 
-test('aids and topical references are listed apart, linked where they resolve', async () => {
+test('aids and topical references are listed apart and link to the reader where they resolve', async () => {
   await renderReferences()
 
   const [fragment, page] = items('Materiały pomocnicze')
 
-  expect(fragment?.querySelector('button')?.textContent).toBe('PB art. 18 ust. 1 pkt 4')
+  expect(fragment?.querySelector('a')?.getAttribute('href')).toBe(
+    '/zrodla/prawo-budowlane?jednostka=art%3A18%2Fust%3A1%2Fpkt%3A4',
+  )
   expect(page?.querySelector('a')?.getAttribute('href')).toBe('/zrodla/samorzady-zawodowe?strona=2')
 
   const [whole, missing] = items('Powiązane materiały')
@@ -247,42 +187,4 @@ test('aids and topical references are listed apart, linked where they resolve', 
   expect(whole?.querySelector('a')?.getAttribute('href')).toBe('/zrodla/prawo-budowlane')
   expect(missing?.textContent).toBe('PB art. 99')
   expect(missing?.querySelector('a, button')).toBeNull()
-})
-
-test('a listed fragment opens a panel with the fragment in its parent unit and the edition labels', async () => {
-  await renderReferences()
-
-  await act(async () => {
-    items('Materiały pomocnicze')[0]?.querySelector('button')?.click()
-  })
-
-  const panel = await vi.waitFor(() => {
-    const dialog = document.body.querySelector('[role="dialog"]')
-
-    expect(dialog).not.toBeNull()
-
-    return dialog!
-  })
-
-  await vi.waitFor(() =>
-    expect(panel.textContent).toContain('Dz.U. 2024 poz. 725 (t.j.) · Tekst jednolity (urzędowy)'),
-  )
-
-  expect(panel.textContent).toContain('Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane')
-  expect(panel.querySelector('[aria-label="Jednostka nadrzędna"]')?.textContent).toBe(
-    'art. 18 ust. 1Inwestor jest obowiązany zapewnić:',
-  )
-  expect(panel.querySelector('[aria-label="Fragment"]')?.textContent).toBe(
-    'art. 18 ust. 1 pkt 4wykonanie i odbiór robót budowlanych;',
-  )
-
-  const links = [...panel.querySelectorAll('a')].map(link => [
-    link.textContent,
-    link.getAttribute('href'),
-  ])
-
-  expect(links).toEqual([
-    ['Otwórz cały dokument', '/zrodla/prawo-budowlane?jednostka=art%3A18%2Fust%3A1%2Fpkt%3A4'],
-    ['Otwórz źródło zewnętrzne', 'https://isap.sejm.gov.pl/'],
-  ])
 })
