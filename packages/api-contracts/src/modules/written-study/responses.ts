@@ -229,6 +229,21 @@ export type SessionQuestion = typeof SessionQuestion.Type
 
 export const SessionQuestionResponse = Schema.NullOr(SessionQuestion)
 
+export const QuestionDetails = Schema.Struct({
+  questionId: WrittenQuestionId,
+  questionRevisionId: QuestionRevisionId,
+  body: Schema.NonEmptyString,
+  answers: Schema.Array(SessionAnswerOption),
+  explanation: ResolvedRichContent,
+  references: Schema.Array(QuestionReference),
+  isFavorite: Schema.Boolean,
+  note: Schema.NullOr(QuestionNote),
+})
+
+export type QuestionDetails = typeof QuestionDetails.Type
+
+export const QuestionDetailsResponse = QuestionDetails
+
 export const SubmitSessionAnswerResponse = Schema.Struct({
   awardedXp: LearningXp,
   rewards: LearningRewards,

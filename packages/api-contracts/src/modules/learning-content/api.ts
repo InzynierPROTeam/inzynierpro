@@ -7,11 +7,15 @@ import {
 import {
   GetReferenceDocumentParams,
   GetReferenceDocumentsParams,
+  LinkedQuestionsQuery,
   ReferenceDocumentsQuery,
 } from '~api-contracts/modules/learning-content/requests.js'
 import {
   DocumentPdfResponse,
+  DocumentQuestionCountsResponse,
   DocumentSectionsResponse,
+  LinkedOralQuestionsResponse,
+  LinkedWrittenQuestionsResponse,
   ReferenceDocumentResponse,
   ReferenceDocumentsResponse,
 } from '~api-contracts/modules/learning-content/responses.js'
@@ -79,11 +83,58 @@ export const GetDocumentPdfDownloadEndpoint = HttpApiEndpoint.get(
   },
 )
 
+export const GetDocumentQuestionCountsEndpoint = HttpApiEndpoint.get(
+  'GetDocumentQuestionCounts',
+  '/paths/:qualificationPathId/documents/:code/question-counts',
+  {
+    params: GetReferenceDocumentParams,
+    success: DocumentQuestionCountsResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied, ReferenceDocumentNotFound],
+  },
+)
+
+export const GetLinkedWrittenQuestionsEndpoint = HttpApiEndpoint.get(
+  'GetLinkedWrittenQuestions',
+  '/paths/:qualificationPathId/documents/:code/written-questions',
+  {
+    params: GetReferenceDocumentParams,
+    query: LinkedQuestionsQuery,
+    success: LinkedWrittenQuestionsResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      InvalidRequest,
+      PathAccessDenied,
+      ReferenceDocumentNotFound,
+    ],
+  },
+)
+
+export const GetLinkedOralQuestionsEndpoint = HttpApiEndpoint.get(
+  'GetLinkedOralQuestions',
+  '/paths/:qualificationPathId/documents/:code/oral-questions',
+  {
+    params: GetReferenceDocumentParams,
+    query: LinkedQuestionsQuery,
+    success: LinkedOralQuestionsResponse,
+    error: [
+      InternalServerError,
+      RateLimitExceeded,
+      InvalidRequest,
+      PathAccessDenied,
+      ReferenceDocumentNotFound,
+    ],
+  },
+)
+
 export const SourcesApi = HttpApiGroup.make('Sources')
   .add(GetReferenceDocumentsEndpoint)
   .add(GetReferenceDocumentEndpoint)
   .add(GetDocumentSectionsEndpoint)
   .add(GetDocumentPdfEndpoint)
   .add(GetDocumentPdfDownloadEndpoint)
+  .add(GetDocumentQuestionCountsEndpoint)
+  .add(GetLinkedWrittenQuestionsEndpoint)
+  .add(GetLinkedOralQuestionsEndpoint)
   .middleware(Authentication)
   .prefix('/sources')

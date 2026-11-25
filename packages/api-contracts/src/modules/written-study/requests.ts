@@ -75,6 +75,11 @@ export const QuestionNoteParams = Schema.Struct({
   questionId: WrittenQuestionId,
 })
 
+export const QuestionDetailsParams = Schema.Struct({
+  qualificationPathId: QualificationPathId,
+  questionId: WrittenQuestionId,
+})
+
 export const LatestSessionQuery = Schema.Struct({
   // CONTRACT: Omitting documentId returns the latest regular-study session across the whole path.
   documentId: Schema.optional(ReferenceDocumentId),

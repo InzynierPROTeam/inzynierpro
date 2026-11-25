@@ -8,12 +8,15 @@ import {
   EditionTextKind,
 } from '@inzpro/domain/modules/learning-content/document-edition'
 import { DocumentSectionAddress } from '@inzpro/domain/modules/learning-content/document-section-address'
+import { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { QuestionReferenceKind } from '@inzpro/domain/modules/learning-content/question-reference'
 import {
+  QuestionCount,
   ReferenceDocumentCode,
   ReferenceDocumentId,
   ReferenceDocumentKind,
 } from '@inzpro/domain/modules/learning-content/reference-document'
+import { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import { AnyRichContent } from '@inzpro/rich-content/rich-content'
 import { Schema } from 'effect'
 import { CursorPaginatedResponse } from '~api-contracts/utils/pagination.js'
@@ -104,3 +107,34 @@ export const QuestionReference = Schema.Struct({
 })
 
 export type QuestionReference = typeof QuestionReference.Type
+
+export const DocumentUnitQuestionCount = Schema.Struct({
+  address: DocumentSectionAddress,
+  writtenQuestionCount: QuestionCount,
+  oralQuestionCount: QuestionCount,
+})
+
+export type DocumentUnitQuestionCount = typeof DocumentUnitQuestionCount.Type
+
+// CONTRACT: Lists only units with at least one linked question on the path; a part outside the learner's exam access scope counts zero, and a count includes questions linked to the unit's nested units.
+export const DocumentQuestionCountsResponse = Schema.Struct({
+  units: Schema.Array(DocumentUnitQuestionCount),
+})
+
+export const LinkedWrittenQuestion = Schema.Struct({
+  questionId: WrittenQuestionId,
+  body: Schema.NonEmptyString,
+})
+
+export type LinkedWrittenQuestion = typeof LinkedWrittenQuestion.Type
+
+export const LinkedWrittenQuestionsResponse = CursorPaginatedResponse(LinkedWrittenQuestion)
+
+export const LinkedOralQuestion = Schema.Struct({
+  questionId: OralQuestionId,
+  body: ResolvedRichContent,
+})
+
+export type LinkedOralQuestion = typeof LinkedOralQuestion.Type
+
+export const LinkedOralQuestionsResponse = CursorPaginatedResponse(LinkedOralQuestion)
