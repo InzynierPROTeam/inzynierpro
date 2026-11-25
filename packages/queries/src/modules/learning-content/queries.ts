@@ -1,4 +1,6 @@
 import {
+  getDocumentPackageCandidates,
+  type GetDocumentPackageCandidatesRequest,
   getDocumentPdf,
   type GetDocumentPdfRequest,
   getDocumentQuestionCounts,
@@ -65,6 +67,17 @@ export const documentPdfQueryOptions = (
   effectQueryOptions(
     learningContentKeys.getDocumentPdf(userId, req),
     getDocumentPdf(req),
+    httpClient,
+  )
+
+export const documentPackageCandidatesQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetDocumentPackageCandidatesRequest,
+) =>
+  effectQueryOptions(
+    learningContentKeys.getDocumentPackageCandidates(userId, req),
+    getDocumentPackageCandidates(req),
     httpClient,
   )
 
