@@ -1,6 +1,12 @@
 import {
   getDocumentPdf,
   type GetDocumentPdfRequest,
+  getDocumentQuestionCounts,
+  type GetDocumentQuestionCountsRequest,
+  getLinkedOralQuestions,
+  type GetLinkedOralQuestionsRequest,
+  getLinkedWrittenQuestions,
+  type GetLinkedWrittenQuestionsRequest,
   getDocumentSections,
   type GetDocumentSectionsRequest,
   getReferenceDocument,
@@ -60,4 +66,39 @@ export const documentPdfQueryOptions = (
     learningContentKeys.getDocumentPdf(userId, req),
     getDocumentPdf(req),
     httpClient,
+  )
+
+export const documentQuestionCountsQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetDocumentQuestionCountsRequest,
+) =>
+  effectQueryOptions(
+    learningContentKeys.getDocumentQuestionCounts(userId, req),
+    getDocumentQuestionCounts(req),
+    httpClient,
+  )
+
+export const linkedWrittenQuestionsInfiniteQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetLinkedWrittenQuestionsRequest,
+) =>
+  effectInfiniteQueryOptions(
+    learningContentKeys.getLinkedWrittenQuestionsInfinite(userId, req),
+    cursor => getLinkedWrittenQuestions({ ...req, query: { ...req.query, cursor } }),
+    httpClient,
+    req.query.cursor,
+  )
+
+export const linkedOralQuestionsInfiniteQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetLinkedOralQuestionsRequest,
+) =>
+  effectInfiniteQueryOptions(
+    learningContentKeys.getLinkedOralQuestionsInfinite(userId, req),
+    cursor => getLinkedOralQuestions({ ...req, query: { ...req.query, cursor } }),
+    httpClient,
+    req.query.cursor,
   )

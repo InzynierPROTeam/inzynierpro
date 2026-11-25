@@ -1,9 +1,12 @@
 import type {
   GetDocumentPdfDownloadEndpoint,
   GetDocumentPdfEndpoint,
+  GetDocumentQuestionCountsEndpoint,
   GetDocumentSectionsEndpoint,
   GetReferenceDocumentEndpoint,
   GetReferenceDocumentsEndpoint,
+  GetLinkedOralQuestionsEndpoint,
+  GetLinkedWrittenQuestionsEndpoint,
 } from '@inzpro/api-contracts/modules/learning-content/api'
 import type { Effect } from 'effect'
 import { apiAction } from '~api-client/lib/api-action.js'
@@ -57,3 +60,44 @@ export type GetDocumentPdfDownloadRequest = InferEndpointRequest<
 export type GetDocumentPdfDownloadRes = Effect.Success<ReturnType<typeof getDocumentPdfDownload>>
 
 export type GetDocumentPdfDownloadError = Effect.Error<ReturnType<typeof getDocumentPdfDownload>>
+
+export const getDocumentQuestionCounts = (req: GetDocumentQuestionCountsRequest) =>
+  apiAction(api => api.Sources.GetDocumentQuestionCounts(req))
+
+export type GetDocumentQuestionCountsRequest = InferEndpointRequest<
+  typeof GetDocumentQuestionCountsEndpoint
+>
+
+export type GetDocumentQuestionCountsRes = Effect.Success<
+  ReturnType<typeof getDocumentQuestionCounts>
+>
+
+export type GetDocumentQuestionCountsError = Effect.Error<
+  ReturnType<typeof getDocumentQuestionCounts>
+>
+
+export const getLinkedWrittenQuestions = (req: GetLinkedWrittenQuestionsRequest) =>
+  apiAction(api => api.Sources.GetLinkedWrittenQuestions(req))
+
+export type GetLinkedWrittenQuestionsRequest = InferEndpointRequest<
+  typeof GetLinkedWrittenQuestionsEndpoint
+>
+
+export type GetLinkedWrittenQuestionsRes = Effect.Success<
+  ReturnType<typeof getLinkedWrittenQuestions>
+>
+
+export type GetLinkedWrittenQuestionsError = Effect.Error<
+  ReturnType<typeof getLinkedWrittenQuestions>
+>
+
+export const getLinkedOralQuestions = (req: GetLinkedOralQuestionsRequest) =>
+  apiAction(api => api.Sources.GetLinkedOralQuestions(req))
+
+export type GetLinkedOralQuestionsRequest = InferEndpointRequest<
+  typeof GetLinkedOralQuestionsEndpoint
+>
+
+export type GetLinkedOralQuestionsRes = Effect.Success<ReturnType<typeof getLinkedOralQuestions>>
+
+export type GetLinkedOralQuestionsError = Effect.Error<ReturnType<typeof getLinkedOralQuestions>>

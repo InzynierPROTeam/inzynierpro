@@ -1,5 +1,6 @@
 import { SessionPreview } from '@inzpro/api-contracts/modules/written-study/responses'
 import { UserId } from '@inzpro/domain/modules/identity/user'
+import { WrittenQuestionId } from '@inzpro/domain/modules/learning-content/written-question'
 import {
   SessionQuestionPosition,
   StudySessionId,
@@ -14,6 +15,7 @@ import {
   dailyPlanQueryOptions,
   documentQueryOptions,
   documentsInfiniteQueryOptions,
+  questionDetailsQueryOptions,
   sessionPreviewQueryOptions,
 } from '~queries/modules/written-study/queries.js'
 import { withQueryClient } from '~queries/test/query-client.js'
@@ -350,3 +352,51 @@ test('the written daily plan refreshes with the progress group an answer invalid
         expect(client.getQueryState(plan.queryKey)?.isInvalidated).toBe(true)
       }),
   ))
+
+test('a question details reads through the questions group, so a mark or a note on any path refreshes it', () => {
+  const questionId = WrittenQuestionId.make('c0000000-0000-4000-8000-000000000001')
+
+  const details = {
+    questionId,
+    questionRevisionId: 'c1000000-0000-4000-8000-000000000001',
+    body: 'Pytanie',
+    answers: [{ id: 'c2000000-0000-4000-8000-000000000001', text: 'Odpowiedź', isCorrect: true }],
+    explanation: {
+      content: { version: 1, doc: { type: 'doc', content: [{ type: 'paragraph' }] } },
+      assets: [],
+    },
+    references: [],
+    isFavorite: true,
+    note: null,
+  }
+
+  return withHttpServer(
+    [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/questions/${questionId}`,
+        HttpServerResponse.jsonUnsafe(details),
+      ),
+    ],
+    ({ httpClient }) =>
+      withQueryClient(async client => {
+        const read = questionDetailsQueryOptions(httpClient, userId, {
+          params: { qualificationPathId: pathA, questionId },
+        })
+
+        expect(await client.query(read)).toMatchObject({ questionId, isFavorite: true })
+
+        await client.invalidateQueries({
+          queryKey: writtenStudyKeys.favorites(userId),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(read.queryKey)?.isInvalidated).toBe(false)
+
+        await client.invalidateQueries({
+          queryKey: writtenStudyKeys.questions(userId),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(read.queryKey)?.isInvalidated).toBe(true)
+      }),
+  )
+})

@@ -1,4 +1,5 @@
 import { UserId } from '@inzpro/domain/modules/identity/user'
+import { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { SessionQuestionPosition } from '@inzpro/domain/modules/learning/study-session'
 import { OralStudySessionId } from '@inzpro/domain/modules/oral-study/oral-study-session'
@@ -8,6 +9,7 @@ import { Effect, Schema } from 'effect'
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 import {
+  oralQuestionDetailsQueryOptions,
   oralDailyPlanQueryOptions,
   oralFavoritesPreviewQueryOptions,
   oralFavoritesSessionQueryOptions,
@@ -291,3 +293,50 @@ test('the oral daily plan refreshes with oral progress and stays per account and
         expect(client.getQueryState(otherPath.queryKey)?.isInvalidated).toBe(false)
       }),
   ))
+
+test('an oral question details reads through the oral questions group, so a mark or a note refreshes it', () => {
+  const questionId = OralQuestionId.make('c0000000-0000-4000-8000-000000000002')
+
+  const text = {
+    content: { version: 1, doc: { type: 'doc', content: [{ type: 'paragraph' }] } },
+    assets: [],
+  }
+
+  return withHttpServer(
+    [
+      HttpRouter.route(
+        'GET',
+        `/api/v1/study/paths/${pathA}/oral/questions/${questionId}`,
+        HttpServerResponse.jsonUnsafe({
+          questionId,
+          oralRevisionId: 'c1000000-0000-4000-8000-000000000002',
+          body: text,
+          answer: text,
+          references: [],
+          isFavorite: false,
+          note: null,
+        }),
+      ),
+    ],
+    ({ httpClient }) =>
+      withQueryClient(async client => {
+        const read = oralQuestionDetailsQueryOptions(httpClient, userId, {
+          params: { qualificationPathId: pathA, questionId },
+        })
+
+        expect(await client.query(read)).toMatchObject({ questionId, isFavorite: false })
+
+        await client.invalidateQueries({
+          queryKey: oralStudyKeys.oralFavorites(userId),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(read.queryKey)?.isInvalidated).toBe(false)
+
+        await client.invalidateQueries({
+          queryKey: oralStudyKeys.oralQuestions(userId),
+          refetchType: 'none',
+        })
+        expect(client.getQueryState(read.queryKey)?.isInvalidated).toBe(true)
+      }),
+  )
+})

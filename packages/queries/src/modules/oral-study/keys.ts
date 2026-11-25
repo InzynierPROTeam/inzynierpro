@@ -1,5 +1,6 @@
 import type {
   GetOralFavoritesPreviewRequest,
+  GetOralQuestionDetailsRequest,
   GetOralFavoritesSessionRequest,
   GetOralDailyPlanRequest,
   GetOralReviewPreviewRequest,
@@ -100,6 +101,8 @@ export const oralStudyKeys = {
     ] as const,
   getOralSessionQuestion: (userId: UserId, req: GetOralSessionQuestionRequest) =>
     [...oralStudyKeys.oralQuestions(userId), 'getOralSessionQuestion', req] as const,
+  getOralQuestionDetails: (userId: UserId, req: GetOralQuestionDetailsRequest) =>
+    [...oralStudyKeys.oralQuestions(userId), 'getOralQuestionDetails', req] as const,
   getOralSessionQuiz: (userId: UserId, req: GetOralSessionQuizRequest) =>
     [
       ...oralStudyKeys.oralSession(userId, req.params.qualificationPathId, req.params.sessionId),

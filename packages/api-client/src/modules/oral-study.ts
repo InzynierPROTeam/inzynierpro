@@ -1,5 +1,6 @@
 import type {
   GetOralFavoritesPreviewEndpoint,
+  GetOralQuestionDetailsEndpoint,
   GetOralFavoritesSessionEndpoint,
   StartOralFavoritesSessionEndpoint,
   MarkOralFavoriteQuestionEndpoint,
@@ -321,3 +322,14 @@ export type AnswerOralQuizCheckRequest = InferEndpointRequest<typeof AnswerOralQ
 export type AnswerOralQuizCheckRes = Effect.Success<ReturnType<typeof answerOralQuizCheck>>
 
 export type AnswerOralQuizCheckError = Effect.Error<ReturnType<typeof answerOralQuizCheck>>
+
+export const getOralQuestionDetails = (req: GetOralQuestionDetailsRequest) =>
+  apiAction(api => api.OralStudy.GetOralQuestionDetails(req))
+
+export type GetOralQuestionDetailsRequest = InferEndpointRequest<
+  typeof GetOralQuestionDetailsEndpoint
+>
+
+export type GetOralQuestionDetailsRes = Effect.Success<ReturnType<typeof getOralQuestionDetails>>
+
+export type GetOralQuestionDetailsError = Effect.Error<ReturnType<typeof getOralQuestionDetails>>
