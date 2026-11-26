@@ -1,6 +1,7 @@
 import { OralSessionAlreadyStarted } from '@inzpro/api-contracts/modules/oral-study/errors'
 import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { OralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { Button } from '@inzpro/ui/components/button'
 import { toast } from '@inzpro/ui/components/toast'
 import { useNavigate } from '@tanstack/react-router'
@@ -13,11 +14,13 @@ import { useStartOralSession } from '../hooks/useStartOralSession'
 type StartOralSessionButtonProps = {
   categoryId: OralQuestionCategoryId
   questionCount: QuestionCount
+  questionScope: OralQuestionScope
 }
 
 export const StartOralSessionButton: React.FC<StartOralSessionButtonProps> = ({
   categoryId,
   questionCount,
+  questionScope,
 }) => {
   const {
     selectedPath,
@@ -31,7 +34,7 @@ export const StartOralSessionButton: React.FC<StartOralSessionButtonProps> = ({
     toast.promise(
       mutation.mutateAsync({
         params: { qualificationPathId: selectedPath.id },
-        payload: { categoryId, questionCount },
+        payload: { categoryId, questionCount, questionScope },
       }),
       {
         loading: { title: 'Rozpoczynanie sesji…' },
@@ -52,6 +55,13 @@ export const StartOralSessionButton: React.FC<StartOralSessionButtonProps> = ({
                     replace: true,
                   }),
               },
+            }
+          }
+
+          if (Predicate.isTagged(error, 'DistrictChamberNotChosen')) {
+            return {
+              title:
+                'Ta ścieżka nie ma już wybranej izby okręgowej. Odśwież stronę i spróbuj ponownie.',
             }
           }
 

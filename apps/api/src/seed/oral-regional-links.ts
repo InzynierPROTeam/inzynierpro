@@ -5,13 +5,13 @@ import {
   piibMalopolskaDistrictChamberCode,
   piibMazowieckaDistrictChamberCode,
 } from '@inzpro/domain/modules/exam-calendar/district-chamber'
-import { Effect } from 'effect'
-import { SqlClient } from 'effect/sql'
 import {
   officialRegionalSource,
   recollectionRegionalSource,
   type RegionalSourceKind,
-} from '~api/modules/learning-content/domain/learning-content.model.js'
+} from '@inzpro/domain/modules/learning-content/regional-question-link'
+import { Effect } from 'effect'
+import { SqlClient } from 'effect/sql'
 
 import { catalogueId } from './catalogue-id.js'
 import { catalogueDistrictChambers } from './chamber-catalogue.js'

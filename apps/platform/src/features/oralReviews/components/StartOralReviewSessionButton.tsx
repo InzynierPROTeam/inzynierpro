@@ -1,5 +1,6 @@
 import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { OralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import { Button } from '@inzpro/ui/components/button'
 import { toast } from '@inzpro/ui/components/toast'
 import { useNavigate } from '@tanstack/react-router'
@@ -12,11 +13,13 @@ import { getOralReviewStartError } from '../utils'
 type StartOralReviewSessionButtonProps = {
   categoryId: OralQuestionCategoryId | undefined
   questionCount: QuestionCount
+  questionScope: OralQuestionScope
 }
 
 export const StartOralReviewSessionButton: React.FC<StartOralReviewSessionButtonProps> = ({
   categoryId,
   questionCount,
+  questionScope,
 }) => {
   const {
     selectedPath,
@@ -30,7 +33,7 @@ export const StartOralReviewSessionButton: React.FC<StartOralReviewSessionButton
     toast.promise(
       mutation.mutateAsync({
         params: { qualificationPathId: selectedPath.id },
-        payload: { categoryId, questionCount },
+        payload: { categoryId, questionCount, questionScope },
       }),
       {
         loading: { title: 'Rozpoczynanie powtórki…' },

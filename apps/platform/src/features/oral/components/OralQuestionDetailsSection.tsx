@@ -12,6 +12,7 @@ import {
 } from '~platform/components/SuspenseQueryBoundary'
 import { QuestionFavoriteButton } from '~platform/features/favorites/components/QuestionFavoriteButton'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { MyChamberSourceBadges } from '~platform/features/oralChamber/components/MyChamberSourceBadges'
 import { QuestionDetailsNoteDialog } from '~platform/features/questionNotes/components/QuestionDetailsNoteDialog'
 import { QuestionDetailsSkeleton } from '~platform/features/sources/components/QuestionDetailsSkeleton'
 import { QuestionReferences } from '~platform/features/sources/components/QuestionReferences'
@@ -54,6 +55,7 @@ export const OralQuestionDetailsSection = () => {
               <header className="flex items-start justify-between gap-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-muted-foreground text-sm">Pytanie ustne</p>
+                  <MyChamberSourceBadges sourceKinds={details.myChamberSourceKinds} />
                   <h1 className="text-xl font-semibold">
                     <RichText
                       content={details.body.content}

@@ -1,5 +1,8 @@
 import { StaleSessionPreview } from '@inzpro/api-contracts/modules/learning/errors'
-import { OralSessionAlreadyStarted } from '@inzpro/api-contracts/modules/oral-study/errors'
+import {
+  DistrictChamberNotChosen,
+  OralSessionAlreadyStarted,
+} from '@inzpro/api-contracts/modules/oral-study/errors'
 import { InternalServerError } from '@inzpro/api-contracts/utils/api-error'
 import { Schema } from 'effect'
 import { expect, test } from 'vitest'
@@ -39,4 +42,18 @@ test('an infrastructure failure shows Polish feedback without leaking the techni
       new InternalServerError({ type: 'internal_server_error', message: 'Database unavailable.' }),
     ),
   ).toEqual({ title: 'Nie udało się rozpocząć powtórki. Spróbuj ponownie.', continuation: null })
+})
+
+test('a review filtered by a chamber that was cleared meanwhile asks the learner to refresh', () => {
+  expect(
+    getOralReviewStartError(
+      new DistrictChamberNotChosen({
+        type: 'district_chamber_not_chosen',
+        message: 'No district chamber.',
+      }),
+    ),
+  ).toEqual({
+    title: 'Ta ścieżka nie ma już wybranej izby okręgowej. Odśwież stronę i spróbuj ponownie.',
+    continuation: null,
+  })
 })

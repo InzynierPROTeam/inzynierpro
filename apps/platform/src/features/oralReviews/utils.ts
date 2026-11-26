@@ -22,6 +22,13 @@ export const getOralReviewStartError = (error: StartOralReviewSessionError) => {
     }
   }
 
+  if (Predicate.isTagged(error, 'DistrictChamberNotChosen')) {
+    return {
+      title: 'Ta ścieżka nie ma już wybranej izby okręgowej. Odśwież stronę i spróbuj ponownie.',
+      continuation: null,
+    }
+  }
+
   return {
     title: Predicate.isTagged(error, 'StaleSessionPreview')
       ? 'Pytania do powtórki zmieniły się. Sprawdź szczegóły i spróbuj ponownie.'

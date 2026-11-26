@@ -24,7 +24,8 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
   pathId: QualificationPathId,
   sessionId: OralStudySessionId,
 ) {
-  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
+  const { districtChamber } = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
+  const districtChamberId = Option.map(districtChamber, ({ id }) => id)
   const oralStudyReader = yield* OralStudyReader
   const session = yield* oralStudyReader.session(userId, pathId, sessionId)
 
@@ -38,7 +39,13 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
       : [Option.none()]
 
   for (const scope of scopes) {
-    const review = yield* findOralReviewPreview(userId, pathId, scope, wholePathFilter)
+    const review = yield* findOralReviewPreview(
+      userId,
+      pathId,
+      scope,
+      wholePathFilter,
+      districtChamberId,
+    )
 
     if (
       session.value.kind !== favoritesStudySession &&
@@ -78,6 +85,7 @@ export const getOralSessionNextStep = Effect.fn('Study.getOralSessionNextStep')(
     Option.none(),
     fromCategoryId,
     wholePathFilter,
+    districtChamberId,
   )
 
   return Option.map(preview, (next): OralSessionNextStep => ({

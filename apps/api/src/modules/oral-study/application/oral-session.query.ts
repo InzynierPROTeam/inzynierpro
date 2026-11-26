@@ -37,10 +37,16 @@ export const getOralSessionQuestion = Effect.fn('Study.getOralSessionQuestion')(
   sessionId: OralStudySessionId,
   position: SessionQuestionPosition,
 ) {
-  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
+  const { districtChamber } = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
 
-  return yield* oralStudyReader.sessionQuestion(userId, pathId, sessionId, position)
+  return yield* oralStudyReader.sessionQuestion(
+    userId,
+    pathId,
+    sessionId,
+    position,
+    Option.map(districtChamber, ({ id }) => id),
+  )
 })
 
 export const getOralSessionSummary = Effect.fn('Study.getOralSessionSummary')(function* (

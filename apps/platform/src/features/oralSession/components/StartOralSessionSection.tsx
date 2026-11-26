@@ -1,5 +1,10 @@
 import type { OralStudySession } from '@inzpro/api-contracts/modules/oral-study/responses'
+import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import { activeStudySession } from '@inzpro/domain/modules/learning/study-session'
+import {
+  type OralQuestionScope,
+  reportedInMyChamberOralQuestionScope,
+} from '@inzpro/domain/modules/oral-study/oral-study-session'
 import {
   latestOralSessionQueryOptions,
   oralSessionPreviewQueryOptions,
@@ -28,6 +33,8 @@ import { BackLink } from '~platform/components/BackLink'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCardSkeleton'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { OralChamberFilter } from '~platform/features/oralChamber/components/OralChamberFilter'
+import { useOralQuestionScope } from '~platform/features/oralChamber/hooks/useOralQuestionScope'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { oralSessionPreviewRouteApi } from '../utils'
@@ -40,6 +47,7 @@ export const StartOralSessionSection = () => {
   } = onboardedRouteApi.useRouteContext()
 
   const search = oralSessionPreviewRouteApi.useSearch()
+  const questionScope = useOralQuestionScope()
 
   return (
     <section className="app-layout-section @container gap-8">
@@ -48,10 +56,14 @@ export const StartOralSessionSection = () => {
         <SuspenseQuery
           options={oralSessionPreviewQueryOptions(apiHttpClient, user.id, {
             params: { qualificationPathId: selectedPath.id },
-            query: { categoryId: search.kategoria, fromCategoryId: search['obecna-kategoria'] },
+            query: {
+              categoryId: search.kategoria,
+              fromCategoryId: search['obecna-kategoria'],
+              questionScope,
+            },
           })}
           isDataEmpty={preview => preview === null}
-          noDataFallback={<EmptyOralSessionPreview />}
+          noDataFallback={<EmptyOralSessionPreview questionScope={questionScope} />}
         >
           {preview => (
             <SuspenseQuery
@@ -120,31 +132,46 @@ const ActiveOralSessionNotice: React.FC<ActiveOralSessionNoticeProps> = ({ sessi
   </Card>
 )
 
-const EmptyOralSessionPreview = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle>
-        <h1>Zacznij sesję nauki ustnej</h1>
-      </CardTitle>
-      <CardDescription>Wybierz kategorię, z której chcesz się uczyć.</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <Empty>
-        <EmptyHeader>
-          <EmptyTitle>Brak dostępnych pytań</EmptyTitle>
-          <EmptyDescription>
-            Wybrana kategoria jest niedostępna lub na Twojej ścieżce nie ma jeszcze pytań ustnych.
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button
-            nativeButton={false}
-            render={<Link to="/ustny" />}
-          >
-            Wróć do kategorii
-          </Button>
-        </EmptyContent>
-      </Empty>
-    </CardContent>
-  </Card>
-)
+type EmptyOralSessionPreviewProps = { questionScope: OralQuestionScope }
+
+const EmptyOralSessionPreview: React.FC<EmptyOralSessionPreviewProps> = ({ questionScope }) => {
+  const isReportedInMyChamber = questionScope === reportedInMyChamberOralQuestionScope
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <h1>Zacznij sesję nauki ustnej</h1>
+        </CardTitle>
+        <CardDescription>Wybierz kategorię, z której chcesz się uczyć.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-6">
+        {isReportedInMyChamber && (
+          <OralChamberFilter reportedQuestionCount={QuestionCount.make(0)} />
+        )}
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>
+              {isReportedInMyChamber
+                ? 'Brak pytań zgłoszonych w Twojej izbie'
+                : 'Brak dostępnych pytań'}
+            </EmptyTitle>
+            <EmptyDescription>
+              {isReportedInMyChamber
+                ? 'Nie ma tu pytań zgłoszonych w Twojej izbie okręgowej. Wyłącz filtr, aby uczyć się ze wszystkich pytań ścieżki.'
+                : 'Wybrana kategoria jest niedostępna lub na Twojej ścieżce nie ma jeszcze pytań ustnych.'}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button
+              nativeButton={false}
+              render={<Link to="/ustny" />}
+            >
+              Wróć do kategorii
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </CardContent>
+    </Card>
+  )
+}

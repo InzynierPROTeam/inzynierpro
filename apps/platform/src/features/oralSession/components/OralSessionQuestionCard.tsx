@@ -17,6 +17,7 @@ import { FileQuestionMark } from 'lucide-react'
 import { SuspenseQuery, SuspenseQueryWrapper } from '~platform/components/SuspenseQueryBoundary'
 import { SessionQuestionWithdrawn } from '~platform/features/learningSession/components/SessionQuestionWithdrawn'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { MyChamberSourceBadges } from '~platform/features/oralChamber/components/MyChamberSourceBadges'
 import { OralFavoriteToggleButton } from '~platform/features/oralFavorites/components/OralFavoriteToggleButton'
 import { OralQuestionNoteDialog } from '~platform/features/oralQuestionNotes/components/OralQuestionNoteDialog'
 import { apiHttpClient } from '~platform/lib/api-client'
@@ -46,12 +47,15 @@ export const OralSessionQuestionCard = () => {
           {question => (
             <>
               <CardHeader>
-                <div className="flex justify-end gap-2">
-                  <OralFavoriteToggleButton question={question} />
-                  <OralQuestionNoteDialog
-                    key={question.questionId}
-                    question={question}
-                  />
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <MyChamberSourceBadges sourceKinds={question.myChamberSourceKinds} />
+                  <div className="ml-auto flex gap-2">
+                    <OralFavoriteToggleButton question={question} />
+                    <OralQuestionNoteDialog
+                      key={question.questionId}
+                      question={question}
+                    />
+                  </div>
                 </div>
                 <h2 className="sr-only">Treść pytania</h2>
                 <div className="text-base leading-relaxed font-medium">

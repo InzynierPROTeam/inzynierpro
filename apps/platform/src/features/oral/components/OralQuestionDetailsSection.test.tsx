@@ -92,14 +92,15 @@ const details = Schema.decodeSync(OralQuestionDetails)({
   ],
   isFavorite: false,
   note: null,
+  myChamberSourceKinds: [],
 })
 
-const renderDetails = async () => {
+const renderDetails = async (shown: OralQuestionDetails = details) => {
   queryClient.setQueryData(
     oralQuestionDetailsQueryOptions(apiHttpClient, userId, {
       params: { qualificationPathId: pathId, questionId },
     }).queryKey,
-    details,
+    shown,
   )
 
   const rootRoute = createRootRoute({ component: Outlet })
@@ -154,6 +155,22 @@ test('oral question details show the question, the prepared answer and the chips
   expect(
     container.querySelector('section[aria-label="Podstawa: PB art. 22"] a')?.getAttribute('href'),
   ).toBe('/zrodla/prawo-budowlane?jednostka=art%3A22')
+})
+
+test('oral question details show a badge for each link to the learner’s chamber', async () => {
+  await renderDetails({ ...details, myChamberSourceKinds: ['recollection', 'official'] })
+
+  expect(
+    [...container.querySelectorAll('[aria-label="Twoja izba okręgowa"] li')].map(
+      badge => badge.textContent,
+    ),
+  ).toEqual(['Zgłoszone w Twojej izbie', 'Z oficjalnej puli Twojej izby'])
+})
+
+test('oral question details without a link to the learner’s chamber show no badge', async () => {
+  await renderDetails()
+
+  expect(container.querySelector('[aria-label="Twoja izba okręgowa"]')).toBeNull()
 })
 
 test('an oral favourite mark is added from the question details', async () => {
