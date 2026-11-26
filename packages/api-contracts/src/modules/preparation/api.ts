@@ -21,6 +21,7 @@ import {
   PathsQuery,
   SetDistrictChamberPayload,
 } from './requests.js'
+import { MyChamberResponse } from './responses.js'
 import {
   GoalHistoryResponse,
   GoalOptionsResponse,
@@ -131,7 +132,18 @@ export const GetGoalOptionsEndpoint = HttpApiEndpoint.get(
   },
 )
 
+export const GetMyChamberEndpoint = HttpApiEndpoint.get(
+  'GetMyChamber',
+  '/paths/:qualificationPathId/chamber',
+  {
+    params: PathParams,
+    success: MyChamberResponse,
+    error: [InternalServerError, RateLimitExceeded, PathAccessDenied],
+  },
+)
+
 export const PreparationApi = HttpApiGroup.make('Preparation')
+  .add(GetMyChamberEndpoint)
   .add(GetPathsEndpoint)
   .add(GetPathEndpoint)
   .add(CompleteOnboardingEndpoint)

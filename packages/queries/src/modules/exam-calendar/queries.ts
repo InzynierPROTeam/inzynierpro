@@ -1,4 +1,6 @@
 import {
+  listDistrictChambers,
+  type ListDistrictChambersRequest,
   listExamSessions,
   type ListExamSessionsRequest,
 } from '@inzpro/api-client/modules/exam-calendar'
@@ -25,3 +27,13 @@ export const examSessionsQueryOptions = (
   httpClient: HttpClient.HttpClient,
   req: ListExamSessionsRequest,
 ) => effectQueryOptions(examCalendarKeys.listExamSessions(req), listExamSessions(req), httpClient)
+
+export const districtChambersQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  req: ListDistrictChambersRequest,
+) =>
+  effectQueryOptions(
+    examCalendarKeys.listDistrictChambers(req),
+    listDistrictChambers(req),
+    httpClient,
+  )

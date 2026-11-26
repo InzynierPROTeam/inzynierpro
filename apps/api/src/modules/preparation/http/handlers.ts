@@ -10,7 +10,9 @@ import {
   failExamCalendarRead,
   failExamCalendarWrite,
 } from '~api/modules/exam-calendar/http/errors.js'
+import { toChamberContactsDto } from '~api/modules/exam-calendar/http/mappers.js'
 import { toExamSessionOptionDto } from '~api/modules/exam-calendar/http/mappers.js'
+import { ChamberContactsReaderLive } from '~api/modules/exam-calendar/infrastructure/chamber-contacts.reader.postgres.js'
 import { ExamCalendarReaderLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.reader.postgres.js'
 import { ExamCalendarRepositoryLive } from '~api/modules/exam-calendar/infrastructure/exam-calendar.repository.postgres.js'
 import { archivePath } from '~api/modules/preparation/application/archive-path.command.js'
@@ -19,6 +21,7 @@ import { completeOnboarding } from '~api/modules/preparation/application/complet
 import { extendPath } from '~api/modules/preparation/application/extend-path.command.js'
 import { getGoalHistory } from '~api/modules/preparation/application/goal-history.query.js'
 import { getGoalOptions } from '~api/modules/preparation/application/goal-options.query.js'
+import { getMyChamber } from '~api/modules/preparation/application/my-chamber.query.js'
 import { PreparationReader } from '~api/modules/preparation/application/preparation.reader.js'
 import { restorePath } from '~api/modules/preparation/application/restore-path.command.js'
 import { setDistrictChamber } from '~api/modules/preparation/application/set-district-chamber.command.js'
@@ -49,6 +52,25 @@ import {
 
 export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers =>
   handlers
+    .handle('GetMyChamber', ({ params }) =>
+      limitByUser(accountReadLimit).pipe(
+        Effect.andThen(
+          Effect.flatMap(CurrentUser, user => getMyChamber(user.id, params.qualificationPathId)),
+        ),
+        Effect.map(result => ({
+          generalChamber: toChamberContactsDto(result.generalChamber),
+          districtChamber: Option.match(result.districtChamber, {
+            onNone: () => null,
+            onSome: toChamberContactsDto,
+          }),
+        })),
+        Effect.catchTags({
+          PreparationReadError: failPreparationRead,
+          ExamCalendarReadError: failExamCalendarRead,
+          PathPermissionDenied: () => pathAccessDenied,
+        }),
+      ),
+    )
     .handle('GetPaths', ({ query }) =>
       limitByUser(accountReadLimit).pipe(
         Effect.andThen(
@@ -211,6 +233,7 @@ export const PreparationLive = HttpApiBuilder.group(Api, 'Preparation', handlers
 )
 
 export const PreparationRequestServices = Layer.mergeAll(
+  ChamberContactsReaderLive,
   TransactionLive,
   PreparationReaderLive,
   PreparationRepositoryLive,
