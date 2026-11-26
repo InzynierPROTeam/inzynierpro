@@ -32,6 +32,9 @@ export default defineConfig(({ mode }) => {
       }),
       react({ compiler: { target: '19' } }),
     ],
+    optimizeDeps: {
+      include: ['pdf-lib', '@pdf-lib/fontkit'],
+    },
     server: {
       host: true,
       port: env.PORT,

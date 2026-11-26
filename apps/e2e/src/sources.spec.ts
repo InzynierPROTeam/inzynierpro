@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 
 import { expect } from '@playwright/test'
-import { PDFDocument } from 'pdf-lib'
+import { PDFArray, PDFDict, PDFDocument, PDFHexString, PDFName } from 'pdf-lib'
 import { test } from '~e2e/test/fixtures'
 
 const structuralDesignBasis = 'Eurokod. Podstawy projektowania konstrukcji'
@@ -180,7 +180,7 @@ test('the PDF package selects the downloadable documents, keeps a reordering aft
   await expect(page.getByRole('checkbox', { name: /Eurokod/ })).toHaveAccessibleDescription(
     'Dostępny jest tylko opis tego dokumentu.',
   )
-  await expect(page.getByText('Dokumenty: 2 · Liczba stron: 14')).toBeVisible()
+  await expect(page.getByText('Dokumenty: 2 · Liczba stron: 18')).toBeVisible()
 
   const order = page.getByRole('list', { name: 'Kolejność dokumentów w pakiecie' })
   await page.getByRole('button', { name: 'Przesuń wyżej: USZ' }).click()
@@ -198,5 +198,18 @@ test('the PDF package selects the downloadable documents, keeps a reordering aft
   const merged = await PDFDocument.load(await readFile(await file.path()))
   const widths = merged.getPages().map(pdfPage => Math.round(pdfPage.getWidth()))
 
-  expect(widths).toEqual([...Array(6).fill(595), ...Array(8).fill(420)])
+  expect(widths).toEqual([...Array(10).fill(595), ...Array(8).fill(420)])
+
+  const outline = merged.catalog.lookup(PDFName.of('Outlines'), PDFDict)
+  const first = outline.lookup(PDFName.of('First'), PDFDict)
+  const second = first.lookup(PDFName.of('Next'), PDFDict)
+
+  expect(first.lookup(PDFName.of('Title'), PDFHexString).decodeText()).toContain(
+    'samorządach zawodowych',
+  )
+  expect(second.lookup(PDFName.of('Title'), PDFHexString).decodeText()).toBe(
+    'Ustawa z dnia 7 lipca 1994 r. — Prawo budowlane',
+  )
+  expect(first.lookup(PDFName.of('Dest'), PDFArray).get(0)).toEqual(merged.getPage(2).ref)
+  expect(second.lookup(PDFName.of('Dest'), PDFArray).get(0)).toEqual(merged.getPage(9).ref)
 })

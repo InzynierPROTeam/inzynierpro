@@ -1,37 +1,81 @@
-import { mergePdfs } from './merge-pdfs'
+import { Effect } from 'effect'
 
-export type PackageWorkerRequest = { readonly urls: ReadonlyArray<string> }
+import fontUrl from '../assets/noto-sans.ttf?url'
+import {
+  countPackagePages,
+  mergePdfs,
+  type PackageDetails,
+  type PackageDocument,
+} from './merge-pdfs'
+import { PackageError } from './package-error'
+
+export type PackageWorkerRequest = PackageDetails &
+  (
+    | {
+        readonly type: 'assemble'
+        readonly documents: ReadonlyArray<PackageDocument & { readonly url: string }>
+      }
+    | {
+        readonly type: 'count'
+        readonly documents: ReadonlyArray<PackageDocument & { readonly pageCount: number }>
+      }
+  )
 
 export type PackageWorkerResponse =
   | { readonly type: 'assembled'; readonly file: Uint8Array<ArrayBuffer> }
+  | { readonly type: 'counted'; readonly pageCount: number }
   | { readonly type: 'failed' }
 
-const downloadPdf = async (url: string) => {
-  const response = await fetch(url)
+const downloadPdf = (url: string) =>
+  Effect.gen(function* () {
+    const response = yield* Effect.tryPromise({
+      try: signal => fetch(url, { signal }),
+      catch: cause => new PackageError({ cause }),
+    })
 
-  if (!response.ok) {
-    throw new Error(`The PDF download failed with status ${response.status}.`)
-  }
+    if (!response.ok) {
+      return yield* new PackageError({ cause: `Download failed with status ${response.status}` })
+    }
 
-  return new Uint8Array(await response.arrayBuffer())
-}
+    const bytes = yield* Effect.tryPromise({
+      try: () => response.arrayBuffer(),
+      catch: cause => new PackageError({ cause }),
+    })
 
-const assemble = async (urls: ReadonlyArray<string>) => {
-  const files: Array<Uint8Array> = []
+    return new Uint8Array(bytes)
+  })
 
-  for (const url of urls) {
-    files.push(await downloadPdf(url))
-  }
+const processRequest = (request: PackageWorkerRequest) =>
+  Effect.gen(function* () {
+    const fontBytes = yield* downloadPdf(fontUrl)
 
-  return new Uint8Array(await mergePdfs(files))
-}
+    if (request.type === 'count') {
+      return {
+        type: 'counted',
+        pageCount: yield* countPackagePages({ ...request, fontBytes }),
+      } satisfies PackageWorkerResponse
+    }
+
+    const documents = yield* Effect.forEach(request.documents, document =>
+      downloadPdf(document.url).pipe(Effect.map(file => ({ ...document, file }))),
+    )
+
+    const file = yield* mergePdfs({ ...request, documents, fontBytes })
+
+    return { type: 'assembled', file: new Uint8Array(file) } satisfies PackageWorkerResponse
+  })
 
 const respond = (response: PackageWorkerResponse) =>
-  postMessage(response, { transfer: response.type === 'assembled' ? [response.file.buffer] : [] })
+  Effect.sync(() =>
+    postMessage(response, {
+      transfer: response.type === 'assembled' ? [response.file.buffer] : [],
+    }),
+  )
 
 addEventListener('message', (event: MessageEvent<PackageWorkerRequest>) => {
-  assemble(event.data.urls).then(
-    file => respond({ type: 'assembled', file }),
-    () => respond({ type: 'failed' }),
+  Effect.runFork(
+    processRequest(event.data).pipe(
+      Effect.matchCauseEffect({ onSuccess: respond, onFailure: () => respond({ type: 'failed' }) }),
+    ),
   )
 })

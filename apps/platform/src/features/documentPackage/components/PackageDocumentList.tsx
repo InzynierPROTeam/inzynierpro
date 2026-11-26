@@ -16,12 +16,7 @@ import { useId } from 'react'
 import { cx } from 'tailwind-variants'
 import { documentKindGroupLabel } from '~platform/features/sources/utils'
 
-import {
-  candidatesByKind,
-  formatFileSize,
-  type PackageSelection,
-  unavailabilityReason,
-} from '../utils'
+import { candidatesByKind, type PackageSelection, unavailabilityReason } from '../utils'
 
 type PackageDocumentListProps = {
   candidates: ReadonlyArray<DocumentPackageCandidate>
@@ -117,7 +112,7 @@ const PackageDocumentItem: React.FC<PackageDocumentItemProps> = ({
         </ItemTitle>
         <ItemDescription className="line-clamp-none">
           {candidate.editionLabel}
-          {pdf !== null && ` · Liczba stron: ${pdf.pageCount} · ${formatFileSize(pdf.size)}`}
+          {pdf !== null && ` · Liczba stron: ${pdf.pageCount}`}
         </ItemDescription>
         {availability !== includedInPackage && (
           <ItemDescription

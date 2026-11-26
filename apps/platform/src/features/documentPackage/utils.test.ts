@@ -13,10 +13,8 @@ import { expect, test } from 'vitest'
 import {
   candidatesByKind,
   defaultPackageSelection,
-  formatFileSize,
   movePackageDocument,
   packageFileName,
-  packageTotals,
   reconcilePackageSelection,
   restoreDefaultOrder,
   selectedCandidates,
@@ -127,19 +125,13 @@ test('restoring the default order sorts the selection by path order and keeps ex
   })
 })
 
-test('the totals add up the pages and sizes of the selected documents in their order', () => {
+test('selected documents follow the selected order', () => {
   const selected = selectedCandidates(
     { selected: [code('zp'), code('pb')], excluded: [] },
     candidates,
   )
 
   expect(selected.map(item => item.code)).toEqual(['zp', 'pb'])
-  expect(packageTotals(selected)).toEqual({ pageCount: 10, size: 10_000 })
-})
-
-test('file sizes read in kilobytes below a megabyte and in megabytes above', () => {
-  expect(formatFileSize(102_051)).toBe('100 KB')
-  expect(formatFileSize(3_250_000)).toBe('3,1 MB')
 })
 
 test('the package file is named after the specialization, qualification kind and scope and the Warsaw date', () => {

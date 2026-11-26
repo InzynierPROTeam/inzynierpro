@@ -1,5 +1,6 @@
-// @vitest-environment jsdom
 import type { DocumentPackageCandidate } from '@inzpro/api-contracts/modules/learning-content/responses'
+// @vitest-environment jsdom
+import { UserId } from '@inzpro/domain/modules/identity/user'
 import { ByteSize } from '@inzpro/domain/modules/learning-content/content-asset'
 import { DocumentPageCount } from '@inzpro/domain/modules/learning-content/document-edition'
 import type { PackageAvailability } from '@inzpro/domain/modules/learning-content/document-package'
@@ -9,6 +10,7 @@ import {
   type ReferenceDocumentKind,
 } from '@inzpro/domain/modules/learning-content/reference-document'
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
+import { formatDate, getCurrentUtcIsoDateTime } from '@inzpro/utils/date'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   createMemoryHistory,
@@ -22,10 +24,13 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
+import { packagePathName } from '../utils'
 import { PackageBuilder } from './PackageBuilder'
 
 let root: Root
 let container: HTMLDivElement
+
+const userId = UserId.make('10000000-0000-4000-8000-000000000002')
 
 const pathId = QualificationPathId.make('10000000-0000-4000-8000-000000000001')
 
@@ -74,6 +79,13 @@ const seededCandidates = [
   candidate('warunki-techniczne', 'WT', 'regulation', 'download_not_allowed', 3),
 ]
 
+const selectedPath = {
+  id: pathId,
+  specialization: { code: 'konstrukcyjno-budowlana', name: 'Konstrukcyjno-budowlana' },
+  qualificationKind: { code: 'projektowanie', name: 'Projektowanie' },
+  qualificationScope: { code: 'bez-ograniczen', name: 'Bez ograniczeń' },
+}
+
 const renderBuilder = async (candidates: ReadonlyArray<DocumentPackageCandidate>) => {
   const rootRoute = createRootRoute({ component: Outlet })
   const app = createRoute({ getParentRoute: () => rootRoute, id: '(app)' })
@@ -83,7 +95,8 @@ const renderBuilder = async (candidates: ReadonlyArray<DocumentPackageCandidate>
     getParentRoute: () => authenticated,
     id: '_onboarded',
     beforeLoad: () => ({
-      selectedPath: { id: pathId, specialization: { code: 'konstrukcyjno-budowlana' } },
+      selectedPath,
+      session: { user: { id: userId } },
     }),
   })
 
@@ -100,11 +113,34 @@ const renderBuilder = async (candidates: ReadonlyArray<DocumentPackageCandidate>
     history: createMemoryHistory({ initialEntries: ['/zrodla/pakiet'] }),
   })
 
+  const queryClient = new QueryClient()
+  const included = candidates.filter(document => document.availability === 'included')
+  const selections = [included, included.toReversed(), ...included.map(document => [document])]
+
+  for (const documents of selections) {
+    queryClient.setQueryData(
+      [
+        'document-package',
+        userId,
+        pathId,
+        documents,
+        {
+          pathName: packagePathName(selectedPath),
+          generationDate: formatDate(getCurrentUtcIsoDateTime()),
+        },
+      ],
+      documents.reduce(
+        (total, document) => total + (document.pdf?.pageCount ?? 0),
+        2 + documents.length,
+      ),
+    )
+  }
+
   await router.load()
 
   await act(async () =>
     root.render(
-      <QueryClientProvider client={new QueryClient()}>
+      <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>,
     ),
@@ -149,7 +185,8 @@ test('every included document is selected by default and unavailable ones show t
   expect(option('WT')?.textContent).toContain('Tego dokumentu nie można pobrać.')
   expect(option('PN-EN 1990')?.textContent).toContain('Dostępny jest tylko opis tego dokumentu.')
   expect(packageOrder()).toEqual(['PB', 'USZ'])
-  expect(container.textContent).toContain('Dokumenty: 2 · Liczba stron: 14 · Rozmiar: 1,3 MB')
+  expect(container.textContent).not.toMatch(/Rozmiar|\bKB\b|\bMB\b/)
+  expect(container.textContent).toContain('Dokumenty: 2 · Liczba stron: 18')
 })
 
 test('documents reorder with the arrow buttons and the default order can be restored', async () => {
@@ -192,8 +229,19 @@ test('the selection and order survive a reload, and entries no longer included a
   expect(packageOrder()).toEqual(['PB'])
 })
 
-test('a package above 2000 pages warns that a weaker device may take a while', async () => {
-  await renderBuilder([candidate('duzy', 'DUZY', 'statute', 'included', 2001)])
+test('the large package warning includes generated pages', async () => {
+  await renderBuilder([candidate('duzy', 'DUZY', 'statute', 'included', 1998)])
 
   expect(container.querySelector('[role=alert]')?.textContent).toContain('Duży pakiet')
+})
+
+test('deselecting documents updates the complete package count and an empty selection has no pages', async () => {
+  await renderBuilder(seededCandidates)
+  await act(async () => checkbox('PB')?.click())
+
+  expect(container.textContent).toContain('Dokumenty: 1 · Liczba stron: 9')
+
+  await act(async () => checkbox('USZ')?.click())
+
+  expect(container.textContent).toContain('Dokumenty: 0 · Liczba stron: 0')
 })

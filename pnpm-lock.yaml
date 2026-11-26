@@ -207,6 +207,9 @@ catalogs:
     '@oxlint/plugins':
       specifier: 1.94.0
       version: 1.94.0
+    '@pdf-lib/fontkit':
+      specifier: 1.1.1
+      version: 1.1.1
     '@playwright/test':
       specifier: 1.65.1
       version: 1.65.1
@@ -627,6 +630,9 @@ importers:
       '@inzpro/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@pdf-lib/fontkit':
+        specifier: 'catalog:'
+        version: 1.1.1
       '@tanstack/react-form':
         specifier: 'catalog:'
         version: 1.33.5(@tanstack/react-start@1.169.5)(react-dom@19.3.1)(react@19.3.1)
@@ -2999,6 +3005,9 @@ packages:
   '@oxlint/plugins@1.94.0':
     resolution: {integrity: sha512-YT6htikBOBQ00XDxZpRZLZ0anEDo7h9s4+YvjRU0/Ng/cLd0D6SZQ3tsms4g/GDer/z8UKlegC5iptEfyRXJcw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@pdf-lib/fontkit@1.1.1':
+    resolution: {integrity: sha512-KjMd7grNapIWS/Dm0gvfHEilSyAmeLvrEGVcqLGi0VYebuqqzTbgF29efCx7tvx+IEbG3zQciRSWl3GkUSvjZg==}
 
   '@pdf-lib/standard-fonts@1.0.0':
     resolution: {integrity: sha512-hU30BK9IUN/su0Mn9VdlVKsWBS6GyhVfqjwl1FjZN4TxP6cCw0jP2w7V3Hf5uX7M0AZJ16vey9yE0ny7Sa59ZA==}
@@ -7800,6 +7809,10 @@ snapshots:
     optional: true
 
   '@oxlint/plugins@1.94.0': {}
+
+  '@pdf-lib/fontkit@1.1.1':
+    dependencies:
+      pako: 1.0.11
 
   '@pdf-lib/standard-fonts@1.0.0':
     dependencies:
