@@ -1,5 +1,4 @@
 import type { DocumentPackageCandidate } from '@inzpro/api-contracts/modules/learning-content/responses'
-import { POLISH_LOCALE } from '@inzpro/config/localization'
 import {
   includedInPackage,
   type PackageAvailability,
@@ -105,22 +104,6 @@ export const selectedCandidates = (
   candidates: ReadonlyArray<DocumentPackageCandidate>,
 ) => selection.selected.flatMap(code => candidates.filter(candidate => candidate.code === code))
 
-export const packageTotals = (candidates: ReadonlyArray<DocumentPackageCandidate>) =>
-  candidates.reduce(
-    (totals, { pdf }) => ({
-      pageCount: totals.pageCount + (pdf?.pageCount ?? 0),
-      size: totals.size + (pdf?.size ?? 0),
-    }),
-    { pageCount: 0, size: 0 },
-  )
-
-const megabyte = 1024 * 1024
-
-export const formatFileSize = (bytes: number) =>
-  bytes < megabyte
-    ? `${new Intl.NumberFormat(POLISH_LOCALE, { maximumFractionDigits: 0 }).format(Math.max(1, bytes / 1024))} KB`
-    : `${new Intl.NumberFormat(POLISH_LOCALE, { maximumFractionDigits: 1 }).format(bytes / megabyte)} MB`
-
 type PackagePath = {
   readonly specialization: { readonly code: SpecializationCode }
   readonly qualificationKind: { readonly code: QualificationKindCode }
@@ -140,3 +123,10 @@ export const pathAbbreviation = (path: PackagePath) =>
 
 export const packageFileName = (path: PackagePath, date: DateInput) =>
   `InzynierPRO-${pathAbbreviation(path)}-${formatWarsawIsoDate(date)}.pdf`
+
+export const packagePathName = (path: {
+  readonly specialization: { readonly name: string }
+  readonly qualificationKind: { readonly name: string }
+  readonly qualificationScope: { readonly name: string }
+}) =>
+  [path.specialization.name, path.qualificationKind.name, path.qualificationScope.name].join(' · ')
