@@ -14,6 +14,7 @@ import { saveFile } from '~platform/lib/file-download'
 
 import { assemblePackage, countPackagePages } from './lib/assemble-package'
 import type { PackageDetails } from './lib/merge-pdfs'
+import { PackageError } from './lib/package-error'
 
 const loadPackageDocument = (
   qualificationPathId: QualificationPathId,
@@ -60,17 +61,19 @@ export const downloadDocumentPackage = ({
   qualificationPathId,
   codes,
   fileName,
+  signal,
   ...details
 }: PackageDetails & {
   readonly qualificationPathId: QualificationPathId
   readonly codes: ReadonlyArray<ReferenceDocumentCode>
   readonly fileName: string
+  readonly signal: AbortSignal
 }) =>
   runApi(
     Effect.gen(function* () {
       const documents = yield* Effect.forEach(
         codes,
-        code =>
+        (code, documentIndex) =>
           Effect.gen(function* () {
             const [document, { url }] = yield* Effect.all(
               [
@@ -81,12 +84,25 @@ export const downloadDocumentPackage = ({
             )
 
             return { ...document, url }
-          }),
+          }).pipe(Effect.mapError(cause => new PackageError({ cause, documentIndex }))),
         { concurrency: 'unbounded' },
       )
 
-      const file = yield* assemblePackage({ type: 'assemble', documents, ...details })
+      const file = yield* assemblePackage(
+        { type: 'assemble', documents, ...details },
+        {
+          refreshUrl: documentIndex =>
+            getDocumentPdfDownload({
+              params: { qualificationPathId, code: codes[documentIndex]! },
+            }).pipe(
+              Effect.map(response => response.url),
+              Effect.mapError(cause => new PackageError({ cause, documentIndex })),
+            ),
+        },
+      )
+
       yield* saveFile(new Blob([file], { type: 'application/pdf' }), fileName)
     }),
     apiHttpClient,
+    signal,
   )
