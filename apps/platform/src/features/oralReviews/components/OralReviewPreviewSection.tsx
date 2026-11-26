@@ -39,6 +39,8 @@ import {
 import { SessionPreviewCardSkeleton } from '~platform/features/learningSession/components/SessionPreviewCardSkeleton'
 import { getSessionQuestionCount } from '~platform/features/learningSession/utils/session-question-count'
 import { onboardedRouteApi } from '~platform/features/onboarding/utils/route-api'
+import { OralChamberFilter } from '~platform/features/oralChamber/components/OralChamberFilter'
+import { useOralQuestionScope } from '~platform/features/oralChamber/hooks/useOralQuestionScope'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { noDueReviewsMessage, oralReviewPreviewRouteApi } from '../utils'
@@ -51,6 +53,7 @@ export const OralReviewPreviewSection = () => {
   } = onboardedRouteApi.useRouteContext()
 
   const search = oralReviewPreviewRouteApi.useSearch()
+  const questionScope = useOralQuestionScope()
 
   const req = {
     params: { qualificationPathId: selectedPath.id },
@@ -66,7 +69,10 @@ export const OralReviewPreviewSection = () => {
           isDataEmpty={session => session === null}
           noDataFallback={
             <SuspenseQuery
-              options={oralReviewPreviewQueryOptions(apiHttpClient, user.id, req)}
+              options={oralReviewPreviewQueryOptions(apiHttpClient, user.id, {
+                ...req,
+                query: { ...req.query, questionScope },
+              })}
               isDataEmpty={preview => preview === null}
               noDataFallback={<UnavailableReviews />}
             >
@@ -108,7 +114,7 @@ const OralReviewPreviewCard: React.FC<OralReviewPreviewCardProps> = ({ preview, 
           zaległych. Możesz ją przerwać w dowolnym momencie i wrócić do niej później.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-6">
         <SessionDetails>
           <SessionPathDetail />
           <SessionDetail
@@ -136,11 +142,13 @@ const OralReviewPreviewCard: React.FC<OralReviewPreviewCardProps> = ({ preview, 
             )}
           </SessionDetail>
         </SessionDetails>
+        <OralChamberFilter reportedQuestionCount={preview.reportedInMyChamberQuestionCount} />
       </CardContent>
       <CardFooter>
         <StartOralReviewSessionButton
           categoryId={preview.category?.id}
           questionCount={count}
+          questionScope={preview.questionScope}
         />
       </CardFooter>
     </Card>
@@ -151,7 +159,8 @@ type NothingDueProps = { preview: OralReviewPreview }
 
 const NothingDue: React.FC<NothingDueProps> = ({ preview }) => (
   <Card>
-    <CardContent>
+    <CardContent className="flex flex-col gap-6">
+      <OralChamberFilter reportedQuestionCount={preview.reportedInMyChamberQuestionCount} />
       <Empty>
         <EmptyHeader>
           <EmptyMedia>

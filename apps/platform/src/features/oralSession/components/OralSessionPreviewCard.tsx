@@ -16,6 +16,7 @@ import {
   SessionPathDetail,
 } from '~platform/features/learningSession/components/SessionDetails'
 import { getSessionQuestionCount } from '~platform/features/learningSession/utils/session-question-count'
+import { OralChamberFilter } from '~platform/features/oralChamber/components/OralChamberFilter'
 
 import { oralSessionPreviewRouteApi } from '../utils'
 import { StartOralSessionButton } from './StartOralSessionButton'
@@ -39,7 +40,7 @@ export const OralSessionPreviewCard: React.FC<OralSessionPreviewCardProps> = ({ 
           Możesz przerwać sesję w dowolnym momencie i wrócić do niej później.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-6">
         <SessionDetails>
           <SessionPathDetail />
           <SessionDetail
@@ -67,11 +68,13 @@ export const OralSessionPreviewCard: React.FC<OralSessionPreviewCardProps> = ({ 
             )}
           </SessionDetail>
         </SessionDetails>
+        <OralChamberFilter reportedQuestionCount={preview.reportedInMyChamberQuestionCount} />
       </CardContent>
       <CardFooter>
         <StartOralSessionButton
           categoryId={preview.category.id}
           questionCount={count}
+          questionScope={preview.questionScope}
         />
       </CardFooter>
     </Card>

@@ -6,6 +6,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { constVoid } from 'effect/Function'
 import { seo } from '~platform/config/app'
+import { getOralQuestionScope, oralChamberFilterStore } from '~platform/features/oralChamber/utils'
 import { StartOralSessionPage } from '~platform/features/oralSession/StartOralSessionPage'
 import { OralPreviewSearch } from '~platform/features/oralSession/validation'
 import { apiHttpClient } from '~platform/lib/api-client'
@@ -21,7 +22,13 @@ export const Route = createFileRoute('/(app)/_authenticated/_onboarded/_oralVali
       .query(
         oralSessionPreviewQueryOptions(apiHttpClient, session.user.id, {
           params: { qualificationPathId: selectedPath.id },
-          query: deps,
+          query: {
+            ...deps,
+            questionScope: getOralQuestionScope(
+              selectedPath,
+              oralChamberFilterStore.get(selectedPath.id),
+            ),
+          },
         }),
       )
       .then(preview =>
