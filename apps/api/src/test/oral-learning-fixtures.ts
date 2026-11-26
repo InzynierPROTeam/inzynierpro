@@ -8,6 +8,10 @@ import type {
   OralRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
+import {
+  type RegionalSourceKind,
+  recollectionRegionalSource,
+} from '@inzpro/domain/modules/learning-content/regional-question-link'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { paragraphs, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Effect, Schema } from 'effect'
@@ -24,8 +28,6 @@ import {
   OralQuestionCategory,
   OralRevisionWithdrawal,
   RegionalQuestionLink,
-  type RegionalSourceKind,
-  recollectionRegionalSource,
   type RevisionChangeKind,
   substantiveChange,
 } from '~api/modules/learning-content/domain/learning-content.model.js'

@@ -40,6 +40,7 @@ import {
   ReferenceDocumentId,
   ReferenceDocumentKind,
 } from '@inzpro/domain/modules/learning-content/reference-document'
+import { RegionalSourceKind } from '@inzpro/domain/modules/learning-content/regional-question-link'
 import {
   WrittenQuestionId,
   QuestionRevisionId,
@@ -236,18 +237,6 @@ export const NewOralQuestion = Schema.Struct({
 export type NewOralQuestion = typeof NewOralQuestion.Type
 
 export type OralQuestionAssignment = Pick<NewOralQuestion, 'id' | 'categoryId'>
-
-export const recollectionRegionalSource = 'recollection'
-export const officialRegionalSource = 'official'
-
-export const regionalSourceKindValues = [
-  recollectionRegionalSource,
-  officialRegionalSource,
-] as const
-
-export const RegionalSourceKind = Schema.Literals(regionalSourceKindValues)
-
-export type RegionalSourceKind = typeof RegionalSourceKind.Type
 
 export const RegionalQuestionLink = Schema.Struct({
   questionId: OralQuestionId,
