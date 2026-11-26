@@ -300,7 +300,7 @@ describe('the favourites preview', () => {
 })
 
 describe('favourites sessions', () => {
-  test('the set is fixed at start, in catalogue order, and unmarking changes nothing', async () => {
+  test('the set is fixed at start, most recently marked first, and unmarking changes nothing', async () => {
     const learner = await learnerWithQuestions(3)
 
     for (const question of [...learner.questions].reverse()) {
@@ -430,7 +430,9 @@ describe('favourites of one category', () => {
     const session = await decode(StudySession)(await learner.start(2, other.documentId))
 
     expect(session).toMatchObject({ kind: 'favourites', progress: { total: 2 } })
-    expect(await learner.sessionQuestionIds(session)).toEqual(otherQuestions.map(({ id }) => id))
+    expect(await learner.sessionQuestionIds(session)).toEqual(
+      otherQuestions.toReversed().map(({ id }) => id),
+    )
     await learner.end(session.id)
 
     expect(
