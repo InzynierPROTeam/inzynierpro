@@ -1,6 +1,6 @@
 import { SetDistrictChamberPayload } from '@inzpro/api-contracts/modules/preparation/requests'
+import type { UserQualificationPath } from '@inzpro/api-contracts/modules/preparation/responses'
 import { PageLimit } from '@inzpro/domain/common/pagination'
-import type { GeneralChamberId } from '@inzpro/domain/modules/exam-calendar/general-chamber'
 import { districtChambersQueryOptions } from '@inzpro/queries/modules/exam-calendar/queries'
 import { Button } from '@inzpro/ui/components/button'
 import { Field, FieldLabel, FieldDescription } from '@inzpro/ui/components/field'
@@ -15,23 +15,25 @@ import { toast } from '@inzpro/ui/components/toast'
 import { revalidateLogic, useForm } from '@tanstack/react-form'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Schema } from 'effect'
+import { constVoid } from 'effect/Function'
+import { authenticatedRouteApi } from '~platform/features/auth/utils'
 import { apiHttpClient } from '~platform/lib/api-client'
 
 import { useSetDistrictChamber } from '../hooks/useSetDistrictChamber'
-import { chambersRouteApi } from '../utils'
 
 type DistrictChamberChooserProps = {
-  generalChamberId: GeneralChamberId
+  path: UserQualificationPath
+  onSaved?: () => void
 }
 
-export const DistrictChamberChooser = ({ generalChamberId }: DistrictChamberChooserProps) => {
-  const { session, selectedPath } = chambersRouteApi.useRouteContext()
-  const current = selectedPath.districtChamber
+export const DistrictChamberChooser = ({ path, onSaved }: DistrictChamberChooserProps) => {
+  const { session } = authenticatedRouteApi.useRouteContext()
+  const current = path.districtChamber
   const mutation = useSetDistrictChamber(session.user.id)
 
   const { data } = useSuspenseQuery(
     districtChambersQueryOptions(apiHttpClient, {
-      query: { generalChamberId, limit: PageLimit.make(100) },
+      query: { generalChamberId: path.generalChamberId, limit: PageLimit.make(100) },
     }),
   )
 
@@ -48,19 +50,20 @@ export const DistrictChamberChooser = ({ generalChamberId }: DistrictChamberChoo
     defaultValues,
     validationLogic: revalidateLogic(),
     validators: { onDynamic: Schema.toStandardSchemaV1(SetDistrictChamberPayload) },
-    onSubmit: ({ value }) => {
-      void toast.promise(
-        mutation.mutateAsync({
-          params: { qualificationPathId: selectedPath.id },
-          payload: Schema.decodeSync(SetDistrictChamberPayload)(value),
-        }),
-        {
-          loading: { title: 'Zapisywanie izby…' },
-          success: { title: 'Zapisano izbę okręgową' },
-          error: { title: 'Nie udało się zapisać izby. Spróbuj ponownie.' },
-        },
-      )
-    },
+    onSubmit: ({ value }) =>
+      toast
+        .promise(
+          mutation.mutateAsync({
+            params: { qualificationPathId: path.id },
+            payload: Schema.decodeSync(SetDistrictChamberPayload)(value),
+          }),
+          {
+            loading: { title: 'Zapisywanie izby…' },
+            success: { title: 'Zapisano izbę okręgową' },
+            error: { title: 'Nie udało się zapisać izby. Spróbuj ponownie.' },
+          },
+        )
+        .then(onSaved, constVoid),
   })
 
   const submit = (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -107,7 +110,7 @@ export const DistrictChamberChooser = ({ generalChamberId }: DistrictChamberChoo
               </SelectContent>
             </Select>
             <FieldDescription>
-              Wybór dotyczy bieżącej ścieżki nauki. Możesz go zmienić lub usunąć.
+              Wybór dotyczy tylko tej ścieżki nauki. Możesz go zmienić lub usunąć.
             </FieldDescription>
           </Field>
         )}
