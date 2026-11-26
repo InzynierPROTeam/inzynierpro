@@ -22,6 +22,7 @@
     "@inzpro/rich-content": "workspace:*",
     "@inzpro/ui": "workspace:*",
     "@inzpro/utils": "workspace:*",
+    "@pdf-lib/fontkit": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
