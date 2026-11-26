@@ -48,6 +48,9 @@ export const Path: React.FC<PathProps> = ({ path, isSelected }) => (
         {path.qualificationKind.name} • {path.qualificationScope.name} •{' '}
         {getExamAccessLabel(path.accessScope)}
       </ItemDescription>
+      <ItemDescription className="line-clamp-none text-xs">
+        Izba okręgowa: {path.districtChamber?.name ?? 'nie wybrano'}
+      </ItemDescription>
     </ItemContent>
     <ItemActions>
       <PathActions

@@ -4,6 +4,7 @@ import {
   DistrictChamberId,
 } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import { ExamSessionId } from '@inzpro/domain/modules/exam-calendar/exam-session'
+import { GeneralChamberId } from '@inzpro/domain/modules/exam-calendar/general-chamber'
 import { maxUserQualificationPaths } from '@inzpro/domain/modules/preparation/config'
 import { ExamAccessScope } from '@inzpro/domain/modules/preparation/exam-access'
 import { UserExamGoalVersion } from '@inzpro/domain/modules/preparation/user-exam-goal'
@@ -58,6 +59,7 @@ const AssignmentRow = Schema.Struct({
   qualificationScopeName: Schema.NonEmptyString,
   pathVersion: UserQualificationPathVersion,
   archivedAt: Schema.NullOr(DateTimeUtc),
+  generalChamberId: GeneralChamberId,
   districtChamberId: Schema.NullOr(DistrictChamberId),
   districtChamberCode: Schema.NullOr(DistrictChamberCode),
   districtChamberName: Schema.NullOr(Schema.NonEmptyString),
@@ -112,6 +114,7 @@ const assignmentFromRow = (row: typeof AssignmentRow.Type): UserQualificationPat
   accessScope: row.accessScope,
   version: row.pathVersion,
   archived: row.archivedAt !== null,
+  generalChamberId: row.generalChamberId,
   districtChamber: districtChamberFromRow(row),
   goal: goalFromRow(row),
 })
@@ -120,7 +123,7 @@ export const PreparationReaderLive = Layer.effect(
   PreparationReader,
   Effect.gen(function* () {
     const sql = yield* SqlClient.SqlClient
-    const assignmentColumns = sql`p.id,p.name,s.id AS specialization_id,s.name AS specialization_name,s.code AS specialization_code,s.description AS specialization_description,k.id AS qualification_kind_id,k.name AS qualification_kind_name,k.code AS qualification_kind_code,q.id AS qualification_scope_id,q.name AS qualification_scope_name,q.code AS qualification_scope_code,up.access_scope,up.version AS path_version,up.archived_at,d.id AS district_chamber_id,d.code AS district_chamber_code,d.name AS district_chamber_name,d.short_name AS district_chamber_short_name,g.version,g.exam_session_id,e.name AS session_name,e.is_confirmed AS session_is_confirmed,e.written_at,e.oral_planning_at,g.oral_exam_date`
+    const assignmentColumns = sql`p.id,p.name,s.id AS specialization_id,s.name AS specialization_name,s.code AS specialization_code,s.description AS specialization_description,k.id AS qualification_kind_id,k.name AS qualification_kind_name,k.code AS qualification_kind_code,q.id AS qualification_scope_id,q.name AS qualification_scope_name,q.code AS qualification_scope_code,up.access_scope,up.version AS path_version,up.archived_at,s.general_chamber_id,d.id AS district_chamber_id,d.code AS district_chamber_code,d.name AS district_chamber_name,d.short_name AS district_chamber_short_name,g.version,g.exam_session_id,e.name AS session_name,e.is_confirmed AS session_is_confirmed,e.written_at,e.oral_planning_at,g.oral_exam_date`
     const assignmentTables = sql`FROM user_qualification_paths up JOIN qualification_paths p ON p.id=up.qualification_path_id JOIN specializations s ON s.id=p.specialization_id JOIN qualification_kinds k ON k.id=p.qualification_kind_id JOIN qualification_scopes q ON q.id=p.qualification_scope_id JOIN user_exam_goals g ON g.user_id=up.user_id AND g.qualification_path_id=p.id JOIN exam_sessions e ON e.id=g.exam_session_id LEFT JOIN district_chambers d ON d.id=up.district_chamber_id`
     const latestGoal = sql`g.version=(SELECT max(h.version) FROM user_exam_goals h WHERE h.user_id=up.user_id AND h.qualification_path_id=p.id)`
 

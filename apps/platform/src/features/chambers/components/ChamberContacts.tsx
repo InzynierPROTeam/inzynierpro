@@ -22,7 +22,7 @@ export const ChamberContacts = () => {
             <SuspenseQueryWrapper>
               <DistrictChamberChooser
                 key={`${selectedPath.id}:${selectedPath.districtChamber?.id ?? ''}`}
-                generalChamberId={data.generalChamber.id}
+                path={selectedPath}
               />
             </SuspenseQueryWrapper>
             {data.districtChamber && (

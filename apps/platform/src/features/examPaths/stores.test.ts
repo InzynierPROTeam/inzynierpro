@@ -31,6 +31,7 @@ const first = Schema.decodeSync(UserQualificationPath)({
   accessScope: 'written',
   version: 1,
   archived: false,
+  generalChamberId: '50000000-0000-4000-8000-000000000001',
   districtChamber: null,
   goal: {
     version: 1,

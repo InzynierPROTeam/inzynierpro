@@ -8,14 +8,25 @@ import {
   DropdownMenuSeparator,
 } from '@inzpro/ui/components/dropdown-menu'
 import { toast } from '@inzpro/ui/components/toast'
-import { Archive, ArchiveRestore, Check, Ellipsis, RotateCcw, Trash2 } from 'lucide-react'
+import {
+  Archive,
+  ArchiveRestore,
+  Building2,
+  Check,
+  CircleX,
+  Ellipsis,
+  RotateCcw,
+  Trash2,
+} from 'lucide-react'
 import type React from 'react'
 import { useState } from 'react'
+import { useSetDistrictChamber } from '~platform/features/chambers/hooks/useSetDistrictChamber'
 import { useArchivePath } from '~platform/features/examPaths/hooks/useArchivePath'
 import { useRestorePath } from '~platform/features/examPaths/hooks/useRestorePath'
 import { useSelectPath } from '~platform/features/examPaths/hooks/useSelectPath'
 
 import { profileRouteApi } from '../utils'
+import { DistrictChamberDialog } from './DistrictChamberDialog'
 import { ResetPathDialog } from './ResetPathDialog'
 
 type PathActionsProps = {
@@ -31,8 +42,10 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
   const archive = useArchivePath(user.id)
   const restore = useRestorePath(user.id)
   const selectPath = useSelectPath(user.id)
-  const isPending = archive.isPending || restore.isPending
+  const setDistrictChamber = useSetDistrictChamber(user.id)
+  const isPending = archive.isPending || restore.isPending || setDistrictChamber.isPending
   const [isResetOpen, setIsResetOpen] = useState(false)
+  const [isDistrictChamberOpen, setIsDistrictChamberOpen] = useState(false)
 
   const toggleArchived = () =>
     toast.promise(
@@ -47,6 +60,19 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
           title: path.archived ? 'Ścieżka została przywrócona.' : 'Ścieżka została zarchiwizowana.',
         },
         error: { title: 'Nie udało się zaktualizować ścieżki.' },
+      },
+    )
+
+  const clearDistrictChamber = () =>
+    toast.promise(
+      setDistrictChamber.mutateAsync({
+        params: { qualificationPathId: path.id },
+        payload: { districtChamberId: null },
+      }),
+      {
+        loading: { title: 'Usuwanie izby okręgowej…' },
+        success: { title: 'Usunięto izbę okręgową' },
+        error: { title: 'Nie udało się usunąć izby. Spróbuj ponownie.' },
       },
     )
 
@@ -80,6 +106,18 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
             {path.archived ? 'Przywróć' : 'Archiwizuj'}
           </DropdownMenuItem>
           <DropdownMenuItem
+            disabled={path.archived || isPending}
+            onClick={() => setIsDistrictChamberOpen(true)}
+          >
+            <Building2 /> {path.districtChamber ? 'Zmień izbę okręgową' : 'Wybierz izbę okręgową'}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={path.archived || path.districtChamber === null || isPending}
+            onClick={clearDistrictChamber}
+          >
+            <CircleX /> Usuń izbę okręgową
+          </DropdownMenuItem>
+          <DropdownMenuItem
             disabled={isPending}
             onClick={() => setIsResetOpen(true)}
           >
@@ -99,6 +137,11 @@ export const PathActions: React.FC<PathActionsProps> = ({ path, isSelected }) =>
         path={path}
         isOpen={isResetOpen}
         onOpenChange={setIsResetOpen}
+      />
+      <DistrictChamberDialog
+        path={path}
+        isOpen={isDistrictChamberOpen}
+        onOpenChange={setIsDistrictChamberOpen}
       />
     </>
   )
