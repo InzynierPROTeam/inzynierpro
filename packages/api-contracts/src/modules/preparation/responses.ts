@@ -6,6 +6,10 @@ import { UserQualificationPathVersion } from '@inzpro/domain/modules/preparation
 import { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { Schema } from 'effect'
 import {
+  GeneralChamberContacts,
+  DistrictChamberContacts,
+} from '~api-contracts/modules/exam-calendar/responses.js'
+import {
   DistrictChamber,
   ExamSessionOption,
 } from '~api-contracts/modules/exam-calendar/responses.js'
@@ -55,3 +59,8 @@ export const PathMutationResponse = Schema.Struct({
 
 export const GoalHistoryResponse = CursorPaginatedResponse(UserExamGoal)
 export const GoalOptionsResponse = CursorPaginatedResponse(ExamSessionOption)
+
+export const MyChamberResponse = Schema.Struct({
+  generalChamber: GeneralChamberContacts,
+  districtChamber: Schema.NullOr(DistrictChamberContacts),
+})

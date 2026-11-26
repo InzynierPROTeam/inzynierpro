@@ -1,4 +1,6 @@
 import type {
+  GetMyChamberEndpoint,
+  SetDistrictChamberEndpoint,
   GetPathsEndpoint,
   GetPathEndpoint,
   CompleteOnboardingEndpoint,
@@ -91,3 +93,21 @@ export type GetGoalOptionsRequest = InferEndpointRequest<typeof GetGoalOptionsEn
 export type GetGoalOptionsRes = Effect.Success<ReturnType<typeof getGoalOptions>>
 
 export type GetGoalOptionsError = Effect.Error<ReturnType<typeof getGoalOptions>>
+
+export const getMyChamber = (req: GetMyChamberRequest) =>
+  apiAction(api => api.Preparation.GetMyChamber(req))
+
+export type GetMyChamberRequest = InferEndpointRequest<typeof GetMyChamberEndpoint>
+
+export type GetMyChamberRes = Effect.Success<ReturnType<typeof getMyChamber>>
+
+export type GetMyChamberError = Effect.Error<ReturnType<typeof getMyChamber>>
+
+export const setDistrictChamber = (req: SetDistrictChamberRequest) =>
+  apiAction(api => api.Preparation.SetDistrictChamber(req))
+
+export type SetDistrictChamberRequest = InferEndpointRequest<typeof SetDistrictChamberEndpoint>
+
+export type SetDistrictChamberRes = Effect.Success<ReturnType<typeof setDistrictChamber>>
+
+export type SetDistrictChamberError = Effect.Error<ReturnType<typeof setDistrictChamber>>

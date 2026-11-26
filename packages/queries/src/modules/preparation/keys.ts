@@ -1,4 +1,5 @@
 import type {
+  GetMyChamberRequest,
   GetPathsRequest,
   GetPathRequest,
   GetGoalOptionsRequest,
@@ -12,6 +13,8 @@ export const preparationKeys = {
   paths: (userId: UserId) => [...preparationKeys.all, 'paths', userId] as const,
   path: (userId: UserId, id: QualificationPathId) =>
     [...preparationKeys.all, 'path', userId, id] as const,
+  getMyChamber: (userId: UserId, req: GetMyChamberRequest) =>
+    [...preparationKeys.path(userId, req.params.qualificationPathId), 'getMyChamber', req] as const,
   getPaths: (userId: UserId, req: GetPathsRequest) =>
     [...preparationKeys.paths(userId), 'getPaths', req] as const,
   getPathsInfinite: (userId: UserId, req: GetPathsRequest) =>

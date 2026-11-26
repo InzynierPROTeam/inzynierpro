@@ -1,4 +1,6 @@
 import {
+  getMyChamber,
+  type GetMyChamberRequest,
   getPaths,
   type GetPathsRequest,
   getPath,
@@ -64,3 +66,9 @@ export const goalHistoryInfiniteQueryOptions = (
     httpClient,
     req.query.cursor,
   )
+
+export const myChamberQueryOptions = (
+  httpClient: HttpClient.HttpClient,
+  userId: UserId,
+  req: GetMyChamberRequest,
+) => effectQueryOptions(preparationKeys.getMyChamber(userId, req), getMyChamber(req), httpClient)
