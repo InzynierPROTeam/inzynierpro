@@ -1,4 +1,5 @@
 import {
+  OralQuestionDetails,
   OralReviewPreview,
   OralSessionPreview,
   OralSessionQuestion,
@@ -166,7 +167,16 @@ test('reported in my chamber without a chosen chamber is refused while the whole
 
   expect(
     await learner.read(OralSessionPreview, `/preview?categoryId=${categoryId}&questionScope=path`),
-  ).toMatchObject({ questionScope: 'path', category: { availableQuestionCount: 3 } })
+  ).toMatchObject({
+    questionScope: 'path',
+    category: { availableQuestionCount: 3 },
+    reportedInMyChamberQuestionCount: null,
+  })
+
+  expect(await learner.read(OralReviewPreview, '/review-preview')).toMatchObject({
+    questionScope: 'path',
+    reportedInMyChamberQuestionCount: null,
+  })
 })
 
 test('filtered previews and sessions include only questions reported in the chosen chamber', async () => {
@@ -175,7 +185,11 @@ test('filtered previews and sessions include only questions reported in the chos
   await learner.chooseChamber(opolskaEngineers)
 
   expect(await learner.read(OralSessionPreview, `/preview?categoryId=${categoryId}`)).toMatchObject(
-    { questionScope: 'path', category: { availableQuestionCount: 3 } },
+    {
+      questionScope: 'path',
+      category: { availableQuestionCount: 3 },
+      reportedInMyChamberQuestionCount: 2,
+    },
   )
 
   const filtered = await learner.read(
@@ -187,6 +201,7 @@ test('filtered previews and sessions include only questions reported in the chos
     questionScope: 'reported_in_my_chamber',
     category: { id: categoryId, availableQuestionCount: 2, completedQuestionCount: 0 },
     settings: { defaultQuestionCount: 2, maximumQuestionCount: 2 },
+    reportedInMyChamberQuestionCount: 2,
   })
 
   const tooMany = await learner.request('/sessions', {
@@ -296,7 +311,11 @@ test('history and oral SRS are shared between the whole path and the chamber fil
 
   expect(
     await learner.read(OralReviewPreview, `/review-preview?categoryId=${categoryId}`),
-  ).toMatchObject({ questionScope: 'path', dueQuestionCount: 3 })
+  ).toMatchObject({
+    questionScope: 'path',
+    dueQuestionCount: 3,
+    reportedInMyChamberQuestionCount: 2,
+  })
 
   expect(
     await learner.read(
@@ -307,6 +326,7 @@ test('history and oral SRS are shared between the whole path and the chamber fil
     questionScope: 'reported_in_my_chamber',
     dueQuestionCount: 2,
     settings: { maximumQuestionCount: 2 },
+    reportedInMyChamberQuestionCount: 2,
   })
 
   const review = await learner.read(OralStudySession, '/review-sessions', {
@@ -317,4 +337,72 @@ test('history and oral SRS are shared between the whole path and the chamber fil
 
   expect(review).toMatchObject({ kind: 'review', progress: { total: 2 } })
   expect(await learner.sessionQuestionIds(review)).toEqual(reported)
+})
+
+test('oral questions show only the source kinds of links to the current district chamber', async () => {
+  const learner = await chamberLearner()
+  const categoryId = await addFixtureOralCategory()
+  const both = await addFixtureOralQuestion(learner.pathId, categoryId, 1)
+  const recollected = await addFixtureOralQuestion(learner.pathId, categoryId, 2)
+  const elsewhere = await addFixtureOralQuestion(learner.pathId, categoryId, 3)
+  await linkFixtureOralQuestionToChamber(both.id, opolskaEngineers, 'official')
+  await linkFixtureOralQuestionToChamber(both.id, opolskaEngineers, 'recollection')
+  await linkFixtureOralQuestionToChamber(recollected.id, opolskaEngineers)
+  await linkFixtureOralQuestionToChamber(
+    recollected.id,
+    opolskaEngineers,
+    'recollection',
+    '2026-07-01T10:00:00.000Z',
+  )
+  await linkFixtureOralQuestionToChamber(elsewhere.id, pomorskaEngineers)
+  await learner.chooseChamber(opolskaEngineers)
+
+  const session = await learner.read(OralStudySession, '/sessions', {
+    categoryId,
+    questionCount: 3,
+  })
+
+  const sourceKindsInSession = async () => {
+    const kinds = new Map<string, ReadonlyArray<string>>()
+
+    for (let position = 1; position <= session.progress.total; position++) {
+      const shown = await learner.read(
+        OralSessionQuestion,
+        `/sessions/${session.id}/questions/${position}`,
+      )
+
+      kinds.set(shown.questionId, shown.myChamberSourceKinds)
+    }
+
+    return kinds
+  }
+
+  const sourceKindsInDetails = async (questionId: string) =>
+    (await learner.read(OralQuestionDetails, `/questions/${questionId}`)).myChamberSourceKinds
+
+  expect(await sourceKindsInSession()).toEqual(
+    new Map([
+      [both.id, ['recollection', 'official']],
+      [recollected.id, ['recollection']],
+      [elsewhere.id, []],
+    ]),
+  )
+  expect(await sourceKindsInDetails(both.id)).toEqual(['recollection', 'official'])
+  expect(await sourceKindsInDetails(recollected.id)).toEqual(['recollection'])
+
+  await learner.chooseChamber(pomorskaEngineers)
+
+  expect(await sourceKindsInSession()).toEqual(
+    new Map([
+      [both.id, []],
+      [recollected.id, []],
+      [elsewhere.id, ['recollection']],
+    ]),
+  )
+  expect(await sourceKindsInDetails(both.id)).toEqual([])
+
+  await learner.chooseChamber(null)
+
+  expect([...(await sourceKindsInSession()).values()]).toEqual([[], [], []])
+  expect(await sourceKindsInDetails(elsewhere.id)).toEqual([])
 })

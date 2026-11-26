@@ -42,6 +42,7 @@ export class OralStudyReader extends Context.Service<
       userId: UserId,
       pathId: QualificationPathId,
       questionId: OralQuestionId,
+      districtChamberId: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<Option.Option<OralQuestionDetails>, StudyReadError>
     readonly isPathQuestion: (
       pathId: QualificationPathId,
@@ -168,6 +169,7 @@ export class OralStudyReader extends Context.Service<
       pathId: QualificationPathId,
       sessionId: OralStudySessionId,
       position: SessionQuestionPosition,
+      districtChamberId: Option.Option<DistrictChamberId>,
     ) => Effect.Effect<Option.Option<OralSessionQuestion>, StudyReadError>
     readonly nextOpenPosition: (
       sessionId: OralStudySessionId,

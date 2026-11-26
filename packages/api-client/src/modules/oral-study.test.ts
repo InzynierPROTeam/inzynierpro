@@ -48,6 +48,7 @@ const preview = Schema.decodeSync(OralReviewPreview)({
     maximumQuestionCount: 3,
     canChangeQuestionCount: true,
   },
+  reportedInMyChamberQuestionCount: null,
 })
 
 const session = Schema.decodeSync(OralStudySession)({

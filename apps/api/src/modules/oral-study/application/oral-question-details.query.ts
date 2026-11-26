@@ -12,9 +12,15 @@ export const getOralQuestionDetails = Effect.fn('Study.getOralQuestionDetails')(
   pathId: QualificationPathId,
   questionId: OralQuestionId,
 ) {
-  yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
+  const { districtChamber } = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const oralStudyReader = yield* OralStudyReader
-  const details = yield* oralStudyReader.questionDetails(userId, pathId, questionId)
+
+  const details = yield* oralStudyReader.questionDetails(
+    userId,
+    pathId,
+    questionId,
+    Option.map(districtChamber, ({ id }) => id),
+  )
 
   if (Option.isNone(details)) {
     return yield* new QuestionNotOnPath()

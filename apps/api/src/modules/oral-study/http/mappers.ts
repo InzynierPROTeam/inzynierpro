@@ -1,4 +1,7 @@
-import type { OralReviewPreview as OralReviewPreviewDto } from '@inzpro/api-contracts/modules/oral-study/responses'
+import type {
+  OralReviewPreview as OralReviewPreviewDto,
+  OralSessionPreview as OralSessionPreviewDto,
+} from '@inzpro/api-contracts/modules/oral-study/responses'
 import type {
   OralQuestionDetails as OralQuestionDetailsDto,
   OralQuizCheck as OralQuizCheckDto,
@@ -30,6 +33,7 @@ import { toQuestionNoteDto } from '~api/modules/learning/http/mappers.js'
 import type { OralQuestionDetails } from '~api/modules/oral-study/domain/oral-question-details.model.js'
 import type { OralReviewPreview } from '~api/modules/oral-study/domain/oral-review-session.model.js'
 import type { OralSessionNextStep } from '~api/modules/oral-study/domain/oral-session-next-step.model.js'
+import type { OralSessionPreview } from '~api/modules/oral-study/domain/oral-session-preview.rules.js'
 import type {
   OralQuizCheck,
   OralSessionQuiz,
@@ -111,6 +115,14 @@ export const toOralSessionQuestionResultDto = ({
   selfAssessment: Option.getOrNull(selfAssessment),
 })
 
+export const toOralSessionPreviewDto = ({
+  reportedInMyChamberQuestionCount,
+  ...preview
+}: OralSessionPreview): OralSessionPreviewDto => ({
+  ...preview,
+  reportedInMyChamberQuestionCount: Option.getOrNull(reportedInMyChamberQuestionCount),
+})
+
 export const toOralSessionNextStepDto = (step: OralSessionNextStep): OralSessionNextStepDto =>
   Match.value(step).pipe(
     Match.discriminatorsExhaustive('type')({
@@ -125,7 +137,7 @@ export const toOralSessionNextStepDto = (step: OralSessionNextStep): OralSession
       }),
       [startStudyNextStep]: ({ preview }): OralSessionNextStepDto => ({
         type: startStudyNextStep,
-        preview,
+        preview: toOralSessionPreviewDto(preview),
       }),
     }),
   )
@@ -143,6 +155,7 @@ export const toOralReviewPreviewDto = (preview: OralReviewPreview): OralReviewPr
     onSome: dateTimeUtcToUtcIsoDateTime,
   }),
   settings: Option.getOrNull(preview.settings),
+  reportedInMyChamberQuestionCount: Option.getOrNull(preview.reportedInMyChamberQuestionCount),
 })
 
 export const toOralQuizCheckDto = (

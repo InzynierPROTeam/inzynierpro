@@ -58,7 +58,7 @@ await Effect.runPromise(
       const position = SessionQuestionPosition.make(index)
 
       const question = Option.getOrThrow(
-        yield* oralStudyReader.sessionQuestion(userId, pathId, session.id, position),
+        yield* oralStudyReader.sessionQuestion(userId, pathId, session.id, position, Option.none()),
       )
 
       yield* submitOralSelfAssessment(

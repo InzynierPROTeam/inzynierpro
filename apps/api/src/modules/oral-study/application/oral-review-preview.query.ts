@@ -1,3 +1,4 @@
+import type { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import type { OralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-study-session'
@@ -19,6 +20,7 @@ export const findOralReviewPreview = Effect.fn('Study.findOralReviewPreview')(fu
   pathId: QualificationPathId,
   categoryId: Option.Option<OralQuestionCategoryId>,
   { questionScope, reportedIn }: OralQuestionFilter,
+  districtChamberId: Option.Option<DistrictChamberId>,
 ) {
   const oralStudyReader = yield* OralStudyReader
   const round = currentLearningRound(yield* oralStudyReader.learningRound(userId, pathId))
@@ -33,13 +35,18 @@ export const findOralReviewPreview = Effect.fn('Study.findOralReviewPreview')(fu
     return Option.none()
   }
 
-  const queue = yield* oralStudyReader.reviewQueue(
-    userId,
-    pathId,
-    categoryId,
-    yield* DateTime.now,
-    reportedIn,
-  )
+  const now = yield* DateTime.now
+  const queue = yield* oralStudyReader.reviewQueue(userId, pathId, categoryId, now, reportedIn)
+
+  const reportedInMyChamberQuestionCount = Option.isSome(reportedIn)
+    ? Option.some(queue.dueCount)
+    : yield* Effect.transposeOption(
+        Option.map(districtChamberId, id =>
+          oralStudyReader
+            .reviewQueue(userId, pathId, categoryId, now, Option.some(id))
+            .pipe(Effect.map(({ dueCount }) => dueCount)),
+        ),
+      )
 
   return Option.some<OralReviewPreview>({
     qualificationPathId: pathId,
@@ -47,6 +54,7 @@ export const findOralReviewPreview = Effect.fn('Study.findOralReviewPreview')(fu
     category: Option.flatten(category),
     queue,
     settings: oralReviewSettings(queue.dueCount),
+    reportedInMyChamberQuestionCount,
   })
 })
 
@@ -59,7 +67,13 @@ export const getOralReviewPreview = Effect.fn('Study.getOralReviewPreview')(func
   const assignment = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
   const filter = yield* oralQuestionFilter(questionScope, assignment.districtChamber)
 
-  return yield* findOralReviewPreview(userId, pathId, categoryId, filter)
+  return yield* findOralReviewPreview(
+    userId,
+    pathId,
+    categoryId,
+    filter,
+    Option.map(assignment.districtChamber, ({ id }) => id),
+  )
 })
 
 export const getOralReviewSession = Effect.fn('Study.getOralReviewSession')(function* (

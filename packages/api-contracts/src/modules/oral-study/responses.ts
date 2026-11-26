@@ -9,6 +9,7 @@ import {
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import { RegionalSourceKind } from '@inzpro/domain/modules/learning-content/regional-question-link'
 import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   continueStudyNextStep,
@@ -63,6 +64,8 @@ export const OralSessionPreview = Schema.Struct({
   questionScope: OralQuestionScope,
   category: OralQuestionCategory,
   settings: SessionCountSettings,
+  // CONTRACT: Questions of the category reported in the learner's district chamber, whatever the questionScope; null when the path assignment has no district chamber.
+  reportedInMyChamberQuestionCount: Schema.NullOr(QuestionCount),
 })
 
 export type OralSessionPreview = typeof OralSessionPreview.Type
@@ -112,6 +115,8 @@ export const OralSessionQuestion = Schema.Struct({
   isFavorite: Schema.Boolean,
   isWithdrawn: Schema.Boolean,
   selfAssessment: Schema.NullOr(StoredOralSelfAssessment),
+  // CONTRACT: Distinct source kinds of the question's links to the learner's current district chamber; empty without a chosen chamber or such a link.
+  myChamberSourceKinds: Schema.Array(RegionalSourceKind),
 })
 
 export type OralSessionQuestion = typeof OralSessionQuestion.Type
@@ -126,6 +131,8 @@ export const OralQuestionDetails = Schema.Struct({
   references: Schema.Array(QuestionReference),
   isFavorite: Schema.Boolean,
   note: Schema.NullOr(QuestionNote),
+  // CONTRACT: Distinct source kinds of the question's links to the learner's current district chamber; empty without a chosen chamber or such a link.
+  myChamberSourceKinds: Schema.Array(RegionalSourceKind),
 })
 
 export type OralQuestionDetails = typeof OralQuestionDetails.Type
@@ -190,6 +197,8 @@ export const OralReviewPreview = Schema.Struct({
   dueQuestionCount: QuestionCount,
   nextDueAt: Schema.NullOr(UtcIsoDateTime),
   settings: Schema.NullOr(SessionCountSettings),
+  // CONTRACT: Due questions reported in the learner's district chamber, whatever the questionScope; null when the path assignment has no district chamber.
+  reportedInMyChamberQuestionCount: Schema.NullOr(QuestionCount),
 })
 
 export type OralReviewPreview = typeof OralReviewPreview.Type

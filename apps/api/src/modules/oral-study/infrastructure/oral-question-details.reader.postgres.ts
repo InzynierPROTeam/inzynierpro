@@ -1,9 +1,16 @@
 import { DateTimeUtc } from '@inzpro/domain/common/date-time'
+import type { DistrictChamberId } from '@inzpro/domain/modules/exam-calendar/district-chamber'
 import type { UserId } from '@inzpro/domain/modules/identity/user'
 import {
   OralQuestionId,
   OralRevisionId,
 } from '@inzpro/domain/modules/learning-content/oral-question'
+import {
+  officialRegionalSource,
+  recollectionRegionalSource,
+  type RegionalSourceKind,
+  regionalSourceKindValues,
+} from '@inzpro/domain/modules/learning-content/regional-question-link'
 import { QuestionNoteText } from '@inzpro/domain/modules/learning/question-note'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { RichContent } from '@inzpro/rich-content/rich-content'
@@ -21,15 +28,22 @@ const QuestionDetailsRow = Schema.Struct({
   noteText: Schema.NullOr(QuestionNoteText),
   noteUpdatedAt: Schema.NullOr(DateTimeUtc),
   noteRefersToEarlierWording: Schema.NullOr(Schema.Boolean),
+  hasRecollectionLink: Schema.Boolean,
+  hasOfficialLink: Schema.Boolean,
 })
 
 const toQuestionDetails = ({
   noteText,
   noteUpdatedAt,
   noteRefersToEarlierWording,
+  hasRecollectionLink,
+  hasOfficialLink,
   ...details
 }: typeof QuestionDetailsRow.Type): OralQuestionDetails => ({
   ...details,
+  myChamberSourceKinds: regionalSourceKindValues.filter(kind =>
+    kind === recollectionRegionalSource ? hasRecollectionLink : hasOfficialLink,
+  ),
   note:
     noteText === null || noteUpdatedAt === null || noteRefersToEarlierWording === null
       ? Option.none()
@@ -43,10 +57,27 @@ const toQuestionDetails = ({
 export const oralQuestionDetailsReader = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
 
+  const myChamberLink = (
+    districtChamberId: Option.Option<DistrictChamberId>,
+    sourceKind: RegionalSourceKind,
+  ) =>
+    Option.match(districtChamberId, {
+      onNone: () => sql`FALSE`,
+      onSome: id =>
+        sql`EXISTS (SELECT 1 FROM oral_question_regional_links l WHERE l.question_id=q.id AND l.district_chamber_id=${id} AND l.source_kind=${sourceKind})`,
+    })
+
   return {
     questionDetails: Effect.fn('OralStudyReader.questionDetails')(
-      function* (userId: UserId, pathId: QualificationPathId, questionId: OralQuestionId) {
+      function* (
+        userId: UserId,
+        pathId: QualificationPathId,
+        questionId: OralQuestionId,
+        districtChamberId: Option.Option<DistrictChamberId>,
+      ) {
         const rows = yield* sql`SELECT q.id AS question_id,r.id AS oral_revision_id,r.body,r.answer,
+ ${myChamberLink(districtChamberId, recollectionRegionalSource)} AS has_recollection_link,
+ ${myChamberLink(districtChamberId, officialRegionalSource)} AS has_official_link,
  EXISTS (SELECT 1 FROM oral_favorite_questions f WHERE f.user_id=${userId} AND f.question_id=q.id) AS is_favorite,
  n.body AS note_text,n.updated_at AS note_updated_at,
  CASE WHEN n.user_id IS NOT NULL THEN coalesce(nr.substantive_revision_id<>r.substantive_revision_id,false) END AS note_refers_to_earlier_wording

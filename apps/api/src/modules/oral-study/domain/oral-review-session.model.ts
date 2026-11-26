@@ -1,3 +1,4 @@
+import type { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
 import type { OralQuestionScope } from '@inzpro/domain/modules/oral-study/oral-study-session'
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type { Option } from 'effect'
@@ -11,4 +12,5 @@ export type OralReviewPreview = {
   readonly category: Option.Option<OralCategoryQuestionPool>
   readonly queue: ReviewQueue
   readonly settings: Option.Option<SessionCountSettings>
+  readonly reportedInMyChamberQuestionCount: Option.Option<QuestionCount>
 }

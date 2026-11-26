@@ -6,6 +6,7 @@ import type {
 } from '@inzpro/domain/modules/learning-content/oral-question'
 import { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-content/oral-question-category'
 import { QuestionCount } from '@inzpro/domain/modules/learning-content/reference-document'
+import type { RegionalSourceKind } from '@inzpro/domain/modules/learning-content/regional-question-link'
 import { LearningXp } from '@inzpro/domain/modules/learning-xp/learning-xp'
 import {
   StudySessionKind,
@@ -53,6 +54,7 @@ export type OralSessionQuestion = {
   readonly isFavorite: boolean
   readonly isWithdrawn: boolean
   readonly selfAssessment: Option.Option<StoredOralSelfAssessment>
+  readonly myChamberSourceKinds: ReadonlyArray<RegionalSourceKind>
 }
 
 export type OralSessionCandidate = {

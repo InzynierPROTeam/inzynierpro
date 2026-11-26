@@ -61,6 +61,7 @@ test('oral review queries forward category scope and invalidate with oral progre
               maximumQuestionCount: 2,
               canChangeQuestionCount: true,
             },
+            reportedInMyChamberQuestionCount: null,
           })
         }),
       ),
@@ -315,6 +316,7 @@ test('an oral question details reads through the oral questions group, so a mark
           references: [],
           isFavorite: false,
           note: null,
+          myChamberSourceKinds: [],
         }),
       ),
     ],

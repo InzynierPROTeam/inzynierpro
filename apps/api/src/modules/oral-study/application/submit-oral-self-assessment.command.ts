@@ -83,11 +83,20 @@ export const submitOralSelfAssessment = Effect.fn('Study.submitOralSelfAssessmen
   return yield* transaction.run(
     Effect.gen(function* () {
       yield* preparationRepository.lockUser(userId)
-      const { goal } = yield* requirePathAccess(userId, pathId, { part: oralExamAccess })
+
+      const { goal, districtChamber } = yield* requirePathAccess(userId, pathId, {
+        part: oralExamAccess,
+      })
 
       const found = Option.all({
         session: yield* oralStudyReader.session(userId, pathId, sessionId),
-        question: yield* oralStudyReader.sessionQuestion(userId, pathId, sessionId, position),
+        question: yield* oralStudyReader.sessionQuestion(
+          userId,
+          pathId,
+          sessionId,
+          position,
+          Option.map(districtChamber, ({ id }) => id),
+        ),
       })
 
       if (Option.isNone(found)) {
