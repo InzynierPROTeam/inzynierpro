@@ -1,4 +1,4 @@
-import { Duration, Effect, Exit } from 'effect'
+import { Effect, Exit } from 'effect'
 
 import { PackageError } from './package-error'
 import type { PackageWorkerRequest, PackageWorkerResponse } from './package-worker'
@@ -65,23 +65,3 @@ export const countPackagePages = (request: Extract<PackageWorkerRequest, { type:
         : Effect.fail(new PackageError({ cause: 'Expected a package page count' })),
     ),
   )
-
-export const saveFile = (file: Uint8Array<ArrayBuffer>, fileName: string) =>
-  Effect.gen(function* () {
-    const url = yield* Effect.try({
-      try: () => URL.createObjectURL(new Blob([file], { type: 'application/pdf' })),
-      catch: cause => new PackageError({ cause }),
-    })
-
-    const revoke = Effect.sync(() => URL.revokeObjectURL(url))
-    yield* Effect.try({
-      try: () => {
-        const link = document.createElement('a')
-        link.href = url
-        link.download = fileName
-        link.click()
-      },
-      catch: cause => new PackageError({ cause }),
-    }).pipe(Effect.onError(() => revoke))
-    yield* Effect.sleep(Duration.seconds(10)).pipe(Effect.ensuring(revoke), Effect.forkDetach)
-  })

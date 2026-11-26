@@ -85,7 +85,8 @@ const PackageDocumentItem: React.FC<PackageDocumentItemProps> = ({
   const titleId = useId()
   const reasonId = useId()
   const { availability, pdf } = candidate
-  const included = availability === includedInPackage
+  const reason = availability === includedInPackage ? null : unavailabilityReason(availability)
+  const included = reason === null
 
   return (
     <Item
@@ -114,12 +115,12 @@ const PackageDocumentItem: React.FC<PackageDocumentItemProps> = ({
           {candidate.editionLabel}
           {pdf !== null && ` · Liczba stron: ${pdf.pageCount}`}
         </ItemDescription>
-        {availability !== includedInPackage && (
+        {!included && (
           <ItemDescription
             id={reasonId}
             className="line-clamp-none"
           >
-            {unavailabilityReason(availability)}
+            {reason}
           </ItemDescription>
         )}
       </ItemContent>

@@ -6,3 +6,10 @@ export const getInitials = (value: string, locale: string) =>
     .map(part => part.charAt(0))
     .join('')
     .toLocaleUpperCase(locale)
+
+export const getKebabCaseInitials = (value: string, locale: string) =>
+  value
+    .split('-')
+    .map(word => word.charAt(0))
+    .join('')
+    .toLocaleUpperCase(locale)

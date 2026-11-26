@@ -1,4 +1,5 @@
 import type { DocumentPackageCandidate } from '@inzpro/api-contracts/modules/learning-content/responses'
+import { POLISH_LOCALE } from '@inzpro/config/localization'
 import {
   includedInPackage,
   type PackageAvailability,
@@ -11,6 +12,7 @@ import type { QualificationKindCode } from '@inzpro/domain/modules/qualification
 import type { QualificationScopeCode } from '@inzpro/domain/modules/qualification-paths/qualification-scope'
 import type { SpecializationCode } from '@inzpro/domain/modules/qualification-paths/specialization'
 import { type DateInput, formatWarsawIsoDate } from '@inzpro/utils/date'
+import { getKebabCaseInitials } from '@inzpro/utils/string'
 
 export type PackageSelection = {
   readonly selected: ReadonlyArray<ReferenceDocumentCode>
@@ -19,15 +21,16 @@ export type PackageSelection = {
 
 export const largePackagePageCount = 2000
 
+export type PackageUnavailability = Exclude<PackageAvailability, typeof includedInPackage>
+
 const unavailabilityReasons = {
   metadata_only: 'Dostępny jest tylko opis tego dokumentu.',
   download_not_allowed: 'Tego dokumentu nie można pobrać.',
   no_pdf: 'Plik PDF tego dokumentu nie jest jeszcze dostępny.',
-} satisfies Record<Exclude<PackageAvailability, typeof includedInPackage>, string>
+} satisfies Record<PackageUnavailability, string>
 
-export const unavailabilityReason = (
-  availability: Exclude<PackageAvailability, typeof includedInPackage>,
-) => unavailabilityReasons[availability]
+export const unavailabilityReason = (availability: PackageUnavailability) =>
+  unavailabilityReasons[availability]
 
 export const candidatesByKind = (candidates: ReadonlyArray<DocumentPackageCandidate>) =>
   referenceDocumentKindValues.flatMap(kind => {
@@ -110,15 +113,9 @@ type PackagePath = {
   readonly qualificationScope: { readonly code: QualificationScopeCode }
 }
 
-const initials = (code: string) =>
-  code
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase())
-    .join('')
-
 export const pathAbbreviation = (path: PackagePath) =>
   [path.specialization.code, path.qualificationKind.code, path.qualificationScope.code]
-    .map(initials)
+    .map(code => getKebabCaseInitials(code, POLISH_LOCALE))
     .join('-')
 
 export const packageFileName = (path: PackagePath, date: DateInput) =>
