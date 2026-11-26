@@ -623,7 +623,7 @@ test('quiz checks earn one XP plus a correct bonus once in each quiz', async () 
 test('concurrent oral answers on different paths share the question daily limit', async () => {
   const learner = await learnerWithQuestions(1)
   const other = await createStudyFixture('60000000-0000-4000-8000-000000000006')
-  await assignFixtureOralQuestion(other.pathId, learner.question(0).id)
+  await assignFixtureOralQuestion(other.pathId, learner.question(0))
   await learningRequest(
     api,
     learner.visitor,

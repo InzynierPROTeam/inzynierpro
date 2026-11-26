@@ -87,7 +87,7 @@ test('oral categories count the published, current questions assigned to the pat
   const withdrawn = await addFixtureOralQuestion(learner.pathId, shared, 4)
   await withdrawFixtureOralRevision(withdrawn.revisionId)
   const assignedLater = await addFixtureOralQuestion(other.pathId, shared, 5)
-  await assignFixtureOralQuestion(learner.pathId, assignedLater.id)
+  await assignFixtureOralQuestion(learner.pathId, assignedLater)
   await addFixtureOralQuestion(other.pathId, elsewhere, 1)
 
   const categories = await learner.categories()

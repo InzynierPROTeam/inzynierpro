@@ -12,6 +12,7 @@ import {
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import type { RichContent } from '@inzpro/rich-content/rich-content'
 import { Effect, Option, Schema } from 'effect'
+import { attachPathDocument } from '~api/modules/learning-content/application/attach-path-document.command.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import type { NewQuestionReference } from '~api/modules/learning-content/domain/learning-content.model.js'
 import { assignBlueprint } from '~api/modules/mock-exams/application/assign-blueprint.command.js'
@@ -58,7 +59,7 @@ export const addFixtureDocument = (pathId: QualificationPathId) =>
       yield* learningContentRepository.createDocument(
         fixtureReferenceDocument(documentId, `Test-only exam document ${documentId}`),
       )
-      yield* learningContentRepository.attachDocument(pathId, documentId)
+      yield* attachPathDocument(pathId, documentId)
 
       return documentId
     }),

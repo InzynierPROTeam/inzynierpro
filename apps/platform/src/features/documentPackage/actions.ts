@@ -10,8 +10,9 @@ import { formatDate } from '@inzpro/utils/date'
 import { Effect } from 'effect'
 import { textKindLabel } from '~platform/features/sources/utils'
 import { apiHttpClient } from '~platform/lib/api-client'
+import { saveFile } from '~platform/lib/file-download'
 
-import { assemblePackage, countPackagePages, saveFile } from './lib/assemble-package'
+import { assemblePackage, countPackagePages } from './lib/assemble-package'
 import type { PackageDetails } from './lib/merge-pdfs'
 
 const loadPackageDocument = (
@@ -85,7 +86,7 @@ export const downloadDocumentPackage = ({
       )
 
       const file = yield* assemblePackage({ type: 'assemble', documents, ...details })
-      yield* saveFile(file, fileName)
+      yield* saveFile(new Blob([file], { type: 'application/pdf' }), fileName)
     }),
     apiHttpClient,
   )

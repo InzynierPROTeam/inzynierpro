@@ -57,7 +57,7 @@ export const apiModuleDependencies = {
   'exam-calendar': [],
   health: [],
   identity: [],
-  'learning-content': ['preparation'],
+  'learning-content': ['preparation', 'qualification-paths'],
   preparation: ['exam-calendar', 'qualification-paths'],
   'qualification-paths': [],
   learning: [],

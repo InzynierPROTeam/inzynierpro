@@ -235,6 +235,8 @@ export const NewOralQuestion = Schema.Struct({
 
 export type NewOralQuestion = typeof NewOralQuestion.Type
 
+export type OralQuestionAssignment = Pick<NewOralQuestion, 'id' | 'categoryId'>
+
 export const recollectionRegionalSource = 'recollection'
 export const officialRegionalSource = 'official'
 

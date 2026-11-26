@@ -12,6 +12,7 @@ import {
 import { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
 import { Effect, Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
+import { attachPathDocument } from '~api/modules/learning-content/application/attach-path-document.command.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { startTestApi, type TestApi } from '~api/test/api-server.js'
 import { fixtureReferenceDocument } from '~api/test/content-fixtures.js'
@@ -305,7 +306,7 @@ test('continuing points to the most recently used session of the path and each d
       yield* learningContentRepository.createDocument(
         fixtureReferenceDocument(id, 'Test-only second document'),
       )
-      yield* learningContentRepository.attachDocument(fixture.pathId, id)
+      yield* attachPathDocument(fixture.pathId, id)
 
       return id
     }),

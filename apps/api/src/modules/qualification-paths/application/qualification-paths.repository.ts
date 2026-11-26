@@ -7,5 +7,8 @@ export class QualificationPathsRepository extends Context.Service<
   QualificationPathsRepository,
   {
     readonly lock: (id: QualificationPathId) => Effect.Effect<void, QualificationPathsWriteError>
+    readonly lockExclusively: (
+      id: QualificationPathId,
+    ) => Effect.Effect<void, QualificationPathsWriteError>
   }
 >()('api/modules/qualification-paths/QualificationPathsRepository') {}

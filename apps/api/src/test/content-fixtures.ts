@@ -14,6 +14,7 @@ import {
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { DateTime, Effect, Option, Schema } from 'effect'
 import { expect } from 'vitest'
+import { attachPathDocument } from '~api/modules/learning-content/application/attach-path-document.command.js'
 import { FileStorage } from '~api/modules/learning-content/application/file-storage.service.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import { withSiblingPositions } from '~api/modules/learning-content/domain/document-section.rules.js'
@@ -212,7 +213,7 @@ export const addFixtureReferenceDocument = (
       yield* learningContentRepository.makeCurrentEdition(documentId, editionId)
 
       if (pathId !== undefined) {
-        yield* learningContentRepository.attachDocument(pathId, documentId)
+        yield* attachPathDocument(pathId, documentId)
       }
 
       return { ...document, editionId }

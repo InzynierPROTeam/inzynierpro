@@ -2,7 +2,7 @@ import { Data, type Schema } from 'effect'
 import type { SqlError } from 'effect/sql'
 
 export class LearningContentWriteError extends Data.TaggedError('LearningContentWriteError')<{
-  readonly cause: SqlError.SqlError
+  readonly cause: SqlError.SqlError | Schema.SchemaError
 }> {}
 
 export class LearningContentReadError extends Data.TaggedError('LearningContentReadError')<{

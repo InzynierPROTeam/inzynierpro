@@ -11,6 +11,8 @@ import type { OralQuestionCategoryId } from '@inzpro/domain/modules/learning-con
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { paragraphs, type RichContent } from '@inzpro/rich-content/rich-content'
 import { Effect, Schema } from 'effect'
+import { assignOralQuestion } from '~api/modules/learning-content/application/assign-oral-question.command.js'
+import { createOralQuestion } from '~api/modules/learning-content/application/create-oral-question.command.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import {
   NewOralKnowledgeCheck,
@@ -18,6 +20,7 @@ import {
   NewOralRevision,
   type NewQuestionReference,
   OralDraftEdit,
+  type OralQuestionAssignment,
   OralQuestionCategory,
   OralRevisionWithdrawal,
   RegionalQuestionLink,
@@ -79,8 +82,6 @@ export const addFixtureOralQuestion = (
 ) =>
   runFixture(
     Effect.gen(function* () {
-      const learningContentRepository = yield* LearningContentRepository
-
       const question = yield* Schema.decodeEffect(NewOralQuestion)({
         id: crypto.randomUUID(),
         revisionId: crypto.randomUUID(),
@@ -93,7 +94,7 @@ export const addFixtureOralQuestion = (
         published,
       })
 
-      yield* learningContentRepository.createOralQuestion(question)
+      yield* createOralQuestion(question)
 
       return question
     }),
@@ -101,15 +102,8 @@ export const addFixtureOralQuestion = (
 
 export const assignFixtureOralQuestion = (
   pathId: QualificationPathId,
-  questionId: OralQuestionId,
-) =>
-  runFixture(
-    Effect.gen(function* () {
-      const learningContentRepository = yield* LearningContentRepository
-
-      yield* learningContentRepository.assignOralQuestion(pathId, questionId)
-    }),
-  )
+  question: OralQuestionAssignment,
+) => runFixture(assignOralQuestion(pathId, question))
 
 export const editFixtureOralDraft = (
   revisionId: OralRevisionId,
