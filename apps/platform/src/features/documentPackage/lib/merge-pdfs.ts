@@ -244,37 +244,39 @@ export const mergePdfs = ({
     const originalPages = new Set<PDFPage>()
 
     for (const [index, document] of documents.entries()) {
-      const source = yield* Effect.tryPromise({
-        try: () => PDFDocument.load(document.file),
-        catch: cause => new PackageError({ cause }),
-      })
+      yield* Effect.gen(function* () {
+        const source = yield* Effect.tryPromise({
+          try: () => PDFDocument.load(document.file),
+          catch: cause => new PackageError({ cause }),
+        })
 
-      starts.push(merged.getPageCount() + 1)
-      const titlePage = merged.getPageCount()
-      writeDocumentTitle(merged, font, document)
+        starts.push(merged.getPageCount() + 1)
+        const titlePage = merged.getPageCount()
+        writeDocumentTitle(merged, font, document)
 
-      bookmarks[index]!.set(
-        PDFName.of('Dest'),
-        merged.context.obj([merged.getPage(titlePage).ref, 'Fit']),
-      )
+        bookmarks[index]!.set(
+          PDFName.of('Dest'),
+          merged.context.obj([merged.getPage(titlePage).ref, 'Fit']),
+        )
 
-      if (index > 0) {
-        bookmarks[index]!.set(PDFName.of('Prev'), bookmarkRefs[index - 1]!)
-      }
+        if (index > 0) {
+          bookmarks[index]!.set(PDFName.of('Prev'), bookmarkRefs[index - 1]!)
+        }
 
-      if (index < documents.length - 1) {
-        bookmarks[index]!.set(PDFName.of('Next'), bookmarkRefs[index + 1]!)
-      }
+        if (index < documents.length - 1) {
+          bookmarks[index]!.set(PDFName.of('Next'), bookmarkRefs[index + 1]!)
+        }
 
-      const pages = yield* Effect.tryPromise({
-        try: () => merged.copyPages(source, source.getPageIndices()),
-        catch: cause => new PackageError({ cause }),
-      })
+        const pages = yield* Effect.tryPromise({
+          try: () => merged.copyPages(source, source.getPageIndices()),
+          catch: cause => new PackageError({ cause }),
+        })
 
-      for (const page of pages) {
-        merged.addPage(page)
-        originalPages.add(page)
-      }
+        for (const page of pages) {
+          merged.addPage(page)
+          originalPages.add(page)
+        }
+      }).pipe(Effect.mapError(error => new PackageError({ cause: error, documentIndex: index })))
     }
 
     for (const [index, line] of tocLines.entries()) {

@@ -66,7 +66,7 @@ test('a PDF-only statute opens in the viewer at the requested page and downloads
 }) => {
   await page.goto('/zrodla/samorzady-zawodowe?strona=3')
 
-  await expect(page.getByText('Strona 3 z 6')).toBeVisible()
+  await expect(page.getByText('Strona 3 z 6', { exact: true })).toBeVisible()
   await expect(page.getByText(/Rozdział 1 · strona 3 z 6/)).toBeVisible()
 
   await page.getByRole('button', { name: 'Następna strona' }).click()

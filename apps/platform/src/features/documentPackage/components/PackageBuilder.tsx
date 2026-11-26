@@ -1,4 +1,5 @@
 import type { DocumentPackageCandidate } from '@inzpro/api-contracts/modules/learning-content/responses'
+import type { ReferenceDocumentCode } from '@inzpro/domain/modules/learning-content/reference-document'
 import {
   SectionHeader,
   SectionHeaderContent,
@@ -25,6 +26,12 @@ export const PackageBuilder: React.FC<PackageBuilderProps> = ({ candidates }) =>
   )
 
   const documents = selectedCandidates(selection, candidates)
+
+  const remove = (code: ReferenceDocumentCode) => {
+    if (selection.selected.includes(code)) {
+      toggle(code)
+    }
+  }
 
   return (
     <div className="grid grid-cols-1 gap-10 @4xl:grid-cols-2">
@@ -56,7 +63,10 @@ export const PackageBuilder: React.FC<PackageBuilderProps> = ({ candidates }) =>
           />
         )}
         <PackageSummary documents={documents} />
-        <PackageDownloadButton codes={documents.map(document => document.code)} />
+        <PackageDownloadButton
+          documents={documents}
+          onRemove={remove}
+        />
       </section>
     </div>
   )
