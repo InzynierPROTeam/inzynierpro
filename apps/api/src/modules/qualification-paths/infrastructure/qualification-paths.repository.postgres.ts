@@ -15,6 +15,12 @@ export const QualificationPathsRepositoryLive = Layer.effect(
           Effect.mapError(cause => new QualificationPathsWriteError({ cause })),
         )
       }),
+      lockExclusively: Effect.fn('QualificationPathsRepository.lockExclusively')(function* (id) {
+        return yield* sql`SELECT id FROM qualification_paths WHERE id=${id} LIMIT 1 FOR NO KEY UPDATE`.pipe(
+          Effect.asVoid,
+          Effect.mapError(cause => new QualificationPathsWriteError({ cause })),
+        )
+      }),
     })
   }),
 )

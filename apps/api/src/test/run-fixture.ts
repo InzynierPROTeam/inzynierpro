@@ -28,7 +28,9 @@ import { PreparationRepository } from '~api/modules/preparation/application/prep
 import { PreparationReaderLive } from '~api/modules/preparation/infrastructure/preparation.reader.postgres.js'
 import { PreparationRepositoryLive } from '~api/modules/preparation/infrastructure/preparation.repository.postgres.js'
 import { QualificationPathsReader } from '~api/modules/qualification-paths/application/qualification-paths.reader.js'
+import { QualificationPathsRepository } from '~api/modules/qualification-paths/application/qualification-paths.repository.js'
 import { QualificationPathsReaderLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.reader.postgres.js'
+import { QualificationPathsRepositoryLive } from '~api/modules/qualification-paths/infrastructure/qualification-paths.repository.postgres.js'
 import { StreakReader } from '~api/modules/streak/application/streak.reader.js'
 import { StreakRepository } from '~api/modules/streak/application/streak.repository.js'
 import { StreakReaderLive } from '~api/modules/streak/infrastructure/streak.reader.postgres.js'
@@ -42,6 +44,7 @@ const fixturesLayer = Layer.mergeAll(
   TransactionLive,
   LearningContentRepositoryLive,
   QualificationPathsReaderLive,
+  QualificationPathsRepositoryLive,
   ExamCalendarRepositoryLive,
   StudyRepositoryLive,
   StudyReaderLive,
@@ -66,6 +69,7 @@ export const runFixture = <A, E>(
     | LearningContentRepository
     | FileStorage
     | QualificationPathsReader
+    | QualificationPathsRepository
     | ExamCalendarRepository
     | StudyRepository
     | StudyReader

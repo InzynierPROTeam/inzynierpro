@@ -8,6 +8,7 @@ import type { StudySessionId } from '@inzpro/domain/modules/learning/study-sessi
 import type { QualificationPathId } from '@inzpro/domain/modules/qualification-paths/qualification-path'
 import { paragraphs, type RichContent } from '@inzpro/rich-content/rich-content'
 import { type DateTime, Effect, Schema, Option } from 'effect'
+import { attachPathDocument } from '~api/modules/learning-content/application/attach-path-document.command.js'
 import { LearningContentRepository } from '~api/modules/learning-content/application/learning-content.repository.js'
 import {
   NewQuestion,
@@ -80,7 +81,7 @@ export const attachFixtureQuestion = (
     Effect.gen(function* () {
       const learningContentRepository = yield* LearningContentRepository
 
-      yield* learningContentRepository.attachDocument(pathId, documentId)
+      yield* attachPathDocument(pathId, documentId)
       yield* learningContentRepository.attachQuestion(pathId, documentId, questionId)
     }),
   )

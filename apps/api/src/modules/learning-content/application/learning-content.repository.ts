@@ -1,6 +1,12 @@
 import type { DocumentEditionId } from '@inzpro/domain/modules/learning-content/document-edition'
-import type { OralQuestionId } from '@inzpro/domain/modules/learning-content/oral-question'
-import type { ReferenceDocumentId } from '@inzpro/domain/modules/learning-content/reference-document'
+import type {
+  OralQuestionCategoryId,
+  PathOralCategoryPosition,
+} from '@inzpro/domain/modules/learning-content/oral-question-category'
+import type {
+  PathDocumentPosition,
+  ReferenceDocumentId,
+} from '@inzpro/domain/modules/learning-content/reference-document'
 import type {
   QuestionRevisionId,
   WrittenQuestionId,
@@ -19,6 +25,7 @@ import type {
   NewQuestionReference,
   NewQuestionRevision,
   OralDraftEdit,
+  OralQuestionAssignment,
   OralQuestionCategory,
   OralRevisionWithdrawal,
   QuestionRevisionWithdrawal,
@@ -51,9 +58,13 @@ export class LearningContentRepository extends Context.Service<
       documentId: ReferenceDocumentId,
       editionId: DocumentEditionId,
     ) => Effect.Effect<void, LearningContentWriteError>
+    readonly nextDocumentPosition: (
+      pathId: QualificationPathId,
+    ) => Effect.Effect<PathDocumentPosition, LearningContentWriteError>
     readonly attachDocument: (
       pathId: QualificationPathId,
       documentId: ReferenceDocumentId,
+      position: PathDocumentPosition,
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly attachQuestion: (
       pathId: QualificationPathId,
@@ -80,9 +91,21 @@ export class LearningContentRepository extends Context.Service<
     readonly createOralQuestion: (
       question: NewOralQuestion,
     ) => Effect.Effect<void, LearningContentWriteError | UnknownContentAsset>
+    readonly hasOralCategory: (
+      pathId: QualificationPathId,
+      categoryId: OralQuestionCategoryId,
+    ) => Effect.Effect<boolean, LearningContentWriteError>
+    readonly nextOralCategoryPosition: (
+      pathId: QualificationPathId,
+    ) => Effect.Effect<PathOralCategoryPosition, LearningContentWriteError>
+    readonly attachOralCategory: (
+      pathId: QualificationPathId,
+      categoryId: OralQuestionCategoryId,
+      position: PathOralCategoryPosition,
+    ) => Effect.Effect<void, LearningContentWriteError>
     readonly assignOralQuestion: (
       pathId: QualificationPathId,
-      questionId: OralQuestionId,
+      question: OralQuestionAssignment,
     ) => Effect.Effect<void, LearningContentWriteError>
     readonly linkOralQuestionToChamber: (
       link: RegionalQuestionLink,

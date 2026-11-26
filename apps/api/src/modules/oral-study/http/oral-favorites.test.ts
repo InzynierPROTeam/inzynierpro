@@ -145,7 +145,7 @@ test('oral notes stay private across paths, validate text, and distinguish cosme
   const other = await createStudyFixture('60000000-0000-4000-8000-000000000006')
   const categoryId = await addFixtureOralCategory()
   const question = await addFixtureOralQuestion(fixture.pathId, categoryId, 1)
-  await assignFixtureOralQuestion(other.pathId, question.id)
+  await assignFixtureOralQuestion(other.pathId, question)
 
   for (const account of [visitor, stranger]) {
     for (const path of [fixture, other]) {
@@ -239,7 +239,7 @@ test('oral favourites default to ten, select catalogue order, share marks across
   }
 
   const withdrawn = await addFixtureOralQuestion(fixture.pathId, categoryId, 13)
-  await assignFixtureOralQuestion(other.pathId, questions[0]!.id)
+  await assignFixtureOralQuestion(other.pathId, questions[0]!)
 
   const mark = (questionId: string, pathId = fixture.pathId) =>
     visitor.jar.fetch(
