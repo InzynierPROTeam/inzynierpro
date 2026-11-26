@@ -2,6 +2,7 @@ import { PathResponse } from '@inzpro/api-contracts/modules/preparation/response
 import { Schema } from 'effect'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { startTestApi, type TestApi, type TestVisitor } from '~api/test/api-server.js'
+import { fixtureGeneralChamberId } from '~api/test/chamber-contact-fixtures.js'
 import {
   learningRequest,
   loginForPreparation,
@@ -42,10 +43,12 @@ const readAssignment = async (learner: TestVisitor) =>
     await (await learningRequest(api, learner, `/paths/${technicalPathA}`)).json(),
   ).path
 
-test('a new assignment has no district chamber', async () => {
+test('a new assignment has no district chamber and names the general chamber of its path', async () => {
   const learner = await onboardedLearner()
+  const assignment = await readAssignment(learner)
 
-  expect((await readAssignment(learner))?.districtChamber).toBeNull()
+  expect(assignment?.districtChamber).toBeNull()
+  expect(assignment?.generalChamberId).toBe(fixtureGeneralChamberId)
 })
 
 test('a learner chooses, changes and clears the district chamber of a path', async () => {
